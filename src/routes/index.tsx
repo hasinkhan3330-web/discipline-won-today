@@ -306,9 +306,10 @@ function App() {
                 boxShadow: `0 4px 20px rgba(0,0,0,0.5)`,
                 background: "rgba(10,10,25,0.6)", backdropFilter: "blur(10px)",
               }}>
-                <div style={{ position: "relative", height: 180, overflow: "hidden" }}>
-                  <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(30%) contrast(1.1)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                  <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 30%, rgba(10,10,25,0.95) 100%)` }} />
+                <div style={{ position: "relative", height: 380, overflow: "hidden", background: "#05050a" }}>
+                  <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", filter: "contrast(1.05) saturate(1.1)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 60%, rgba(10,10,25,0.95) 100%)`, pointerEvents: "none" }} />
+
                   <div style={{ position: "absolute", top: 10, left: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "4px 8px", background: "rgba(0,0,0,0.6)", border: `1px solid ${G}66` }}>◉ LEGEND #{String(i + 1).padStart(2, "0")}</div>
                   <div style={{ position: "absolute", bottom: 10, left: 12, fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: 2, textShadow: `0 0 10px ${G}` }}>{q.p}</div>
                 </div>
