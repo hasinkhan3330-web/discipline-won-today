@@ -1,24 +1,417 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "DWT — Discipline Won Today" },
+      { name: "description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, warrior quotes, streaks." },
+      { property: "og:title", content: "DWT — Discipline Won Today" },
+      { property: "og:description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, warrior quotes, streaks." },
+    ],
+  }),
+  component: App,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
+
+const QUOTES = [
+  { p: "DAVID GOGGINS", q: "When your alarm goes off — that split second — that is the exact moment your character is being defined.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/David_Goggins_2024.jpg/800px-David_Goggins_2024.jpg" },
+  { p: "KOBE BRYANT", q: "Everything negative — pressure, challenges — is all an opportunity for me to rise.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Kobe_Bryant_2014.jpg/800px-Kobe_Bryant_2014.jpg" },
+  { p: "MICHAEL JORDAN", q: "I've failed over and over again in my life. And that is why I succeed.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/800px-Michael_Jordan_in_2014.jpg" },
+  { p: "BRUCE LEE", q: "Do not pray for an easy life, pray for the strength to endure a difficult one.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Bruce_Lee_1973.jpg/800px-Bruce_Lee_1973.jpg" },
+  { p: "ELON MUSK", q: "When something is important enough, you do it even if the odds are not in your favor.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Elon_Musk_Colorado_2022_%28cropped2%29.jpg/800px-Elon_Musk_Colorado_2022_%28cropped2%29.jpg" },
+  { p: "ARNOLD SCHWARZENEGGER", q: "The mind is the limit. As long as the mind can envision it, you can do it.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Governor_Arnold_Schwarzenegger.jpg/800px-Governor_Arnold_Schwarzenegger.jpg" },
+  { p: "MUHAMMAD ALI", q: "Don't count the days, make the days count.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Muhammad_Ali_NYWTS.jpg/800px-Muhammad_Ali_NYWTS.jpg" },
+  { p: "STEVE JOBS", q: "Your time is limited, so don't waste it living someone else's life.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg" },
+  { p: "CRISTIANO RONALDO", q: "Talent without working hard is nothing.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cristiano_Ronaldo_2018.jpg/800px-Cristiano_Ronaldo_2018.jpg" },
+];
+
+const THEMES = {
+  space: { name: "COSMOS", accent: "#00d4ff", accent2: "#7b5cff", glow: "0 0 20px #00d4ff" },
+  blood: { name: "BLOOD", accent: "#ff2e4d", accent2: "#ff6a00", glow: "0 0 20px #ff2e4d" },
+  matrix: { name: "MATRIX", accent: "#00ff88", accent2: "#00d46a", glow: "0 0 20px #00ff88" },
+  gold: { name: "GOLD", accent: "#ffcc33", accent2: "#ff8800", glow: "0 0 20px #ffcc33" },
+} as const;
+
+type ThemeKey = keyof typeof THEMES;
+
+function SpaceWallpaper({ accent }: { accent: string }) {
+  // deterministic star field
+  const stars = Array.from({ length: 90 }, (_, i) => {
+    const x = (i * 37) % 100;
+    const y = (i * 71) % 100;
+    const s = ((i * 13) % 3) + 1;
+    const d = ((i * 7) % 40) / 10;
+    return { x, y, s, d, k: i };
+  });
+  const shootingStars = [0, 1, 2, 3];
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div style={{ position: "fixed", inset: 0, zIndex: 0, overflow: "hidden", pointerEvents: "none", background: "radial-gradient(ellipse at 20% 10%, #1a0a3e 0%, #0a0620 40%, #000 100%)" }}>
+      {/* nebula glow */}
+      <div style={{ position: "absolute", top: "-20%", right: "-10%", width: 500, height: 500, background: `radial-gradient(circle, ${accent}22 0%, transparent 60%)`, filter: "blur(40px)" }} />
+      <div style={{ position: "absolute", bottom: "-10%", left: "-20%", width: 500, height: 500, background: "radial-gradient(circle, #7b5cff33 0%, transparent 60%)", filter: "blur(40px)" }} />
+
+      {/* moon */}
+      <div style={{ position: "absolute", top: 60, right: 30, width: 90, height: 90, borderRadius: "50%", background: "radial-gradient(circle at 35% 35%, #f5f0dc 0%, #d4cba8 40%, #8a8168 100%)", boxShadow: `0 0 60px rgba(245,240,220,0.4), 0 0 120px ${accent}33, inset -8px -12px 20px rgba(0,0,0,0.5)` }}>
+        <div style={{ position: "absolute", top: 18, left: 22, width: 10, height: 10, borderRadius: "50%", background: "rgba(0,0,0,0.15)" }} />
+        <div style={{ position: "absolute", top: 40, left: 55, width: 6, height: 6, borderRadius: "50%", background: "rgba(0,0,0,0.15)" }} />
+        <div style={{ position: "absolute", top: 60, left: 30, width: 14, height: 8, borderRadius: "50%", background: "rgba(0,0,0,0.12)" }} />
+      </div>
+
+      {/* stars */}
+      {stars.map(st => (
+        <div key={st.k} style={{
+          position: "absolute", left: `${st.x}%`, top: `${st.y}%`, width: st.s, height: st.s,
+          background: "#fff", borderRadius: "50%", boxShadow: `0 0 ${st.s * 3}px #fff`,
+          animation: `twinkle 3s ease-in-out ${st.d}s infinite`,
+        }} />
+      ))}
+
+      {/* shooting stars */}
+      {shootingStars.map(i => (
+        <div key={i} style={{
+          position: "absolute", top: `${10 + i * 20}%`, left: "-10%",
+          width: 120, height: 1, background: `linear-gradient(90deg, transparent, ${accent}, #fff)`,
+          boxShadow: `0 0 8px ${accent}`,
+          animation: `shoot 6s linear ${i * 2.2}s infinite`,
+          transform: "rotate(20deg)",
+        }} />
+      ))}
+
+      {/* scanline grid */}
+      <div style={{ position: "absolute", inset: 0, background: `linear-gradient(${accent}05 1px, transparent 1px), linear-gradient(90deg, ${accent}05 1px, transparent 1px)`, backgroundSize: "40px 40px", opacity: 0.4 }} />
+    </div>
+  );
+}
+
+function App() {
+  const [screen, setScreen] = useState<"splash" | "app">("splash");
+  const [tab, setTab] = useState("home");
+  const [themeKey, setThemeKey] = useState<ThemeKey>("space");
+  const [coins, setCoins] = useState(1240);
+  const [tasks, setTasks] = useState<Task[]>([
+    { id: 1, icon: "🌅", name: "Wake Up 4AM", pts: 10, done: false },
+    { id: 2, icon: "🚿", name: "Cold Shower", pts: 4, done: false },
+    { id: 3, icon: "💪", name: "Workout", pts: 15, done: false },
+    { id: 4, icon: "📚", name: "Deep Focus", pts: 8, done: false },
+    { id: 5, icon: "📵", name: "Phone Free", pts: 5, done: false },
+    { id: 6, icon: "🎯", name: "Daily Goals", pts: 4, done: false },
+    { id: 7, icon: "🍔", name: "No Junk Food", pts: 4, done: false },
+    { id: 8, icon: "🧘", name: "Meditation", pts: 3, done: false },
+  ]);
+
+  useEffect(() => {
+    const t = setTimeout(() => setScreen("app"), 2500);
+    return () => clearTimeout(t);
+  }, []);
+
+  const theme = THEMES[themeKey];
+  const G = theme.accent;
+  const G2 = theme.accent2;
+
+  const tick = (id: number) => setTasks(p => p.map(t => {
+    if (t.id === id && !t.done) { setCoins(c => c + t.pts); return { ...t, done: true }; }
+    return t;
+  }));
+
+  const done = tasks.filter(t => t.done).length;
+  const pct = Math.round(done / tasks.length * 100);
+  const streak = 12;
+
+  // GLOBAL KEYFRAMES
+  const keyframes = `
+    @keyframes twinkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+    @keyframes shoot { 0%{transform:translateX(0) translateY(0) rotate(20deg);opacity:0} 10%{opacity:1} 70%{opacity:1} 100%{transform:translateX(140vw) translateY(60vh) rotate(20deg);opacity:0} }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    @keyframes glow { 0%,100%{text-shadow:0 0 20px ${G},0 0 40px ${G}} 50%{text-shadow:0 0 30px ${G},0 0 60px ${G},0 0 80px ${G2}} }
+    @keyframes orbit { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes scanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
+  `;
+
+  if (screen === "splash") {
+    return (
+      <div style={{ width: "100%", height: "100vh", background: "#000", position: "relative", overflow: "hidden", fontFamily: "monospace" }}>
+        <style>{keyframes}</style>
+        <SpaceWallpaper accent={G} />
+        <div style={{ position: "relative", zIndex: 2, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          {/* orbit ring */}
+          <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", border: `1px solid ${G}44`, animation: "orbit 8s linear infinite" }}>
+            <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 20px ${G}` }} />
+          </div>
+          <div style={{ position: "absolute", width: 340, height: 340, borderRadius: "50%", border: `1px solid ${G2}33`, animation: "orbit 14s linear infinite reverse" }} />
+          <div style={{ fontSize: 42, fontWeight: 900, color: "#fff", letterSpacing: 6, textAlign: "center", lineHeight: 1.2, animation: "glow 2.5s ease-in-out infinite", zIndex: 3 }}>
+            DISCIPLINE<br />WON TODAY
+          </div>
+          <div style={{ width: 120, height: 2, background: `linear-gradient(90deg,transparent,${G},transparent)`, margin: "22px auto", zIndex: 3 }} />
+          <div style={{ fontSize: 11, letterSpacing: 5, color: G, zIndex: 3, animation: "pulse 2s ease-in-out infinite" }}>STAY HARD · EVERY DAY</div>
+          <div style={{ marginTop: 40, fontSize: 9, letterSpacing: 3, color: "#555", zIndex: 3 }}>[ INITIALIZING SYSTEM ]</div>
+        </div>
+      </div>
+    );
+  }
+
+  const CARD: React.CSSProperties = {
+    background: "rgba(10,10,25,0.55)",
+    backdropFilter: "blur(12px)",
+    border: `1px solid ${G}33`,
+    borderLeft: `2px solid ${G}`,
+    padding: 14,
+    marginBottom: 12,
+    boxShadow: `0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 ${G}22`,
+    borderRadius: 2,
+  };
+  const TITLE: React.CSSProperties = { fontSize: 12, fontWeight: 700, letterSpacing: 3, color: "#e8e8e8", marginBottom: 12, fontFamily: "monospace", display: "flex", alignItems: "center", gap: 6 };
+
+  const TABS = [
+    { id: "home", icon: "⚔️", label: "Home" },
+    { id: "rank", icon: "🏆", label: "Rank" },
+    { id: "quotes", icon: "💬", label: "Quotes" },
+    { id: "stats", icon: "📊", label: "Stats" },
+    { id: "profile", icon: "👤", label: "You" },
+  ];
+
+  return (
+    <div style={{ width: "100%", minHeight: "100vh", color: "#e8e8e8", fontFamily: "monospace", position: "relative", overflow: "hidden" }}>
+      <style>{keyframes}</style>
+      <SpaceWallpaper accent={G} />
+
+      <div style={{ position: "relative", zIndex: 2, maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+        {/* TOPBAR */}
+        <div style={{ padding: "14px 16px", background: "rgba(10,10,25,0.7)", backdropFilter: "blur(20px)", borderBottom: `1px solid ${G}55`, display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 99, boxShadow: `0 2px 20px ${G}22` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 10px ${G}`, animation: "pulse 1.5s infinite" }} />
+            <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: `0 0 12px ${G}` }}>DWT</div>
+          </div>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            {/* theme swatches */}
+            {(Object.keys(THEMES) as ThemeKey[]).map(k => (
+              <button key={k} onClick={() => setThemeKey(k)} title={THEMES[k].name} style={{
+                width: 18, height: 18, borderRadius: "50%",
+                background: `linear-gradient(135deg, ${THEMES[k].accent}, ${THEMES[k].accent2})`,
+                border: themeKey === k ? `2px solid #fff` : `1px solid #333`,
+                cursor: "pointer", padding: 0,
+                boxShadow: themeKey === k ? `0 0 10px ${THEMES[k].accent}` : "none",
+              }} />
+            ))}
+            <div style={{ background: `linear-gradient(135deg,${G}22,${G2}22)`, border: `1px solid ${G}66`, padding: "5px 10px", fontSize: 13, fontWeight: 700, color: G, marginLeft: 4, borderRadius: 2 }}>🪙 {coins}</div>
+          </div>
+        </div>
+
+        {/* CONTENT */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "14px 12px 90px", animation: "fadeUp 0.4s ease-out" }} key={tab}>
+
+          {tab === "home" && <>
+            <div style={CARD}>
+              <div style={TITLE}><span style={{ color: G }}>▸</span> TODAY'S <span style={{ color: G }}>STATS</span></div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+                {[{ v: coins, l: "COINS" }, { v: `${streak}d`, l: "STREAK" }, { v: `${done}/${tasks.length}`, l: "TASKS" }, { v: `${pct}%`, l: "COMPLETE" }].map((s, i) => (
+                  <div key={i} style={{ background: `linear-gradient(135deg, ${G}15, transparent)`, border: `1px solid ${G}33`, padding: "12px 10px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, width: 20, height: 20, borderTop: `1px solid ${G}`, borderRight: `1px solid ${G}` }} />
+                    <div style={{ fontSize: 22, fontWeight: 800, color: G, textShadow: `0 0 12px ${G}88` }}>{s.v}</div>
+                    <div style={{ fontSize: 9, color: "#888", letterSpacing: 2, marginTop: 4 }}>{s.l}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize: 10, color: "#888", display: "flex", justifyContent: "space-between", marginBottom: 5, letterSpacing: 2 }}>
+                <span>MISSION PROGRESS</span><span style={{ color: G }}>{pct}%</span>
+              </div>
+              <div style={{ height: 6, background: "#0a0a15", borderRadius: 3, border: `1px solid ${G}22`, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg,${G},${G2})`, boxShadow: `0 0 10px ${G}`, transition: "width 0.5s" }} />
+              </div>
+            </div>
+
+            <div style={CARD}>
+              <div style={TITLE}><span style={{ color: G }}>▸</span> TODAY'S <span style={{ color: G }}>MISSION</span></div>
+              {tasks.map(t => (
+                <div key={t.id} onClick={() => tick(t.id)} style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "11px 10px",
+                  background: t.done ? "rgba(0,0,0,0.3)" : `linear-gradient(90deg, ${G}12, transparent)`,
+                  border: `1px solid ${t.done ? "#222" : G + "33"}`,
+                  borderLeft: `3px solid ${t.done ? "#333" : G}`,
+                  marginBottom: 6, cursor: "pointer", opacity: t.done ? 0.45 : 1,
+                  transition: "all 0.2s",
+                }}>
+                  <span style={{ fontSize: 22 }}>{t.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#e8e8e8", textDecoration: t.done ? "line-through" : "none", letterSpacing: 1 }}>{t.name}</div>
+                    <div style={{ fontSize: 10, color: G, letterSpacing: 1, marginTop: 2 }}>+{t.pts} COINS</div>
+                  </div>
+                  <div style={{ width: 22, height: 22, border: `1.5px solid ${t.done ? G : "#333"}`, background: t.done ? G : "transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#000", fontWeight: 900, boxShadow: t.done ? `0 0 10px ${G}` : "none" }}>{t.done ? "✓" : ""}</div>
+                </div>
+              ))}
+            </div>
+          </>}
+
+          {tab === "rank" && <div style={CARD}>
+            <div style={TITLE}><span style={{ color: G }}>▸</span> GLOBAL <span style={{ color: G }}>LEADERBOARD</span></div>
+            {[
+              { r: 1, n: "IRON_WARRIOR", c: 8940, s: 67 },
+              { r: 2, n: "DISCIPLINE_X", c: 7234, s: 45 },
+              { r: 3, n: "5AM_BEAST", c: 6102, s: 38 },
+              { r: 4, n: "MONK_MODE", c: 5200, s: 29 },
+              { r: 5, n: "YOU", c: coins, s: streak, you: true },
+              { r: 6, n: "SHADOW_RUN", c: 3421, s: 19 },
+              { r: 7, n: "NOCHILL_99", c: 2156, s: 12 },
+            ].map(u => (
+              <div key={u.r} style={{
+                display: "flex", alignItems: "center", gap: 10, padding: "10px",
+                background: u.you ? `linear-gradient(90deg, ${G}22, transparent)` : "rgba(0,0,0,0.3)",
+                border: `1px solid ${u.you ? G + "66" : "#222"}`, borderLeft: `3px solid ${u.you ? G : "#333"}`,
+                marginBottom: 6,
+              }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: u.r <= 3 ? G : "#555", width: 22, textAlign: "center" }}>
+                  {u.r === 1 ? "🥇" : u.r === 2 ? "🥈" : u.r === 3 ? "🥉" : u.r}
+                </div>
+                <img src={`https://i.pravatar.cc/40?img=${u.r + 10}`} style={{ width: 34, height: 34, borderRadius: "50%", border: `1px solid ${G}44` }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u.n}</div>
+                  <div style={{ fontSize: 10, color: "#666", letterSpacing: 1 }}>{u.s} DAY STREAK</div>
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: G, textShadow: `0 0 8px ${G}66` }}>{u.c}</div>
+              </div>
+            ))}
+          </div>}
+
+          {tab === "quotes" && <>
+            {QUOTES.map((q, i) => (
+              <div key={i} style={{
+                position: "relative", marginBottom: 12, borderRadius: 2, overflow: "hidden",
+                border: `1px solid ${G}44`, borderLeft: `3px solid ${G}`,
+                boxShadow: `0 4px 20px rgba(0,0,0,0.5)`,
+                background: "rgba(10,10,25,0.6)", backdropFilter: "blur(10px)",
+              }}>
+                <div style={{ position: "relative", height: 180, overflow: "hidden" }}>
+                  <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(30%) contrast(1.1)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 30%, rgba(10,10,25,0.95) 100%)` }} />
+                  <div style={{ position: "absolute", top: 10, left: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "4px 8px", background: "rgba(0,0,0,0.6)", border: `1px solid ${G}66` }}>◉ LEGEND #{String(i + 1).padStart(2, "0")}</div>
+                  <div style={{ position: "absolute", bottom: 10, left: 12, fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: 2, textShadow: `0 0 10px ${G}` }}>{q.p}</div>
+                </div>
+                <div style={{ padding: 14, fontSize: 13, color: "#ddd", lineHeight: 1.7, fontStyle: "italic", borderTop: `1px solid ${G}22` }}>
+                  <span style={{ color: G, fontSize: 20, marginRight: 4 }}>"</span>
+                  {q.q}
+                  <span style={{ color: G, fontSize: 20, marginLeft: 4 }}>"</span>
+                </div>
+              </div>
+            ))}
+          </>}
+
+          {tab === "stats" && <div style={CARD}>
+            <div style={TITLE}><span style={{ color: G }}>▸</span> WEEKLY <span style={{ color: G }}>PROGRESS</span></div>
+            {["MON", "TUE", "WED", "THU", "FRI", "SAT", "TDY"].map((d, i) => {
+              const v = [80, 65, 90, 45, 75, 100, pct][i];
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                  <div style={{ width: 34, fontSize: 10, color: "#666", letterSpacing: 2 }}>{d}</div>
+                  <div style={{ flex: 1, height: 8, background: "#0a0a15", borderRadius: 4, border: `1px solid ${G}22`, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${v}%`, background: `linear-gradient(90deg,${G},${G2})`, boxShadow: `0 0 8px ${G}` }} />
+                  </div>
+                  <div style={{ width: 32, fontSize: 11, color: G, textAlign: "right", fontWeight: 700 }}>{v}%</div>
+                </div>
+              );
+            })}
+          </div>}
+
+          {tab === "profile" && <>
+            <div style={{ ...CARD, textAlign: "center", padding: 24, position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: -40, left: "50%", transform: "translateX(-50%)", width: 200, height: 200, borderRadius: "50%", background: `radial-gradient(circle, ${G}44, transparent 70%)` }} />
+              <div style={{ position: "relative", zIndex: 2 }}>
+                <div style={{ fontSize: 60, marginBottom: 8, filter: `drop-shadow(0 0 20px ${G})` }}>⚔️</div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", marginBottom: 4, letterSpacing: 4, textShadow: `0 0 15px ${G}` }}>WARRIOR</div>
+                <div style={{ fontSize: 11, color: G, letterSpacing: 3, marginBottom: 18 }}>◈ LEVEL {Math.floor(coins / 1000) + 1} ◈</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div style={{ background: `linear-gradient(135deg, ${G}15, transparent)`, border: `1px solid ${G}44`, padding: 12 }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: G, textShadow: `0 0 10px ${G}` }}>{streak}</div>
+                    <div style={{ fontSize: 9, color: "#888", letterSpacing: 2, marginTop: 3 }}>DAY STREAK</div>
+                  </div>
+                  <div style={{ background: `linear-gradient(135deg, ${G}15, transparent)`, border: `1px solid ${G}44`, padding: 12 }}>
+                    <div style={{ fontSize: 22, fontWeight: 800, color: G, textShadow: `0 0 10px ${G}` }}>{coins}</div>
+                    <div style={{ fontSize: 9, color: "#888", letterSpacing: 2, marginTop: 3 }}>TOTAL COINS</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={CARD}>
+              <div style={TITLE}><span style={{ color: G }}>▸</span> THEME <span style={{ color: G }}>SELECTOR</span></div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {(Object.keys(THEMES) as ThemeKey[]).map(k => {
+                  const t = THEMES[k];
+                  const active = themeKey === k;
+                  return (
+                    <button key={k} onClick={() => setThemeKey(k)} style={{
+                      background: active ? `linear-gradient(135deg, ${t.accent}33, ${t.accent2}22)` : "rgba(0,0,0,0.3)",
+                      border: `1px solid ${active ? t.accent : "#333"}`,
+                      borderLeft: `3px solid ${t.accent}`,
+                      padding: "12px 10px", cursor: "pointer", color: "#e8e8e8",
+                      fontFamily: "monospace", textAlign: "left",
+                      boxShadow: active ? `0 0 15px ${t.accent}55` : "none",
+                    }}>
+                      <div style={{ display: "flex", gap: 4, marginBottom: 6 }}>
+                        <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.accent, boxShadow: `0 0 8px ${t.accent}` }} />
+                        <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.accent2 }} />
+                      </div>
+                      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 2, color: active ? t.accent : "#ccc" }}>{t.name}</div>
+                      <div style={{ fontSize: 9, color: "#666", marginTop: 2 }}>{active ? "◉ ACTIVE" : "○ SELECT"}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={CARD}>
+              <div style={TITLE}><span style={{ color: G }}>▸</span> ACHIEVEMENTS</div>
+              {[
+                { icon: "🌅", label: "Early Riser", desc: "Wake up 4AM", done: true },
+                { icon: "🔥", label: "On Fire", desc: "7 day streak", done: streak >= 7 },
+                { icon: "💪", label: "Iron Will", desc: "30 day streak", done: streak >= 30 },
+                { icon: "👑", label: "Champion", desc: "1000+ coins", done: coins >= 1000 },
+                { icon: "💀", label: "Legend", desc: "365 day streak", done: streak >= 365 },
+              ].map((a, i) => (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "10px",
+                  background: a.done ? `linear-gradient(90deg, ${G}15, transparent)` : "rgba(0,0,0,0.3)",
+                  border: `1px solid ${a.done ? G + "44" : "#222"}`,
+                  borderLeft: `3px solid ${a.done ? G : "#333"}`,
+                  marginBottom: 6, opacity: a.done ? 1 : 0.5,
+                }}>
+                  <span style={{ fontSize: 22, filter: a.done ? `drop-shadow(0 0 6px ${G})` : "none" }}>{a.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{a.label}</div>
+                    <div style={{ fontSize: 10, color: "#666", marginTop: 2, letterSpacing: 1 }}>{a.desc}</div>
+                  </div>
+                  <div style={{ fontSize: 12, color: a.done ? G : "#555", fontWeight: 700 }}>{a.done ? "✓" : "🔒"}</div>
+                </div>
+              ))}
+            </div>
+          </>}
+        </div>
+
+        {/* BOTTOM NAV */}
+        <div style={{
+          position: "fixed", bottom: 0, left: 0, right: 0, maxWidth: 430, margin: "0 auto",
+          background: "rgba(10,10,25,0.85)", backdropFilter: "blur(20px)",
+          borderTop: `1px solid ${G}55`, display: "flex", zIndex: 99,
+          boxShadow: `0 -4px 20px ${G}22`,
+        }}>
+          {TABS.map(n => {
+            const active = tab === n.id;
+            return (
+              <button key={n.id} onClick={() => setTab(n.id)} style={{
+                flex: 1, padding: "10px 4px 12px", background: "transparent", border: "none", cursor: "pointer",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+                color: active ? G : "#555", position: "relative",
+              }}>
+                {active && <div style={{ position: "absolute", top: 0, left: "20%", right: "20%", height: 2, background: G, boxShadow: `0 0 8px ${G}` }} />}
+                <span style={{ fontSize: 20, filter: active ? `drop-shadow(0 0 6px ${G})` : "none" }}>{n.icon}</span>
+                <span style={{ fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700 }}>{n.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
