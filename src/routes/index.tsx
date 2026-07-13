@@ -15,16 +15,39 @@ export const Route = createFileRoute("/")({
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
 
+// Wikipedia Special:FilePath auto-resolves to the current image — no hash prefix needed.
+const wiki = (file: string) => `https://commons.wikimedia.org/wiki/Special:FilePath/${file}?width=800`;
+
 const QUOTES = [
-  { p: "DAVID GOGGINS", q: "When your alarm goes off — that split second — that is the exact moment your character is being defined.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/David_Goggins_2024.jpg/800px-David_Goggins_2024.jpg" },
-  { p: "KOBE BRYANT", q: "Everything negative — pressure, challenges — is all an opportunity for me to rise.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Kobe_Bryant_2014.jpg/800px-Kobe_Bryant_2014.jpg" },
-  { p: "MICHAEL JORDAN", q: "I've failed over and over again in my life. And that is why I succeed.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Michael_Jordan_in_2014.jpg/800px-Michael_Jordan_in_2014.jpg" },
-  { p: "BRUCE LEE", q: "Do not pray for an easy life, pray for the strength to endure a difficult one.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Bruce_Lee_1973.jpg/800px-Bruce_Lee_1973.jpg" },
-  { p: "ELON MUSK", q: "When something is important enough, you do it even if the odds are not in your favor.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Elon_Musk_Colorado_2022_%28cropped2%29.jpg/800px-Elon_Musk_Colorado_2022_%28cropped2%29.jpg" },
-  { p: "ARNOLD SCHWARZENEGGER", q: "The mind is the limit. As long as the mind can envision it, you can do it.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/Governor_Arnold_Schwarzenegger.jpg/800px-Governor_Arnold_Schwarzenegger.jpg" },
-  { p: "MUHAMMAD ALI", q: "Don't count the days, make the days count.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Muhammad_Ali_NYWTS.jpg/800px-Muhammad_Ali_NYWTS.jpg" },
-  { p: "STEVE JOBS", q: "Your time is limited, so don't waste it living someone else's life.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg/800px-Steve_Jobs_Headshot_2010-CROP_%28cropped_2%29.jpg" },
-  { p: "CRISTIANO RONALDO", q: "Talent without working hard is nothing.", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cristiano_Ronaldo_2018.jpg/800px-Cristiano_Ronaldo_2018.jpg" },
+  { p: "SHAH RUKH KHAN", q: "Success is not a good teacher, failure makes you humble.", img: wiki("Shah_Rukh_Khan_graces_the_launch_of_the_new_Santro.jpg") },
+  { p: "DAVID GOGGINS", q: "When your alarm goes off — that split second — that is the exact moment your character is being defined.", img: wiki("David_Goggins_2024.jpg") },
+  { p: "KOBE BRYANT", q: "Everything negative — pressure, challenges — is all an opportunity for me to rise.", img: wiki("Kobe_Bryant_2014.jpg") },
+  { p: "MICHAEL JORDAN", q: "I've failed over and over again in my life. And that is why I succeed.", img: wiki("Michael_Jordan_in_2014.jpg") },
+  { p: "BRUCE LEE", q: "Do not pray for an easy life, pray for the strength to endure a difficult one.", img: wiki("Bruce_Lee_1973.jpg") },
+  { p: "ELON MUSK", q: "When something is important enough, you do it even if the odds are not in your favor.", img: wiki("Elon_Musk_Colorado_2022_(cropped2).jpg") },
+  { p: "ARNOLD SCHWARZENEGGER", q: "The mind is the limit. As long as the mind can envision it, you can do it.", img: wiki("Governor_Arnold_Schwarzenegger.jpg") },
+  { p: "MUHAMMAD ALI", q: "Don't count the days, make the days count.", img: wiki("Muhammad_Ali_NYWTS.jpg") },
+  { p: "STEVE JOBS", q: "Your time is limited, so don't waste it living someone else's life.", img: wiki("Steve_Jobs_Headshot_2010-CROP_(cropped_2).jpg") },
+  { p: "CRISTIANO RONALDO", q: "Talent without working hard is nothing.", img: wiki("Cristiano_Ronaldo_2018.jpg") },
+  { p: "LIONEL MESSI", q: "You have to fight to reach your dream. You have to sacrifice and work hard for it.", img: wiki("Lionel_Messi_20180626.jpg") },
+  { p: "VIRAT KOHLI", q: "Self-belief and hard work will always earn you success.", img: wiki("Virat_Kohli_in_PMO_New_Delhi.jpg") },
+  { p: "MS DHONI", q: "You can't ask for the process to be right and the result to also go in your favour every time.", img: wiki("MS_Dhoni_January_2016_(cropped).jpg") },
+  { p: "SACHIN TENDULKAR", q: "I have played every match as if it was my last one.", img: wiki("Sachin_at_Castrol_Golden_Spanner_Awards_(crop).jpg") },
+  { p: "RATAN TATA", q: "I don't believe in taking right decisions. I take decisions and then make them right.", img: wiki("Ratan_Tata_-_World_Economic_Forum_Annual_Meeting_2011.jpg") },
+  { p: "A.P.J. ABDUL KALAM", q: "Dream is not that which you see while sleeping, it is something that does not let you sleep.", img: wiki("A._P._J._Abdul_Kalam.jpg") },
+  { p: "NELSON MANDELA", q: "It always seems impossible until it's done.", img: wiki("Nelson_Mandela-2008_(edit).jpg") },
+  { p: "MAHATMA GANDHI", q: "Be the change that you wish to see in the world.", img: wiki("Portrait_Gandhi.jpg") },
+  { p: "ALBERT EINSTEIN", q: "Strive not to be a success, but rather to be of value.", img: wiki("Einstein_1921_by_F_Schmutzer_-_restoration.jpg") },
+  { p: "WARREN BUFFETT", q: "The more you learn, the more you earn.", img: wiki("Warren_Buffett_KU_Visit.jpg") },
+  { p: "BILL GATES", q: "It's fine to celebrate success but it is more important to heed the lessons of failure.", img: wiki("Bill_Gates_2018.jpg") },
+  { p: "JEFF BEZOS", q: "If you decide that you're going to do only the things you know are going to work, you're going to leave a lot of opportunity on the table.", img: wiki("Jeff_Bezos_2016.jpg") },
+  { p: "MARK ZUCKERBERG", q: "The biggest risk is not taking any risk.", img: wiki("Mark_Zuckerberg_F8_2018_Keynote_(cropped).jpg") },
+  { p: "SUNDAR PICHAI", q: "Wear your failure as a badge of honor.", img: wiki("Sundar_Pichai_WEF_2020.png") },
+  { p: "MIKE TYSON", q: "Discipline is doing what you hate to do, but doing it like you love it.", img: wiki("Mike_Tyson_2019_by_Glenn_Francis.jpg") },
+  { p: "CONOR McGREGOR", q: "There's no talent here, this is hard work. This is an obsession.", img: wiki("Conor_McGregor_2018.jpg") },
+  { p: "DWAYNE JOHNSON", q: "Success isn't always about greatness. It's about consistency.", img: wiki("Dwayne_Johnson_2014_(cropped).jpg") },
+  { p: "SYLVESTER STALLONE", q: "It ain't about how hard you hit. It's about how hard you can get hit and keep moving forward.", img: wiki("Sylvester_Stallone_Cannes_2019.jpg") },
+  { p: "KEANU REEVES", q: "The simple act of paying attention can take you a long way.", img: wiki("Keanu_Reeves_2019.jpg") },
 ];
 
 const THEMES = {
