@@ -125,6 +125,16 @@ function App() {
     { id: 8, icon: "🧘", name: "Meditation", pts: 3, done: false },
   ]);
 
+  // 4AM proof-of-wakeup state
+  const [proof, setProof] = useState<null | {
+    mode: "choose" | "quiz" | "result";
+    subject?: "math" | "physics";
+    question?: string;
+    answer?: number;
+    input?: string;
+    correct?: boolean;
+  }>(null);
+
   useEffect(() => {
     const t = setTimeout(() => setScreen("app"), 2500);
     return () => clearTimeout(t);
@@ -134,10 +144,50 @@ function App() {
   const G = theme.accent;
   const G2 = theme.accent2;
 
-  const tick = (id: number) => setTasks(p => p.map(t => {
-    if (t.id === id && !t.done) { setCoins(c => c + t.pts); return { ...t, done: true }; }
-    return t;
-  }));
+  const buildQuestion = (subject: "math" | "physics") => {
+    if (subject === "math") {
+      const ops = [
+        () => { const a = 12 + Math.floor(Math.random()*40); const b = 5 + Math.floor(Math.random()*30); return { q: `${a} + ${b} = ?`, a: a+b }; },
+        () => { const a = 40 + Math.floor(Math.random()*50); const b = 5 + Math.floor(Math.random()*30); return { q: `${a} − ${b} = ?`, a: a-b }; },
+        () => { const a = 3 + Math.floor(Math.random()*11); const b = 3 + Math.floor(Math.random()*11); return { q: `${a} × ${b} = ?`, a: a*b }; },
+        () => { const b = 3 + Math.floor(Math.random()*9); const r = 2 + Math.floor(Math.random()*10); return { q: `${b*r} ÷ ${b} = ?`, a: r }; },
+      ];
+      return ops[Math.floor(Math.random()*ops.length)]();
+    }
+    const ops = [
+      () => { const m = 2 + Math.floor(Math.random()*8); const a = 2 + Math.floor(Math.random()*8); return { q: `Force = mass × acceleration. m=${m}kg, a=${a}m/s². F = ? (N)`, a: m*a }; },
+      () => { const d = 20 + Math.floor(Math.random()*80); const t = 2 + Math.floor(Math.random()*8); return { q: `Speed = distance ÷ time. d=${d*t}m, t=${t}s. Speed = ? (m/s)`, a: d }; },
+      () => { const m = 2 + Math.floor(Math.random()*8); const g = 10; const h = 2 + Math.floor(Math.random()*8); return { q: `PE = m·g·h. m=${m}kg, g=${g}, h=${h}m. PE = ? (J)`, a: m*g*h }; },
+      () => { const v = 2 + Math.floor(Math.random()*10); const m = 2 + Math.floor(Math.random()*8); return { q: `Momentum p = m·v. m=${m}kg, v=${v}m/s. p = ? (kg·m/s)`, a: m*v }; },
+    ];
+    return ops[Math.floor(Math.random()*ops.length)]();
+  };
+
+  const startProof = (subject: "math" | "physics") => {
+    const { q, a } = buildQuestion(subject);
+    setProof({ mode: "quiz", subject, question: q, answer: a, input: "" });
+  };
+
+  const submitProof = () => {
+    if (!proof || proof.mode !== "quiz") return;
+    const correct = Number(proof.input) === proof.answer;
+    setProof({ ...proof, mode: "result", correct });
+    if (correct) {
+      setTasks(p => p.map(t => t.id === 1 && !t.done ? { ...t, done: true } : t));
+      setCoins(c => c + 10);
+    }
+  };
+
+  const tick = (id: number) => {
+    if (id === 1) {
+      const t = tasks.find(x => x.id === 1);
+      if (t && !t.done) { setProof({ mode: "choose" }); return; }
+    }
+    setTasks(p => p.map(t => {
+      if (t.id === id && !t.done) { setCoins(c => c + t.pts); return { ...t, done: true }; }
+      return t;
+    }));
+  };
 
   const done = tasks.filter(t => t.done).length;
   const pct = Math.round(done / tasks.length * 100);
