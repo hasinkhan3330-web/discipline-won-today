@@ -125,6 +125,16 @@ function App() {
     { id: 8, icon: "🧘", name: "Meditation", pts: 3, done: false },
   ]);
 
+  // 4AM proof-of-wakeup state
+  const [proof, setProof] = useState<null | {
+    mode: "choose" | "quiz" | "result";
+    subject?: "math" | "physics";
+    question?: string;
+    answer?: number;
+    input?: string;
+    correct?: boolean;
+  }>(null);
+
   useEffect(() => {
     const t = setTimeout(() => setScreen("app"), 2500);
     return () => clearTimeout(t);
@@ -134,10 +144,50 @@ function App() {
   const G = theme.accent;
   const G2 = theme.accent2;
 
-  const tick = (id: number) => setTasks(p => p.map(t => {
-    if (t.id === id && !t.done) { setCoins(c => c + t.pts); return { ...t, done: true }; }
-    return t;
-  }));
+  const buildQuestion = (subject: "math" | "physics") => {
+    if (subject === "math") {
+      const ops = [
+        () => { const a = 12 + Math.floor(Math.random()*40); const b = 5 + Math.floor(Math.random()*30); return { q: `${a} + ${b} = ?`, a: a+b }; },
+        () => { const a = 40 + Math.floor(Math.random()*50); const b = 5 + Math.floor(Math.random()*30); return { q: `${a} − ${b} = ?`, a: a-b }; },
+        () => { const a = 3 + Math.floor(Math.random()*11); const b = 3 + Math.floor(Math.random()*11); return { q: `${a} × ${b} = ?`, a: a*b }; },
+        () => { const b = 3 + Math.floor(Math.random()*9); const r = 2 + Math.floor(Math.random()*10); return { q: `${b*r} ÷ ${b} = ?`, a: r }; },
+      ];
+      return ops[Math.floor(Math.random()*ops.length)]();
+    }
+    const ops = [
+      () => { const m = 2 + Math.floor(Math.random()*8); const a = 2 + Math.floor(Math.random()*8); return { q: `Force = mass × acceleration. m=${m}kg, a=${a}m/s². F = ? (N)`, a: m*a }; },
+      () => { const d = 20 + Math.floor(Math.random()*80); const t = 2 + Math.floor(Math.random()*8); return { q: `Speed = distance ÷ time. d=${d*t}m, t=${t}s. Speed = ? (m/s)`, a: d }; },
+      () => { const m = 2 + Math.floor(Math.random()*8); const g = 10; const h = 2 + Math.floor(Math.random()*8); return { q: `PE = m·g·h. m=${m}kg, g=${g}, h=${h}m. PE = ? (J)`, a: m*g*h }; },
+      () => { const v = 2 + Math.floor(Math.random()*10); const m = 2 + Math.floor(Math.random()*8); return { q: `Momentum p = m·v. m=${m}kg, v=${v}m/s. p = ? (kg·m/s)`, a: m*v }; },
+    ];
+    return ops[Math.floor(Math.random()*ops.length)]();
+  };
+
+  const startProof = (subject: "math" | "physics") => {
+    const { q, a } = buildQuestion(subject);
+    setProof({ mode: "quiz", subject, question: q, answer: a, input: "" });
+  };
+
+  const submitProof = () => {
+    if (!proof || proof.mode !== "quiz") return;
+    const correct = Number(proof.input) === proof.answer;
+    setProof({ ...proof, mode: "result", correct });
+    if (correct) {
+      setTasks(p => p.map(t => t.id === 1 && !t.done ? { ...t, done: true } : t));
+      setCoins(c => c + 10);
+    }
+  };
+
+  const tick = (id: number) => {
+    if (id === 1) {
+      const t = tasks.find(x => x.id === 1);
+      if (t && !t.done) { setProof({ mode: "choose" }); return; }
+    }
+    setTasks(p => p.map(t => {
+      if (t.id === id && !t.done) { setCoins(c => c + t.pts); return { ...t, done: true }; }
+      return t;
+    }));
+  };
 
   const done = tasks.filter(t => t.done).length;
   const pct = Math.round(done / tasks.length * 100);
@@ -482,6 +532,105 @@ function App() {
           })}
         </div>
       </div>
+
+      {/* 4AM PROOF-OF-WAKEUP MODAL */}
+      {proof && (
+        <div onClick={() => proof.mode === "result" && setProof(null)} style={{
+          position: "fixed", inset: 0, zIndex: 999, background: "rgba(0,0,0,0.85)",
+          backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 16, animation: "fadeUp 0.25s ease-out",
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: "100%", maxWidth: 380, background: "rgba(10,10,25,0.95)",
+            border: `1px solid ${G}77`, borderLeft: `3px solid ${G}`,
+            padding: 20, boxShadow: `0 10px 60px ${G}55, inset 0 1px 0 ${G}33`,
+            fontFamily: "monospace",
+          }}>
+            <div style={{ fontSize: 10, letterSpacing: 4, color: G, marginBottom: 6 }}>▸ 04:00 PROTOCOL</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 2, marginBottom: 4, textShadow: `0 0 12px ${G}` }}>PROVE YOU ARE AWAKE</div>
+            <div style={{ fontSize: 11, color: "#888", marginBottom: 18, lineHeight: 1.5 }}>
+              Sleeping minds cannot solve. Answer correctly to earn <span style={{ color: G }}>+10 coins</span>.
+            </div>
+
+            {proof.mode === "choose" && (
+              <>
+                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 10 }}>CHOOSE YOUR PROOF</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  {(["math", "physics"] as const).map(s => (
+                    <button key={s} onClick={() => startProof(s)} style={{
+                      padding: "16px 8px", background: `linear-gradient(135deg, ${G}22, transparent)`,
+                      border: `1px solid ${G}66`, color: "#fff", cursor: "pointer",
+                      fontFamily: "monospace", fontSize: 13, fontWeight: 700, letterSpacing: 2,
+                    }}>
+                      <div style={{ fontSize: 26, marginBottom: 6 }}>{s === "math" ? "🧮" : "⚛️"}</div>
+                      {s.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={() => setProof(null)} style={{
+                  marginTop: 14, width: "100%", padding: 8, background: "transparent",
+                  border: "1px solid #333", color: "#666", cursor: "pointer",
+                  fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
+                }}>CANCEL</button>
+              </>
+            )}
+
+            {proof.mode === "quiz" && (
+              <>
+                <div style={{ fontSize: 9, color: G, letterSpacing: 3, marginBottom: 8 }}>
+                  {proof.subject === "math" ? "🧮 MATH" : "⚛️ PHYSICS"}
+                </div>
+                <div style={{
+                  padding: 16, background: "rgba(0,0,0,0.5)", border: `1px solid ${G}44`,
+                  fontSize: 15, color: "#fff", marginBottom: 14, lineHeight: 1.5, textAlign: "center", fontWeight: 700,
+                }}>{proof.question}</div>
+                <input
+                  autoFocus type="number" inputMode="numeric" value={proof.input ?? ""}
+                  onChange={e => setProof({ ...proof, input: e.target.value })}
+                  onKeyDown={e => e.key === "Enter" && submitProof()}
+                  placeholder="Your answer"
+                  style={{
+                    width: "100%", padding: "12px 14px", background: "rgba(0,0,0,0.6)",
+                    border: `1px solid ${G}66`, color: "#fff", fontFamily: "monospace",
+                    fontSize: 18, letterSpacing: 2, textAlign: "center", outline: "none",
+                    boxSizing: "border-box", marginBottom: 12,
+                  }}
+                />
+                <button onClick={submitProof} disabled={!proof.input} style={{
+                  width: "100%", padding: 12, background: proof.input ? `linear-gradient(90deg, ${G}, ${G2})` : "#222",
+                  border: "none", color: proof.input ? "#000" : "#555", cursor: proof.input ? "pointer" : "not-allowed",
+                  fontFamily: "monospace", fontSize: 12, fontWeight: 900, letterSpacing: 3,
+                  boxShadow: proof.input ? `0 0 20px ${G}66` : "none",
+                }}>SUBMIT PROOF</button>
+                <button onClick={() => setProof(null)} style={{
+                  marginTop: 8, width: "100%", padding: 6, background: "transparent",
+                  border: "none", color: "#555", cursor: "pointer",
+                  fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
+                }}>CANCEL</button>
+              </>
+            )}
+
+            {proof.mode === "result" && (
+              <div style={{ textAlign: "center", padding: "10px 0" }}>
+                <div style={{ fontSize: 48, marginBottom: 10 }}>{proof.correct ? "✅" : "❌"}</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: proof.correct ? G : "#ff4466", letterSpacing: 2, marginBottom: 8 }}>
+                  {proof.correct ? "PROOF ACCEPTED" : "PROOF FAILED"}
+                </div>
+                <div style={{ fontSize: 11, color: "#aaa", marginBottom: 16, lineHeight: 1.5 }}>
+                  {proof.correct
+                    ? <>+10 coins added. You rose while the world slept.</>
+                    : <>Correct answer was <span style={{ color: G }}>{proof.answer}</span>. No coins — but the discipline still counts.</>}
+                </div>
+                <button onClick={() => setProof(null)} style={{
+                  width: "100%", padding: 10, background: `linear-gradient(90deg, ${G}, ${G2})`,
+                  border: "none", color: "#000", cursor: "pointer",
+                  fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
+                }}>CONTINUE</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
