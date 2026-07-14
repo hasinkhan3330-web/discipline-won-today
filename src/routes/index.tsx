@@ -339,24 +339,48 @@ function App() {
           </div>}
 
           {tab === "profile" && <>
-            <div style={{ ...CARD, textAlign: "center", padding: 24, position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", top: -40, left: "50%", transform: "translateX(-50%)", width: 200, height: 200, borderRadius: "50%", background: `radial-gradient(circle, ${G}44, transparent 70%)` }} />
-              <div style={{ position: "relative", zIndex: 2 }}>
-                <div style={{ fontSize: 60, marginBottom: 8, filter: `drop-shadow(0 0 20px ${G})` }}>⚔️</div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", marginBottom: 4, letterSpacing: 4, textShadow: `0 0 15px ${G}` }}>WARRIOR</div>
-                <div style={{ fontSize: 11, color: G, letterSpacing: 3, marginBottom: 18 }}>◈ LEVEL {Math.floor(coins / 1000) + 1} ◈</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                  <div style={{ background: `linear-gradient(135deg, ${G}15, transparent)`, border: `1px solid ${G}44`, padding: 12 }}>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: G, textShadow: `0 0 10px ${G}` }}>{streak}</div>
-                    <div style={{ fontSize: 9, color: "#888", letterSpacing: 2, marginTop: 3 }}>DAY STREAK</div>
-                  </div>
-                  <div style={{ background: `linear-gradient(135deg, ${G}15, transparent)`, border: `1px solid ${G}44`, padding: 12 }}>
-                    <div style={{ fontSize: 22, fontWeight: 800, color: G, textShadow: `0 0 10px ${G}` }}>{coins}</div>
-                    <div style={{ fontSize: 9, color: "#888", letterSpacing: 2, marginTop: 3 }}>TOTAL COINS</div>
+            {/* TOP RANKED — auto-sorted by coins, top holder shown large */}
+            {(() => {
+              const roster = [
+                { n: "IRON_WARRIOR", c: 8940, s: 67, img: "https://i.pravatar.cc/200?img=12" },
+                { n: "DISCIPLINE_X", c: 7234, s: 45, img: "https://i.pravatar.cc/200?img=15" },
+                { n: "5AM_BEAST", c: 6102, s: 38, img: "https://i.pravatar.cc/200?img=33" },
+                { n: "MONK_MODE", c: 5200, s: 29, img: "https://i.pravatar.cc/200?img=52" },
+                { n: "YOU", c: coins, s: streak, img: "https://i.pravatar.cc/200?img=68" },
+                { n: "SHADOW_RUN", c: 3421, s: 19, img: "https://i.pravatar.cc/200?img=57" },
+              ].sort((a, b) => b.c - a.c);
+              const [top, second, third] = roster;
+              return (
+                <div style={{ ...CARD, textAlign: "center", padding: 22, position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 260, height: 260, borderRadius: "50%", background: `radial-gradient(circle, ${G}44, transparent 70%)` }} />
+                  <div style={{ position: "relative", zIndex: 2 }}>
+                    <div style={{ fontSize: 10, color: G, letterSpacing: 4, marginBottom: 10 }}>◈ #1 ON THE GRID ◈</div>
+                    <div style={{ position: "relative", width: 110, height: 110, margin: "0 auto 10px" }}>
+                      <div style={{ position: "absolute", inset: -6, borderRadius: "50%", border: `2px solid ${G}`, boxShadow: `0 0 24px ${G}, inset 0 0 16px ${G}66`, animation: "orbit 10s linear infinite" }}>
+                        <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G2, boxShadow: `0 0 12px ${G2}` }} />
+                      </div>
+                      <img src={top.img} alt={top.n} style={{ width: 110, height: 110, borderRadius: "50%", objectFit: "cover", border: `3px solid ${G}`, boxShadow: `0 0 30px ${G}` }} />
+                      <div style={{ position: "absolute", bottom: -4, right: -4, fontSize: 26, filter: `drop-shadow(0 0 8px ${G})` }}>🥇</div>
+                    </div>
+                    <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 12px ${G}` }}>{top.n}</div>
+                    <div style={{ fontSize: 11, color: G, letterSpacing: 2, marginBottom: 14 }}>{top.c} COINS · {top.s}d STREAK</div>
+
+                    <div style={{ display: "flex", justifyContent: "center", gap: 22, marginTop: 6 }}>
+                      {[{ u: second, medal: "🥈", rank: "#2" }, { u: third, medal: "🥉", rank: "#3" }].map(({ u, medal, rank }) => (
+                        <div key={u.n} style={{ textAlign: "center" }}>
+                          <div style={{ position: "relative", width: 62, height: 62, margin: "0 auto 6px" }}>
+                            <img src={u.img} alt={u.n} style={{ width: 62, height: 62, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}88`, boxShadow: `0 0 12px ${G}55` }} />
+                            <div style={{ position: "absolute", bottom: -3, right: -3, fontSize: 16 }}>{medal}</div>
+                          </div>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u.n}</div>
+                          <div style={{ fontSize: 9, color: G, letterSpacing: 1 }}>{rank} · {u.c}</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             <div style={CARD}>
               <div style={TITLE}><span style={{ color: G }}>▸</span> THEME <span style={{ color: G }}>SELECTOR</span></div>
@@ -385,28 +409,50 @@ function App() {
               </div>
             </div>
 
+            {/* VICTORIES — cinematic photo cards with hard-hitting one-liners */}
             <div style={CARD}>
-              <div style={TITLE}><span style={{ color: G }}>▸</span> ACHIEVEMENTS</div>
+              <div style={TITLE}><span style={{ color: G }}>▸</span> <span style={{ color: G }}>VICTORIES</span></div>
               {[
-                { icon: "🌅", label: "Early Riser", desc: "Wake up 4AM", done: true },
-                { icon: "🔥", label: "On Fire", desc: "7 day streak", done: streak >= 7 },
-                { icon: "💪", label: "Iron Will", desc: "30 day streak", done: streak >= 30 },
-                { icon: "👑", label: "Champion", desc: "1000+ coins", done: coins >= 1000 },
-                { icon: "💀", label: "Legend", desc: "365 day streak", done: streak >= 365 },
-              ].map((a, i) => (
+                {
+                  label: "4AM AWAKENING",
+                  cond: "Woke up at 4AM today",
+                  line: "No one woke you. You rose at 4AM while the world slept.",
+                  done: tasks.find(t => t.id === 1)?.done ?? false,
+                  img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80",
+                },
+                {
+                  label: "7 DAY IRON WEEK",
+                  cond: "7 days · zero misses",
+                  line: "95% of people quit here. You are not one of them.",
+                  done: streak >= 7,
+                  img: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&q=80",
+                },
+                {
+                  label: "30 DAY REWIRE",
+                  cond: "30 days · unbroken",
+                  line: "Thirty days. You did not build a habit — you rewrote your identity.",
+                  done: streak >= 30,
+                  img: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=800&q=80",
+                },
+              ].map((v, i) => (
                 <div key={i} style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "10px",
-                  background: a.done ? `linear-gradient(90deg, ${G}15, transparent)` : "rgba(0,0,0,0.3)",
-                  border: `1px solid ${a.done ? G + "44" : "#222"}`,
-                  borderLeft: `3px solid ${a.done ? G : "#333"}`,
-                  marginBottom: 6, opacity: a.done ? 1 : 0.5,
+                  position: "relative", height: 130, marginBottom: 10, overflow: "hidden",
+                  border: `1px solid ${v.done ? G + "88" : "#222"}`,
+                  borderLeft: `3px solid ${v.done ? G : "#333"}`,
+                  opacity: v.done ? 1 : 0.55,
+                  boxShadow: v.done ? `0 4px 20px ${G}22` : "none",
                 }}>
-                  <span style={{ fontSize: 22, filter: a.done ? `drop-shadow(0 0 6px ${G})` : "none" }}>{a.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{a.label}</div>
-                    <div style={{ fontSize: 10, color: "#666", marginTop: 2, letterSpacing: 1 }}>{a.desc}</div>
+                  <img src={v.img} alt={v.label} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: v.done ? `contrast(1.1) saturate(1.15)` : "grayscale(0.9) brightness(0.5)" }} />
+                  <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(5,5,15,0.35) 0%, rgba(5,5,15,0.92) 100%)` }} />
+                  <div style={{ position: "absolute", top: 8, left: 10, fontSize: 9, color: v.done ? G : "#666", letterSpacing: 2, padding: "3px 7px", background: "rgba(0,0,0,0.7)", border: `1px solid ${v.done ? G + "77" : "#333"}` }}>
+                    {v.done ? "◉ UNLOCKED" : "🔒 LOCKED"} · {v.cond}
                   </div>
-                  <div style={{ fontSize: 12, color: a.done ? G : "#555", fontWeight: 700 }}>{a.done ? "✓" : "🔒"}</div>
+                  <div style={{ position: "absolute", bottom: 8, left: 10, right: 10 }}>
+                    <div style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 10px ${G}`, marginBottom: 4 }}>{v.label}</div>
+                    <div style={{ fontSize: 11, color: "#e0e0e8", lineHeight: 1.4, fontStyle: "italic" }}>
+                      <span style={{ color: G, marginRight: 3 }}>"</span>{v.line}<span style={{ color: G, marginLeft: 3 }}>"</span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
