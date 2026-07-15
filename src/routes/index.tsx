@@ -499,48 +499,39 @@ function App() {
             <div style={CARD}>
               <div style={TITLE}><span style={{ color: G }}>▸</span> <span style={{ color: G }}>VICTORIES</span></div>
               {[
-                {
-                  label: "4AM AWAKENING",
-                  cond: "Woke up at 4AM today",
-                  line: "No one woke you. You rose at 4AM while the world slept.",
-                  done: tasks.find(t => t.id === 1)?.done ?? false,
-                  img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80",
-                },
-                {
-                  label: "7 DAY IRON WEEK",
-                  cond: "7 days · zero misses",
-                  line: "95% of people quit here. You are not one of them.",
-                  done: streak >= 7,
-                  img: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&q=80",
-                },
-                {
-                  label: "30 DAY REWIRE",
-                  cond: "30 days · unbroken",
-                  line: "Thirty days. You did not build a habit — you rewrote your identity.",
-                  done: streak >= 30,
-                  img: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=800&q=80",
-                },
-              ].map((v, i) => (
-                <div key={i} style={{
-                  position: "relative", height: 130, marginBottom: 10, overflow: "hidden",
-                  border: `1px solid ${v.done ? G + "88" : "#222"}`,
-                  borderLeft: `3px solid ${v.done ? G : "#333"}`,
-                  opacity: v.done ? 1 : 0.55,
-                  boxShadow: v.done ? `0 4px 20px ${G}22` : "none",
-                }}>
-                  <img src={v.img} alt={v.label} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: v.done ? `contrast(1.1) saturate(1.15)` : "grayscale(0.9) brightness(0.5)" }} />
-                  <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(5,5,15,0.35) 0%, rgba(5,5,15,0.92) 100%)` }} />
-                  <div style={{ position: "absolute", top: 8, left: 10, fontSize: 9, color: v.done ? G : "#666", letterSpacing: 2, padding: "3px 7px", background: "rgba(0,0,0,0.7)", border: `1px solid ${v.done ? G + "77" : "#333"}` }}>
-                    {v.done ? "◉ UNLOCKED" : "🔒 LOCKED"} · {v.cond}
-                  </div>
-                  <div style={{ position: "absolute", bottom: 8, left: 10, right: 10 }}>
-                    <div style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 10px ${G}`, marginBottom: 4 }}>{v.label}</div>
-                    <div style={{ fontSize: 11, color: "#e0e0e8", lineHeight: 1.4, fontStyle: "italic" }}>
-                      <span style={{ color: G, marginRight: 3 }}>"</span>{v.line}<span style={{ color: G, marginLeft: 3 }}>"</span>
+                { d: 1,   label: "DAY 1 · THE FIRST STEP",     line: "The first step is the heaviest. Most surrender here — but you did not.", img: "https://images.unsplash.com/photo-1483721310020-03333e577078?w=800&q=80" },
+                { d: 7,   label: "DAY 7 · IRON WEEK",           line: "One full week. 95% quit before this line. You crossed it in silence.", img: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&q=80" },
+                { d: 21,  label: "DAY 21 · NEURAL FORGE",       line: "Twenty-one days. Your brain has begun rewiring. The old you is dying.", img: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=800&q=80" },
+                { d: 60,  label: "DAY 60 · STEEL SPINE",        line: "Sixty days of war with yourself — and you kept winning every single dawn.", img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80" },
+                { d: 90,  label: "DAY 90 · IDENTITY SHIFT",     line: "Ninety days. You are no longer trying to change — you have already changed.", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80" },
+                { d: 120, label: "DAY 120 · FORGED IN FIRE",    line: "Four months of fire. What was once impossible is now your ordinary day.", img: "https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?w=800&q=80" },
+                { d: 170, label: "DAY 170 · UNBREAKABLE",       line: "One hundred seventy sunrises. You cannot be stopped by weakness anymore.", img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80" },
+                { d: 290, label: "DAY 290 · MASTER OF SELF",    line: "Two hundred ninety days. You command yourself where others still beg themselves.", img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80" },
+                { d: 360, label: "DAY 360 · LEGEND STATUS",     line: "One year. You did not build a habit — you became a different human being.", img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80" },
+              ].map((v, i) => {
+                const done = streak >= v.d;
+                return (
+                  <div key={i} style={{
+                    position: "relative", height: 130, marginBottom: 10, overflow: "hidden",
+                    border: `1px solid ${done ? G + "88" : "#222"}`,
+                    borderLeft: `3px solid ${done ? G : "#333"}`,
+                    opacity: done ? 1 : 0.6,
+                    boxShadow: done ? `0 4px 20px ${G}22` : "none",
+                  }}>
+                    <img src={v.img} alt={v.label} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: done ? `contrast(1.1) saturate(1.15)` : "grayscale(0.9) brightness(0.5)" }} />
+                    <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(5,5,15,0.35) 0%, rgba(5,5,15,0.94) 100%)` }} />
+                    <div style={{ position: "absolute", top: 8, left: 10, fontSize: 9, color: done ? G : "#666", letterSpacing: 2, padding: "3px 7px", background: "rgba(0,0,0,0.7)", border: `1px solid ${done ? G + "77" : "#333"}` }}>
+                      {done ? "◉ UNLOCKED" : "🔒 LOCKED"} · {done ? "conquered" : `${Math.max(0, v.d - streak)} days left`}
+                    </div>
+                    <div style={{ position: "absolute", bottom: 8, left: 10, right: 10 }}>
+                      <div style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 10px ${G}`, marginBottom: 4 }}>{v.label}</div>
+                      <div style={{ fontSize: 11, color: "#e0e0e8", lineHeight: 1.4, fontStyle: "italic" }}>
+                        <span style={{ color: G, marginRight: 3 }}>"</span>{v.line}<span style={{ color: G, marginLeft: 3 }}>"</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </>}
         </div>
