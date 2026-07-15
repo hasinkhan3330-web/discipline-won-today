@@ -348,29 +348,65 @@ function App() {
             ))}
           </div>}
 
-          {tab === "quotes" && <>
-            {QUOTES.map((q, i) => (
-              <div key={i} style={{
-                position: "relative", marginBottom: 12, borderRadius: 2, overflow: "hidden",
-                border: `1px solid ${G}44`, borderLeft: `3px solid ${G}`,
-                boxShadow: `0 4px 20px rgba(0,0,0,0.5)`,
-                background: "rgba(10,10,25,0.6)", backdropFilter: "blur(10px)",
+          {tab === "quotes" && (() => {
+            // Daily rotation — quote & person change every single day
+            const now = new Date();
+            const dayIdx = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
+            const todayI = ((dayIdx % QUOTES.length) + QUOTES.length) % QUOTES.length;
+            const today = QUOTES[todayI];
+            const dateLabel = now.toLocaleDateString(undefined, { weekday: "long", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+            const countdown = () => {
+              const t = new Date(); t.setHours(24, 0, 0, 0);
+              const ms = t.getTime() - Date.now();
+              const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000);
+              return `${String(h).padStart(2,"0")}H ${String(m).padStart(2,"0")}M`;
+            };
+            const upcoming = Array.from({ length: 6 }, (_, k) => QUOTES[(todayI + k + 1) % QUOTES.length]);
+            return <>
+              {/* TODAY'S LEGEND — rotates every 24h */}
+              <div style={{ marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 9, letterSpacing: 2, color: G }}>
+                <span>◉ TODAY · {dateLabel}</span>
+                <span style={{ color: "#888" }}>NEXT DROP IN {countdown()}</span>
+              </div>
+              <div style={{
+                position: "relative", marginBottom: 18, borderRadius: 2, overflow: "hidden",
+                border: `1px solid ${G}`, borderLeft: `4px solid ${G}`,
+                boxShadow: `0 0 40px ${G}55, 0 8px 30px rgba(0,0,0,0.7)`,
+                background: "rgba(10,10,25,0.7)", backdropFilter: "blur(10px)",
               }}>
-                <div style={{ position: "relative", height: 380, overflow: "hidden", background: "#05050a" }}>
-                  <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", filter: "contrast(1.05) saturate(1.1)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                  <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 60%, rgba(10,10,25,0.95) 100%)`, pointerEvents: "none" }} />
-
-                  <div style={{ position: "absolute", top: 10, left: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "4px 8px", background: "rgba(0,0,0,0.6)", border: `1px solid ${G}66` }}>◉ LEGEND #{String(i + 1).padStart(2, "0")}</div>
-                  <div style={{ position: "absolute", bottom: 10, left: 12, fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: 2, textShadow: `0 0 10px ${G}` }}>{q.p}</div>
+                <div style={{ position: "relative", height: 460, overflow: "hidden", background: "#05050a" }}>
+                  <img src={today.img} alt={today.p} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", filter: "contrast(1.08) saturate(1.15)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 55%, rgba(10,10,25,0.97) 100%)`, pointerEvents: "none" }} />
+                  <div style={{ position: "absolute", top: 10, left: 10, fontSize: 9, color: "#000", letterSpacing: 2, padding: "5px 10px", background: G, fontWeight: 800 }}>◉ LEGEND OF THE DAY</div>
+                  <div style={{ position: "absolute", top: 10, right: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "5px 10px", background: "rgba(0,0,0,0.7)", border: `1px solid ${G}66` }}>#{String(todayI + 1).padStart(3, "0")}</div>
+                  <div style={{ position: "absolute", bottom: 12, left: 14, fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 14px ${G}` }}>{today.p}</div>
                 </div>
-                <div style={{ padding: 14, fontSize: 13, color: "#ddd", lineHeight: 1.7, fontStyle: "italic", borderTop: `1px solid ${G}22` }}>
-                  <span style={{ color: G, fontSize: 20, marginRight: 4 }}>"</span>
-                  {q.q}
-                  <span style={{ color: G, fontSize: 20, marginLeft: 4 }}>"</span>
+                <div style={{ padding: 18, fontSize: 15, color: "#f0f0f0", lineHeight: 1.7, fontStyle: "italic", borderTop: `1px solid ${G}44` }}>
+                  <span style={{ color: G, fontSize: 26, marginRight: 4 }}>"</span>
+                  {today.q}
+                  <span style={{ color: G, fontSize: 26, marginLeft: 4 }}>"</span>
                 </div>
               </div>
-            ))}
-          </>}
+
+              <div style={{ fontSize: 10, letterSpacing: 3, color: "#888", marginBottom: 10, fontWeight: 600 }}>▸ COMING NEXT · ONE PER DAY</div>
+              {upcoming.map((q, k) => (
+                <div key={k} style={{
+                  position: "relative", marginBottom: 10, borderRadius: 2, overflow: "hidden",
+                  border: `1px solid ${G}22`, background: "rgba(10,10,25,0.5)", backdropFilter: "blur(8px)",
+                  display: "flex", alignItems: "stretch", opacity: 0.75,
+                }}>
+                  <div style={{ width: 70, minHeight: 70, background: "#05050a", overflow: "hidden", position: "relative", flexShrink: 0 }}>
+                    <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(0.6) contrast(1.05)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  </div>
+                  <div style={{ flex: 1, padding: "8px 12px" }}>
+                    <div style={{ fontSize: 8, color: G, letterSpacing: 2, marginBottom: 3 }}>DAY +{k + 1}</div>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#fff", letterSpacing: 1, marginBottom: 3 }}>{q.p}</div>
+                    <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, fontStyle: "italic", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>🔒 Unlocks in {k + 1} day{k ? "s" : ""}</div>
+                  </div>
+                </div>
+              ))}
+            </>;
+          })()}
 
           {tab === "stats" && <div style={CARD}>
             <div style={TITLE}><span style={{ color: G }}>▸</span> WEEKLY <span style={{ color: G }}>PROGRESS</span></div>
