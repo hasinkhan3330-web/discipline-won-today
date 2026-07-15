@@ -361,7 +361,8 @@ function App() {
               const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000);
               return `${String(h).padStart(2,"0")}H ${String(m).padStart(2,"0")}M`;
             };
-            const upcoming = Array.from({ length: 6 }, (_, k) => QUOTES[(todayI + k + 1) % QUOTES.length]);
+            const upcoming = Array.from({ length: QUOTES.length - 1 }, (_, k) => QUOTES[(todayI + k + 1) % QUOTES.length]);
+            const fallback = (name: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0a0a19&color=00ff88&size=400&bold=true&font-size=0.42`;
             return <>
               {/* TODAY'S LEGEND — rotates every 24h */}
               <div style={{ marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 9, letterSpacing: 2, color: G }}>
@@ -375,7 +376,7 @@ function App() {
                 background: "rgba(10,10,25,0.7)", backdropFilter: "blur(10px)",
               }}>
                 <div style={{ position: "relative", height: 460, overflow: "hidden", background: "#05050a" }}>
-                  <img src={today.img} alt={today.p} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", filter: "contrast(1.08) saturate(1.15)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  <img src={today.img} alt={today.p} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", filter: "contrast(1.08) saturate(1.15)" }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; if (!el.dataset.fb) { el.dataset.fb = "1"; el.style.objectFit = "cover"; el.src = fallback(today.p); } }} />
                   <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 55%, rgba(10,10,25,0.97) 100%)`, pointerEvents: "none" }} />
                   <div style={{ position: "absolute", top: 10, left: 10, fontSize: 9, color: "#000", letterSpacing: 2, padding: "5px 10px", background: G, fontWeight: 800 }}>◉ LEGEND OF THE DAY</div>
                   <div style={{ position: "absolute", top: 10, right: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "5px 10px", background: "rgba(0,0,0,0.7)", border: `1px solid ${G}66` }}>#{String(todayI + 1).padStart(3, "0")}</div>
@@ -388,20 +389,20 @@ function App() {
                 </div>
               </div>
 
-              <div style={{ fontSize: 10, letterSpacing: 3, color: "#888", marginBottom: 10, fontWeight: 600 }}>▸ COMING NEXT · ONE PER DAY</div>
+              <div style={{ fontSize: 10, letterSpacing: 3, color: "#888", marginBottom: 10, fontWeight: 600 }}>▸ ALL LEGENDS · ONE PER DAY</div>
               {upcoming.map((q, k) => (
                 <div key={k} style={{
                   position: "relative", marginBottom: 10, borderRadius: 2, overflow: "hidden",
                   border: `1px solid ${G}22`, background: "rgba(10,10,25,0.5)", backdropFilter: "blur(8px)",
-                  display: "flex", alignItems: "stretch", opacity: 0.75,
+                  display: "flex", alignItems: "stretch", opacity: 0.85,
                 }}>
                   <div style={{ width: 70, minHeight: 70, background: "#05050a", overflow: "hidden", position: "relative", flexShrink: 0 }}>
-                    <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(0.6) contrast(1.05)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(0.4) contrast(1.05)" }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; if (!el.dataset.fb) { el.dataset.fb = "1"; el.src = fallback(q.p); } }} />
                   </div>
                   <div style={{ flex: 1, padding: "8px 12px" }}>
                     <div style={{ fontSize: 8, color: G, letterSpacing: 2, marginBottom: 3 }}>DAY +{k + 1}</div>
                     <div style={{ fontSize: 11, fontWeight: 800, color: "#fff", letterSpacing: 1, marginBottom: 3 }}>{q.p}</div>
-                    <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, fontStyle: "italic", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>🔒 Unlocks in {k + 1} day{k ? "s" : ""}</div>
+                    <div style={{ fontSize: 10, color: "#aaa", lineHeight: 1.4, fontStyle: "italic", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>"{q.q}"</div>
                   </div>
                 </div>
               ))}
