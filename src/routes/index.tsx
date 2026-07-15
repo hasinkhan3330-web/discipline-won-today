@@ -389,20 +389,25 @@ function App() {
                 </div>
               </div>
 
-              <div style={{ fontSize: 10, letterSpacing: 3, color: "#888", marginBottom: 10, fontWeight: 600 }}>▸ ALL LEGENDS · ONE PER DAY</div>
+              <div style={{ fontSize: 10, letterSpacing: 3, color: "#888", marginBottom: 12, fontWeight: 600 }}>▸ ALL LEGENDS · ONE PER DAY</div>
               {upcoming.map((q, k) => (
                 <div key={k} style={{
-                  position: "relative", marginBottom: 10, borderRadius: 2, overflow: "hidden",
-                  border: `1px solid ${G}22`, background: "rgba(10,10,25,0.5)", backdropFilter: "blur(8px)",
-                  display: "flex", alignItems: "stretch", opacity: 0.85,
+                  position: "relative", marginBottom: 18, borderRadius: 2, overflow: "hidden",
+                  border: `1px solid ${G}66`, borderLeft: `4px solid ${G}`,
+                  boxShadow: `0 0 25px ${G}33, 0 6px 20px rgba(0,0,0,0.6)`,
+                  background: "rgba(10,10,25,0.7)", backdropFilter: "blur(10px)",
                 }}>
-                  <div style={{ width: 70, minHeight: 70, background: "#05050a", overflow: "hidden", position: "relative", flexShrink: 0 }}>
-                    <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(0.4) contrast(1.05)" }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; if (!el.dataset.fb) { el.dataset.fb = "1"; el.src = fallback(q.p); } }} />
+                  <div style={{ position: "relative", height: 420, overflow: "hidden", background: "#05050a" }}>
+                    <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", filter: "contrast(1.08) saturate(1.15)" }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; if (!el.dataset.fb) { el.dataset.fb = "1"; el.style.objectFit = "cover"; el.src = fallback(q.p); } }} />
+                    <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 55%, rgba(10,10,25,0.97) 100%)`, pointerEvents: "none" }} />
+                    <div style={{ position: "absolute", top: 10, left: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "5px 10px", background: "rgba(0,0,0,0.75)", border: `1px solid ${G}66`, fontWeight: 800 }}>DAY +{k + 1}</div>
+                    <div style={{ position: "absolute", top: 10, right: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "5px 10px", background: "rgba(0,0,0,0.7)", border: `1px solid ${G}66` }}>#{String(((todayI + k + 1) % QUOTES.length) + 1).padStart(3, "0")}</div>
+                    <div style={{ position: "absolute", bottom: 12, left: 14, fontSize: 17, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 14px ${G}` }}>{q.p}</div>
                   </div>
-                  <div style={{ flex: 1, padding: "8px 12px" }}>
-                    <div style={{ fontSize: 8, color: G, letterSpacing: 2, marginBottom: 3 }}>DAY +{k + 1}</div>
-                    <div style={{ fontSize: 11, fontWeight: 800, color: "#fff", letterSpacing: 1, marginBottom: 3 }}>{q.p}</div>
-                    <div style={{ fontSize: 10, color: "#aaa", lineHeight: 1.4, fontStyle: "italic", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>"{q.q}"</div>
+                  <div style={{ padding: 16, fontSize: 14, color: "#f0f0f0", lineHeight: 1.7, fontStyle: "italic", borderTop: `1px solid ${G}44` }}>
+                    <span style={{ color: G, fontSize: 24, marginRight: 4 }}>"</span>
+                    {q.q}
+                    <span style={{ color: G, fontSize: 24, marginLeft: 4 }}>"</span>
                   </div>
                 </div>
               ))}
