@@ -361,7 +361,8 @@ function App() {
               const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000);
               return `${String(h).padStart(2,"0")}H ${String(m).padStart(2,"0")}M`;
             };
-            const upcoming = Array.from({ length: 6 }, (_, k) => QUOTES[(todayI + k + 1) % QUOTES.length]);
+            const upcoming = Array.from({ length: QUOTES.length - 1 }, (_, k) => QUOTES[(todayI + k + 1) % QUOTES.length]);
+            const fallback = (name: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0a0a19&color=00ff88&size=400&bold=true&font-size=0.42`;
             return <>
               {/* TODAY'S LEGEND — rotates every 24h */}
               <div style={{ marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 9, letterSpacing: 2, color: G }}>
