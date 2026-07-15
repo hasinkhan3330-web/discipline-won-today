@@ -389,20 +389,20 @@ function App() {
                 </div>
               </div>
 
-              <div style={{ fontSize: 10, letterSpacing: 3, color: "#888", marginBottom: 10, fontWeight: 600 }}>▸ COMING NEXT · ONE PER DAY</div>
+              <div style={{ fontSize: 10, letterSpacing: 3, color: "#888", marginBottom: 10, fontWeight: 600 }}>▸ ALL LEGENDS · ONE PER DAY</div>
               {upcoming.map((q, k) => (
                 <div key={k} style={{
                   position: "relative", marginBottom: 10, borderRadius: 2, overflow: "hidden",
                   border: `1px solid ${G}22`, background: "rgba(10,10,25,0.5)", backdropFilter: "blur(8px)",
-                  display: "flex", alignItems: "stretch", opacity: 0.75,
+                  display: "flex", alignItems: "stretch", opacity: 0.85,
                 }}>
                   <div style={{ width: 70, minHeight: 70, background: "#05050a", overflow: "hidden", position: "relative", flexShrink: 0 }}>
-                    <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(0.6) contrast(1.05)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(0.4) contrast(1.05)" }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; if (!el.dataset.fb) { el.dataset.fb = "1"; el.src = fallback(q.p); } }} />
                   </div>
                   <div style={{ flex: 1, padding: "8px 12px" }}>
                     <div style={{ fontSize: 8, color: G, letterSpacing: 2, marginBottom: 3 }}>DAY +{k + 1}</div>
                     <div style={{ fontSize: 11, fontWeight: 800, color: "#fff", letterSpacing: 1, marginBottom: 3 }}>{q.p}</div>
-                    <div style={{ fontSize: 10, color: "#888", lineHeight: 1.4, fontStyle: "italic", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>🔒 Unlocks in {k + 1} day{k ? "s" : ""}</div>
+                    <div style={{ fontSize: 10, color: "#aaa", lineHeight: 1.4, fontStyle: "italic", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>"{q.q}"</div>
                   </div>
                 </div>
               ))}
