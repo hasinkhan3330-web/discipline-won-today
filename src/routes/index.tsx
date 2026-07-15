@@ -376,7 +376,7 @@ function App() {
                 background: "rgba(10,10,25,0.7)", backdropFilter: "blur(10px)",
               }}>
                 <div style={{ position: "relative", height: 460, overflow: "hidden", background: "#05050a" }}>
-                  <img src={today.img} alt={today.p} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", filter: "contrast(1.08) saturate(1.15)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  <img src={today.img} alt={today.p} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", filter: "contrast(1.08) saturate(1.15)" }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; if (!el.dataset.fb) { el.dataset.fb = "1"; el.style.objectFit = "cover"; el.src = fallback(today.p); } }} />
                   <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 55%, rgba(10,10,25,0.97) 100%)`, pointerEvents: "none" }} />
                   <div style={{ position: "absolute", top: 10, left: 10, fontSize: 9, color: "#000", letterSpacing: 2, padding: "5px 10px", background: G, fontWeight: 800 }}>◉ LEGEND OF THE DAY</div>
                   <div style={{ position: "absolute", top: 10, right: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "5px 10px", background: "rgba(0,0,0,0.7)", border: `1px solid ${G}66` }}>#{String(todayI + 1).padStart(3, "0")}</div>
