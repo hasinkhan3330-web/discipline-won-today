@@ -505,15 +505,15 @@ function App() {
             <div style={CARD}>
               <div style={TITLE}><span style={{ color: G }}>▸</span> <span style={{ color: G }}>VICTORIES</span></div>
               {[
-                { d: 1,   label: "DAY 1 · THE FIRST STEP",     line: "The first step is the heaviest. Most surrender here — but you did not.", img: "https://images.unsplash.com/photo-1483721310020-03333e577078?w=800&q=80" },
-                { d: 7,   label: "DAY 7 · IRON WEEK",           line: "One full week. 95% quit before this line. You crossed it in silence.", img: "https://images.unsplash.com/photo-1502134249126-9f3755a50d78?w=800&q=80" },
-                { d: 21,  label: "DAY 21 · NEURAL FORGE",       line: "Twenty-one days. Your brain has begun rewiring. The old you is dying.", img: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=800&q=80" },
-                { d: 60,  label: "DAY 60 · STEEL SPINE",        line: "Sixty days of war with yourself — and you kept winning every single dawn.", img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&q=80" },
-                { d: 90,  label: "DAY 90 · IDENTITY SHIFT",     line: "Ninety days. You are no longer trying to change — you have already changed.", img: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80" },
-                { d: 120, label: "DAY 120 · FORGED IN FIRE",    line: "Four months of fire. What was once impossible is now your ordinary day.", img: "https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?w=800&q=80" },
-                { d: 170, label: "DAY 170 · UNBREAKABLE",       line: "One hundred seventy sunrises. You cannot be stopped by weakness anymore.", img: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80" },
-                { d: 290, label: "DAY 290 · MASTER OF SELF",    line: "Two hundred ninety days. You command yourself where others still beg themselves.", img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80" },
-                { d: 360, label: "DAY 360 · LEGEND STATUS",     line: "One year. You did not build a habit — you became a different human being.", img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80" },
+                { d: 1,   label: "DAY 1 · THE FIRST STEP",     line: "The first step is the heaviest. Most surrender here — but you did not.", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1200&q=90" },
+                { d: 7,   label: "DAY 7 · IRON WEEK",           line: "One full week. 95% quit before this line. You crossed it in silence.", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&q=90" },
+                { d: 21,  label: "DAY 21 · NEURAL FORGE",       line: "Twenty-one days. Your brain has begun rewiring. The old you is dying.", img: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=1200&q=90" },
+                { d: 60,  label: "DAY 60 · STEEL SPINE",        line: "Sixty days of war with yourself — and you kept winning every single dawn.", img: "https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=1200&q=90" },
+                { d: 90,  label: "DAY 90 · IDENTITY SHIFT",     line: "Ninety days. You are no longer trying to change — you have already changed.", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=90" },
+                { d: 120, label: "DAY 120 · FORGED IN FIRE",    line: "Four months of fire. What was once impossible is now your ordinary day.", img: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=1200&q=90" },
+                { d: 170, label: "DAY 170 · UNBREAKABLE",       line: "One hundred seventy sunrises. You cannot be stopped by weakness anymore.", img: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=1200&q=90" },
+                { d: 290, label: "DAY 290 · MASTER OF SELF",    line: "Two hundred ninety days. You command yourself where others still beg themselves.", img: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=1200&q=90" },
+                { d: 360, label: "DAY 360 · LEGEND STATUS",     line: "One year. You did not build a habit — you became a different human being.", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=1200&q=90" },
               ].map((v, i) => {
                 const done = streak >= v.d;
                 const progress = Math.min(100, Math.round((streak / v.d) * 100));
