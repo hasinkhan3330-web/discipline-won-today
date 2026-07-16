@@ -516,23 +516,76 @@ function App() {
                 { d: 360, label: "DAY 360 · LEGEND STATUS",     line: "One year. You did not build a habit — you became a different human being.", img: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80" },
               ].map((v, i) => {
                 const done = streak >= v.d;
+                const progress = Math.min(100, Math.round((streak / v.d) * 100));
                 return (
                   <div key={i} style={{
-                    position: "relative", height: 130, marginBottom: 10, overflow: "hidden",
-                    border: `1px solid ${done ? G + "88" : "#222"}`,
-                    borderLeft: `3px solid ${done ? G : "#333"}`,
-                    opacity: done ? 1 : 0.6,
-                    boxShadow: done ? `0 4px 20px ${G}22` : "none",
+                    position: "relative", marginBottom: 18, overflow: "hidden", borderRadius: 4,
+                    border: `1px solid ${done ? G + "aa" : "#1a1a2a"}`,
+                    borderLeft: `4px solid ${done ? G : "#2a2a3a"}`,
+                    background: "#0a0a15",
+                    boxShadow: done ? `0 8px 32px ${G}33, 0 0 0 1px ${G}22 inset` : "0 4px 16px rgba(0,0,0,0.5)",
+                    backdropFilter: "blur(10px)",
                   }}>
-                    <img src={v.img} alt={v.label} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: done ? `contrast(1.1) saturate(1.15)` : "grayscale(0.9) brightness(0.5)" }} />
-                    <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(5,5,15,0.35) 0%, rgba(5,5,15,0.94) 100%)` }} />
-                    <div style={{ position: "absolute", top: 8, left: 10, fontSize: 9, color: done ? G : "#666", letterSpacing: 2, padding: "3px 7px", background: "rgba(0,0,0,0.7)", border: `1px solid ${done ? G + "77" : "#333"}` }}>
-                      {done ? "◉ UNLOCKED" : "🔒 LOCKED"} · {done ? "conquered" : `${Math.max(0, v.d - streak)} days left`}
-                    </div>
-                    <div style={{ position: "absolute", bottom: 8, left: 10, right: 10 }}>
-                      <div style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 10px ${G}`, marginBottom: 4 }}>{v.label}</div>
-                      <div style={{ fontSize: 11, color: "#e0e0e8", lineHeight: 1.4, fontStyle: "italic" }}>
-                        <span style={{ color: G, marginRight: 3 }}>"</span>{v.line}<span style={{ color: G, marginLeft: 3 }}>"</span>
+                    <div style={{ position: "relative", height: 420, overflow: "hidden" }}>
+                      <img src={v.img} alt={v.label} style={{
+                        width: "100%", height: "100%", objectFit: "cover", objectPosition: "center",
+                        filter: done ? "contrast(1.12) saturate(1.2)" : "grayscale(0.85) brightness(0.45) contrast(1.1)",
+                        transition: "all 0.4s ease",
+                      }} />
+                      <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(5,5,15,0.15) 0%, rgba(5,5,15,0.55) 55%, rgba(5,5,15,0.98) 100%)` }} />
+
+                      {/* Top badge */}
+                      <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <div style={{
+                          fontSize: 10, fontWeight: 900, letterSpacing: 3, padding: "6px 10px",
+                          background: done ? `${G}dd` : "rgba(0,0,0,0.75)",
+                          color: done ? "#000" : G,
+                          border: `1px solid ${done ? G : G + "44"}`,
+                          borderRadius: 2,
+                          boxShadow: done ? `0 0 20px ${G}88` : "none",
+                        }}>
+                          {done ? "◉ CONQUERED" : "◌ LOCKED"}
+                        </div>
+                        <div style={{
+                          fontSize: 28, fontWeight: 900, color: done ? G : "#4a4a5a",
+                          textShadow: done ? `0 0 20px ${G}` : "none",
+                          letterSpacing: -1, lineHeight: 1,
+                        }}>
+                          {v.d}<span style={{ fontSize: 11, letterSpacing: 2, marginLeft: 3 }}>D</span>
+                        </div>
+                      </div>
+
+                      {/* Bottom text block */}
+                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 18px 22px" }}>
+                        <div style={{
+                          fontSize: 11, fontWeight: 900, letterSpacing: 4,
+                          color: done ? G : "#888", marginBottom: 10,
+                          textShadow: done ? `0 0 12px ${G}88` : "none",
+                        }}>
+                          {v.label}
+                        </div>
+                        <div style={{
+                          fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.25,
+                          letterSpacing: -0.3, marginBottom: 14,
+                          textShadow: "0 2px 20px rgba(0,0,0,0.9)",
+                        }}>
+                          "{v.line}"
+                        </div>
+
+                        {/* Progress bar */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.1)", borderRadius: 2, overflow: "hidden" }}>
+                            <div style={{
+                              width: `${progress}%`, height: "100%",
+                              background: done ? G : `linear-gradient(90deg, ${G}66, ${G})`,
+                              boxShadow: `0 0 8px ${G}`,
+                              transition: "width 0.6s ease",
+                            }} />
+                          </div>
+                          <div style={{ fontSize: 10, fontWeight: 900, color: done ? G : "#aaa", letterSpacing: 1, minWidth: 60, textAlign: "right" }}>
+                            {done ? "100%" : `${Math.max(0, v.d - streak)}D LEFT`}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
