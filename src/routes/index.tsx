@@ -396,8 +396,8 @@ function App() {
             // Daily rotation — quote & person change every single day
             const now = new Date();
             const dayIdx = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
-            const todayI = ((dayIdx % QUOTES.length) + QUOTES.length) % QUOTES.length;
-            const today = QUOTES[todayI];
+            const today = dayCombo(dayIdx);
+            const todayI = rot(dayIdx, 999);
             const dateLabel = now.toLocaleDateString(undefined, { weekday: "long", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
             const countdown = () => {
               const t = new Date(); t.setHours(24, 0, 0, 0);
@@ -405,7 +405,8 @@ function App() {
               const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000);
               return `${String(h).padStart(2,"0")}H ${String(m).padStart(2,"0")}M`;
             };
-            const upcoming = Array.from({ length: QUOTES.length - 1 }, (_, k) => QUOTES[(todayI + k + 1) % QUOTES.length]);
+            const upcoming = Array.from({ length: 30 }, (_, k) => ({ ...dayCombo(dayIdx + k + 1), _k: k }));
+
             const fallback = (name: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0a0a19&color=00ff88&size=400&bold=true&font-size=0.42`;
             return <>
               {/* TODAY'S LEGEND — rotates every 24h */}
