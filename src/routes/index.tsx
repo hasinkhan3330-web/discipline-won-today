@@ -327,6 +327,7 @@ function App() {
     { id: "home", icon: "⚔️", label: "Home" },
     { id: "rank", icon: "🏆", label: "Rank" },
     { id: "quotes", icon: "💬", label: "Quotes" },
+    { id: "zen", icon: "🧘", label: "Zen" },
     { id: "stats", icon: "📊", label: "Stats" },
     { id: "profile", icon: "👤", label: "You" },
   ];
