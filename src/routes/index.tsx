@@ -287,6 +287,10 @@ function App() {
     @keyframes orbit { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
     @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     @keyframes scanline { 0%{transform:translateY(-100%)} 100%{transform:translateY(100vh)} }
+    @keyframes breatheIn { from{transform:scale(0.55);box-shadow:0 0 40px ${G}55} to{transform:scale(1);box-shadow:0 0 120px ${G},0 0 240px ${G2}88} }
+    @keyframes breatheOut { from{transform:scale(1);box-shadow:0 0 120px ${G},0 0 240px ${G2}88} to{transform:scale(0.55);box-shadow:0 0 40px ${G}55} }
+    @keyframes breatheHold { 0%,100%{transform:scale(1);box-shadow:0 0 120px ${G},0 0 240px ${G2}88} 50%{transform:scale(1.02);box-shadow:0 0 160px ${G},0 0 300px ${G2}} }
+    @keyframes ringSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
   `;
 
   if (screen === "splash") {
