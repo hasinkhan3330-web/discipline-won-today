@@ -542,9 +542,7 @@ function App() {
                   width: 160, height: 160, borderRadius: "50%",
                   background: `radial-gradient(circle at 35% 35%, ${G}, ${G2} 60%, #0a0a25 100%)`,
                   animation: medRun
-                    ? (medPhase === "inhale" ? "breatheIn 4s ease-in-out forwards"
-                     : medPhase === "hold" ? "breatheHold 2s ease-in-out infinite"
-                     : "breatheOut 4s ease-in-out forwards")
+                    ? (medPhase === "inhale" ? "breatheIn 4s ease-in-out forwards" : "breatheOut 4s ease-in-out forwards")
                     : "none",
                   transform: medRun ? undefined : "scale(0.75)",
                   boxShadow: `0 0 80px ${G}, 0 0 160px ${G2}66`,
