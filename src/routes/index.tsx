@@ -185,7 +185,6 @@ function App() {
   const [medRun, setMedRun] = useState(false);
   const [medSessions, setMedSessions] = useState(0);
   const [medTotal, setMedTotal] = useState(0);
-  const [medPhase, setMedPhase] = useState<"inhale" | "hold" | "exhale">("inhale");
 
   useEffect(() => {
     if (!medRun) return;
@@ -204,18 +203,10 @@ function App() {
     return () => clearInterval(id);
   }, [medRun, medMin]);
 
-  useEffect(() => {
-    if (!medRun) return;
-    const cycle = () => {
-      setMedPhase("inhale");
-      const t1 = setTimeout(() => setMedPhase("hold"), 4000);
-      const t2 = setTimeout(() => setMedPhase("exhale"), 6000);
-      return () => { clearTimeout(t1); clearTimeout(t2); };
-    };
-    const cleanup = cycle();
-    const loop = setInterval(cycle, 10000);
-    return () => { cleanup(); clearInterval(loop); };
-  }, [medRun]);
+  // Derive breathing phase from elapsed seconds — no extra timers needed.
+  const elapsed = medMin * 60 - medLeft;
+  const phaseSec = elapsed % 8;
+  const medPhase: "inhale" | "exhale" = phaseSec < 4 ? "inhale" : "exhale";
 
   const pickMed = (m: number) => { setMedMin(m); setMedLeft(m * 60); setMedRun(false); };
   const fmtT = (s: number) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
