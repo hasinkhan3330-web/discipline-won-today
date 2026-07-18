@@ -532,7 +532,7 @@ function App() {
 
             {/* Breathing orb */}
             <div style={{ ...CARD, padding: "30px 14px 26px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 40%, ${G}22, transparent 60%)` }} />
+              <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 40%, ${G}22, transparent 60%)`, pointerEvents: "none" }} />
               <div style={{ position: "relative", zIndex: 2, height: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {/* rotating rings */}
                 <div style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", border: `1px dashed ${G}44`, animation: "ringSpin 20s linear infinite" }} />
