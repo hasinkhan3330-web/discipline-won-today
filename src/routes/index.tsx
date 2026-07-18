@@ -179,6 +179,47 @@ function App() {
     correct?: boolean;
   }>(null);
 
+  // MEDITATION state
+  const [medMin, setMedMin] = useState(5);
+  const [medLeft, setMedLeft] = useState(5 * 60);
+  const [medRun, setMedRun] = useState(false);
+  const [medSessions, setMedSessions] = useState(0);
+  const [medTotal, setMedTotal] = useState(0);
+  const [medPhase, setMedPhase] = useState<"inhale" | "hold" | "exhale">("inhale");
+
+  useEffect(() => {
+    if (!medRun) return;
+    const id = setInterval(() => {
+      setMedLeft(s => {
+        if (s <= 1) {
+          setMedRun(false);
+          setMedSessions(x => x + 1);
+          setMedTotal(x => x + medMin);
+          setCoins(c => c + medMin * 2);
+          return medMin * 60;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [medRun, medMin]);
+
+  useEffect(() => {
+    if (!medRun) return;
+    const cycle = () => {
+      setMedPhase("inhale");
+      const t1 = setTimeout(() => setMedPhase("hold"), 4000);
+      const t2 = setTimeout(() => setMedPhase("exhale"), 6000);
+      return () => { clearTimeout(t1); clearTimeout(t2); };
+    };
+    const cleanup = cycle();
+    const loop = setInterval(cycle, 10000);
+    return () => { cleanup(); clearInterval(loop); };
+  }, [medRun]);
+
+  const pickMed = (m: number) => { setMedMin(m); setMedLeft(m * 60); setMedRun(false); };
+  const fmtT = (s: number) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+
   useEffect(() => {
     const t = setTimeout(() => setScreen("app"), 2500);
     return () => clearTimeout(t);
