@@ -688,7 +688,8 @@ function App() {
           {tab === "stats" && <div style={CARD}>
             <div style={TITLE}><span style={{ color: G }}>▸</span> WEEKLY <span style={{ color: G }}>PROGRESS</span></div>
             {["MON", "TUE", "WED", "THU", "FRI", "SAT", "TDY"].map((d, i) => {
-              const v = [80, 65, 90, 45, 75, 100, pct][i];
+              const v = weekly[i] ?? 0;
+
               return (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                   <div style={{ width: 34, fontSize: 10, color: "#666", letterSpacing: 2 }}>{d}</div>
