@@ -55,16 +55,40 @@ function AuthPage() {
           password: parsed.data.password,
           options: { emailRedirectTo: `${window.location.origin}/_authenticated/dashboard` },
         });
-        if (error) throw error;
+        if (error) {
+          if (/registered|exists/i.test(error.message)) {
+            const { error: sErr } = await supabase.auth.signInWithPassword({
+              email: parsed.data.email,
+              password: parsed.data.password,
+            });
+            if (sErr) throw new Error("This email is already registered. Wrong password?");
+            navigate({ to: "/_authenticated/dashboard", replace: true });
+            return;
+          }
+          throw error;
+        }
         const { data: s } = await supabase.auth.getSession();
-        if (s.session) navigate({ to: "/_authenticated/dashboard", replace: true });
-        else setMsg({ kind: "ok", text: "Account created. Check your email to confirm, then sign in." });
+        if (s.session) {
+          navigate({ to: "/_authenticated/dashboard", replace: true });
+        } else {
+          const { error: sErr } = await supabase.auth.signInWithPassword({
+            email: parsed.data.email,
+            password: parsed.data.password,
+          });
+          if (sErr) { setMsg({ kind: "ok", text: "Account created. You can now sign in." }); setMode("signin"); }
+          else navigate({ to: "/_authenticated/dashboard", replace: true });
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email: parsed.data.email,
           password: parsed.data.password,
         });
-        if (error) throw error;
+        if (error) {
+          if (/invalid/i.test(error.message)) {
+            throw new Error("No account found or wrong password. Tap 'CREATE AN ACCOUNT' below if you're new.");
+          }
+          throw error;
+        }
         navigate({ to: "/_authenticated/dashboard", replace: true });
       }
     } catch (err) {
