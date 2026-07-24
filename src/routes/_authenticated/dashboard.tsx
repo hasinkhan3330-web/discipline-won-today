@@ -725,17 +725,18 @@ function App() {
                     <div style={{ fontSize: 11, color: G, letterSpacing: 2, marginBottom: 14 }}>{top.c} COINS · {top.s}d STREAK</div>
 
                     <div style={{ display: "flex", justifyContent: "center", gap: 22, marginTop: 6 }}>
-                      {[{ u: second, medal: "🥈", rank: "#2" }, { u: third, medal: "🥉", rank: "#3" }].map(({ u, medal, rank }) => (
-                        <div key={u.n} style={{ textAlign: "center" }}>
+                      {[{ u: second, medal: "🥈", rank: "#2" }, { u: third, medal: "🥉", rank: "#3" }].filter(x => x.u).map(({ u, medal, rank }) => (
+                        <div key={u!.n} style={{ textAlign: "center" }}>
                           <div style={{ position: "relative", width: 62, height: 62, margin: "0 auto 6px" }}>
-                            <img src={u.img} alt={u.n} style={{ width: 62, height: 62, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}88`, boxShadow: `0 0 12px ${G}55` }} />
+                            <img src={u!.img} alt={u!.n} style={{ width: 62, height: 62, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}88`, boxShadow: `0 0 12px ${G}55` }} />
                             <div style={{ position: "absolute", bottom: -3, right: -3, fontSize: 16 }}>{medal}</div>
                           </div>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u.n}</div>
-                          <div style={{ fontSize: 9, color: G, letterSpacing: 1 }}>{rank} · {u.c}</div>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u!.n}</div>
+                          <div style={{ fontSize: 9, color: G, letterSpacing: 1 }}>{rank} · {u!.c}</div>
                         </div>
                       ))}
                     </div>
+
                   </div>
                 </div>
               );
