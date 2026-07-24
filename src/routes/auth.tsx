@@ -44,7 +44,7 @@ function AuthPage() {
       const { error } = await supabase.auth.resend({
         type: "signup",
         email: email.trim(),
-        options: { emailRedirectTo: `${window.location.origin}/_authenticated/dashboard` },
+        options: { emailRedirectTo: `${window.location.origin}/auth/verified` },
       });
       if (error) throw error;
       setMsg({ kind: "ok", text: "Verification email sent. Check your inbox (and spam)." });
