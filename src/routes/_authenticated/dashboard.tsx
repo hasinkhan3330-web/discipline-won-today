@@ -327,8 +327,8 @@ function App() {
   };
 
   const done = tasks.filter(t => t.done).length;
-  const pct = Math.round(done / tasks.length * 100);
-  const streak = 12;
+  const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+
 
   // GLOBAL KEYFRAMES
   const keyframes = `
