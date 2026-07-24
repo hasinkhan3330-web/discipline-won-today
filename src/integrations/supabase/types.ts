@@ -14,42 +14,270 @@ export type Database = {
   }
   public: {
     Tables: {
+      alarm_sessions: {
+        Row: {
+          alarm_id: string
+          coins_awarded: number
+          completed_on: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          alarm_id: string
+          coins_awarded?: number
+          completed_on?: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          alarm_id?: string
+          coins_awarded?: number
+          completed_on?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alarm_sessions_alarm_id_fkey"
+            columns: ["alarm_id"]
+            isOneToOne: false
+            referencedRelation: "alarms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      alarms: {
+        Row: {
+          challenge_type: string
+          created_at: string
+          days: number[]
+          id: string
+          is_active: boolean
+          label: string | null
+          time: string
+          tone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge_type?: string
+          created_at?: string
+          days?: number[]
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          time: string
+          tone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge_type?: string
+          created_at?: string
+          days?: number[]
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          time?: string
+          tone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coin_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          reason: string
+          ref_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          reason: string
+          ref_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          reason?: string
+          ref_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           coins: number
           created_at: string
           display_name: string | null
           id: string
+          last_activity_date: string | null
+          longest_streak: number
           streak: number
           updated_at: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           coins?: number
           created_at?: string
           display_name?: string | null
           id: string
+          last_activity_date?: string | null
+          longest_streak?: number
           streak?: number
           updated_at?: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           coins?: number
           created_at?: string
           display_name?: string | null
           id?: string
+          last_activity_date?: string | null
+          longest_streak?: number
           streak?: number
           updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      task_completions: {
+        Row: {
+          coins_awarded: number
+          completed_on: string
+          created_at: string
+          id: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          coins_awarded?: number
+          completed_on?: string
+          created_at?: string
+          id?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          coins_awarded?: number
+          completed_on?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_completions_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          is_active: boolean
+          name: string
+          pts: number
+          sort_order: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          pts?: number
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          pts?: number
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          coins: number | null
+          display_name: string | null
+          id: string | null
+          longest_streak: number | null
+          streak: number | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          coins?: number | null
+          display_name?: string | null
+          id?: string | null
+          longest_streak?: number | null
+          streak?: number | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          coins?: number | null
+          display_name?: string | null
+          id?: string | null
+          longest_streak?: number | null
+          streak?: number | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      complete_alarm: {
+        Args: { _alarm_id: string; _reward?: number }
+        Returns: {
+          awarded: number
+          coins: number
+        }[]
+      }
+      complete_task: {
+        Args: { _task_id: string }
+        Returns: {
+          awarded: number
+          coins: number
+          longest_streak: number
+          streak: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

@@ -163,17 +163,72 @@ function App() {
   const [screen, setScreen] = useState<"splash" | "app">("splash");
   const [tab, setTab] = useState("home");
   const [themeKey, setThemeKey] = useState<ThemeKey>("space");
-  const [coins, setCoins] = useState(1240);
-  const [tasks, setTasks] = useState<Task[]>([
-    { id: 1, icon: "🌅", name: "Wake Up 4AM", pts: 10, done: false },
-    { id: 2, icon: "🚿", name: "Cold Shower", pts: 4, done: false },
-    { id: 3, icon: "💪", name: "Workout", pts: 15, done: false },
-    { id: 4, icon: "📚", name: "Deep Focus", pts: 8, done: false },
-    { id: 5, icon: "📵", name: "Phone Free", pts: 5, done: false },
-    { id: 6, icon: "🎯", name: "Daily Goals", pts: 4, done: false },
-    { id: 7, icon: "🍔", name: "No Junk Food", pts: 4, done: false },
-    { id: 8, icon: "🧘", name: "Meditation", pts: 3, done: false },
-  ]);
+
+  // ===== SUPABASE-BACKED STATE =====
+  const [coins, setCoins] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [board, setBoard] = useState<{ n: string; c: number; s: number; img: string; you?: boolean }[]>([]);
+  const [weekly, setWeekly] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [myId, setMyId] = useState<string | null>(null);
+  const [myName, setMyName] = useState<string>("YOU");
+
+  const fallbackAvatar = (n: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=0a0a19&color=00ff88&size=200&bold=true`;
+
+  const refreshAll = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData.user?.id;
+    if (!uid) return;
+    setMyId(uid);
+
+    const today = new Date().toISOString().slice(0, 10);
+    const sevenAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
+
+    const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
+      supabase.from("profiles").select("display_name, coins, streak, avatar_url").eq("id", uid).maybeSingle(),
+      supabase.from("tasks").select("id, icon, name, pts, sort_order").eq("user_id", uid).eq("is_active", true).order("sort_order"),
+      supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
+      supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20),
+      supabase.from("task_completions").select("completed_on").eq("user_id", uid).gte("completed_on", sevenAgo),
+    ]);
+
+    if (prof) {
+      setCoins(prof.coins ?? 0);
+      setStreak(prof.streak ?? 0);
+      setMyName(prof.display_name || "YOU");
+    }
+    const doneIds = new Set((doneToday || []).map(d => d.task_id as string));
+    setTasks((taskRows || []).map((r, i) => ({
+      id: i + 1,
+      _uuid: r.id as string,
+      icon: r.icon,
+      name: r.name,
+      pts: r.pts,
+      done: doneIds.has(r.id as string),
+    }) as unknown as Task));
+
+    setBoard((leaders || []).map(l => ({
+      n: (l.display_name || l.username || "USER").toUpperCase().replace(/\s+/g, "_"),
+      c: l.coins ?? 0,
+      s: l.streak ?? 0,
+      img: l.avatar_url || fallbackAvatar(l.display_name || l.username || "U"),
+      you: l.id === uid,
+    })));
+
+    // Weekly bars: last 7 days completion count / total tasks
+    const total = (taskRows || []).length || 1;
+    const counts: Record<string, number> = {};
+    (weekRows || []).forEach(r => { counts[r.completed_on] = (counts[r.completed_on] || 0) + 1; });
+    const bars: number[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      bars.push(Math.min(100, Math.round((counts[d] || 0) / total * 100)));
+    }
+    setWeekly(bars);
+  };
+
+  useEffect(() => { refreshAll(); }, []);
+
 
   // 4AM proof-of-wakeup state
   const [proof, setProof] = useState<null | {
@@ -200,14 +255,17 @@ function App() {
           setMedRun(false);
           setMedSessions(x => x + 1);
           setMedTotal(x => x + medMin);
-          setCoins(c => c + medMin * 2);
+          // Award via meditation task RPC (idempotent per day). If already claimed today, no double reward.
+          const medTask = tasks.find(t => /medit/i.test(t.name));
+          if (medTask && !medTask.done) completeTaskRpc((medTask as any)._uuid);
           return medMin * 60;
         }
         return s - 1;
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [medRun, medMin]);
+  }, [medRun, medMin, tasks]);
+
 
   // Derive breathing phase from elapsed seconds — no extra timers needed.
   const elapsed = medMin * 60 - medLeft;
@@ -250,30 +308,50 @@ function App() {
     setProof({ mode: "quiz", subject, question: q, answer: a, input: "" });
   };
 
+  // Get the wake-up task (first task) — for 4AM proof binding
+  const wakeTask = tasks.find(t => /wake/i.test(t.name)) || tasks[0];
+
+  const completeTaskRpc = async (uuid: string) => {
+    const { data, error } = await supabase.rpc("complete_task", { _task_id: uuid });
+    if (error) { console.error(error); return; }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
+    // mark local task done
+    setTasks(p => p.map(t => (t as any)._uuid === uuid ? { ...t, done: true } : t));
+    // refresh leaderboard in background
+    supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
+      if (!leaders) return;
+      setBoard(leaders.map(l => ({
+        n: (l.display_name || l.username || "USER").toUpperCase().replace(/\s+/g, "_"),
+        c: l.coins ?? 0, s: l.streak ?? 0,
+        img: l.avatar_url || fallbackAvatar(l.display_name || l.username || "U"),
+        you: l.id === myId,
+      })));
+    });
+  };
+
   const submitProof = () => {
     if (!proof || proof.mode !== "quiz") return;
     const correct = Number(proof.input) === proof.answer;
     setProof({ ...proof, mode: "result", correct });
-    if (correct) {
-      setTasks(p => p.map(t => t.id === 1 && !t.done ? { ...t, done: true } : t));
-      setCoins(c => c + 10);
+    if (correct && wakeTask && !wakeTask.done) {
+      completeTaskRpc((wakeTask as any)._uuid);
     }
   };
 
   const tick = (id: number) => {
-    if (id === 1) {
-      const t = tasks.find(x => x.id === 1);
-      if (t && !t.done) { setProof({ mode: "choose" }); return; }
-    }
-    setTasks(p => p.map(t => {
-      if (t.id === id && !t.done) { setCoins(c => c + t.pts); return { ...t, done: true }; }
-      return t;
-    }));
+    const t = tasks.find(x => x.id === id);
+    if (!t || t.done) return;
+    // 4AM wake task requires proof
+    if (/wake/i.test(t.name)) { setProof({ mode: "choose" }); return; }
+    completeTaskRpc((t as any)._uuid);
   };
 
+
+
   const done = tasks.filter(t => t.done).length;
-  const pct = Math.round(done / tasks.length * 100);
-  const streak = 12;
+  const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+
 
   // GLOBAL KEYFRAMES
   const keyframes = `
@@ -408,33 +486,30 @@ function App() {
 
           {tab === "rank" && <div style={CARD}>
             <div style={TITLE}><span style={{ color: G }}>▸</span> GLOBAL <span style={{ color: G }}>LEADERBOARD</span></div>
-            {[
-              { r: 1, n: "IRON_WARRIOR", c: 8940, s: 67 },
-              { r: 2, n: "DISCIPLINE_X", c: 7234, s: 45 },
-              { r: 3, n: "5AM_BEAST", c: 6102, s: 38 },
-              { r: 4, n: "MONK_MODE", c: 5200, s: 29 },
-              { r: 5, n: "YOU", c: coins, s: streak, you: true },
-              { r: 6, n: "SHADOW_RUN", c: 3421, s: 19 },
-              { r: 7, n: "NOCHILL_99", c: 2156, s: 12 },
-            ].map(u => (
-              <div key={u.r} style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "10px",
-                background: u.you ? `linear-gradient(90deg, ${G}22, transparent)` : "rgba(0,0,0,0.3)",
-                border: `1px solid ${u.you ? G + "66" : "#222"}`, borderLeft: `3px solid ${u.you ? G : "#333"}`,
-                marginBottom: 6,
-              }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: u.r <= 3 ? G : "#555", width: 22, textAlign: "center" }}>
-                  {u.r === 1 ? "🥇" : u.r === 2 ? "🥈" : u.r === 3 ? "🥉" : u.r}
+            {board.length === 0 && <div style={{ fontSize: 11, color: "#666", textAlign: "center", padding: 20, letterSpacing: 2 }}>LOADING…</div>}
+            {board.map((u, i) => {
+              const r = i + 1;
+              return (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "10px",
+                  background: u.you ? `linear-gradient(90deg, ${G}22, transparent)` : "rgba(0,0,0,0.3)",
+                  border: `1px solid ${u.you ? G + "66" : "#222"}`, borderLeft: `3px solid ${u.you ? G : "#333"}`,
+                  marginBottom: 6,
+                }}>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: r <= 3 ? G : "#555", width: 22, textAlign: "center" }}>
+                    {r === 1 ? "🥇" : r === 2 ? "🥈" : r === 3 ? "🥉" : r}
+                  </div>
+                  <img src={u.img} onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(u.n); }} style={{ width: 34, height: 34, borderRadius: "50%", border: `1px solid ${G}44`, objectFit: "cover" }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u.you ? "YOU" : u.n}</div>
+                    <div style={{ fontSize: 10, color: "#666", letterSpacing: 1 }}>{u.s} DAY STREAK</div>
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: G, textShadow: `0 0 8px ${G}66` }}>{u.c}</div>
                 </div>
-                <img src={`https://i.pravatar.cc/40?img=${u.r + 10}`} style={{ width: 34, height: 34, borderRadius: "50%", border: `1px solid ${G}44` }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u.n}</div>
-                  <div style={{ fontSize: 10, color: "#666", letterSpacing: 1 }}>{u.s} DAY STREAK</div>
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: G, textShadow: `0 0 8px ${G}66` }}>{u.c}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>}
+
 
           {tab === "quotes" && (() => {
             // Daily rotation — quote & person change every single day
@@ -613,7 +688,8 @@ function App() {
           {tab === "stats" && <div style={CARD}>
             <div style={TITLE}><span style={{ color: G }}>▸</span> WEEKLY <span style={{ color: G }}>PROGRESS</span></div>
             {["MON", "TUE", "WED", "THU", "FRI", "SAT", "TDY"].map((d, i) => {
-              const v = [80, 65, 90, 45, 75, 100, pct][i];
+              const v = weekly[i] ?? 0;
+
               return (
                 <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                   <div style={{ width: 34, fontSize: 10, color: "#666", letterSpacing: 2 }}>{d}</div>
@@ -629,15 +705,10 @@ function App() {
           {tab === "profile" && <>
             {/* TOP RANKED — auto-sorted by coins, top holder shown large */}
             {(() => {
-              const roster = [
-                { n: "IRON_WARRIOR", c: 8940, s: 67, img: "https://i.pravatar.cc/200?img=12" },
-                { n: "DISCIPLINE_X", c: 7234, s: 45, img: "https://i.pravatar.cc/200?img=15" },
-                { n: "5AM_BEAST", c: 6102, s: 38, img: "https://i.pravatar.cc/200?img=33" },
-                { n: "MONK_MODE", c: 5200, s: 29, img: "https://i.pravatar.cc/200?img=52" },
-                { n: "YOU", c: coins, s: streak, img: "https://i.pravatar.cc/200?img=68" },
-                { n: "SHADOW_RUN", c: 3421, s: 19, img: "https://i.pravatar.cc/200?img=57" },
-              ].sort((a, b) => b.c - a.c);
+              const roster = board.length ? board : [{ n: myName.toUpperCase(), c: coins, s: streak, img: fallbackAvatar(myName), you: true }];
               const [top, second, third] = roster;
+              if (!top) return null;
+
               return (
                 <div style={{ ...CARD, textAlign: "center", padding: 22, position: "relative", overflow: "hidden" }}>
                   <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 260, height: 260, borderRadius: "50%", background: `radial-gradient(circle, ${G}44, transparent 70%)` }} />
@@ -654,17 +725,18 @@ function App() {
                     <div style={{ fontSize: 11, color: G, letterSpacing: 2, marginBottom: 14 }}>{top.c} COINS · {top.s}d STREAK</div>
 
                     <div style={{ display: "flex", justifyContent: "center", gap: 22, marginTop: 6 }}>
-                      {[{ u: second, medal: "🥈", rank: "#2" }, { u: third, medal: "🥉", rank: "#3" }].map(({ u, medal, rank }) => (
-                        <div key={u.n} style={{ textAlign: "center" }}>
+                      {[{ u: second, medal: "🥈", rank: "#2" }, { u: third, medal: "🥉", rank: "#3" }].filter(x => x.u).map(({ u, medal, rank }) => (
+                        <div key={u!.n} style={{ textAlign: "center" }}>
                           <div style={{ position: "relative", width: 62, height: 62, margin: "0 auto 6px" }}>
-                            <img src={u.img} alt={u.n} style={{ width: 62, height: 62, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}88`, boxShadow: `0 0 12px ${G}55` }} />
+                            <img src={u!.img} alt={u!.n} style={{ width: 62, height: 62, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}88`, boxShadow: `0 0 12px ${G}55` }} />
                             <div style={{ position: "absolute", bottom: -3, right: -3, fontSize: 16 }}>{medal}</div>
                           </div>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u.n}</div>
-                          <div style={{ fontSize: 9, color: G, letterSpacing: 1 }}>{rank} · {u.c}</div>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u!.n}</div>
+                          <div style={{ fontSize: 9, color: G, letterSpacing: 1 }}>{rank} · {u!.c}</div>
                         </div>
                       ))}
                     </div>
+
                   </div>
                 </div>
               );
