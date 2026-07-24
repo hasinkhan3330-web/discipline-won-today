@@ -705,15 +705,10 @@ function App() {
           {tab === "profile" && <>
             {/* TOP RANKED — auto-sorted by coins, top holder shown large */}
             {(() => {
-              const roster = [
-                { n: "IRON_WARRIOR", c: 8940, s: 67, img: "https://i.pravatar.cc/200?img=12" },
-                { n: "DISCIPLINE_X", c: 7234, s: 45, img: "https://i.pravatar.cc/200?img=15" },
-                { n: "5AM_BEAST", c: 6102, s: 38, img: "https://i.pravatar.cc/200?img=33" },
-                { n: "MONK_MODE", c: 5200, s: 29, img: "https://i.pravatar.cc/200?img=52" },
-                { n: "YOU", c: coins, s: streak, img: "https://i.pravatar.cc/200?img=68" },
-                { n: "SHADOW_RUN", c: 3421, s: 19, img: "https://i.pravatar.cc/200?img=57" },
-              ].sort((a, b) => b.c - a.c);
+              const roster = board.length ? board : [{ n: myName.toUpperCase(), c: coins, s: streak, img: fallbackAvatar(myName), you: true }];
               const [top, second, third] = roster;
+              if (!top) return null;
+
               return (
                 <div style={{ ...CARD, textAlign: "center", padding: 22, position: "relative", overflow: "hidden" }}>
                   <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 260, height: 260, borderRadius: "50%", background: `radial-gradient(circle, ${G}44, transparent 70%)` }} />
