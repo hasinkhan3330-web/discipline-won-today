@@ -486,33 +486,30 @@ function App() {
 
           {tab === "rank" && <div style={CARD}>
             <div style={TITLE}><span style={{ color: G }}>▸</span> GLOBAL <span style={{ color: G }}>LEADERBOARD</span></div>
-            {[
-              { r: 1, n: "IRON_WARRIOR", c: 8940, s: 67 },
-              { r: 2, n: "DISCIPLINE_X", c: 7234, s: 45 },
-              { r: 3, n: "5AM_BEAST", c: 6102, s: 38 },
-              { r: 4, n: "MONK_MODE", c: 5200, s: 29 },
-              { r: 5, n: "YOU", c: coins, s: streak, you: true },
-              { r: 6, n: "SHADOW_RUN", c: 3421, s: 19 },
-              { r: 7, n: "NOCHILL_99", c: 2156, s: 12 },
-            ].map(u => (
-              <div key={u.r} style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "10px",
-                background: u.you ? `linear-gradient(90deg, ${G}22, transparent)` : "rgba(0,0,0,0.3)",
-                border: `1px solid ${u.you ? G + "66" : "#222"}`, borderLeft: `3px solid ${u.you ? G : "#333"}`,
-                marginBottom: 6,
-              }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: u.r <= 3 ? G : "#555", width: 22, textAlign: "center" }}>
-                  {u.r === 1 ? "🥇" : u.r === 2 ? "🥈" : u.r === 3 ? "🥉" : u.r}
+            {board.length === 0 && <div style={{ fontSize: 11, color: "#666", textAlign: "center", padding: 20, letterSpacing: 2 }}>LOADING…</div>}
+            {board.map((u, i) => {
+              const r = i + 1;
+              return (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 10, padding: "10px",
+                  background: u.you ? `linear-gradient(90deg, ${G}22, transparent)` : "rgba(0,0,0,0.3)",
+                  border: `1px solid ${u.you ? G + "66" : "#222"}`, borderLeft: `3px solid ${u.you ? G : "#333"}`,
+                  marginBottom: 6,
+                }}>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: r <= 3 ? G : "#555", width: 22, textAlign: "center" }}>
+                    {r === 1 ? "🥇" : r === 2 ? "🥈" : r === 3 ? "🥉" : r}
+                  </div>
+                  <img src={u.img} onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(u.n); }} style={{ width: 34, height: 34, borderRadius: "50%", border: `1px solid ${G}44`, objectFit: "cover" }} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u.you ? "YOU" : u.n}</div>
+                    <div style={{ fontSize: 10, color: "#666", letterSpacing: 1 }}>{u.s} DAY STREAK</div>
+                  </div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: G, textShadow: `0 0 8px ${G}66` }}>{u.c}</div>
                 </div>
-                <img src={`https://i.pravatar.cc/40?img=${u.r + 10}`} style={{ width: 34, height: 34, borderRadius: "50%", border: `1px solid ${G}44` }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u.n}</div>
-                  <div style={{ fontSize: 10, color: "#666", letterSpacing: 1 }}>{u.s} DAY STREAK</div>
-                </div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: G, textShadow: `0 0 8px ${G}66` }}>{u.c}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>}
+
 
           {tab === "quotes" && (() => {
             // Daily rotation — quote & person change every single day
