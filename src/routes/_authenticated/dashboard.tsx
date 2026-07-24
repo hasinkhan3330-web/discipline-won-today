@@ -305,26 +305,46 @@ function App() {
     setProof({ mode: "quiz", subject, question: q, answer: a, input: "" });
   };
 
+  // Get the wake-up task (first task) — for 4AM proof binding
+  const wakeTask = tasks.find(t => /wake/i.test(t.name)) || tasks[0];
+
+  const completeTaskRpc = async (uuid: string) => {
+    const { data, error } = await supabase.rpc("complete_task", { _task_id: uuid });
+    if (error) { console.error(error); return; }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
+    // mark local task done
+    setTasks(p => p.map(t => (t as any)._uuid === uuid ? { ...t, done: true } : t));
+    // refresh leaderboard in background
+    supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
+      if (!leaders) return;
+      setBoard(leaders.map(l => ({
+        n: (l.display_name || l.username || "USER").toUpperCase().replace(/\s+/g, "_"),
+        c: l.coins ?? 0, s: l.streak ?? 0,
+        img: l.avatar_url || fallbackAvatar(l.display_name || l.username || "U"),
+        you: l.id === myId,
+      })));
+    });
+  };
+
   const submitProof = () => {
     if (!proof || proof.mode !== "quiz") return;
     const correct = Number(proof.input) === proof.answer;
     setProof({ ...proof, mode: "result", correct });
-    if (correct) {
-      setTasks(p => p.map(t => t.id === 1 && !t.done ? { ...t, done: true } : t));
-      setCoins(c => c + 10);
+    if (correct && wakeTask && !wakeTask.done) {
+      completeTaskRpc((wakeTask as any)._uuid);
     }
   };
 
   const tick = (id: number) => {
-    if (id === 1) {
-      const t = tasks.find(x => x.id === 1);
-      if (t && !t.done) { setProof({ mode: "choose" }); return; }
-    }
-    setTasks(p => p.map(t => {
-      if (t.id === id && !t.done) { setCoins(c => c + t.pts); return { ...t, done: true }; }
-      return t;
-    }));
+    const t = tasks.find(x => x.id === id);
+    if (!t || t.done) return;
+    // 4AM wake task requires proof
+    if (/wake/i.test(t.name)) { setProof({ mode: "choose" }); return; }
+    completeTaskRpc((t as any)._uuid);
   };
+
+
 
   const done = tasks.filter(t => t.done).length;
   const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
