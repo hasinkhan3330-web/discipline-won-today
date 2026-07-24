@@ -29,6 +29,31 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ kind: "err" | "ok"; text: string } | null>(null);
+  const [needsVerify, setNeedsVerify] = useState(false);
+  const [resending, setResending] = useState(false);
+
+  const resendVerification = async () => {
+    const parsed = schema.safeParse({ email, password: password || "placeholder" });
+    if (!parsed.success && !z.string().email().safeParse(email.trim()).success) {
+      setMsg({ kind: "err", text: "Enter your email above first." });
+      return;
+    }
+    setResending(true);
+    setMsg(null);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}/_authenticated/dashboard` },
+      });
+      if (error) throw error;
+      setMsg({ kind: "ok", text: "Verification email sent. Check your inbox (and spam)." });
+    } catch (err) {
+      setMsg({ kind: "err", text: err instanceof Error ? err.message : "Could not resend email." });
+    } finally {
+      setResending(false);
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
