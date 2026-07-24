@@ -255,14 +255,17 @@ function App() {
           setMedRun(false);
           setMedSessions(x => x + 1);
           setMedTotal(x => x + medMin);
-          setCoins(c => c + medMin * 2);
+          // Award via meditation task RPC (idempotent per day). If already claimed today, no double reward.
+          const medTask = tasks.find(t => /medit/i.test(t.name));
+          if (medTask && !medTask.done) completeTaskRpc((medTask as any)._uuid);
           return medMin * 60;
         }
         return s - 1;
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [medRun, medMin]);
+  }, [medRun, medMin, tasks]);
+
 
   // Derive breathing phase from elapsed seconds — no extra timers needed.
   const elapsed = medMin * 60 - medLeft;
