@@ -155,6 +155,11 @@ function SpaceWallpaper({ accent }: { accent: string }) {
 }
 
 function App() {
+  const navigate = useNavigate();
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
+  };
   const [screen, setScreen] = useState<"splash" | "app">("splash");
   const [tab, setTab] = useState("home");
   const [themeKey, setThemeKey] = useState<ThemeKey>("space");
