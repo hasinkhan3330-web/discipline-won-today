@@ -29,6 +29,31 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<{ kind: "err" | "ok"; text: string } | null>(null);
+  const [needsVerify, setNeedsVerify] = useState(false);
+  const [resending, setResending] = useState(false);
+
+  const resendVerification = async () => {
+    const parsed = schema.safeParse({ email, password: password || "placeholder" });
+    if (!parsed.success && !z.string().email().safeParse(email.trim()).success) {
+      setMsg({ kind: "err", text: "Enter your email above first." });
+      return;
+    }
+    setResending(true);
+    setMsg(null);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+        options: { emailRedirectTo: `${window.location.origin}/_authenticated/dashboard` },
+      });
+      if (error) throw error;
+      setMsg({ kind: "ok", text: "Verification email sent. Check your inbox (and spam)." });
+    } catch (err) {
+      setMsg({ kind: "err", text: err instanceof Error ? err.message : "Could not resend email." });
+    } finally {
+      setResending(false);
+    }
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -86,7 +111,8 @@ function AuthPage() {
         if (error) {
           const m = error.message.toLowerCase();
           if (m.includes("email not confirmed") || m.includes("not confirmed")) {
-            throw new Error("Email not verified yet. Check your inbox for the confirmation link, then sign in again.");
+            setNeedsVerify(true);
+            throw new Error("Email not verified yet. Check your inbox for the confirmation link, or resend it below.");
           }
           if (m.includes("invalid email") || m.includes("email address")) {
             throw new Error("That email address looks invalid. Double-check the spelling.");
@@ -142,6 +168,11 @@ function AuthPage() {
           <button type="submit" disabled={loading} style={{ padding: "14px 20px", background: loading ? "#333" : G, color: "#000", fontWeight: 900, letterSpacing: 3, fontSize: 12, border: "none", cursor: loading ? "wait" : "pointer", borderRadius: 2, boxShadow: `0 0 20px ${G}66` }}>
             {loading ? "..." : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
           </button>
+          {needsVerify && mode === "signin" && (
+            <button type="button" onClick={resendVerification} disabled={resending} style={{ padding: "12px 16px", background: "transparent", color: G, border: `1px solid ${G}66`, fontFamily: "monospace", fontWeight: 700, letterSpacing: 2, fontSize: 11, cursor: resending ? "wait" : "pointer", borderRadius: 2 }}>
+              {resending ? "SENDING..." : "RESEND VERIFICATION EMAIL"}
+            </button>
+          )}
         </form>
 
         <button
