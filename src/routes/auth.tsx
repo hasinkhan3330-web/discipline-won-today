@@ -168,6 +168,11 @@ function AuthPage() {
           <button type="submit" disabled={loading} style={{ padding: "14px 20px", background: loading ? "#333" : G, color: "#000", fontWeight: 900, letterSpacing: 3, fontSize: 12, border: "none", cursor: loading ? "wait" : "pointer", borderRadius: 2, boxShadow: `0 0 20px ${G}66` }}>
             {loading ? "..." : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
           </button>
+          {needsVerify && mode === "signin" && (
+            <button type="button" onClick={resendVerification} disabled={resending} style={{ padding: "12px 16px", background: "transparent", color: G, border: `1px solid ${G}66`, fontFamily: "monospace", fontWeight: 700, letterSpacing: 2, fontSize: 11, cursor: resending ? "wait" : "pointer", borderRadius: 2 }}>
+              {resending ? "SENDING..." : "RESEND VERIFICATION EMAIL"}
+            </button>
+          )}
         </form>
 
         <button
