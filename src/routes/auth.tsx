@@ -175,9 +175,18 @@ function AuthPage() {
           )}
         </form>
 
+        {mode === "signin" && (
+          <button
+            onClick={() => navigate({ to: "/auth/forgot" })}
+            style={{ marginTop: 14, width: "100%", background: "transparent", border: "none", color: G, fontFamily: "monospace", fontSize: 11, letterSpacing: 2, cursor: "pointer" }}
+          >
+            FORGOT PASSWORD?
+          </button>
+        )}
+
         <button
           onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(null); }}
-          style={{ marginTop: 20, width: "100%", background: "transparent", border: "none", color: "#888", fontFamily: "monospace", fontSize: 11, letterSpacing: 2, cursor: "pointer" }}
+          style={{ marginTop: 8, width: "100%", background: "transparent", border: "none", color: "#888", fontFamily: "monospace", fontSize: 11, letterSpacing: 2, cursor: "pointer" }}
         >
           {mode === "signin" ? "NEW HERE? CREATE AN ACCOUNT →" : "← BACK TO SIGN IN"}
         </button>
