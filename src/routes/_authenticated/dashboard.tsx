@@ -163,17 +163,72 @@ function App() {
   const [screen, setScreen] = useState<"splash" | "app">("splash");
   const [tab, setTab] = useState("home");
   const [themeKey, setThemeKey] = useState<ThemeKey>("space");
-  const [coins, setCoins] = useState(1240);
-  const [tasks, setTasks] = useState<Task[]>([
-    { id: 1, icon: "🌅", name: "Wake Up 4AM", pts: 10, done: false },
-    { id: 2, icon: "🚿", name: "Cold Shower", pts: 4, done: false },
-    { id: 3, icon: "💪", name: "Workout", pts: 15, done: false },
-    { id: 4, icon: "📚", name: "Deep Focus", pts: 8, done: false },
-    { id: 5, icon: "📵", name: "Phone Free", pts: 5, done: false },
-    { id: 6, icon: "🎯", name: "Daily Goals", pts: 4, done: false },
-    { id: 7, icon: "🍔", name: "No Junk Food", pts: 4, done: false },
-    { id: 8, icon: "🧘", name: "Meditation", pts: 3, done: false },
-  ]);
+
+  // ===== SUPABASE-BACKED STATE =====
+  const [coins, setCoins] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [board, setBoard] = useState<{ n: string; c: number; s: number; img: string; you?: boolean }[]>([]);
+  const [weekly, setWeekly] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [myId, setMyId] = useState<string | null>(null);
+  const [myName, setMyName] = useState<string>("YOU");
+
+  const fallbackAvatar = (n: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=0a0a19&color=00ff88&size=200&bold=true`;
+
+  const refreshAll = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData.user?.id;
+    if (!uid) return;
+    setMyId(uid);
+
+    const today = new Date().toISOString().slice(0, 10);
+    const sevenAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
+
+    const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
+      supabase.from("profiles").select("display_name, coins, streak, avatar_url").eq("id", uid).maybeSingle(),
+      supabase.from("tasks").select("id, icon, name, pts, sort_order").eq("user_id", uid).eq("is_active", true).order("sort_order"),
+      supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
+      supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20),
+      supabase.from("task_completions").select("completed_on").eq("user_id", uid).gte("completed_on", sevenAgo),
+    ]);
+
+    if (prof) {
+      setCoins(prof.coins ?? 0);
+      setStreak(prof.streak ?? 0);
+      setMyName(prof.display_name || "YOU");
+    }
+    const doneIds = new Set((doneToday || []).map(d => d.task_id as string));
+    setTasks((taskRows || []).map((r, i) => ({
+      id: i + 1,
+      _uuid: r.id as string,
+      icon: r.icon,
+      name: r.name,
+      pts: r.pts,
+      done: doneIds.has(r.id as string),
+    }) as unknown as Task));
+
+    setBoard((leaders || []).map(l => ({
+      n: (l.display_name || l.username || "USER").toUpperCase().replace(/\s+/g, "_"),
+      c: l.coins ?? 0,
+      s: l.streak ?? 0,
+      img: l.avatar_url || fallbackAvatar(l.display_name || l.username || "U"),
+      you: l.id === uid,
+    })));
+
+    // Weekly bars: last 7 days completion count / total tasks
+    const total = (taskRows || []).length || 1;
+    const counts: Record<string, number> = {};
+    (weekRows || []).forEach(r => { counts[r.completed_on] = (counts[r.completed_on] || 0) + 1; });
+    const bars: number[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      bars.push(Math.min(100, Math.round((counts[d] || 0) / total * 100)));
+    }
+    setWeekly(bars);
+  };
+
+  useEffect(() => { refreshAll(); }, []);
+
 
   // 4AM proof-of-wakeup state
   const [proof, setProof] = useState<null | {
