@@ -86,7 +86,8 @@ function AuthPage() {
         if (error) {
           const m = error.message.toLowerCase();
           if (m.includes("email not confirmed") || m.includes("not confirmed")) {
-            throw new Error("Email not verified yet. Check your inbox for the confirmation link, then sign in again.");
+            setNeedsVerify(true);
+            throw new Error("Email not verified yet. Check your inbox for the confirmation link, or resend it below.");
           }
           if (m.includes("invalid email") || m.includes("email address")) {
             throw new Error("That email address looks invalid. Double-check the spelling.");
