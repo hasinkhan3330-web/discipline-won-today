@@ -1,0 +1,113 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
+
+export const Route = createFileRoute("/auth")({
+  head: () => ({
+    meta: [
+      { title: "Sign in — DWT" },
+      { name: "description", content: "Sign in or create an account to start tracking discipline on DWT." },
+      { property: "og:title", content: "Sign in — DWT" },
+      { property: "og:description", content: "Sign in or create an account to start tracking discipline on DWT." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: AuthPage,
+});
+
+const schema = z.object({
+  email: z.string().trim().email("Enter a valid email").max(255),
+  password: z.string().min(6, "Password must be at least 6 characters").max(72),
+});
+
+function AuthPage() {
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState<{ kind: "err" | "ok"; text: string } | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate({ to: "/_authenticated/dashboard", replace: true });
+    });
+  }, [navigate]);
+
+  const G = "#00d4ff";
+  const G2 = "#a855f7";
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMsg(null);
+    const parsed = schema.safeParse({ email, password });
+    if (!parsed.success) {
+      setMsg({ kind: "err", text: parsed.error.issues[0].message });
+      return;
+    }
+    setLoading(true);
+    try {
+      if (mode === "signup") {
+        const { error } = await supabase.auth.signUp({
+          email: parsed.data.email,
+          password: parsed.data.password,
+          options: { emailRedirectTo: `${window.location.origin}/_authenticated/dashboard` },
+        });
+        if (error) throw error;
+        const { data: s } = await supabase.auth.getSession();
+        if (s.session) navigate({ to: "/_authenticated/dashboard", replace: true });
+        else setMsg({ kind: "ok", text: "Account created. Check your email to confirm, then sign in." });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: parsed.data.email,
+          password: parsed.data.password,
+        });
+        if (error) throw error;
+        navigate({ to: "/_authenticated/dashboard", replace: true });
+      }
+    } catch (err) {
+      setMsg({ kind: "err", text: err instanceof Error ? err.message : "Something went wrong" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const input: React.CSSProperties = {
+    width: "100%", padding: "12px 14px", background: "rgba(10,10,25,0.7)",
+    border: `1px solid ${G}55`, color: "#fff", fontFamily: "monospace",
+    fontSize: 14, borderRadius: 2, outline: "none", letterSpacing: 1,
+  };
+
+  return (
+    <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
+      <div style={{ maxWidth: 400, width: "100%" }}>
+        <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: 5, textAlign: "center", color: "#fff", textShadow: `0 0 20px ${G}` }}>DWT</h1>
+        <p style={{ textAlign: "center", letterSpacing: 3, fontSize: 10, color: G, marginTop: 4 }}>
+          {mode === "signin" ? "ENTER THE SYSTEM" : "INITIATE PROTOCOL"}
+        </p>
+
+        <form onSubmit={submit} style={{ marginTop: 32, display: "flex", flexDirection: "column", gap: 12 }}>
+          <input style={input} type="email" placeholder="EMAIL" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" />
+          <input style={input} type="password" placeholder="PASSWORD" value={password} onChange={e => setPassword(e.target.value)} autoComplete={mode === "signup" ? "new-password" : "current-password"} />
+          {msg && (
+            <div style={{ fontSize: 11, letterSpacing: 1, padding: "10px 12px", borderRadius: 2, background: msg.kind === "err" ? "#3a0f0f" : "#0f3a1a", border: `1px solid ${msg.kind === "err" ? "#ff4d4d" : "#3ddc84"}55`, color: msg.kind === "err" ? "#ff9a9a" : "#9affbf" }}>
+              {msg.text}
+            </div>
+          )}
+          <button type="submit" disabled={loading} style={{ padding: "14px 20px", background: loading ? "#333" : G, color: "#000", fontWeight: 900, letterSpacing: 3, fontSize: 12, border: "none", cursor: loading ? "wait" : "pointer", borderRadius: 2, boxShadow: `0 0 20px ${G}66` }}>
+            {loading ? "..." : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
+          </button>
+        </form>
+
+        <button
+          onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(null); }}
+          style={{ marginTop: 20, width: "100%", background: "transparent", border: "none", color: "#888", fontFamily: "monospace", fontSize: 11, letterSpacing: 2, cursor: "pointer" }}
+        >
+          {mode === "signin" ? "NEW HERE? CREATE AN ACCOUNT →" : "← BACK TO SIGN IN"}
+        </button>
+      </div>
+    </div>
+  );
+}
