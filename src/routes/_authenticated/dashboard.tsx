@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import alarmLoud from "@/assets/freesound_community-loud-emergency-alarm-54635.mp3.asset.json";
 import alarmReverb from "@/assets/freesound_community-emergency-alarm-with-reverb-29431.mp3.asset.json";
 import alarmRooster from "@/assets/mixkit-rooster-crowing-in-the-morning-2462.wav.asset.json";
@@ -216,7 +217,13 @@ function App() {
     setMyId(uid);
 
     // Daily discipline penalty: -3 coins if yesterday was not 100% complete (once per day).
-    try { await (supabase.rpc as any)("apply_daily_penalty"); } catch {}
+    try {
+      const { data: pen } = await (supabase.rpc as any)("apply_daily_penalty");
+      const row = Array.isArray(pen) ? pen[0] : pen;
+      if (row?.penalized) {
+        toast.error("−3 COINS", { description: "You missed a task yesterday. Discipline demands 100%." });
+      }
+    } catch {}
 
     const today = new Date().toISOString().slice(0, 10);
     const sevenAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
