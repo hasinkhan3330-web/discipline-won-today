@@ -234,14 +234,23 @@ function App() {
 
   useEffect(() => { refreshAll(); }, []);
 
-  const uploadAvatar = async (file: File) => {
-    if (!myId || !file) return;
-    if (file.size > 5 * 1024 * 1024) { alert("Image too large (max 5MB)"); return; }
+  // Crop modal state
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+
+  const openCropper = (file: File) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) { alert("Image too large (max 10MB)"); return; }
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadCroppedBlob = async (blob: Blob) => {
+    if (!myId) return;
     setUploading(true);
     try {
-      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-      const path = `${myId}/avatar-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+      const path = `${myId}/avatar-${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
       if (upErr) throw upErr;
       const { data: signed, error: sErr } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 365);
       if (sErr || !signed) throw sErr || new Error("signed url failed");
@@ -249,6 +258,7 @@ function App() {
       const { error: updErr } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", myId);
       if (updErr) throw updErr;
       setMyAvatar(url);
+      setCropSrc(null);
       await refreshAll();
     } catch (e: any) {
       alert("Upload failed: " + (e?.message || "unknown"));
@@ -256,6 +266,7 @@ function App() {
       setUploading(false);
     }
   };
+
 
 
 
