@@ -265,6 +265,13 @@ export type Database = {
       }
     }
     Functions: {
+      apply_daily_penalty: {
+        Args: never
+        Returns: {
+          coins: number
+          penalized: boolean
+        }[]
+      }
       complete_alarm: {
         Args: { _alarm_id: string; _reward?: number }
         Returns: {
