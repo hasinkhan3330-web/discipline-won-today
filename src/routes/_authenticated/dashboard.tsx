@@ -122,7 +122,7 @@ function SpaceWallpaper({ accent }: { accent: string }) {
       <div style={{ position: "absolute", bottom: "-10%", left: "-20%", width: 500, height: 500, background: "radial-gradient(circle, #7b5cff33 0%, transparent 60%)", filter: "blur(40px)" }} />
 
       {/* moon */}
-      <div style={{ position: "absolute", top: 60, right: 30, width: 90, height: 90, borderRadius: "50%", background: "radial-gradient(circle at 35% 35%, #f5f0dc 0%, #d4cba8 40%, #8a8168 100%)", boxShadow: `0 0 60px rgba(245,240,220,0.4), 0 0 120px ${accent}33, inset -8px -12px 20px rgba(0,0,0,0.5)` }}>
+      <div style={{ position: "absolute", top: 60, right: 30, width: 90, height: 90, borderRadius: "50%", background: "radial-gradient(circle at 35% 35%, #f5f0dc 0%, #d4cba8 40%, #8a8168 100%)", boxShadow: `0 0 60px rgba(245,240,220,0.4), 0 0 120px ${accent}33, inset -8px -12px 20px rgba(0,0,0,0.5)`, animation: "moon-spin 20s linear infinite" }}>
         <div style={{ position: "absolute", top: 18, left: 22, width: 10, height: 10, borderRadius: "50%", background: "rgba(0,0,0,0.15)" }} />
         <div style={{ position: "absolute", top: 40, left: 55, width: 6, height: 6, borderRadius: "50%", background: "rgba(0,0,0,0.15)" }} />
         <div style={{ position: "absolute", top: 60, left: 30, width: 14, height: 8, borderRadius: "50%", background: "rgba(0,0,0,0.12)" }} />
