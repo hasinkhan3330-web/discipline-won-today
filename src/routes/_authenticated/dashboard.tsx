@@ -925,6 +925,7 @@ function App() {
 
             {/* MANAGE SUBSCRIPTION — opens Paddle-hosted customer portal */}
             <ManageSubscriptionCard />
+            <SubscriptionTimeline />
 
             {/* TOP RANKED — auto-sorted by coins, top holder shown large */}
 
