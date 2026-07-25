@@ -1,6 +1,25 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import alarmLoud from "@/assets/freesound_community-loud-emergency-alarm-54635.mp3.asset.json";
+import alarmReverb from "@/assets/freesound_community-emergency-alarm-with-reverb-29431.mp3.asset.json";
+import alarmRooster from "@/assets/mixkit-rooster-crowing-in-the-morning-2462.wav.asset.json";
+import alarmClassic from "@/assets/mixkit-classic-alarm-995.wav.asset.json";
+
+const WAKE_OPTIONS = [
+  { time: "4AM", pts: 10, tag: "ELITE", line: "The world sleeps. You rise." },
+  { time: "5AM", pts: 7,  tag: "STRONG", line: "Before the sun. Before the noise." },
+  { time: "6AM", pts: 5,  tag: "SOLID", line: "First light. First move." },
+  { time: "7AM", pts: 3,  tag: "BASE",  line: "Better than yesterday." },
+] as const;
+
+const RINGTONES = [
+  { id: "loud",    name: "SIREN",    url: alarmLoud.url },
+  { id: "reverb",  name: "REVERB",   url: alarmReverb.url },
+  { id: "rooster", name: "ROOSTER",  url: alarmRooster.url },
+  { id: "classic", name: "CLASSIC",  url: alarmClassic.url },
+];
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
