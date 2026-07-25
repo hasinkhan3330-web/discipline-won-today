@@ -10,6 +10,7 @@ import { openCustomerPortal } from "@/utils/payments.functions";
 export function AccountStatusStrip() {
   const env = getPaddleEnvironment();
   const [pastDue, setPastDue] = useState(false);
+  const [cancelInfo, setCancelInfo] = useState<{ endDate: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -19,13 +20,18 @@ export function AccountStatusStrip() {
       if (!u.user) return;
       const { data } = await supabase
         .from("subscriptions")
-        .select("status")
+        .select("status, cancel_at_period_end, current_period_end")
         .eq("user_id", u.user.id)
         .eq("environment", env)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (!cancelled) setPastDue(data?.status === "past_due");
+      if (cancelled) return;
+      setPastDue(data?.status === "past_due");
+      const willCancel = !!data && (data.cancel_at_period_end || data.status === "canceled") && !!data.current_period_end && new Date(data.current_period_end) > new Date();
+      setCancelInfo(willCancel
+        ? { endDate: new Date(data!.current_period_end!).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) }
+        : null);
     };
     load();
     const onFocus = () => load();
