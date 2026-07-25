@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { openCustomerPortal, switchSubscriptionPlan } from "@/utils/payments.functions";
 import { getPaddleEnvironment } from "@/lib/paddle";
 import { useSubscription } from "@/hooks/useSubscription";
+import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
 
 import alarmLoud from "@/assets/freesound_community-loud-emergency-alarm-54635.mp3.asset.json";
 import alarmReverb from "@/assets/freesound_community-emergency-alarm-with-reverb-29431.mp3.asset.json";
