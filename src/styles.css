@@ -159,8 +159,8 @@
 }
 
 @keyframes earth-spin {
-  from { transform: translateX(0); }
-  to { transform: translateX(-54.5%); }
+  from { background-position: 0% 50%; }
+  to { background-position: -200% 50%; }
 }
 
 
