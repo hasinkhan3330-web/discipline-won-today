@@ -667,7 +667,9 @@ function App() {
                   width: 160, height: 160, borderRadius: "50%",
                   background: `radial-gradient(circle at 35% 35%, ${G}, ${G2} 60%, #0a0a25 100%)`,
                   animation: medRun
-                    ? (medPhase === "inhale" ? "breatheIn 4s ease-in-out forwards" : "breatheOut 4s ease-in-out forwards")
+                    ? (medPhase === "inhale" ? "breatheIn 4s ease-in-out forwards"
+                      : medPhase === "exhale" ? "breatheOut 4s ease-in-out forwards"
+                      : "breatheHold 4s ease-in-out forwards")
                     : "none",
                   transform: medRun ? undefined : "scale(0.75)",
                   boxShadow: `0 0 80px ${G}, 0 0 160px ${G2}66`,
@@ -675,7 +677,7 @@ function App() {
                   transition: medRun ? undefined : "transform 0.4s ease",
                 }}>
                   <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: "0 0 10px #000" }}>
-                    {medRun ? medPhase.toUpperCase() : "READY"}
+                    {medRun ? medPhaseLabel : "READY"}
                   </div>
                 </div>
               </div>
