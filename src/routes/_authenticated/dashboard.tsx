@@ -1161,7 +1161,7 @@ function App() {
                 </div>
                 <div style={{ fontSize: 11, color: "#aaa", marginBottom: 16, lineHeight: 1.5 }}>
                   {proof.correct
-                    ? <>+10 coins added. You rose while the world slept.</>
+                    ? <>+{proof.wakePts ?? 10} coins added. {proof.wakeLine || "You rose while the world slept."}</>
                     : <>Correct answer was <span style={{ color: G }}>{proof.answer}</span>. No coins — but the discipline still counts.</>}
                 </div>
                 <button onClick={() => setProof(null)} style={{
