@@ -1440,3 +1440,42 @@ function CropModal({ src, accent, accent2, busy, onCancel, onConfirm }: {
   );
 }
 
+
+function ManageSubscriptionCard() {
+  const G = "#00d4ff";
+  const [busy, setBusy] = useState(false);
+  const open = async () => {
+    setBusy(true);
+    try {
+      const { url } = await openCustomerPortal({ data: undefined as any });
+      window.open(url, "_blank", "noopener");
+    } catch (e) {
+      toast.error("Couldn't open portal", { description: e instanceof Error ? e.message : "Try again in a moment." });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div style={{
+      marginTop: 14, padding: 16, background: "rgba(10,10,25,0.7)",
+      border: `1px solid ${G}44`, borderLeft: `3px solid ${G}`, borderRadius: 4,
+    }}>
+      <div style={{ fontSize: 10, color: G, letterSpacing: 3, marginBottom: 6, fontFamily: "monospace" }}>◈ SUBSCRIPTION</div>
+      <div style={{ fontSize: 12, color: "#bbb", letterSpacing: 1, marginBottom: 12, fontFamily: "monospace", lineHeight: 1.5 }}>
+        View your plan, update your card, download invoices, or cancel anytime.
+      </div>
+      <button
+        onClick={open}
+        disabled={busy}
+        style={{
+          width: "100%", padding: "12px 16px",
+          background: busy ? "#333" : `linear-gradient(135deg, ${G}33, transparent)`,
+          border: `1px solid ${G}`, color: G,
+          fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
+          cursor: busy ? "wait" : "pointer", borderRadius: 2,
+          boxShadow: `0 0 12px ${G}44`,
+        }}
+      >{busy ? "◌ OPENING…" : "⚙ MANAGE SUBSCRIPTION →"}</button>
+    </div>
+  );
+}
