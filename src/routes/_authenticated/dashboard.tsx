@@ -398,14 +398,20 @@ function App() {
   // Get the wake-up task (first task) — for 4AM proof binding
   const wakeTask = tasks.find(t => /wake/i.test(t.name)) || tasks[0];
 
-  const completeTaskRpc = async (uuid: string) => {
+  const completeTaskRpc = async (uuid: string, overridePts?: number) => {
+    // If overridePts provided, temporarily set task pts so RPC awards that amount.
+    if (typeof overridePts === "number") {
+      await supabase.from("tasks").update({ pts: overridePts }).eq("id", uuid);
+    }
     const { data, error } = await supabase.rpc("complete_task", { _task_id: uuid });
+    if (typeof overridePts === "number") {
+      // restore base 10 for the wake task so tomorrow defaults to 4AM tier
+      await supabase.from("tasks").update({ pts: 10 }).eq("id", uuid);
+    }
     if (error) { console.error(error); return; }
     const row = Array.isArray(data) ? data[0] : data;
     if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
-    // mark local task done
     setTasks(p => p.map(t => (t as any)._uuid === uuid ? { ...t, done: true } : t));
-    // refresh leaderboard in background
     supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
       if (!leaders) return;
       setBoard(leaders.map(l => ({
@@ -422,17 +428,17 @@ function App() {
     const correct = Number(proof.input) === proof.answer;
     setProof({ ...proof, mode: "result", correct });
     if (correct && wakeTask && !wakeTask.done) {
-      completeTaskRpc((wakeTask as any)._uuid);
+      completeTaskRpc((wakeTask as any)._uuid, proof.wakePts ?? 10);
     }
   };
 
   const tick = (id: number) => {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
-    // 4AM wake task requires proof
-    if (/wake/i.test(t.name)) { setProof({ mode: "choose" }); return; }
+    if (/wake/i.test(t.name)) { setProof({ mode: "time" }); return; }
     completeTaskRpc((t as any)._uuid);
   };
+
 
 
 
