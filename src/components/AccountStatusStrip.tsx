@@ -76,6 +76,23 @@ export function AccountStatusStrip() {
           >{busy ? "…" : "UPDATE CARD"}</button>
         </div>
       )}
+      {!pastDue && cancelInfo && (
+        <div style={{
+          width: "100%", background: "#3a2a08", color: "#ffd88a",
+          padding: "7px 12px", textAlign: "center",
+          fontFamily: "monospace", fontSize: 11, letterSpacing: 2, fontWeight: 800,
+          borderBottom: "1px solid #ffb84d55",
+        }}>
+          ◌ SUBSCRIPTION ENDS {cancelInfo.endDate.toUpperCase()} — <button
+            onClick={openPortal} disabled={busy}
+            style={{
+              marginLeft: 8, background: "#ffb84d", color: "#111", border: "none",
+              padding: "3px 10px", fontFamily: "monospace", fontSize: 10, fontWeight: 900,
+              letterSpacing: 2, cursor: busy ? "wait" : "pointer", borderRadius: 2,
+            }}
+          >{busy ? "…" : "RESUME"}</button>
+        </div>
+      )}
     </>
   );
 }
