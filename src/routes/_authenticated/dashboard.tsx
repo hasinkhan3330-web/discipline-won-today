@@ -172,6 +172,9 @@ function App() {
   const [weekly, setWeekly] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [myId, setMyId] = useState<string | null>(null);
   const [myName, setMyName] = useState<string>("YOU");
+  const [myAvatar, setMyAvatar] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
+
 
   const fallbackAvatar = (n: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=0a0a19&color=00ff88&size=200&bold=true`;
 
@@ -196,7 +199,9 @@ function App() {
       setCoins(prof.coins ?? 0);
       setStreak(prof.streak ?? 0);
       setMyName(prof.display_name || "YOU");
+      setMyAvatar(prof.avatar_url || "");
     }
+
     const doneIds = new Set((doneToday || []).map(d => d.task_id as string));
     setTasks((taskRows || []).map((r, i) => ({
       id: i + 1,
@@ -228,6 +233,31 @@ function App() {
   };
 
   useEffect(() => { refreshAll(); }, []);
+
+  const uploadAvatar = async (file: File) => {
+    if (!myId || !file) return;
+    if (file.size > 5 * 1024 * 1024) { alert("Image too large (max 5MB)"); return; }
+    setUploading(true);
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${myId}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: signed, error: sErr } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 365);
+      if (sErr || !signed) throw sErr || new Error("signed url failed");
+      const url = signed.signedUrl;
+      const { error: updErr } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", myId);
+      if (updErr) throw updErr;
+      setMyAvatar(url);
+      await refreshAll();
+    } catch (e: any) {
+      alert("Upload failed: " + (e?.message || "unknown"));
+    } finally {
+      setUploading(false);
+    }
+  };
+
+
 
 
   // 4AM proof-of-wakeup state
@@ -703,6 +733,42 @@ function App() {
           </div>}
 
           {tab === "profile" && <>
+            {/* PERSONAL PHOTO — upload from gallery, syncs to Rank */}
+            <div style={{ ...CARD, display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ position: "relative", width: 76, height: 76, flexShrink: 0 }}>
+                <img
+                  src={myAvatar || fallbackAvatar(myName)}
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(myName); }}
+                  alt="me"
+                  style={{ width: 76, height: 76, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}`, boxShadow: `0 0 18px ${G}88` }}
+                />
+                <div style={{ position: "absolute", bottom: -2, right: -2, width: 24, height: 24, borderRadius: "50%", background: G, color: "#000", fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 10px ${G}` }}>◉</div>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 10, color: G, letterSpacing: 3, marginBottom: 4 }}>◈ YOUR IDENTITY</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: 2, marginBottom: 8, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{myName.toUpperCase()}</div>
+                <label style={{
+                  display: "inline-block", cursor: uploading ? "wait" : "pointer",
+                  padding: "8px 12px", background: `linear-gradient(135deg, ${G}33, transparent)`,
+                  border: `1px solid ${G}`, borderLeft: `3px solid ${G}`,
+                  fontSize: 10, letterSpacing: 2, fontWeight: 800, color: G,
+                  fontFamily: "monospace", boxShadow: `0 0 12px ${G}44`,
+                  opacity: uploading ? 0.6 : 1,
+                }}>
+                  {uploading ? "◌ UPLOADING…" : "📷 UPLOAD FROM GALLERY"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploading}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); e.currentTarget.value = ""; }}
+                    style={{ display: "none" }}
+                  />
+                </label>
+                <div style={{ fontSize: 9, color: "#666", marginTop: 6, letterSpacing: 1 }}>SYNCS TO RANK · MAX 5MB</div>
+              </div>
+            </div>
+
+
             {/* TOP RANKED — auto-sorted by coins, top holder shown large */}
             {(() => {
               const roster = board.length ? board : [{ n: myName.toUpperCase(), c: coins, s: streak, img: fallbackAvatar(myName), you: true }];
