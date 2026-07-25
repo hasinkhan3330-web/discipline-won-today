@@ -121,16 +121,7 @@ function AuthPage() {
             throw new Error("Too many attempts. Wait a minute and try again.");
           }
           if (m.includes("invalid login") || m.includes("invalid credentials")) {
-            // Distinguish missing account vs wrong password by attempting a signup probe
-            const probe = await supabase.auth.signUp({
-              email: parsed.data.email,
-              password: "__probe__" + Math.random().toString(36).slice(2, 10) + "Aa1!",
-            });
-            const pm = probe.error?.message?.toLowerCase() || "";
-            if (probe.error && (pm.includes("registered") || pm.includes("exists") || pm.includes("already"))) {
-              throw new Error("Wrong password for this email. Try again or reset your password.");
-            }
-            throw new Error("No account found for this email. Tap 'CREATE AN ACCOUNT' below to sign up.");
+            throw new Error("Wrong email or password. If you don't have an account yet, tap 'CREATE AN ACCOUNT' below. Forgot your password? Use 'FORGOT PASSWORD?' to reset it.");
           }
           throw new Error(error.message);
         }
