@@ -292,13 +292,38 @@ function App() {
 
   // 4AM proof-of-wakeup state
   const [proof, setProof] = useState<null | {
-    mode: "choose" | "quiz" | "result";
+    mode: "time" | "choose" | "quiz" | "result";
+    wakePts?: number;
+    wakeTime?: string;
+    wakeLine?: string;
     subject?: "math" | "physics";
     question?: string;
     answer?: number;
     input?: string;
     correct?: boolean;
   }>(null);
+  const [ringtone, setRingtone] = useState<string>(() => {
+    if (typeof window === "undefined") return "loud";
+    return localStorage.getItem("dwt_ringtone") || "loud";
+  });
+  const previewRef = useRef<HTMLAudioElement | null>(null);
+  const playPreview = (url: string) => {
+    try {
+      if (previewRef.current) { previewRef.current.pause(); previewRef.current.currentTime = 0; }
+      const a = new Audio(url);
+      a.volume = 0.6;
+      previewRef.current = a;
+      a.play().catch(() => {});
+      setTimeout(() => { try { a.pause(); } catch {} }, 2500);
+    } catch {}
+  };
+  const pickRingtone = (id: string) => {
+    setRingtone(id);
+    try { localStorage.setItem("dwt_ringtone", id); } catch {}
+    const r = RINGTONES.find(x => x.id === id);
+    if (r) playPreview(r.url);
+  };
+
 
   // MEDITATION state
   const [medMin, setMedMin] = useState(5);
