@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { getPaddleEnvironment } from "@/lib/paddle";
+
 
 const G = "#00d4ff";
 const G2 = "#a855f7";
@@ -129,11 +131,13 @@ export function PaywallGate({ children }: { children: React.ReactNode }) {
       .from("subscriptions")
       .select("status, current_period_end")
       .eq("user_id", uid)
+      .eq("environment", getPaddleEnvironment())
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
     setSub(data as any);
   };
+
 
   useEffect(() => {
     (async () => {
