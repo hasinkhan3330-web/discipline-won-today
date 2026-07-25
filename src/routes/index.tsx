@@ -24,7 +24,7 @@ function Landing() {
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
-      if (data.session) navigate({ to: "/_authenticated/dashboard", replace: true });
+      if (data.session) navigate({ to: "/dashboard", replace: true });
       else setChecking(false);
     });
     return () => { mounted = false; };
