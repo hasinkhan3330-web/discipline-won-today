@@ -16,11 +16,13 @@ export const resolvePaddlePrice = createServerFn({ method: "GET" })
 
 export const openCustomerPortal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((data: { environment: PaddleEnv }) => data)
+  .handler(async ({ data, context }) => {
     const { data: sub, error } = await context.supabase
       .from("subscriptions")
       .select("paddle_subscription_id, paddle_customer_id, environment")
       .eq("user_id", context.userId)
+      .eq("environment", data.environment)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
