@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { openCustomerPortal } from "@/utils/payments.functions";
+import { openCustomerPortal, switchSubscriptionPlan } from "@/utils/payments.functions";
 import { getPaddleEnvironment } from "@/lib/paddle";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -1452,9 +1452,10 @@ function ManageSubscriptionCard() {
   const G = "#00d4ff";
   const R = "#ff4d4d";
   const [busy, setBusy] = useState(false);
+  const [switching, setSwitching] = useState(false);
   const [uid, setUid] = useState<string | null>(null);
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setUid(data.user?.id ?? null)); }, []);
-  const { sub } = useSubscription(uid);
+  const { sub, reload } = useSubscription(uid);
 
   const open = async () => {
     setBusy(true);
@@ -1465,6 +1466,27 @@ function ManageSubscriptionCard() {
       toast.error("Couldn't open portal", { description: e instanceof Error ? e.message : "Try again in a moment." });
     } finally {
       setBusy(false);
+    }
+  };
+
+  const isYearly = sub?.price_id === "dwt_pro_yearly";
+  const targetPriceId = isYearly ? "dwt_pro_monthly" : "dwt_pro_yearly";
+  const targetLabel   = isYearly ? "SWITCH TO MONTHLY" : "UPGRADE TO YEARLY (SAVE ~47%)";
+
+  const doSwitch = async () => {
+    if (!confirm(isYearly
+      ? "Switch to monthly billing? Paddle will credit any unused time from your yearly plan."
+      : "Upgrade to yearly billing? Paddle will charge the prorated difference now."
+    )) return;
+    setSwitching(true);
+    try {
+      await switchSubscriptionPlan({ data: { environment: getPaddleEnvironment(), targetPriceId } });
+      toast.success(isYearly ? "Switched to monthly" : "Upgraded to yearly");
+      setTimeout(reload, 1500); // let the webhook land
+    } catch (e) {
+      toast.error("Plan switch failed", { description: e instanceof Error ? e.message : "Try again in a moment." });
+    } finally {
+      setSwitching(false);
     }
   };
 
@@ -1510,6 +1532,20 @@ function ManageSubscriptionCard() {
           boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
         }}
       >{busy ? "◌ OPENING…" : isPastDue ? "⚠ UPDATE PAYMENT METHOD →" : "⚙ MANAGE SUBSCRIPTION →"}</button>
+
+      {sub && !isCanceled && !isPastDue && (
+        <button
+          onClick={doSwitch}
+          disabled={switching}
+          style={{
+            marginTop: 8, width: "100%", padding: "10px 16px",
+            background: "transparent",
+            border: `1px dashed ${G}77`, color: G,
+            fontFamily: "monospace", fontSize: 10, fontWeight: 900, letterSpacing: 2.5,
+            cursor: switching ? "wait" : "pointer", borderRadius: 2,
+          }}
+        >{switching ? "◌ SWITCHING…" : targetLabel}</button>
+      )}
     </div>
   );
 }

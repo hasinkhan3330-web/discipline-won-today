@@ -115,6 +115,51 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_events: {
+        Row: {
+          amount: number | null
+          created_at: string
+          currency: string | null
+          environment: string
+          event_type: string
+          id: string
+          paddle_event_id: string
+          raw: Json | null
+          status: string | null
+          subscription_id: string | null
+          transaction_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          environment: string
+          event_type: string
+          id?: string
+          paddle_event_id: string
+          raw?: Json | null
+          status?: string | null
+          subscription_id?: string | null
+          transaction_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          environment?: string
+          event_type?: string
+          id?: string
+          paddle_event_id?: string
+          raw?: Json | null
+          status?: string | null
+          subscription_id?: string | null
+          transaction_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

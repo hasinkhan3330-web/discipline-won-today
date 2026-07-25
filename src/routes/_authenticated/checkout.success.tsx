@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getPaddleEnvironment } from "@/lib/paddle";
+
 
 const G = "#00d4ff";
 const G2 = "#a855f7";
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/_authenticated/checkout/success")({
 
 function SuccessPage() {
   const [ready, setReady] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancelled = false;
@@ -36,14 +38,19 @@ function SuccessPage() {
         .limit(1)
         .maybeSingle();
       if (cancelled) return;
-      if (data) { setReady(true); return; }
+      if (data) {
+        setReady(true);
+        // Auto-navigate a moment after the celebration animation.
+        setTimeout(() => { if (!cancelled) navigate({ to: "/dashboard" }); }, 2200);
+        return;
+      }
       tries++;
       if (tries < 20) setTimeout(check, 1500);
       else setReady(true);
     };
     check();
     return () => { cancelled = true; };
-  }, []);
+  }, [navigate]);
 
   return (
     <div style={{
