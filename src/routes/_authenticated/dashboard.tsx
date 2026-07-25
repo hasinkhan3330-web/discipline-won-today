@@ -308,10 +308,12 @@ function App() {
   }, [medRun, medMin, tasks]);
 
 
-  // Derive breathing phase from elapsed seconds — no extra timers needed.
+  // WHO-style box breathing 4-4-4-4 (inhale, hold, exhale, hold) — 16s cycle, no counters shown.
   const elapsed = medMin * 60 - medLeft;
-  const phaseSec = elapsed % 8;
-  const medPhase: "inhale" | "exhale" = phaseSec < 4 ? "inhale" : "exhale";
+  const phaseSec = elapsed % 16;
+  const medPhase: "inhale" | "hold" | "exhale" | "hold2" =
+    phaseSec < 4 ? "inhale" : phaseSec < 8 ? "hold" : phaseSec < 12 ? "exhale" : "hold2";
+  const medPhaseLabel = medPhase === "inhale" ? "INHALE" : medPhase === "exhale" ? "EXHALE" : "HOLD";
 
   const pickMed = (m: number) => { setMedMin(m); setMedLeft(m * 60); setMedRun(false); };
   const fmtT = (s: number) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
@@ -665,7 +667,9 @@ function App() {
                   width: 160, height: 160, borderRadius: "50%",
                   background: `radial-gradient(circle at 35% 35%, ${G}, ${G2} 60%, #0a0a25 100%)`,
                   animation: medRun
-                    ? (medPhase === "inhale" ? "breatheIn 4s ease-in-out forwards" : "breatheOut 4s ease-in-out forwards")
+                    ? (medPhase === "inhale" ? "breatheIn 4s ease-in-out forwards"
+                      : medPhase === "exhale" ? "breatheOut 4s ease-in-out forwards"
+                      : "breatheHold 4s ease-in-out forwards")
                     : "none",
                   transform: medRun ? undefined : "scale(0.75)",
                   boxShadow: `0 0 80px ${G}, 0 0 160px ${G2}66`,
@@ -673,7 +677,7 @@ function App() {
                   transition: medRun ? undefined : "transform 0.4s ease",
                 }}>
                   <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: "0 0 10px #000" }}>
-                    {medRun ? medPhase.toUpperCase() : "READY"}
+                    {medRun ? medPhaseLabel : "READY"}
                   </div>
                 </div>
               </div>
