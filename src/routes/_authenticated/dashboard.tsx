@@ -140,12 +140,17 @@ function SpaceWallpaper({ accent }: { accent: string }) {
       <div style={{ position: "absolute", top: "-20%", right: "-10%", width: 500, height: 500, background: `radial-gradient(circle, ${accent}22 0%, transparent 60%)`, filter: "blur(40px)" }} />
       <div style={{ position: "absolute", bottom: "-10%", left: "-20%", width: 500, height: 500, background: "radial-gradient(circle, #7b5cff33 0%, transparent 60%)", filter: "blur(40px)" }} />
 
-      {/* moon */}
-      <div style={{ position: "absolute", top: 60, right: 30, width: 90, height: 90, borderRadius: "50%", background: "radial-gradient(circle at 35% 35%, #f5f0dc 0%, #d4cba8 40%, #8a8168 100%)", boxShadow: `0 0 60px rgba(245,240,220,0.4), 0 0 120px ${accent}33, inset -8px -12px 20px rgba(0,0,0,0.5)`, animation: "moon-spin 20s linear infinite" }}>
-        <div style={{ position: "absolute", top: 18, left: 22, width: 10, height: 10, borderRadius: "50%", background: "rgba(0,0,0,0.15)" }} />
-        <div style={{ position: "absolute", top: 40, left: 55, width: 6, height: 6, borderRadius: "50%", background: "rgba(0,0,0,0.15)" }} />
-        <div style={{ position: "absolute", top: 60, left: 30, width: 14, height: 8, borderRadius: "50%", background: "rgba(0,0,0,0.12)" }} />
+      {/* sun — real NASA SDO photo, spinning + pulsing corona */}
+      <div style={{ position: "absolute", top: 50, right: 20, width: 110, height: 110, animation: "sun-pulse 4s ease-in-out infinite" }}>
+        <div style={{ position: "absolute", inset: -30, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,180,60,0.55) 0%, rgba(255,90,0,0.25) 40%, transparent 70%)", filter: "blur(6px)", animation: "sun-flare 3s ease-in-out infinite" }} />
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/b/b4/The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg/512px-The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg"; }}
+          alt="sun"
+          style={{ position: "relative", width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", boxShadow: "0 0 60px rgba(255,160,40,0.75), 0 0 120px rgba(255,90,0,0.45), inset -6px -10px 22px rgba(0,0,0,0.4)", animation: "moon-spin 40s linear infinite" }}
+        />
       </div>
+
 
       {/* stars */}
       {stars.map(st => (
