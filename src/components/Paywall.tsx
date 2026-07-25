@@ -35,7 +35,15 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
   const start = async () => {
     setError(null);
     try {
-      await openCheckout({ priceId: selected, userId, customerEmail: email || undefined });
+      await openCheckout({
+        priceId: selected,
+        userId,
+        customerEmail: email || undefined,
+        // Fires on successful checkout — the successUrl redirect handles UI,
+        // but this lets the PaywallGate refetch instantly if the user closes
+        // the overlay before the redirect completes.
+        onCompleted: () => window.dispatchEvent(new Event("focus")),
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Checkout failed");
     }
