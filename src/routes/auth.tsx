@@ -57,7 +57,7 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/_authenticated/dashboard", replace: true });
+      if (data.session) navigate({ to: "/dashboard", replace: true });
     });
   }, [navigate]);
 
@@ -87,21 +87,21 @@ function AuthPage() {
               password: parsed.data.password,
             });
             if (sErr) throw new Error("This email is already registered. Wrong password?");
-            navigate({ to: "/_authenticated/dashboard", replace: true });
+            navigate({ to: "/dashboard", replace: true });
             return;
           }
           throw error;
         }
         const { data: s } = await supabase.auth.getSession();
         if (s.session) {
-          navigate({ to: "/_authenticated/dashboard", replace: true });
+          navigate({ to: "/dashboard", replace: true });
         } else {
           const { error: sErr } = await supabase.auth.signInWithPassword({
             email: parsed.data.email,
             password: parsed.data.password,
           });
           if (sErr) { setMsg({ kind: "ok", text: "Account created. You can now sign in." }); setMode("signin"); }
-          else navigate({ to: "/_authenticated/dashboard", replace: true });
+          else navigate({ to: "/dashboard", replace: true });
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -134,7 +134,7 @@ function AuthPage() {
           }
           throw new Error(error.message);
         }
-        navigate({ to: "/_authenticated/dashboard", replace: true });
+        navigate({ to: "/dashboard", replace: true });
       }
     } catch (err) {
       setMsg({ kind: "err", text: err instanceof Error ? err.message : "Something went wrong" });
