@@ -1443,13 +1443,23 @@ function CropModal({ src, accent, accent2, busy, onCancel, onConfirm }: {
 }
 
 
+const PLAN_LABELS: Record<string, string> = {
+  dwt_pro_monthly: "DWT PRO · MONTHLY",
+  dwt_pro_yearly:  "DWT PRO · YEARLY",
+};
+
 function ManageSubscriptionCard() {
   const G = "#00d4ff";
+  const R = "#ff4d4d";
   const [busy, setBusy] = useState(false);
+  const [uid, setUid] = useState<string | null>(null);
+  useEffect(() => { supabase.auth.getUser().then(({ data }) => setUid(data.user?.id ?? null)); }, []);
+  const { sub } = useSubscription(uid);
+
   const open = async () => {
     setBusy(true);
     try {
-      const { url } = await openCustomerPortal({ data: undefined as any });
+      const { url } = await openCustomerPortal({ data: { environment: getPaddleEnvironment() } });
       window.open(url, "_blank", "noopener");
     } catch (e) {
       toast.error("Couldn't open portal", { description: e instanceof Error ? e.message : "Try again in a moment." });
@@ -1457,27 +1467,49 @@ function ManageSubscriptionCard() {
       setBusy(false);
     }
   };
+
+  const planLabel = sub ? (PLAN_LABELS[sub.price_id] ?? sub.price_id) : "DWT PRO";
+  const endDate   = sub?.current_period_end ? new Date(sub.current_period_end) : null;
+  const endStr    = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
+  const isTrial   = sub?.status === "trialing";
+  const isCanceled = sub?.status === "canceled" || sub?.cancel_at_period_end;
+  const isPastDue  = sub?.status === "past_due";
+
+  const statusLine = isPastDue
+    ? { color: R, text: "⚠ PAYMENT FAILED — update your card to keep access." }
+    : isCanceled && endStr
+      ? { color: "#ffb84d", text: `◌ CANCELED — access ends ${endStr}` }
+      : isTrial && endStr
+        ? { color: G, text: `◉ FREE TRIAL — renews on ${endStr}` }
+        : endStr
+          ? { color: G, text: `◉ ACTIVE — renews on ${endStr}` }
+          : { color: G, text: "◉ ACTIVE" };
+
   return (
     <div style={{
       marginTop: 14, padding: 16, background: "rgba(10,10,25,0.7)",
-      border: `1px solid ${G}44`, borderLeft: `3px solid ${G}`, borderRadius: 4,
+      border: `1px solid ${isPastDue ? R : G}44`, borderLeft: `3px solid ${isPastDue ? R : G}`, borderRadius: 4,
     }}>
-      <div style={{ fontSize: 10, color: G, letterSpacing: 3, marginBottom: 6, fontFamily: "monospace" }}>◈ SUBSCRIPTION</div>
-      <div style={{ fontSize: 12, color: "#bbb", letterSpacing: 1, marginBottom: 12, fontFamily: "monospace", lineHeight: 1.5 }}>
+      <div style={{ fontSize: 10, color: isPastDue ? R : G, letterSpacing: 3, marginBottom: 6, fontFamily: "monospace" }}>◈ SUBSCRIPTION</div>
+      <div style={{ fontSize: 14, color: "#fff", letterSpacing: 2, fontWeight: 900, fontFamily: "monospace" }}>{planLabel}</div>
+      <div style={{ marginTop: 6, fontSize: 11, color: statusLine.color, letterSpacing: 1.5, fontFamily: "monospace", lineHeight: 1.5 }}>
+        {statusLine.text}
+      </div>
+      <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
         View your plan, update your card, download invoices, or cancel anytime.
       </div>
       <button
         onClick={open}
         disabled={busy}
         style={{
-          width: "100%", padding: "12px 16px",
-          background: busy ? "#333" : `linear-gradient(135deg, ${G}33, transparent)`,
-          border: `1px solid ${G}`, color: G,
+          marginTop: 12, width: "100%", padding: "12px 16px",
+          background: busy ? "#333" : `linear-gradient(135deg, ${isPastDue ? R : G}33, transparent)`,
+          border: `1px solid ${isPastDue ? R : G}`, color: isPastDue ? R : G,
           fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
           cursor: busy ? "wait" : "pointer", borderRadius: 2,
-          boxShadow: `0 0 12px ${G}44`,
+          boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
         }}
-      >{busy ? "◌ OPENING…" : "⚙ MANAGE SUBSCRIPTION →"}</button>
+      >{busy ? "◌ OPENING…" : isPastDue ? "⚠ UPDATE PAYMENT METHOD →" : "⚙ MANAGE SUBSCRIPTION →"}</button>
     </div>
   );
 }
