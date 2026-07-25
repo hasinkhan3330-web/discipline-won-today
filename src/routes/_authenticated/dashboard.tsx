@@ -1032,11 +1032,67 @@ function App() {
             padding: 20, boxShadow: `0 10px 60px ${G}55, inset 0 1px 0 ${G}33`,
             fontFamily: "monospace",
           }}>
-            <div style={{ fontSize: 10, letterSpacing: 4, color: G, marginBottom: 6 }}>▸ 04:00 PROTOCOL</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 2, marginBottom: 4, textShadow: `0 0 12px ${G}` }}>PROVE YOU ARE AWAKE</div>
-            <div style={{ fontSize: 11, color: "#888", marginBottom: 18, lineHeight: 1.5 }}>
-              Sleeping minds cannot solve. Answer correctly to earn <span style={{ color: G }}>+10 coins</span>.
+            <div style={{ fontSize: 10, letterSpacing: 4, color: G, marginBottom: 6 }}>
+              ▸ {proof.mode === "time" ? "WAKE PROTOCOL" : `${proof.wakeTime || "04:00"} PROTOCOL`}
             </div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 2, marginBottom: 4, textShadow: `0 0 12px ${G}` }}>
+              {proof.mode === "time" ? "WHEN DID YOU RISE?" : "PROVE YOU ARE AWAKE"}
+            </div>
+            <div style={{ fontSize: 11, color: "#888", marginBottom: 18, lineHeight: 1.5 }}>
+              {proof.mode === "time"
+                ? <>Pick your wake-up tier. Earlier = more coins. Then set your alarm tone.</>
+                : <>Sleeping minds cannot solve. Answer correctly to earn <span style={{ color: G }}>+{proof.wakePts ?? 10} coins</span>.</>}
+            </div>
+
+            {proof.mode === "time" && (
+              <>
+                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 10 }}>WAKE TIER</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 18 }}>
+                  {WAKE_OPTIONS.map(w => (
+                    <button key={w.time} onClick={() => setProof({ mode: "choose", wakePts: w.pts, wakeTime: w.time, wakeLine: w.line })} style={{
+                      textAlign: "left", padding: "12px 12px", background: `linear-gradient(135deg, ${G}22, transparent)`,
+                      border: `1px solid ${G}66`, borderLeft: `3px solid ${G}`, color: "#fff", cursor: "pointer",
+                      fontFamily: "monospace",
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                        <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: 2, textShadow: `0 0 10px ${G}` }}>{w.time}</span>
+                        <span style={{ fontSize: 11, fontWeight: 900, color: G }}>+{w.pts}</span>
+                      </div>
+                      <div style={{ fontSize: 8, letterSpacing: 2, color: G2, marginBottom: 4 }}>{w.tag}</div>
+                      <div style={{ fontSize: 9, color: "#999", lineHeight: 1.4 }}>{w.line}</div>
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 12 }}>🚨</span> EMERGENCY RINGTONE
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 14 }}>
+                  {RINGTONES.map(r => {
+                    const active = ringtone === r.id;
+                    return (
+                      <button key={r.id} onClick={() => pickRingtone(r.id)} style={{
+                        padding: "10px 8px",
+                        background: active ? `linear-gradient(135deg, ${G}44, ${G2}22)` : "rgba(0,0,0,0.4)",
+                        border: `1px solid ${active ? G : "#333"}`,
+                        color: active ? "#fff" : "#aaa", cursor: "pointer",
+                        fontFamily: "monospace", fontSize: 10, letterSpacing: 2, fontWeight: 700,
+                        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6,
+                      }}>
+                        <span>{active ? "◉" : "○"} {r.name}</span>
+                        <span style={{ fontSize: 9, color: G }}>▶</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button onClick={() => setProof(null)} style={{
+                  marginTop: 4, width: "100%", padding: 8, background: "transparent",
+                  border: "1px solid #333", color: "#666", cursor: "pointer",
+                  fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
+                }}>CANCEL</button>
+              </>
+            )}
 
             {proof.mode === "choose" && (
               <>
@@ -1053,13 +1109,14 @@ function App() {
                     </button>
                   ))}
                 </div>
-                <button onClick={() => setProof(null)} style={{
+                <button onClick={() => setProof({ mode: "time" })} style={{
                   marginTop: 14, width: "100%", padding: 8, background: "transparent",
-                  border: "1px solid #333", color: "#666", cursor: "pointer",
+                  border: "1px solid #333", color: "#888", cursor: "pointer",
                   fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
-                }}>CANCEL</button>
+                }}>← BACK</button>
               </>
             )}
+
 
             {proof.mode === "quiz" && (
               <>
