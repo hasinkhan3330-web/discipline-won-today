@@ -308,10 +308,12 @@ function App() {
   }, [medRun, medMin, tasks]);
 
 
-  // Derive breathing phase from elapsed seconds — no extra timers needed.
+  // WHO-style box breathing 4-4-4-4 (inhale, hold, exhale, hold) — 16s cycle, no counters shown.
   const elapsed = medMin * 60 - medLeft;
-  const phaseSec = elapsed % 8;
-  const medPhase: "inhale" | "exhale" = phaseSec < 4 ? "inhale" : "exhale";
+  const phaseSec = elapsed % 16;
+  const medPhase: "inhale" | "hold" | "exhale" | "hold2" =
+    phaseSec < 4 ? "inhale" : phaseSec < 8 ? "hold" : phaseSec < 12 ? "exhale" : "hold2";
+  const medPhaseLabel = medPhase === "inhale" ? "INHALE" : medPhase === "exhale" ? "EXHALE" : "HOLD";
 
   const pickMed = (m: number) => { setMedMin(m); setMedLeft(m * 60); setMedRun(false); };
   const fmtT = (s: number) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
