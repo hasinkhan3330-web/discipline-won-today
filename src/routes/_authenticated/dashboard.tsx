@@ -199,7 +199,9 @@ function App() {
       setCoins(prof.coins ?? 0);
       setStreak(prof.streak ?? 0);
       setMyName(prof.display_name || "YOU");
+      setMyAvatar(prof.avatar_url || "");
     }
+
     const doneIds = new Set((doneToday || []).map(d => d.task_id as string));
     setTasks((taskRows || []).map((r, i) => ({
       id: i + 1,
