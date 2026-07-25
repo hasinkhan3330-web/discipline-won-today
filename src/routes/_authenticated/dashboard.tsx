@@ -1,6 +1,25 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import alarmLoud from "@/assets/freesound_community-loud-emergency-alarm-54635.mp3.asset.json";
+import alarmReverb from "@/assets/freesound_community-emergency-alarm-with-reverb-29431.mp3.asset.json";
+import alarmRooster from "@/assets/mixkit-rooster-crowing-in-the-morning-2462.wav.asset.json";
+import alarmClassic from "@/assets/mixkit-classic-alarm-995.wav.asset.json";
+
+const WAKE_OPTIONS = [
+  { time: "4AM", pts: 10, tag: "ELITE", line: "The world sleeps. You rise." },
+  { time: "5AM", pts: 7,  tag: "STRONG", line: "Before the sun. Before the noise." },
+  { time: "6AM", pts: 5,  tag: "SOLID", line: "First light. First move." },
+  { time: "7AM", pts: 3,  tag: "BASE",  line: "Better than yesterday." },
+] as const;
+
+const RINGTONES = [
+  { id: "loud",    name: "SIREN",    url: alarmLoud.url },
+  { id: "reverb",  name: "REVERB",   url: alarmReverb.url },
+  { id: "rooster", name: "ROOSTER",  url: alarmRooster.url },
+  { id: "classic", name: "CLASSIC",  url: alarmClassic.url },
+];
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -273,13 +292,38 @@ function App() {
 
   // 4AM proof-of-wakeup state
   const [proof, setProof] = useState<null | {
-    mode: "choose" | "quiz" | "result";
+    mode: "time" | "choose" | "quiz" | "result";
+    wakePts?: number;
+    wakeTime?: string;
+    wakeLine?: string;
     subject?: "math" | "physics";
     question?: string;
     answer?: number;
     input?: string;
     correct?: boolean;
   }>(null);
+  const [ringtone, setRingtone] = useState<string>(() => {
+    if (typeof window === "undefined") return "loud";
+    return localStorage.getItem("dwt_ringtone") || "loud";
+  });
+  const previewRef = useRef<HTMLAudioElement | null>(null);
+  const playPreview = (url: string) => {
+    try {
+      if (previewRef.current) { previewRef.current.pause(); previewRef.current.currentTime = 0; }
+      const a = new Audio(url);
+      a.volume = 0.6;
+      previewRef.current = a;
+      a.play().catch(() => {});
+      setTimeout(() => { try { a.pause(); } catch {} }, 2500);
+    } catch {}
+  };
+  const pickRingtone = (id: string) => {
+    setRingtone(id);
+    try { localStorage.setItem("dwt_ringtone", id); } catch {}
+    const r = RINGTONES.find(x => x.id === id);
+    if (r) playPreview(r.url);
+  };
+
 
   // MEDITATION state
   const [medMin, setMedMin] = useState(5);
@@ -354,14 +398,20 @@ function App() {
   // Get the wake-up task (first task) — for 4AM proof binding
   const wakeTask = tasks.find(t => /wake/i.test(t.name)) || tasks[0];
 
-  const completeTaskRpc = async (uuid: string) => {
+  const completeTaskRpc = async (uuid: string, overridePts?: number) => {
+    // If overridePts provided, temporarily set task pts so RPC awards that amount.
+    if (typeof overridePts === "number") {
+      await supabase.from("tasks").update({ pts: overridePts }).eq("id", uuid);
+    }
     const { data, error } = await supabase.rpc("complete_task", { _task_id: uuid });
+    if (typeof overridePts === "number") {
+      // restore base 10 for the wake task so tomorrow defaults to 4AM tier
+      await supabase.from("tasks").update({ pts: 10 }).eq("id", uuid);
+    }
     if (error) { console.error(error); return; }
     const row = Array.isArray(data) ? data[0] : data;
     if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
-    // mark local task done
     setTasks(p => p.map(t => (t as any)._uuid === uuid ? { ...t, done: true } : t));
-    // refresh leaderboard in background
     supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
       if (!leaders) return;
       setBoard(leaders.map(l => ({
@@ -378,17 +428,17 @@ function App() {
     const correct = Number(proof.input) === proof.answer;
     setProof({ ...proof, mode: "result", correct });
     if (correct && wakeTask && !wakeTask.done) {
-      completeTaskRpc((wakeTask as any)._uuid);
+      completeTaskRpc((wakeTask as any)._uuid, proof.wakePts ?? 10);
     }
   };
 
   const tick = (id: number) => {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
-    // 4AM wake task requires proof
-    if (/wake/i.test(t.name)) { setProof({ mode: "choose" }); return; }
+    if (/wake/i.test(t.name)) { setProof({ mode: "time" }); return; }
     completeTaskRpc((t as any)._uuid);
   };
+
 
 
 
@@ -982,11 +1032,67 @@ function App() {
             padding: 20, boxShadow: `0 10px 60px ${G}55, inset 0 1px 0 ${G}33`,
             fontFamily: "monospace",
           }}>
-            <div style={{ fontSize: 10, letterSpacing: 4, color: G, marginBottom: 6 }}>▸ 04:00 PROTOCOL</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 2, marginBottom: 4, textShadow: `0 0 12px ${G}` }}>PROVE YOU ARE AWAKE</div>
-            <div style={{ fontSize: 11, color: "#888", marginBottom: 18, lineHeight: 1.5 }}>
-              Sleeping minds cannot solve. Answer correctly to earn <span style={{ color: G }}>+10 coins</span>.
+            <div style={{ fontSize: 10, letterSpacing: 4, color: G, marginBottom: 6 }}>
+              ▸ {proof.mode === "time" ? "WAKE PROTOCOL" : `${proof.wakeTime || "04:00"} PROTOCOL`}
             </div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 2, marginBottom: 4, textShadow: `0 0 12px ${G}` }}>
+              {proof.mode === "time" ? "WHEN DID YOU RISE?" : "PROVE YOU ARE AWAKE"}
+            </div>
+            <div style={{ fontSize: 11, color: "#888", marginBottom: 18, lineHeight: 1.5 }}>
+              {proof.mode === "time"
+                ? <>Pick your wake-up tier. Earlier = more coins. Then set your alarm tone.</>
+                : <>Sleeping minds cannot solve. Answer correctly to earn <span style={{ color: G }}>+{proof.wakePts ?? 10} coins</span>.</>}
+            </div>
+
+            {proof.mode === "time" && (
+              <>
+                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 10 }}>WAKE TIER</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 18 }}>
+                  {WAKE_OPTIONS.map(w => (
+                    <button key={w.time} onClick={() => setProof({ mode: "choose", wakePts: w.pts, wakeTime: w.time, wakeLine: w.line })} style={{
+                      textAlign: "left", padding: "12px 12px", background: `linear-gradient(135deg, ${G}22, transparent)`,
+                      border: `1px solid ${G}66`, borderLeft: `3px solid ${G}`, color: "#fff", cursor: "pointer",
+                      fontFamily: "monospace",
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
+                        <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: 2, textShadow: `0 0 10px ${G}` }}>{w.time}</span>
+                        <span style={{ fontSize: 11, fontWeight: 900, color: G }}>+{w.pts}</span>
+                      </div>
+                      <div style={{ fontSize: 8, letterSpacing: 2, color: G2, marginBottom: 4 }}>{w.tag}</div>
+                      <div style={{ fontSize: 9, color: "#999", lineHeight: 1.4 }}>{w.line}</div>
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 12 }}>🚨</span> EMERGENCY RINGTONE
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 14 }}>
+                  {RINGTONES.map(r => {
+                    const active = ringtone === r.id;
+                    return (
+                      <button key={r.id} onClick={() => pickRingtone(r.id)} style={{
+                        padding: "10px 8px",
+                        background: active ? `linear-gradient(135deg, ${G}44, ${G2}22)` : "rgba(0,0,0,0.4)",
+                        border: `1px solid ${active ? G : "#333"}`,
+                        color: active ? "#fff" : "#aaa", cursor: "pointer",
+                        fontFamily: "monospace", fontSize: 10, letterSpacing: 2, fontWeight: 700,
+                        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6,
+                      }}>
+                        <span>{active ? "◉" : "○"} {r.name}</span>
+                        <span style={{ fontSize: 9, color: G }}>▶</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button onClick={() => setProof(null)} style={{
+                  marginTop: 4, width: "100%", padding: 8, background: "transparent",
+                  border: "1px solid #333", color: "#666", cursor: "pointer",
+                  fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
+                }}>CANCEL</button>
+              </>
+            )}
 
             {proof.mode === "choose" && (
               <>
@@ -1003,13 +1109,14 @@ function App() {
                     </button>
                   ))}
                 </div>
-                <button onClick={() => setProof(null)} style={{
+                <button onClick={() => setProof({ mode: "time" })} style={{
                   marginTop: 14, width: "100%", padding: 8, background: "transparent",
-                  border: "1px solid #333", color: "#666", cursor: "pointer",
+                  border: "1px solid #333", color: "#888", cursor: "pointer",
                   fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
-                }}>CANCEL</button>
+                }}>← BACK</button>
               </>
             )}
+
 
             {proof.mode === "quiz" && (
               <>
@@ -1054,7 +1161,7 @@ function App() {
                 </div>
                 <div style={{ fontSize: 11, color: "#aaa", marginBottom: 16, lineHeight: 1.5 }}>
                   {proof.correct
-                    ? <>+10 coins added. You rose while the world slept.</>
+                    ? <>+{proof.wakePts ?? 10} coins added. {proof.wakeLine || "You rose while the world slept."}</>
                     : <>Correct answer was <span style={{ color: G }}>{proof.answer}</span>. No coins — but the discipline still counts.</>}
                 </div>
                 <button onClick={() => setProof(null)} style={{
