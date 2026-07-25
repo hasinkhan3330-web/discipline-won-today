@@ -158,3 +158,9 @@
   50% { opacity: 1; transform: scale(1.15); }
 }
 
+@keyframes earth-spin {
+  from { transform: translateX(0); }
+  to { transform: translateX(-54.5%); }
+}
+
+
