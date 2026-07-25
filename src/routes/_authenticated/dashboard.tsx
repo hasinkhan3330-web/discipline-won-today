@@ -920,7 +920,12 @@ function App() {
               );
             })()}
 
+            {/* MANAGE SUBSCRIPTION — opens Paddle-hosted customer portal */}
+            <ManageSubscriptionCard />
+
             {/* TOP RANKED — auto-sorted by coins, top holder shown large */}
+
+
 
             {(() => {
               const roster = board.length ? board : [{ n: myName.toUpperCase(), c: coins, s: streak, img: fallbackAvatar(myName), you: true }];
