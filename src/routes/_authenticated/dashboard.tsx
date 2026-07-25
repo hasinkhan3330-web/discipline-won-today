@@ -204,7 +204,7 @@ function App() {
     setMyId(uid);
 
     // Daily discipline penalty: -3 coins if yesterday was not 100% complete (once per day).
-    try { await supabase.rpc("apply_daily_penalty"); } catch {}
+    try { await (supabase.rpc as any)("apply_daily_penalty"); } catch {}
 
     const today = new Date().toISOString().slice(0, 10);
     const sevenAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
