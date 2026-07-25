@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { getPaddleEnvironment } from "@/lib/paddle";
+
 
 const G = "#00d4ff";
 const G2 = "#a855f7";
