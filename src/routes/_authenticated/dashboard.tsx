@@ -1532,6 +1532,20 @@ function ManageSubscriptionCard() {
           boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
         }}
       >{busy ? "◌ OPENING…" : isPastDue ? "⚠ UPDATE PAYMENT METHOD →" : "⚙ MANAGE SUBSCRIPTION →"}</button>
+
+      {sub && !isCanceled && !isPastDue && (
+        <button
+          onClick={doSwitch}
+          disabled={switching}
+          style={{
+            marginTop: 8, width: "100%", padding: "10px 16px",
+            background: "transparent",
+            border: `1px dashed ${G}77`, color: G,
+            fontFamily: "monospace", fontSize: 10, fontWeight: 900, letterSpacing: 2.5,
+            cursor: switching ? "wait" : "pointer", borderRadius: 2,
+          }}
+        >{switching ? "◌ SWITCHING…" : targetLabel}</button>
+      )}
     </div>
   );
 }
