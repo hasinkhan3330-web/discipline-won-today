@@ -172,6 +172,9 @@ function App() {
   const [weekly, setWeekly] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [myId, setMyId] = useState<string | null>(null);
   const [myName, setMyName] = useState<string>("YOU");
+  const [myAvatar, setMyAvatar] = useState<string>("");
+  const [uploading, setUploading] = useState(false);
+
 
   const fallbackAvatar = (n: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=0a0a19&color=00ff88&size=200&bold=true`;
 
