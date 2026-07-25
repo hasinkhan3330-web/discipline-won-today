@@ -140,14 +140,14 @@ function SpaceWallpaper({ accent }: { accent: string }) {
       <div style={{ position: "absolute", top: "-20%", right: "-10%", width: 500, height: 500, background: `radial-gradient(circle, ${accent}22 0%, transparent 60%)`, filter: "blur(40px)" }} />
       <div style={{ position: "absolute", bottom: "-10%", left: "-20%", width: 500, height: 500, background: "radial-gradient(circle, #7b5cff33 0%, transparent 60%)", filter: "blur(40px)" }} />
 
-      {/* sun — real NASA SDO photo, spinning + pulsing corona */}
-      <div style={{ position: "absolute", top: 50, right: 20, width: 110, height: 110, animation: "sun-pulse 4s ease-in-out infinite" }}>
-        <div style={{ position: "absolute", inset: -30, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,180,60,0.55) 0%, rgba(255,90,0,0.25) 40%, transparent 70%)", filter: "blur(6px)", animation: "sun-flare 3s ease-in-out infinite" }} />
+      {/* earth — real NASA Blue Marble photo, spinning with atmospheric glow */}
+      <div style={{ position: "absolute", top: 50, right: 20, width: 110, height: 110, animation: "sun-pulse 6s ease-in-out infinite" }}>
+        <div style={{ position: "absolute", inset: -20, borderRadius: "50%", background: "radial-gradient(circle, rgba(80,160,255,0.5) 0%, rgba(40,90,200,0.22) 45%, transparent 72%)", filter: "blur(6px)", animation: "sun-flare 4s ease-in-out infinite" }} />
         <img
-          src="https://upload.wikimedia.org/wikipedia/commons/b/b4/The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg"
-          onError={(e) => { (e.currentTarget as HTMLImageElement).src = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg/512px-The_Sun_by_the_Atmospheric_Imaging_Assembly_of_NASA%27s_Solar_Dynamics_Observatory_-_20100819.jpg"; }}
-          alt="sun"
-          style={{ position: "relative", width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", boxShadow: "0 0 60px rgba(255,160,40,0.75), 0 0 120px rgba(255,90,0,0.45), inset -6px -10px 22px rgba(0,0,0,0.4)", animation: "moon-spin 40s linear infinite" }}
+          src="https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/The_Earth_seen_from_Apollo_17.jpg/512px-The_Earth_seen_from_Apollo_17.jpg"; }}
+          alt="earth"
+          style={{ position: "relative", width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover", boxShadow: "0 0 50px rgba(80,160,255,0.7), 0 0 110px rgba(40,90,200,0.4), inset -8px -12px 24px rgba(0,0,0,0.55)", animation: "moon-spin 30s linear infinite" }}
         />
       </div>
 
