@@ -771,11 +771,12 @@ function App() {
                     type="file"
                     accept="image/*"
                     disabled={uploading}
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadAvatar(f); e.currentTarget.value = ""; }}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) openCropper(f); e.currentTarget.value = ""; }}
                     style={{ display: "none" }}
                   />
                 </label>
-                <div style={{ fontSize: 9, color: "#666", marginTop: 6, letterSpacing: 1 }}>SYNCS TO RANK · MAX 5MB</div>
+                <div style={{ fontSize: 9, color: "#666", marginTop: 6, letterSpacing: 1 }}>CROP · FIT · SYNCS TO RANK</div>
+
               </div>
             </div>
 
