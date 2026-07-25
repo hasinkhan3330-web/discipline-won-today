@@ -203,6 +203,9 @@ function App() {
     if (!uid) return;
     setMyId(uid);
 
+    // Daily discipline penalty: -3 coins if yesterday was not 100% complete (once per day).
+    try { await (supabase.rpc as any)("apply_daily_penalty"); } catch {}
+
     const today = new Date().toISOString().slice(0, 10);
     const sevenAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
 
@@ -835,7 +838,69 @@ function App() {
             </div>
 
 
+            {/* RANK TIER — coin-based progression */}
+            {(() => {
+              const TIERS = [
+                { min: 0,     name: "INITIATE",           icon: "◌", tag: "The path begins" },
+                { min: 500,   name: "SEED",               icon: "🌱", tag: "Roots taking hold" },
+                { min: 1000,  name: "WARRIOR",            icon: "⚔️", tag: "Forged in fire" },
+                { min: 2000,  name: "MONK",               icon: "☯",  tag: "Mind over noise" },
+                { min: 21000, name: "DISCIPLINE MASTER",  icon: "👑", tag: "Legend unlocked" },
+              ];
+              let idx = 0;
+              for (let i = 0; i < TIERS.length; i++) if (coins >= TIERS[i].min) idx = i;
+              const cur = TIERS[idx];
+              const next = TIERS[idx + 1];
+              const pct = next ? Math.min(100, Math.round(((coins - cur.min) / (next.min - cur.min)) * 100)) : 100;
+              return (
+                <div style={{ ...CARD, position: "relative", overflow: "hidden", padding: 18 }}>
+                  <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 15% 10%, ${G}22, transparent 60%)`, pointerEvents: "none" }} />
+                  <div style={{ position: "relative", zIndex: 2 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+                      <div style={{ fontSize: 10, color: G, letterSpacing: 3 }}>◈ RANK TIER</div>
+                      <div style={{ fontSize: 10, color: "#888", letterSpacing: 2 }}>{coins} COINS</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                      <div style={{
+                        width: 56, height: 56, borderRadius: 12,
+                        background: `linear-gradient(135deg, ${G}44, ${G2}22)`,
+                        border: `1px solid ${G}`, boxShadow: `0 0 16px ${G}66, inset 0 0 12px ${G}33`,
+                        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26,
+                      }}>{cur.icon}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 10px ${G}` }}>{cur.name}</div>
+                        <div style={{ fontSize: 10, color: G, letterSpacing: 2 }}>{cur.tag}</div>
+                      </div>
+                    </div>
+                    <div style={{ height: 8, background: "#0a0a15", border: `1px solid ${G}33`, borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${G}, ${G2})`, boxShadow: `0 0 10px ${G}` }} />
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 9, color: "#888", letterSpacing: 1 }}>
+                      <span>{cur.min}</span>
+                      <span style={{ color: G }}>{next ? `NEXT: ${next.name} · ${next.min - coins} TO GO` : "◉ MAXIMUM RANK ACHIEVED"}</span>
+                      <span>{next ? next.min : "∞"}</span>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 4, marginTop: 12 }}>
+                      {TIERS.map((t, i) => (
+                        <div key={t.name} style={{
+                          textAlign: "center", padding: "6px 2px",
+                          background: i <= idx ? `linear-gradient(135deg, ${G}22, transparent)` : "rgba(0,0,0,0.3)",
+                          border: `1px solid ${i <= idx ? G : "#222"}`,
+                          borderLeft: `2px solid ${i <= idx ? G : "#333"}`,
+                          opacity: i <= idx ? 1 : 0.45,
+                        }}>
+                          <div style={{ fontSize: 14 }}>{t.icon}</div>
+                          <div style={{ fontSize: 7, color: i <= idx ? G : "#666", letterSpacing: 1, marginTop: 2, fontWeight: 800 }}>{t.name.split(" ")[0]}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* TOP RANKED — auto-sorted by coins, top holder shown large */}
+
             {(() => {
               const roster = board.length ? board : [{ n: myName.toUpperCase(), c: coins, s: streak, img: fallbackAvatar(myName), you: true }];
               const [top, second, third] = roster;

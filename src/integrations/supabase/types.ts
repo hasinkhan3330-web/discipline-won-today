@@ -124,6 +124,7 @@ export type Database = {
           display_name: string | null
           id: string
           last_activity_date: string | null
+          last_penalty_date: string | null
           longest_streak: number
           streak: number
           updated_at: string
@@ -137,6 +138,7 @@ export type Database = {
           display_name?: string | null
           id: string
           last_activity_date?: string | null
+          last_penalty_date?: string | null
           longest_streak?: number
           streak?: number
           updated_at?: string
@@ -150,6 +152,7 @@ export type Database = {
           display_name?: string | null
           id?: string
           last_activity_date?: string | null
+          last_penalty_date?: string | null
           longest_streak?: number
           streak?: number
           updated_at?: string
@@ -262,6 +265,13 @@ export type Database = {
       }
     }
     Functions: {
+      apply_daily_penalty: {
+        Args: never
+        Returns: {
+          coins: number
+          penalized: boolean
+        }[]
+      }
       complete_alarm: {
         Args: { _alarm_id: string; _reward?: number }
         Returns: {
