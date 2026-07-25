@@ -131,11 +131,13 @@ export function PaywallGate({ children }: { children: React.ReactNode }) {
       .from("subscriptions")
       .select("status, current_period_end")
       .eq("user_id", uid)
+      .eq("environment", getPaddleEnvironment())
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
     setSub(data as any);
   };
+
 
   useEffect(() => {
     (async () => {
