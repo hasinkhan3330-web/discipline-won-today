@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { openCustomerPortal } from "@/utils/payments.functions";
+import { getPaddleEnvironment } from "@/lib/paddle";
+import { useSubscription } from "@/hooks/useSubscription";
 
 import alarmLoud from "@/assets/freesound_community-loud-emergency-alarm-54635.mp3.asset.json";
 import alarmReverb from "@/assets/freesound_community-emergency-alarm-with-reverb-29431.mp3.asset.json";
