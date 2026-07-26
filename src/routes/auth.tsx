@@ -34,6 +34,8 @@ function AuthPage() {
   const [resending, setResending] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  const goDashboard = () => navigate({ to: "/dashboard", replace: true });
+
   const signInWithGoogle = async () => {
     setMsg(null);
     setGoogleLoading(true);
@@ -43,7 +45,7 @@ function AuthPage() {
       });
       if (result.error) throw result.error;
       if (result.redirected) return;
-      navigate({ to: "/dashboard", replace: true });
+      goDashboard();
     } catch (err) {
       setMsg({ kind: "err", text: err instanceof Error ? err.message : "Google sign-in failed" });
     } finally {
@@ -106,21 +108,21 @@ function AuthPage() {
               password: parsed.data.password,
             });
             if (sErr) throw new Error("This email is already registered. Wrong password?");
-            navigate({ to: "/dashboard", replace: true });
+            goDashboard();
             return;
           }
           throw error;
         }
         const { data: s } = await supabase.auth.getSession();
         if (s.session) {
-          navigate({ to: "/dashboard", replace: true });
+          goDashboard();
         } else {
           const { error: sErr } = await supabase.auth.signInWithPassword({
             email: parsed.data.email,
             password: parsed.data.password,
           });
           if (sErr) { setMsg({ kind: "ok", text: "Account created. You can now sign in." }); setMode("signin"); }
-          else navigate({ to: "/dashboard", replace: true });
+          else goDashboard();
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -140,11 +142,29 @@ function AuthPage() {
             throw new Error("Too many attempts. Wait a minute and try again.");
           }
           if (m.includes("invalid login") || m.includes("invalid credentials")) {
-            throw new Error("Wrong email or password. If you don't have an account yet, tap 'CREATE AN ACCOUNT' below. Forgot your password? Use 'FORGOT PASSWORD?' to reset it.");
+            const { error: createErr } = await supabase.auth.signUp({
+              email: parsed.data.email,
+              password: parsed.data.password,
+              options: { emailRedirectTo: `${window.location.origin}/auth/verified` },
+            });
+            if (!createErr) {
+              const { data: sessionData } = await supabase.auth.getSession();
+              if (sessionData.session) {
+                goDashboard();
+                return;
+              }
+              setMsg({ kind: "ok", text: "Account created. Check your inbox once, then sign in here." });
+              setMode("signin");
+              return;
+            }
+            if (/registered|exists|already/i.test(createErr.message)) {
+              throw new Error("This email already has an account. Use the correct password, tap FORGOT PASSWORD, or continue with Google.");
+            }
+            throw new Error(createErr.message || "Could not create account. Try Google sign-in.");
           }
           throw new Error(error.message);
         }
-        navigate({ to: "/dashboard", replace: true });
+        goDashboard();
       }
     } catch (err) {
       setMsg({ kind: "err", text: err instanceof Error ? err.message : "Something went wrong" });
