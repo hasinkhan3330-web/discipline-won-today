@@ -1,6 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { PaywallGate } from "@/components/Paywall";
 import { AccountStatusStrip } from "@/components/AccountStatusStrip";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -11,9 +10,9 @@ export const Route = createFileRoute("/_authenticated")({
     return { user: data.user };
   },
   component: () => (
-    <PaywallGate>
+    <>
       <AccountStatusStrip />
       <Outlet />
-    </PaywallGate>
+    </>
   ),
 });

@@ -6,6 +6,7 @@ import { openCustomerPortal, switchSubscriptionPlan } from "@/utils/payments.fun
 import { getPaddleEnvironment } from "@/lib/paddle";
 import { useSubscription } from "@/hooks/useSubscription";
 import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
+import { Paywall } from "@/components/Paywall";
 
 import alarmLoud from "@/assets/freesound_community-loud-emergency-alarm-54635.mp3.asset.json";
 import alarmReverb from "@/assets/freesound_community-emergency-alarm-with-reverb-29431.mp3.asset.json";
@@ -208,9 +209,13 @@ function App() {
   const [board, setBoard] = useState<{ n: string; c: number; s: number; img: string; you?: boolean }[]>([]);
   const [weekly, setWeekly] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [myId, setMyId] = useState<string | null>(null);
+  const [myEmail, setMyEmail] = useState<string | null>(null);
   const [myName, setMyName] = useState<string>("YOU");
   const [myAvatar, setMyAvatar] = useState<string>("");
   const [uploading, setUploading] = useState(false);
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [trialReady, setTrialReady] = useState(false);
+  const { isActive: hasActiveSubscription, reload: reloadSubscription } = useSubscription(myId);
 
 
   const fallbackAvatar = (n: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=0a0a19&color=00ff88&size=200&bold=true`;
@@ -220,6 +225,17 @@ function App() {
     const uid = userData.user?.id;
     if (!uid) return;
     setMyId(uid);
+    setMyEmail(userData.user?.email ?? null);
+
+    try {
+      const { data: trialRows, error: trialError } = await supabase.rpc("ensure_app_trial");
+      if (!trialError) {
+        const trial = Array.isArray(trialRows) ? trialRows[0] : trialRows;
+        setTrialEndsAt(trial?.trial_ends_at ?? null);
+      }
+    } finally {
+      setTrialReady(true);
+    }
 
     // Daily discipline penalty: -3 coins if yesterday was not 100% complete (once per day).
     try {
@@ -471,6 +487,11 @@ function App() {
 
   const done = tasks.filter(t => t.done).length;
   const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+  const trialActive = !!trialEndsAt && new Date(trialEndsAt) > new Date();
+  const premiumUnlocked = hasActiveSubscription || trialActive;
+  const premiumTabs = ["rank", "quotes", "zen"];
+  const premiumLocked = trialReady && premiumTabs.includes(tab) && !premiumUnlocked;
+  const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
 
 
   // GLOBAL KEYFRAMES
@@ -561,6 +582,16 @@ function App() {
 
         {/* CONTENT */}
         <div style={{ flex: 1, overflowY: "auto", padding: "14px 12px 90px", animation: "fadeUp 0.4s ease-out" }} key={tab}>
+
+          {trialReady && trialActive && !hasActiveSubscription && (
+            <div style={{ ...CARD, borderLeft: `3px solid ${G}`, fontSize: 11, color: "#ddd", letterSpacing: 1.5, lineHeight: 1.5 }}>
+              <span style={{ color: G, fontWeight: 900 }}>◉ FREE ACCESS ACTIVE</span> · {trialDaysLeft} DAY{trialDaysLeft === 1 ? "" : "S"} LEFT. Home, Stats and You stay open; Rank, Quotes and Zen become PRO after trial.
+            </div>
+          )}
+
+          {premiumLocked && myId && <Paywall userId={myId} email={myEmail} />}
+
+          {!premiumLocked && <>
 
           {tab === "home" && <>
             <div style={CARD}>
@@ -1088,6 +1119,7 @@ function App() {
               })}
             </div>
           </>}
+          </>}
         </div>
 
         {/* BOTTOM NAV */}
@@ -1099,6 +1131,7 @@ function App() {
         }}>
           {TABS.map(n => {
             const active = tab === n.id;
+            const locked = trialReady && premiumTabs.includes(n.id) && !premiumUnlocked;
             return (
               <button key={n.id} onClick={() => setTab(n.id)} style={{
                 flex: 1, padding: "10px 4px 12px", background: "transparent", border: "none", cursor: "pointer",
@@ -1106,7 +1139,7 @@ function App() {
                 color: active ? G : "#555", position: "relative",
               }}>
                 {active && <div style={{ position: "absolute", top: 0, left: "20%", right: "20%", height: 2, background: G, boxShadow: `0 0 8px ${G}` }} />}
-                <span style={{ fontSize: 20, filter: active ? `drop-shadow(0 0 6px ${G})` : "none" }}>{n.icon}</span>
+                <span style={{ fontSize: 20, filter: active ? `drop-shadow(0 0 6px ${G})` : "none" }}>{locked ? "🔒" : n.icon}</span>
                 <span style={{ fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700 }}>{n.label}</span>
               </button>
             );
