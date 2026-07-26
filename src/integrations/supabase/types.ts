@@ -88,6 +88,30 @@ export type Database = {
         }
         Relationships: []
       }
+      app_trials: {
+        Row: {
+          created_at: string
+          trial_ends_at: string
+          trial_started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          trial_ends_at?: string
+          trial_started_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          trial_ends_at?: string
+          trial_started_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       coin_transactions: {
         Row: {
           amount: number
@@ -379,6 +403,13 @@ export type Database = {
           coins: number
           longest_streak: number
           streak: number
+        }[]
+      }
+      ensure_app_trial: {
+        Args: never
+        Returns: {
+          trial_ends_at: string
+          trial_started_at: string
         }[]
       }
       has_active_subscription: {
