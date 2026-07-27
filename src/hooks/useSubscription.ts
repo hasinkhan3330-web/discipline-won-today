@@ -34,8 +34,7 @@ export function useSubscription(userId: string | null) {
     if (!userId) return;
     const ch = supabase.channel(`subs_${userId}_${Math.random().toString(36).slice(2)}`);
     ch.on(
-      // @ts-expect-error - supabase realtime typings
-      "postgres_changes",
+      "postgres_changes" as never,
       { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${userId}` },
       () => load()
     ).subscribe();
