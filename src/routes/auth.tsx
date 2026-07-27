@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — DWT" },
@@ -17,6 +20,13 @@ export const Route = createFileRoute("/auth")({
   }),
   component: AuthPage,
 });
+
+function safeNext(v: string | undefined): string | null {
+  if (!v) return null;
+  if (!v.startsWith("/") || v.startsWith("//")) return null;
+  return v;
+}
+const NEXT_KEY = "dwt.post_auth_next";
 
 const schema = z.object({
   email: z.string().trim().email("Enter a valid email").max(255),
@@ -34,18 +44,25 @@ function AuthPage() {
   const [resending, setResending] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  const goDashboard = () => navigate({ to: "/dashboard", replace: true });
+  const { next: nextParam } = Route.useSearch();
+  const next = safeNext(nextParam);
+
+  const goNext = () => {
+    if (next) window.location.href = next;
+    else navigate({ to: "/dashboard", replace: true });
+  };
 
   const signInWithGoogle = async () => {
     setMsg(null);
     setGoogleLoading(true);
     try {
+      if (next) sessionStorage.setItem(NEXT_KEY, next);
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
       if (result.error) throw result.error;
       if (result.redirected) return;
-      goDashboard();
+      goNext();
     } catch (err) {
       setMsg({ kind: "err", text: err instanceof Error ? err.message : "Google sign-in failed" });
     } finally {
@@ -78,9 +95,10 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard", replace: true });
+      if (data.session) goNext();
     });
-  }, [navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const G = "#00d4ff";
   const G2 = "#a855f7";
@@ -108,21 +126,21 @@ function AuthPage() {
               password: parsed.data.password,
             });
             if (sErr) throw new Error("This email is already registered. Wrong password?");
-            goDashboard();
+            goNext();
             return;
           }
           throw error;
         }
         const { data: s } = await supabase.auth.getSession();
         if (s.session) {
-          goDashboard();
+          goNext();
         } else {
           const { error: sErr } = await supabase.auth.signInWithPassword({
             email: parsed.data.email,
             password: parsed.data.password,
           });
           if (sErr) { setMsg({ kind: "ok", text: "Account created. You can now sign in." }); setMode("signin"); }
-          else goDashboard();
+          else goNext();
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -150,7 +168,7 @@ function AuthPage() {
             if (!createErr) {
               const { data: sessionData } = await supabase.auth.getSession();
               if (sessionData.session) {
-                goDashboard();
+                goNext();
                 return;
               }
               setMsg({ kind: "ok", text: "Account created. Check your inbox once, then sign in here." });
@@ -164,7 +182,7 @@ function AuthPage() {
           }
           throw new Error(error.message);
         }
-        goDashboard();
+        goNext();
       }
     } catch (err) {
       setMsg({ kind: "err", text: err instanceof Error ? err.message : "Something went wrong" });
