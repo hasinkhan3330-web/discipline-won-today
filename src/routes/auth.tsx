@@ -125,21 +125,21 @@ function AuthPage() {
               password: parsed.data.password,
             });
             if (sErr) throw new Error("This email is already registered. Wrong password?");
-            goDashboard();
+            goNext();
             return;
           }
           throw error;
         }
         const { data: s } = await supabase.auth.getSession();
         if (s.session) {
-          goDashboard();
+          goNext();
         } else {
           const { error: sErr } = await supabase.auth.signInWithPassword({
             email: parsed.data.email,
             password: parsed.data.password,
           });
           if (sErr) { setMsg({ kind: "ok", text: "Account created. You can now sign in." }); setMode("signin"); }
-          else goDashboard();
+          else goNext();
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -167,7 +167,7 @@ function AuthPage() {
             if (!createErr) {
               const { data: sessionData } = await supabase.auth.getSession();
               if (sessionData.session) {
-                goDashboard();
+                goNext();
                 return;
               }
               setMsg({ kind: "ok", text: "Account created. Check your inbox once, then sign in here." });
@@ -181,7 +181,7 @@ function AuthPage() {
           }
           throw new Error(error.message);
         }
-        goDashboard();
+        goNext();
       }
     } catch (err) {
       setMsg({ kind: "err", text: err instanceof Error ? err.message : "Something went wrong" });
