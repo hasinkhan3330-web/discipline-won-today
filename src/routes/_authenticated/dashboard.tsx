@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
+import { User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { openCustomerPortal, switchSubscriptionPlan } from "@/utils/payments.functions";
@@ -1139,7 +1140,9 @@ function App() {
                 color: active ? G : "#555", position: "relative",
               }}>
                 {active && <div style={{ position: "absolute", top: 0, left: "20%", right: "20%", height: 2, background: G, boxShadow: `0 0 8px ${G}` }} />}
-                <span style={{ fontSize: 20, filter: active ? `drop-shadow(0 0 6px ${G})` : "none" }}>{locked ? "🔒" : n.icon}</span>
+                <span style={{ fontSize: 20, lineHeight: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", filter: active ? `drop-shadow(0 0 6px ${G})` : "none" }}>
+                  {locked ? "🔒" : n.id === "profile" ? <User size={20} strokeWidth={2} /> : n.icon}
+                </span>
                 <span style={{ fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700 }}>{n.label}</span>
               </button>
             );
