@@ -24,8 +24,15 @@ function Landing() {
     let mounted = true;
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
-      if (data.session) navigate({ to: "/dashboard", replace: true });
-      else setChecking(false);
+      if (data.session) {
+        const stored = typeof window !== "undefined" ? sessionStorage.getItem("dwt.post_auth_next") : null;
+        if (stored && stored.startsWith("/") && !stored.startsWith("//")) {
+          sessionStorage.removeItem("dwt.post_auth_next");
+          window.location.href = stored;
+          return;
+        }
+        navigate({ to: "/dashboard", replace: true });
+      } else setChecking(false);
     });
     return () => { mounted = false; };
   }, [navigate]);
