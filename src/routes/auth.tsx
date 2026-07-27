@@ -44,18 +44,25 @@ function AuthPage() {
   const [resending, setResending] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  const goDashboard = () => navigate({ to: "/dashboard", replace: true });
+  const { next: nextParam } = Route.useSearch();
+  const next = safeNext(nextParam);
+
+  const goNext = () => {
+    if (next) window.location.href = next;
+    else navigate({ to: "/dashboard", replace: true });
+  };
 
   const signInWithGoogle = async () => {
     setMsg(null);
     setGoogleLoading(true);
     try {
+      if (next) sessionStorage.setItem(NEXT_KEY, next);
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
       if (result.error) throw result.error;
       if (result.redirected) return;
-      goDashboard();
+      goNext();
     } catch (err) {
       setMsg({ kind: "err", text: err instanceof Error ? err.message : "Google sign-in failed" });
     } finally {
