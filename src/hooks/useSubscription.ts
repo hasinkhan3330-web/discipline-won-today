@@ -32,10 +32,13 @@ export function useSubscription(userId: string | null) {
 
   useEffect(() => {
     if (!userId) return;
-    const ch = supabase
-      .channel(`subs_${userId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${userId}` }, () => load())
-      .subscribe();
+    const ch = supabase.channel(`subs_${userId}_${Math.random().toString(36).slice(2)}`);
+    ch.on(
+      // @ts-expect-error - supabase realtime typings
+      "postgres_changes",
+      { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${userId}` },
+      () => load()
+    ).subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [userId, load]);
 
