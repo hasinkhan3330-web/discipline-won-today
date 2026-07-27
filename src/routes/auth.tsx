@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    next: typeof s.next === "string" ? s.next : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — DWT" },
@@ -17,6 +20,13 @@ export const Route = createFileRoute("/auth")({
   }),
   component: AuthPage,
 });
+
+function safeNext(v: string | undefined): string | null {
+  if (!v) return null;
+  if (!v.startsWith("/") || v.startsWith("//")) return null;
+  return v;
+}
+const NEXT_KEY = "dwt.post_auth_next";
 
 const schema = z.object({
   email: z.string().trim().email("Enter a valid email").max(255),
