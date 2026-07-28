@@ -3,11 +3,19 @@ import { useState, useEffect, useRef } from "react";
 import { User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { openCustomerPortal, switchSubscriptionPlan } from "@/utils/payments.functions";
-import { getPaddleEnvironment } from "@/lib/paddle";
 import { useSubscription } from "@/hooks/useSubscription";
-import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
 import { Paywall } from "@/components/Paywall";
+import { SpaceWallpaper } from "@/components/SpaceWallpaper";
+import { CropModal } from "@/components/CropModal";
+import { THEMES, type ThemeKey } from "@/constants/themes";
+import { useMeditation } from "@/hooks/useMeditation";
+import { cardStyle, titleStyle } from "@/tabs/styles";
+import { HomeTab } from "@/tabs/HomeTab";
+import { RankTab } from "@/tabs/RankTab";
+import { QuotesTab } from "@/tabs/QuotesTab";
+import { ZenTab } from "@/tabs/ZenTab";
+import { StatsTab } from "@/tabs/StatsTab";
+import { ProfileTab } from "@/tabs/ProfileTab";
 
 import alarmLoud from "@/assets/freesound_community-loud-emergency-alarm-54635.mp3.asset.json";
 import alarmReverb from "@/assets/freesound_community-emergency-alarm-with-reverb-29431.mp3.asset.json";
@@ -28,7 +36,6 @@ const RINGTONES = [
   { id: "classic", name: "CLASSIC",  url: alarmClassic.url },
 ];
 
-
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
@@ -43,156 +50,6 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
 
-// Wikipedia Special:FilePath auto-resolves to the current image — no hash prefix needed.
-const wiki = (file: string) => `https://commons.wikimedia.org/wiki/Special:FilePath/${file}?width=800`;
-
-// Each legend has MULTIPLE photos AND MULTIPLE quotes.
-// Every day: person + photo + quote all rotate independently → always a fresh combo, never the same card twice in a row.
-const LEGENDS: { p: string; imgs: string[]; qs: string[] }[] = [
-  { p: "SHAH RUKH KHAN", imgs: ["Shah_Rukh_Khan_graces_the_launch_of_the_new_Santro.jpg", "Shah_Rukh_Khan_2014.jpg", "Shah_Rukh_Khan_at_the_Ra.One_Music_Launch.jpg"].map(wiki),
-    qs: ["Success is not a good teacher, failure makes you humble.", "I am a self-made man. And it is my hard work that has made me what I am today.", "Never give up. Have faith in yourself.", "Dreams are the ones that don't let you sleep."] },
-  { p: "DAVID GOGGINS", imgs: ["David_Goggins_2024.jpg", "David_Goggins_2013.jpg"].map(wiki),
-    qs: ["When your alarm goes off — that split second — that is the exact moment your character is being defined.", "You are in danger of living a life so comfortable and soft that you will die without ever realizing your true potential.", "The only way you gain mental toughness is to do things you're not happy doing.", "Suffering is the true test of life."] },
-  { p: "KOBE BRYANT", imgs: ["Kobe_Bryant_2014.jpg", "Kobe_Bryant_8.jpg", "Kobe_Bryant_2010.jpg"].map(wiki),
-    qs: ["Everything negative — pressure, challenges — is all an opportunity for me to rise.", "The most important thing is to try and inspire people so that they can be great in whatever they want to do.", "Great things come from hard work and perseverance. No excuses.", "Rest at the end, not in the middle."] },
-  { p: "MICHAEL JORDAN", imgs: ["Michael_Jordan_in_2014.jpg", "Michael-Jordan.jpg"].map(wiki),
-    qs: ["I've failed over and over again in my life. And that is why I succeed.", "I can accept failure, everyone fails at something. But I can't accept not trying.", "Some people want it to happen, some wish it would happen, others make it happen.", "Talent wins games, but teamwork and intelligence win championships."] },
-  { p: "BRUCE LEE", imgs: ["Bruce_Lee_1973.jpg", "Bruce_Lee_As_Kato_1967.jpg"].map(wiki),
-    qs: ["Do not pray for an easy life, pray for the strength to endure a difficult one.", "Absorb what is useful, discard what is not, add what is uniquely your own.", "The successful warrior is the average man, with laser-like focus.", "Knowing is not enough, we must apply. Willing is not enough, we must do."] },
-  { p: "ELON MUSK", imgs: ["Elon_Musk_Colorado_2022_(cropped2).jpg", "Elon_Musk_Royal_Society_(crop2).jpg"].map(wiki),
-    qs: ["When something is important enough, you do it even if the odds are not in your favor.", "Failure is an option here. If things are not failing, you are not innovating enough.", "Persistence is very important. You should not give up unless you are forced to give up.", "The first step is to establish that something is possible; then probability will occur."] },
-  { p: "ARNOLD SCHWARZENEGGER", imgs: ["Governor_Arnold_Schwarzenegger.jpg", "Arnold_Schwarzenegger_by_Gage_Skidmore_4.jpg"].map(wiki),
-    qs: ["The mind is the limit. As long as the mind can envision it, you can do it.", "Strength does not come from winning. Your struggles develop your strengths.", "The worst thing I can be is the same as everybody else. I hate that.", "The last three or four reps is what makes the muscle grow."] },
-  { p: "MUHAMMAD ALI", imgs: ["Muhammad_Ali_NYWTS.jpg", "Muhammad_Ali_1966.jpg"].map(wiki),
-    qs: ["Don't count the days, make the days count.", "I hated every minute of training, but I said, 'Suffer now and live the rest of your life as a champion.'", "He who is not courageous enough to take risks will accomplish nothing in life.", "Impossible is just a word thrown around by small men."] },
-  { p: "STEVE JOBS", imgs: ["Steve_Jobs_Headshot_2010-CROP_(cropped_2).jpg", "Steve_Jobs_1955-2011.jpg"].map(wiki),
-    qs: ["Your time is limited, so don't waste it living someone else's life.", "Stay hungry, stay foolish.", "Innovation distinguishes between a leader and a follower.", "The only way to do great work is to love what you do."] },
-  { p: "CRISTIANO RONALDO", imgs: ["Cristiano_Ronaldo_2018.jpg", "Cristiano_Ronaldo_playing_for_Al_Nassr_FC_against_Persepolis,_September_2023_(cropped).jpg"].map(wiki),
-    qs: ["Talent without working hard is nothing.", "Your love makes me strong, your hate makes me unstoppable.", "I'm living a dream I never want to wake up from.", "Dedication, hard work all the time, and belief."] },
-  { p: "LIONEL MESSI", imgs: ["Lionel_Messi_20180626.jpg", "Lionel-Messi-Argentina-2022-FIFA-World-Cup_(cropped).jpg"].map(wiki),
-    qs: ["You have to fight to reach your dream. You have to sacrifice and work hard for it.", "It took me 17 years and 114 days to become an overnight success.", "The best decisions aren't made with your mind, but with your instinct.", "You can overcome anything, if and only if you love something enough."] },
-  { p: "VIRAT KOHLI", imgs: ["Virat_Kohli_in_PMO_New_Delhi.jpg", "Virat_Kohli_January_2023_(cropped).jpg"].map(wiki),
-    qs: ["Self-belief and hard work will always earn you success.", "You have to just concentrate on things you can control.", "If you chase perfection, you catch excellence.", "I want to leave a legacy for people who watch me play cricket."] },
-  { p: "MS DHONI", imgs: ["MS_Dhoni_January_2016_(cropped).jpg", "Dhoni_stumping_a_batsman_(cropped).jpg"].map(wiki),
-    qs: ["You can't ask for the process to be right and the result to also go in your favour every time.", "Never let success get to your head and never let failure get to your heart.", "Yes, I do get emotional. That's how you know you are alive.", "I don't ever want people to say I did something for my personal gain."] },
-  { p: "SACHIN TENDULKAR", imgs: ["Sachin_at_Castrol_Golden_Spanner_Awards_(crop).jpg", "Sachin_Tendulkar_in_July_2023.jpg"].map(wiki),
-    qs: ["I have played every match as if it was my last one.", "Chase your dreams, but always know the road that will lead you home again.", "When people throw stones at you, you turn them into milestones.", "Discipline and consistency have taken me where I am today."] },
-  { p: "RATAN TATA", imgs: ["Ratan_Tata_-_World_Economic_Forum_Annual_Meeting_2011.jpg", "Ratan_Tata_in_Vancouver.jpg"].map(wiki),
-    qs: ["I don't believe in taking right decisions. I take decisions and then make them right.", "If you want to walk fast, walk alone. If you want to walk far, walk together.", "None can destroy iron, but its own rust can. Likewise, none can destroy a person, but their own mindset can.", "Take the stones people throw at you, and use them to build a monument."] },
-  { p: "A.P.J. ABDUL KALAM", imgs: ["A._P._J._Abdul_Kalam.jpg", "A._P._J._Abdul_Kalam_in_2008.jpg"].map(wiki),
-    qs: ["Dream is not that which you see while sleeping, it is something that does not let you sleep.", "You have to dream before your dreams can come true.", "If you want to shine like a sun, first burn like a sun.", "Man needs difficulties in life because they are necessary to enjoy success."] },
-  { p: "NELSON MANDELA", imgs: ["Nelson_Mandela-2008_(edit).jpg", "Nelson_Mandela_1994.jpg"].map(wiki),
-    qs: ["It always seems impossible until it's done.", "I learned that courage was not the absence of fear, but the triumph over it.", "The greatest glory in living lies not in never falling, but in rising every time we fall.", "Do not judge me by my successes, judge me by how many times I fell down and got back up again."] },
-  { p: "ALBERT EINSTEIN", imgs: ["Einstein_1921_by_F_Schmutzer_-_restoration.jpg", "Albert_Einstein_1947.jpg"].map(wiki),
-    qs: ["Strive not to be a success, but rather to be of value.", "In the middle of difficulty lies opportunity.", "A person who never made a mistake never tried anything new.", "Life is like riding a bicycle. To keep your balance, you must keep moving."] },
-  { p: "WARREN BUFFETT", imgs: ["Warren_Buffett_KU_Visit.jpg", "Warren_Buffett_at_the_2015_SelectUSA_Investment_Summit.jpg"].map(wiki),
-    qs: ["The more you learn, the more you earn.", "It's better to hang out with people better than you.", "Someone is sitting in the shade today because someone planted a tree a long time ago.", "Risk comes from not knowing what you're doing."] },
-  { p: "BILL GATES", imgs: ["Bill_Gates_2018.jpg", "Bill_Gates_2017_(cropped).jpg"].map(wiki),
-    qs: ["It's fine to celebrate success but it is more important to heed the lessons of failure.", "Your most unhappy customers are your greatest source of learning.", "Patience is a key element of success.", "Don't compare yourself with anyone in this world. If you do, you are insulting yourself."] },
-  { p: "JEFF BEZOS", imgs: ["Jeff_Bezos_2016.jpg", "Jeff_Bezos_at_Amazon_Spheres_Grand_Opening_in_Seattle_-_2018_(39074799225)_(cropped).jpg"].map(wiki),
-    qs: ["If you decide that you're going to do only the things you know are going to work, you're going to leave a lot of opportunity on the table.", "Life is too short to hang out with people who are not resourceful.", "What we need to do is always lean into the future.", "In the end, we are our choices."] },
-  { p: "MIKE TYSON", imgs: ["Mike_Tyson_2019_by_Glenn_Francis.jpg", "Mike_Tyson_20AUG09.jpg"].map(wiki),
-    qs: ["Discipline is doing what you hate to do, but doing it like you love it.", "Everyone has a plan until they get punched in the mouth.", "I'm a dreamer. I have to dream and reach for the stars.", "My power is discombobulatingly devastating."] },
-  { p: "CONOR McGREGOR", imgs: ["Conor_McGregor_2018.jpg", "Conor_McGregor_2015.jpg"].map(wiki),
-    qs: ["There's no talent here, this is hard work. This is an obsession.", "We're not here to take part. We're here to take over.", "Doubt is only removed by action.", "If you can see it in your mind, you can hold it in your hand."] },
-  { p: "DWAYNE JOHNSON", imgs: ["Dwayne_Johnson_2014_(cropped).jpg", "Dwayne_Johnson_2018.jpg"].map(wiki),
-    qs: ["Success isn't always about greatness. It's about consistency.", "Be humble. Be hungry. And always be the hardest worker in the room.", "Wake up determined, go to bed satisfied.", "The wall is there to see how bad you want it."] },
-  { p: "SYLVESTER STALLONE", imgs: ["Sylvester_Stallone_Cannes_2019.jpg", "Sylvester_Stallone_November_9,_2012.jpg"].map(wiki),
-    qs: ["It ain't about how hard you hit. It's about how hard you can get hit and keep moving forward.", "Every champion was once a contender that refused to give up.", "I take rejection as someone blowing a bugle in my ear to wake me up.", "Life's not about how hard of a hit you can give. It's about how many you can take, and still keep moving forward."] },
-  { p: "LEBRON JAMES", imgs: ["LeBron_James_%2851959977144%29_(cropped2).jpg", "LeBron_James_(15662939969)_(cropped).jpg"].map(wiki),
-    qs: ["You have to be able to accept failure to get better.", "I like criticism. It makes you strong.", "Nothing is given. Everything is earned.", "I treated my body like a machine — I gave it the best fuel and worked it hard."] },
-  { p: "USAIN BOLT", imgs: ["Usain_Bolt_Rio_100m_final_2016k.jpg", "Usain_Bolt_smiling_Berlin_2009.JPG"].map(wiki),
-    qs: ["I trained four years to run nine seconds. People give up when they don't see results in two months.", "Kill them with success and bury them with a smile.", "I know what I can do, so it doesn't bother me what other people think.", "Dreams are free. Goals have a cost."] },
-  { p: "NEYMAR JR", imgs: ["Bra-Cos_(6)_(cropped).jpg", "Neymar_-_MG_9061_(cropped).jpg"].map(wiki),
-    qs: ["It is not about being the best. It is about being better than you were yesterday.", "In football, as in life, you must always keep fighting.", "Everything is possible if you believe.", "I want to be an athlete that people remember."] },
-  { p: "TONY ROBBINS", imgs: ["Tony_Robbins_-_Unleash_the_Power_Within,_London_-_2019_(48918961658)_(cropped).jpg", "Tony_Robbins.jpg"].map(wiki),
-    qs: ["The path to success is to take massive, determined action.", "Setting goals is the first step in turning the invisible into the visible.", "Where focus goes, energy flows.", "Beliefs have the power to create and the power to destroy."] },
-  { p: "STEPHEN HAWKING", imgs: ["Stephen_Hawking.StarChild.jpg", "Stephen_Hawking_in_Cambridge.jpg"].map(wiki),
-    qs: ["However difficult life may seem, there is always something you can do and succeed at.", "Intelligence is the ability to adapt to change.", "Look up at the stars and not down at your feet.", "Quiet people have the loudest minds."] },
-];
-
-// Fixed random-ish permutation so each day pulls a fresh (person, quote, photo) combo.
-// Same day → same combo on every reload (deterministic). Next day → guaranteed change.
-const rot = (s: number, m: number) => ((s % m) + m) % m;
-const dayCombo = (dayIdx: number) => {
-  const person = LEGENDS[rot(dayIdx * 7 + 3, LEGENDS.length)];
-  const q = person.qs[rot(dayIdx * 5 + 1, person.qs.length)];
-  const img = person.imgs[rot(dayIdx * 3 + 2, person.imgs.length)];
-  return { p: person.p, q, img };
-};
-
-
-const THEMES = {
-  space: { name: "COSMOS", accent: "#00d4ff", accent2: "#7b5cff", glow: "0 0 20px #00d4ff" },
-  blood: { name: "BLOOD", accent: "#ff2e4d", accent2: "#ff6a00", glow: "0 0 20px #ff2e4d" },
-  matrix: { name: "MATRIX", accent: "#00ff88", accent2: "#00d46a", glow: "0 0 20px #00ff88" },
-  gold: { name: "GOLD", accent: "#ffcc33", accent2: "#ff8800", glow: "0 0 20px #ffcc33" },
-} as const;
-
-type ThemeKey = keyof typeof THEMES;
-
-function SpaceWallpaper({ accent }: { accent: string }) {
-  // deterministic star field
-  const stars = Array.from({ length: 90 }, (_, i) => {
-    const x = (i * 37) % 100;
-    const y = (i * 71) % 100;
-    const s = ((i * 13) % 3) + 1;
-    const d = ((i * 7) % 40) / 10;
-    return { x, y, s, d, k: i };
-  });
-  const shootingStars = [0, 1, 2, 3];
-
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 0, overflow: "hidden", pointerEvents: "none", background: "radial-gradient(ellipse at 20% 10%, #1a0a3e 0%, #0a0620 40%, #000 100%)" }}>
-      {/* nebula glow */}
-      <div style={{ position: "absolute", top: "-20%", right: "-10%", width: 500, height: 500, background: `radial-gradient(circle, ${accent}22 0%, transparent 60%)`, filter: "blur(40px)" }} />
-      <div style={{ position: "absolute", bottom: "-10%", left: "-20%", width: 500, height: 500, background: "radial-gradient(circle, #7b5cff33 0%, transparent 60%)", filter: "blur(40px)" }} />
-
-      {/* earth — equirectangular NASA Blue Marble wrapped on a rotating sphere */}
-      <div style={{ position: "absolute", top: 50, right: 20, width: 120, height: 120 }}>
-        <div style={{ position: "absolute", inset: -18, borderRadius: "50%", background: "radial-gradient(circle, rgba(120,190,255,0.55) 0%, rgba(40,110,220,0.25) 50%, transparent 75%)", filter: "blur(8px)" }} />
-        <div style={{ position: "relative", width: "100%", height: "100%", borderRadius: "50%", overflow: "hidden", boxShadow: "0 0 55px rgba(90,170,255,0.7), 0 0 120px rgba(40,100,220,0.4)" }}>
-          <div
-            style={{
-              position: "absolute", inset: 0,
-              backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Land_ocean_ice_2048.jpg/1024px-Land_ocean_ice_2048.jpg')",
-              backgroundSize: "200% 100%",
-              backgroundRepeat: "repeat-x",
-              animation: "earth-spin 24s linear infinite",
-            }}
-          />
-          {/* subtle 3D shading for sphere depth */}
-          <div style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.25) 0%, transparent 45%), radial-gradient(circle at 70% 70%, rgba(0,0,0,0.35) 0%, transparent 60%)", pointerEvents: "none" }} />
-        </div>
-      </div>
-
-
-      {/* stars */}
-      {stars.map(st => (
-        <div key={st.k} style={{
-          position: "absolute", left: `${st.x}%`, top: `${st.y}%`, width: st.s, height: st.s,
-          background: "#fff", borderRadius: "50%", boxShadow: `0 0 ${st.s * 3}px #fff`,
-          animation: `twinkle 3s ease-in-out ${st.d}s infinite`,
-        }} />
-      ))}
-
-      {/* shooting stars */}
-      {shootingStars.map(i => (
-        <div key={i} style={{
-          position: "absolute", top: `${10 + i * 20}%`, left: "-10%",
-          width: 120, height: 1, background: `linear-gradient(90deg, transparent, ${accent}, #fff)`,
-          boxShadow: `0 0 8px ${accent}`,
-          animation: `shoot 6s linear ${i * 2.2}s infinite`,
-          transform: "rotate(20deg)",
-        }} />
-      ))}
-
-      {/* scanline grid */}
-      <div style={{ position: "absolute", inset: 0, background: `linear-gradient(${accent}05 1px, transparent 1px), linear-gradient(90deg, ${accent}05 1px, transparent 1px)`, backgroundSize: "40px 40px", opacity: 0.4 }} />
-    </div>
-  );
-}
-
 function App() {
   const navigate = useNavigate();
   const handleSignOut = async () => {
@@ -203,7 +60,6 @@ function App() {
   const [tab, setTab] = useState("home");
   const [themeKey, setThemeKey] = useState<ThemeKey>("space");
 
-  // ===== SUPABASE-BACKED STATE =====
   const [coins, setCoins] = useState(0);
   const [streak, setStreak] = useState(0);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -216,8 +72,7 @@ function App() {
   const [uploading, setUploading] = useState(false);
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [trialReady, setTrialReady] = useState(false);
-  const { isActive: hasActiveSubscription, reload: reloadSubscription } = useSubscription(myId);
-
+  const { isActive: hasActiveSubscription } = useSubscription(myId);
 
   const fallbackAvatar = (n: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=0a0a19&color=00ff88&size=200&bold=true`;
 
@@ -238,7 +93,6 @@ function App() {
       setTrialReady(true);
     }
 
-    // Daily discipline penalty: -3 coins if yesterday was not 100% complete (once per day).
     try {
       const { data: pen } = await (supabase.rpc as any)("apply_daily_penalty");
       const row = Array.isArray(pen) ? pen[0] : pen;
@@ -283,7 +137,6 @@ function App() {
       you: l.id === uid,
     })));
 
-    // Weekly bars: last 7 days completion count / total tasks
     const total = (taskRows || []).length || 1;
     const counts: Record<string, number> = {};
     (weekRows || []).forEach(r => { counts[r.completed_on] = (counts[r.completed_on] || 0) + 1; });
@@ -297,7 +150,6 @@ function App() {
 
   useEffect(() => { refreshAll(); }, []);
 
-  // Crop modal state
   const [cropSrc, setCropSrc] = useState<string | null>(null);
 
   const openCropper = (file: File) => {
@@ -329,10 +181,6 @@ function App() {
       setUploading(false);
     }
   };
-
-
-
-
 
   // 4AM proof-of-wakeup state
   const [proof, setProof] = useState<null | {
@@ -368,44 +216,6 @@ function App() {
     if (r) playPreview(r.url);
   };
 
-
-  // MEDITATION state
-  const [medMin, setMedMin] = useState(5);
-  const [medLeft, setMedLeft] = useState(5 * 60);
-  const [medRun, setMedRun] = useState(false);
-  const [medSessions, setMedSessions] = useState(0);
-  const [medTotal, setMedTotal] = useState(0);
-
-  useEffect(() => {
-    if (!medRun) return;
-    const id = setInterval(() => {
-      setMedLeft(s => {
-        if (s <= 1) {
-          setMedRun(false);
-          setMedSessions(x => x + 1);
-          setMedTotal(x => x + medMin);
-          // Award via meditation task RPC (idempotent per day). If already claimed today, no double reward.
-          const medTask = tasks.find(t => /medit/i.test(t.name));
-          if (medTask && !medTask.done) completeTaskRpc((medTask as any)._uuid);
-          return medMin * 60;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [medRun, medMin, tasks]);
-
-
-  // WHO-style box breathing 4-4-4-4 (inhale, hold, exhale, hold) — 16s cycle, no counters shown.
-  const elapsed = medMin * 60 - medLeft;
-  const phaseSec = elapsed % 16;
-  const medPhase: "inhale" | "hold" | "exhale" | "hold2" =
-    phaseSec < 4 ? "inhale" : phaseSec < 8 ? "hold" : phaseSec < 12 ? "exhale" : "hold2";
-  const medPhaseLabel = medPhase === "inhale" ? "INHALE" : medPhase === "exhale" ? "EXHALE" : "HOLD";
-
-  const pickMed = (m: number) => { setMedMin(m); setMedLeft(m * 60); setMedRun(false); };
-  const fmtT = (s: number) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
-
   useEffect(() => {
     const t = setTimeout(() => setScreen("app"), 2500);
     return () => clearTimeout(t);
@@ -436,20 +246,17 @@ function App() {
 
   const startProof = (subject: "math" | "physics") => {
     const { q, a } = buildQuestion(subject);
-    setProof({ mode: "quiz", subject, question: q, answer: a, input: "" });
+    setProof(p => ({ ...(p || {}), mode: "quiz", subject, question: q, answer: a, input: "" }));
   };
 
-  // Get the wake-up task (first task) — for 4AM proof binding
   const wakeTask = tasks.find(t => /wake/i.test(t.name)) || tasks[0];
 
   const completeTaskRpc = async (uuid: string, overridePts?: number) => {
-    // If overridePts provided, temporarily set task pts so RPC awards that amount.
     if (typeof overridePts === "number") {
       await supabase.from("tasks").update({ pts: overridePts }).eq("id", uuid);
     }
     const { data, error } = await supabase.rpc("complete_task", { _task_id: uuid });
     if (typeof overridePts === "number") {
-      // restore base 10 for the wake task so tomorrow defaults to 4AM tier
       await supabase.from("tasks").update({ pts: 10 }).eq("id", uuid);
     }
     if (error) { console.error(error); return; }
@@ -467,6 +274,8 @@ function App() {
     });
   };
 
+  const med = useMeditation(tasks as any, completeTaskRpc);
+
   const submitProof = () => {
     if (!proof || proof.mode !== "quiz") return;
     const correct = Number(proof.input) === proof.answer;
@@ -483,19 +292,12 @@ function App() {
     completeTaskRpc((t as any)._uuid);
   };
 
-
-
-
-  const done = tasks.filter(t => t.done).length;
-  const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
   const trialActive = !!trialEndsAt && new Date(trialEndsAt) > new Date();
   const premiumUnlocked = hasActiveSubscription || trialActive;
   const premiumTabs = ["rank", "quotes", "zen"];
   const premiumLocked = trialReady && premiumTabs.includes(tab) && !premiumUnlocked;
   const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
 
-
-  // GLOBAL KEYFRAMES
   const keyframes = `
     @keyframes twinkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
     @keyframes shoot { 0%{transform:translateX(0) translateY(0) rotate(20deg);opacity:0} 10%{opacity:1} 70%{opacity:1} 100%{transform:translateX(140vw) translateY(60vh) rotate(20deg);opacity:0} }
@@ -516,7 +318,6 @@ function App() {
         <style>{keyframes}</style>
         <SpaceWallpaper accent={G} />
         <div style={{ position: "relative", zIndex: 2, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          {/* orbit ring */}
           <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", border: `1px solid ${G}44`, animation: "orbit 8s linear infinite" }}>
             <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 20px ${G}` }} />
           </div>
@@ -532,17 +333,8 @@ function App() {
     );
   }
 
-  const CARD: React.CSSProperties = {
-    background: "rgba(10,10,25,0.55)",
-    backdropFilter: "blur(12px)",
-    border: `1px solid ${G}33`,
-    borderLeft: `2px solid ${G}`,
-    padding: 14,
-    marginBottom: 12,
-    boxShadow: `0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 ${G}22`,
-    borderRadius: 2,
-  };
-  const TITLE: React.CSSProperties = { fontSize: 12, fontWeight: 700, letterSpacing: 3, color: "#e8e8e8", marginBottom: 12, fontFamily: "monospace", display: "flex", alignItems: "center", gap: 6 };
+  const CARD = cardStyle(G);
+  const TITLE = titleStyle;
 
   const TABS = [
     { id: "home", icon: "⚔️", label: "Home" },
@@ -566,7 +358,6 @@ function App() {
             <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: `0 0 12px ${G}` }}>DWT</div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {/* theme swatches */}
             {(Object.keys(THEMES) as ThemeKey[]).map(k => (
               <button key={k} onClick={() => setThemeKey(k)} title={THEMES[k].name} style={{
                 width: 18, height: 18, borderRadius: "50%",
@@ -593,533 +384,22 @@ function App() {
           {premiumLocked && myId && <Paywall userId={myId} email={myEmail} />}
 
           {!premiumLocked && <>
-
-          {tab === "home" && <>
-            <div style={CARD}>
-              <div style={TITLE}><span style={{ color: G }}>▸</span> TODAY'S <span style={{ color: G }}>STATS</span></div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
-                {[{ v: coins, l: "COINS" }, { v: `${streak}d`, l: "STREAK" }, { v: `${done}/${tasks.length}`, l: "TASKS" }, { v: `${pct}%`, l: "COMPLETE" }].map((s, i) => (
-                  <div key={i} style={{ background: `linear-gradient(135deg, ${G}15, transparent)`, border: `1px solid ${G}33`, padding: "12px 10px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", top: 0, right: 0, width: 20, height: 20, borderTop: `1px solid ${G}`, borderRight: `1px solid ${G}` }} />
-                    <div style={{ fontSize: 22, fontWeight: 800, color: G, textShadow: `0 0 12px ${G}88` }}>{s.v}</div>
-                    <div style={{ fontSize: 9, color: "#888", letterSpacing: 2, marginTop: 4 }}>{s.l}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ fontSize: 10, color: "#888", display: "flex", justifyContent: "space-between", marginBottom: 5, letterSpacing: 2 }}>
-                <span>MISSION PROGRESS</span><span style={{ color: G }}>{pct}%</span>
-              </div>
-              <div style={{ height: 6, background: "#0a0a15", borderRadius: 3, border: `1px solid ${G}22`, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg,${G},${G2})`, boxShadow: `0 0 10px ${G}`, transition: "width 0.5s" }} />
-              </div>
-            </div>
-
-            <div style={CARD}>
-              <div style={TITLE}><span style={{ color: G }}>▸</span> TODAY'S <span style={{ color: G }}>MISSION</span></div>
-              {tasks.map(t => (
-                <div key={t.id} onClick={() => tick(t.id)} style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "11px 10px",
-                  background: t.done ? "rgba(0,0,0,0.3)" : `linear-gradient(90deg, ${G}12, transparent)`,
-                  border: `1px solid ${t.done ? "#222" : G + "33"}`,
-                  borderLeft: `3px solid ${t.done ? "#333" : G}`,
-                  marginBottom: 6, cursor: "pointer", opacity: t.done ? 0.45 : 1,
-                  transition: "all 0.2s",
-                }}>
-                  <span style={{ fontSize: 22 }}>{t.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: "#e8e8e8", textDecoration: t.done ? "line-through" : "none", letterSpacing: 1 }}>{t.name}</div>
-                    <div style={{ fontSize: 10, color: G, letterSpacing: 1, marginTop: 2 }}>+{t.pts} COINS</div>
-                  </div>
-                  <div style={{ width: 22, height: 22, border: `1.5px solid ${t.done ? G : "#333"}`, background: t.done ? G : "transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, color: "#000", fontWeight: 900, boxShadow: t.done ? `0 0 10px ${G}` : "none" }}>{t.done ? "✓" : ""}</div>
-                </div>
-              ))}
-            </div>
-          </>}
-
-          {tab === "rank" && <div style={CARD}>
-            <div style={TITLE}><span style={{ color: G }}>▸</span> GLOBAL <span style={{ color: G }}>LEADERBOARD</span></div>
-            {board.length === 0 && <div style={{ fontSize: 11, color: "#666", textAlign: "center", padding: 20, letterSpacing: 2 }}>LOADING…</div>}
-            {board.map((u, i) => {
-              const r = i + 1;
-              return (
-                <div key={i} style={{
-                  display: "flex", alignItems: "center", gap: 10, padding: "10px",
-                  background: u.you ? `linear-gradient(90deg, ${G}22, transparent)` : "rgba(0,0,0,0.3)",
-                  border: `1px solid ${u.you ? G + "66" : "#222"}`, borderLeft: `3px solid ${u.you ? G : "#333"}`,
-                  marginBottom: 6,
-                }}>
-                  <div style={{ fontSize: 15, fontWeight: 800, color: r <= 3 ? G : "#555", width: 22, textAlign: "center" }}>
-                    {r === 1 ? "🥇" : r === 2 ? "🥈" : r === 3 ? "🥉" : r}
-                  </div>
-                  <img src={u.img} onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(u.n); }} style={{ width: 34, height: 34, borderRadius: "50%", border: `1px solid ${G}44`, objectFit: "cover" }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u.you ? "YOU" : u.n}</div>
-                    <div style={{ fontSize: 10, color: "#666", letterSpacing: 1 }}>{u.s} DAY STREAK</div>
-                  </div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: G, textShadow: `0 0 8px ${G}66` }}>{u.c}</div>
-                </div>
-              );
-            })}
-          </div>}
-
-
-          {tab === "quotes" && (() => {
-            // Daily rotation — quote & person change every single day
-            const now = new Date();
-            const dayIdx = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
-            const today = dayCombo(dayIdx);
-            const todayI = rot(dayIdx, 999);
-            const dateLabel = now.toLocaleDateString(undefined, { weekday: "long", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
-            const countdown = () => {
-              const t = new Date(); t.setHours(24, 0, 0, 0);
-              const ms = t.getTime() - Date.now();
-              const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000);
-              return `${String(h).padStart(2,"0")}H ${String(m).padStart(2,"0")}M`;
-            };
-            const upcoming = Array.from({ length: 30 }, (_, k) => ({ ...dayCombo(dayIdx + k + 1), _k: k }));
-
-            const fallback = (name: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0a0a19&color=00ff88&size=400&bold=true&font-size=0.42`;
-            return <>
-              {/* TODAY'S LEGEND — rotates every 24h */}
-              <div style={{ marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 9, letterSpacing: 2, color: G }}>
-                <span>◉ TODAY · {dateLabel}</span>
-                <span style={{ color: "#888" }}>NEXT DROP IN {countdown()}</span>
-              </div>
-              <div style={{
-                position: "relative", marginBottom: 18, borderRadius: 2, overflow: "hidden",
-                border: `1px solid ${G}`, borderLeft: `4px solid ${G}`,
-                boxShadow: `0 0 40px ${G}55, 0 8px 30px rgba(0,0,0,0.7)`,
-                background: "rgba(10,10,25,0.7)", backdropFilter: "blur(10px)",
-              }}>
-                <div style={{ position: "relative", height: 460, overflow: "hidden", background: "#05050a" }}>
-                  <img src={today.img} alt={today.p} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", filter: "contrast(1.08) saturate(1.15)" }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; if (!el.dataset.fb) { el.dataset.fb = "1"; el.style.objectFit = "cover"; el.src = fallback(today.p); } }} />
-                  <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 55%, rgba(10,10,25,0.97) 100%)`, pointerEvents: "none" }} />
-                  <div style={{ position: "absolute", top: 10, left: 10, fontSize: 9, color: "#000", letterSpacing: 2, padding: "5px 10px", background: G, fontWeight: 800 }}>◉ LEGEND OF THE DAY</div>
-                  <div style={{ position: "absolute", top: 10, right: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "5px 10px", background: "rgba(0,0,0,0.7)", border: `1px solid ${G}66` }}>#{String(todayI + 1).padStart(3, "0")}</div>
-                  <div style={{ position: "absolute", bottom: 12, left: 14, fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 14px ${G}` }}>{today.p}</div>
-                </div>
-                <div style={{ padding: 18, fontSize: 15, color: "#f0f0f0", lineHeight: 1.7, fontStyle: "italic", borderTop: `1px solid ${G}44` }}>
-                  <span style={{ color: G, fontSize: 26, marginRight: 4 }}>"</span>
-                  {today.q}
-                  <span style={{ color: G, fontSize: 26, marginLeft: 4 }}>"</span>
-                </div>
-              </div>
-
-              <div style={{ fontSize: 10, letterSpacing: 3, color: "#888", marginBottom: 12, fontWeight: 600 }}>▸ ALL LEGENDS · ONE PER DAY</div>
-              {upcoming.map((q, k) => (
-                <div key={k} style={{
-                  position: "relative", marginBottom: 18, borderRadius: 2, overflow: "hidden",
-                  border: `1px solid ${G}66`, borderLeft: `4px solid ${G}`,
-                  boxShadow: `0 0 25px ${G}33, 0 6px 20px rgba(0,0,0,0.6)`,
-                  background: "rgba(10,10,25,0.7)", backdropFilter: "blur(10px)",
-                }}>
-                  <div style={{ position: "relative", height: 420, overflow: "hidden", background: "#05050a" }}>
-                    <img src={q.img} alt={q.p} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", filter: "contrast(1.08) saturate(1.15)" }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; if (!el.dataset.fb) { el.dataset.fb = "1"; el.style.objectFit = "cover"; el.src = fallback(q.p); } }} />
-                    <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 55%, rgba(10,10,25,0.97) 100%)`, pointerEvents: "none" }} />
-                    <div style={{ position: "absolute", top: 10, left: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "5px 10px", background: "rgba(0,0,0,0.75)", border: `1px solid ${G}66`, fontWeight: 800 }}>DAY +{k + 1}</div>
-                    <div style={{ position: "absolute", top: 10, right: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "5px 10px", background: "rgba(0,0,0,0.7)", border: `1px solid ${G}66` }}>+{k + 1}D</div>
-                    <div style={{ position: "absolute", bottom: 12, left: 14, fontSize: 17, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 14px ${G}` }}>{q.p}</div>
-                  </div>
-                  <div style={{ padding: 16, fontSize: 14, color: "#f0f0f0", lineHeight: 1.7, fontStyle: "italic", borderTop: `1px solid ${G}44` }}>
-                    <span style={{ color: G, fontSize: 24, marginRight: 4 }}>"</span>
-                    {q.q}
-                    <span style={{ color: G, fontSize: 24, marginLeft: 4 }}>"</span>
-                  </div>
-                </div>
-              ))}
-            </>;
-          })()}
-
-          {tab === "zen" && <>
-            <div style={{ ...CARD, textAlign: "center", padding: "18px 14px 22px", position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at center, ${G}18, transparent 65%)`, pointerEvents: "none" }} />
-              <div style={{ position: "relative", zIndex: 2 }}>
-                <div style={{ fontSize: 10, letterSpacing: 5, color: G, marginBottom: 4 }}>◈ COSMIC STILLNESS ◈</div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 14px ${G}` }}>ZEN PROTOCOL</div>
-                <div style={{ fontSize: 10, color: "#888", letterSpacing: 2, marginTop: 4, marginBottom: 6 }}>BREATHE · RESET · RETURN STRONGER</div>
-              </div>
-            </div>
-
-            {/* Duration picker */}
-            <div style={CARD}>
-              <div style={TITLE}><span style={{ color: G }}>▸</span> SESSION <span style={{ color: G }}>LENGTH</span></div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
-                {[5, 10, 15, 20].map(m => {
-                  const active = medMin === m;
-                  return (
-                    <button key={m} onClick={() => pickMed(m)} disabled={medRun} style={{
-                      padding: "14px 4px", cursor: medRun ? "not-allowed" : "pointer",
-                      background: active ? `linear-gradient(135deg, ${G}33, ${G2}22)` : "rgba(0,0,0,0.35)",
-                      border: `1px solid ${active ? G : "#2a2a3a"}`,
-                      borderLeft: `3px solid ${active ? G : "#2a2a3a"}`,
-                      color: active ? "#fff" : "#aaa", fontFamily: "monospace",
-                      boxShadow: active ? `0 0 14px ${G}55` : "none",
-                      opacity: medRun && !active ? 0.4 : 1,
-                    }}>
-                      <div style={{ fontSize: 22, fontWeight: 900, color: active ? G : "#ccc", textShadow: active ? `0 0 10px ${G}` : "none" }}>{m}</div>
-                      <div style={{ fontSize: 8, letterSpacing: 2, marginTop: 2 }}>MIN</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Breathing orb */}
-            <div style={{ ...CARD, padding: "30px 14px 26px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 40%, ${G}22, transparent 60%)`, pointerEvents: "none" }} />
-              <div style={{ position: "relative", zIndex: 2, height: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                {/* rotating rings */}
-                <div style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", border: `1px dashed ${G}44`, animation: "ringSpin 20s linear infinite" }} />
-                <div style={{ position: "absolute", width: 200, height: 200, borderRadius: "50%", border: `1px solid ${G2}33`, animation: "ringSpin 30s linear infinite reverse" }} />
-                {/* orb */}
-                <div style={{
-                  width: 160, height: 160, borderRadius: "50%",
-                  background: `radial-gradient(circle at 35% 35%, ${G}, ${G2} 60%, #0a0a25 100%)`,
-                  animation: medRun
-                    ? (medPhase === "inhale" ? "breatheIn 4s ease-in-out forwards"
-                      : medPhase === "exhale" ? "breatheOut 4s ease-in-out forwards"
-                      : "breatheHold 4s ease-in-out forwards")
-                    : "none",
-                  transform: medRun ? undefined : "scale(0.75)",
-                  boxShadow: `0 0 80px ${G}, 0 0 160px ${G2}66`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  transition: medRun ? undefined : "transform 0.4s ease",
-                }}>
-                  <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: "0 0 10px #000" }}>
-                    {medRun ? medPhaseLabel : "READY"}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ fontSize: 44, fontWeight: 900, color: "#fff", letterSpacing: 4, marginTop: 6, textShadow: `0 0 18px ${G}`, fontVariantNumeric: "tabular-nums" }}>
-                {fmtT(medLeft)}
-              </div>
-              <div style={{ fontSize: 10, letterSpacing: 3, color: G, marginBottom: 14 }}>
-                {medRun ? "◉ IN SESSION" : "○ PAUSED"}
-              </div>
-
-              <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                <button onClick={() => setMedRun(r => !r)} style={{
-                  padding: "12px 28px", cursor: "pointer",
-                  background: `linear-gradient(135deg, ${G}, ${G2})`,
-                  border: "none", color: "#000", fontFamily: "monospace",
-                  fontSize: 12, fontWeight: 900, letterSpacing: 3,
-                  boxShadow: `0 0 20px ${G}88`,
-                }}>
-                  {medRun ? "❚❚ PAUSE" : "▶ BEGIN"}
-                </button>
-                <button onClick={() => { setMedRun(false); setMedLeft(medMin * 60); }} style={{
-                  padding: "12px 20px", cursor: "pointer",
-                  background: "transparent", border: `1px solid ${G}66`,
-                  color: G, fontFamily: "monospace",
-                  fontSize: 12, fontWeight: 700, letterSpacing: 3,
-                }}>
-                  ↻ RESET
-                </button>
-              </div>
-            </div>
-
-            {/* Stats + reward */}
-            <div style={CARD}>
-              <div style={TITLE}><span style={{ color: G }}>▸</span> STILLNESS <span style={{ color: G }}>LEDGER</span></div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-                {[{ v: medSessions, l: "SESSIONS" }, { v: `${medTotal}m`, l: "TOTAL" }, { v: `+${medMin * 2}`, l: "NEXT REWARD" }].map((s, i) => (
-                  <div key={i} style={{ background: `linear-gradient(135deg, ${G}15, transparent)`, border: `1px solid ${G}33`, padding: "12px 8px", textAlign: "center" }}>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: G, textShadow: `0 0 10px ${G}77` }}>{s.v}</div>
-                    <div style={{ fontSize: 8, letterSpacing: 2, color: "#888", marginTop: 4 }}>{s.l}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: 12, padding: 12, background: "rgba(0,0,0,0.35)", border: `1px solid ${G}22`, borderLeft: `2px solid ${G}` }}>
-                <div style={{ fontSize: 10, letterSpacing: 2, color: G, marginBottom: 4 }}>◈ THE STILL MIND</div>
-                <div style={{ fontSize: 12, color: "#ddd", lineHeight: 1.5, fontStyle: "italic" }}>
-                  "The quieter you become, the more you can hear. In the storm of the world, silence is your superpower."
-                </div>
-              </div>
-            </div>
-          </>}
-
-          {tab === "stats" && <div style={CARD}>
-            <div style={TITLE}><span style={{ color: G }}>▸</span> WEEKLY <span style={{ color: G }}>PROGRESS</span></div>
-            {["MON", "TUE", "WED", "THU", "FRI", "SAT", "TDY"].map((d, i) => {
-              const v = weekly[i] ?? 0;
-
-              return (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-                  <div style={{ width: 34, fontSize: 10, color: "#666", letterSpacing: 2 }}>{d}</div>
-                  <div style={{ flex: 1, height: 8, background: "#0a0a15", borderRadius: 4, border: `1px solid ${G}22`, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${v}%`, background: `linear-gradient(90deg,${G},${G2})`, boxShadow: `0 0 8px ${G}` }} />
-                  </div>
-                  <div style={{ width: 32, fontSize: 11, color: G, textAlign: "right", fontWeight: 700 }}>{v}%</div>
-                </div>
-              );
-            })}
-          </div>}
-
-          {tab === "profile" && <>
-            {/* PERSONAL PHOTO — upload from gallery, syncs to Rank */}
-            <div style={{ ...CARD, display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ position: "relative", width: 76, height: 76, flexShrink: 0 }}>
-                <img
-                  src={myAvatar || fallbackAvatar(myName)}
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(myName); }}
-                  alt="me"
-                  style={{ width: 76, height: 76, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}`, boxShadow: `0 0 18px ${G}88` }}
-                />
-                <div style={{ position: "absolute", bottom: -2, right: -2, width: 24, height: 24, borderRadius: "50%", background: G, color: "#000", fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 10px ${G}` }}>◉</div>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 10, color: G, letterSpacing: 3, marginBottom: 4 }}>◈ YOUR IDENTITY</div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: 2, marginBottom: 8, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{myName.toUpperCase()}</div>
-                <label style={{
-                  display: "inline-block", cursor: uploading ? "wait" : "pointer",
-                  padding: "8px 12px", background: `linear-gradient(135deg, ${G}33, transparent)`,
-                  border: `1px solid ${G}`, borderLeft: `3px solid ${G}`,
-                  fontSize: 10, letterSpacing: 2, fontWeight: 800, color: G,
-                  fontFamily: "monospace", boxShadow: `0 0 12px ${G}44`,
-                  opacity: uploading ? 0.6 : 1,
-                }}>
-                  {uploading ? "◌ UPLOADING…" : "📷 UPLOAD FROM GALLERY"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={uploading}
-                    onChange={(e) => { const f = e.target.files?.[0]; if (f) openCropper(f); e.currentTarget.value = ""; }}
-                    style={{ display: "none" }}
-                  />
-                </label>
-                <div style={{ fontSize: 9, color: "#666", marginTop: 6, letterSpacing: 1 }}>CROP · FIT · SYNCS TO RANK</div>
-
-              </div>
-            </div>
-
-
-            {/* RANK TIER — coin-based progression */}
-            {(() => {
-              const TIERS = [
-                { min: 0,     name: "INITIATE",           icon: "◌", tag: "The path begins" },
-                { min: 500,   name: "SEED",               icon: "🌱", tag: "Roots taking hold" },
-                { min: 1000,  name: "WARRIOR",            icon: "⚔️", tag: "Forged in fire" },
-                { min: 2000,  name: "MONK",               icon: "☯",  tag: "Mind over noise" },
-                { min: 21000, name: "DISCIPLINE MASTER",  icon: "👑", tag: "Legend unlocked" },
-              ];
-              let idx = 0;
-              for (let i = 0; i < TIERS.length; i++) if (coins >= TIERS[i].min) idx = i;
-              const cur = TIERS[idx];
-              const next = TIERS[idx + 1];
-              const pct = next ? Math.min(100, Math.round(((coins - cur.min) / (next.min - cur.min)) * 100)) : 100;
-              return (
-                <div style={{ ...CARD, position: "relative", overflow: "hidden", padding: 18 }}>
-                  <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 15% 10%, ${G}22, transparent 60%)`, pointerEvents: "none" }} />
-                  <div style={{ position: "relative", zIndex: 2 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-                      <div style={{ fontSize: 10, color: G, letterSpacing: 3 }}>◈ RANK TIER</div>
-                      <div style={{ fontSize: 10, color: "#888", letterSpacing: 2 }}>{coins} COINS</div>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                      <div style={{
-                        width: 56, height: 56, borderRadius: 12,
-                        background: `linear-gradient(135deg, ${G}44, ${G2}22)`,
-                        border: `1px solid ${G}`, boxShadow: `0 0 16px ${G}66, inset 0 0 12px ${G}33`,
-                        display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26,
-                      }}>{cur.icon}</div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 10px ${G}` }}>{cur.name}</div>
-                        <div style={{ fontSize: 10, color: G, letterSpacing: 2 }}>{cur.tag}</div>
-                      </div>
-                    </div>
-                    <div style={{ height: 8, background: "#0a0a15", border: `1px solid ${G}33`, borderRadius: 4, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${G}, ${G2})`, boxShadow: `0 0 10px ${G}` }} />
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 9, color: "#888", letterSpacing: 1 }}>
-                      <span>{cur.min}</span>
-                      <span style={{ color: G }}>{next ? `NEXT: ${next.name} · ${next.min - coins} TO GO` : "◉ MAXIMUM RANK ACHIEVED"}</span>
-                      <span>{next ? next.min : "∞"}</span>
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 4, marginTop: 12 }}>
-                      {TIERS.map((t, i) => (
-                        <div key={t.name} style={{
-                          textAlign: "center", padding: "6px 2px",
-                          background: i <= idx ? `linear-gradient(135deg, ${G}22, transparent)` : "rgba(0,0,0,0.3)",
-                          border: `1px solid ${i <= idx ? G : "#222"}`,
-                          borderLeft: `2px solid ${i <= idx ? G : "#333"}`,
-                          opacity: i <= idx ? 1 : 0.45,
-                        }}>
-                          <div style={{ fontSize: 14 }}>{t.icon}</div>
-                          <div style={{ fontSize: 7, color: i <= idx ? G : "#666", letterSpacing: 1, marginTop: 2, fontWeight: 800 }}>{t.name.split(" ")[0]}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* MANAGE SUBSCRIPTION — opens Paddle-hosted customer portal */}
-            <ManageSubscriptionCard />
-            <SubscriptionTimeline />
-
-            {/* TOP RANKED — auto-sorted by coins, top holder shown large */}
-
-
-
-            {(() => {
-              const roster = board.length ? board : [{ n: myName.toUpperCase(), c: coins, s: streak, img: fallbackAvatar(myName), you: true }];
-              const [top, second, third] = roster;
-              if (!top) return null;
-
-              return (
-                <div style={{ ...CARD, textAlign: "center", padding: 22, position: "relative", overflow: "hidden" }}>
-                  <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 260, height: 260, borderRadius: "50%", background: `radial-gradient(circle, ${G}44, transparent 70%)` }} />
-                  <div style={{ position: "relative", zIndex: 2 }}>
-                    <div style={{ fontSize: 10, color: G, letterSpacing: 4, marginBottom: 10 }}>◈ #1 ON THE GRID ◈</div>
-                    <div style={{ position: "relative", width: 110, height: 110, margin: "0 auto 10px" }}>
-                      <div style={{ position: "absolute", inset: -6, borderRadius: "50%", border: `2px solid ${G}`, boxShadow: `0 0 24px ${G}, inset 0 0 16px ${G}66`, animation: "orbit 10s linear infinite" }}>
-                        <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G2, boxShadow: `0 0 12px ${G2}` }} />
-                      </div>
-                      <img src={top.img} alt={top.n} style={{ width: 110, height: 110, borderRadius: "50%", objectFit: "cover", border: `3px solid ${G}`, boxShadow: `0 0 30px ${G}` }} />
-                      <div style={{ position: "absolute", bottom: -4, right: -4, fontSize: 26, filter: `drop-shadow(0 0 8px ${G})` }}>🥇</div>
-                    </div>
-                    <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 12px ${G}` }}>{top.n}</div>
-                    <div style={{ fontSize: 11, color: G, letterSpacing: 2, marginBottom: 14 }}>{top.c} COINS · {top.s}d STREAK</div>
-
-                    <div style={{ display: "flex", justifyContent: "center", gap: 22, marginTop: 6 }}>
-                      {[{ u: second, medal: "🥈", rank: "#2" }, { u: third, medal: "🥉", rank: "#3" }].filter(x => x.u).map(({ u, medal, rank }) => (
-                        <div key={u!.n} style={{ textAlign: "center" }}>
-                          <div style={{ position: "relative", width: 62, height: 62, margin: "0 auto 6px" }}>
-                            <img src={u!.img} alt={u!.n} style={{ width: 62, height: 62, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}88`, boxShadow: `0 0 12px ${G}55` }} />
-                            <div style={{ position: "absolute", bottom: -3, right: -3, fontSize: 16 }}>{medal}</div>
-                          </div>
-                          <div style={{ fontSize: 10, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1 }}>{u!.n}</div>
-                          <div style={{ fontSize: 9, color: G, letterSpacing: 1 }}>{rank} · {u!.c}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                  </div>
-                </div>
-              );
-            })()}
-
-            <div style={CARD}>
-              <div style={TITLE}><span style={{ color: G }}>▸</span> THEME <span style={{ color: G }}>SELECTOR</span></div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                {(Object.keys(THEMES) as ThemeKey[]).map(k => {
-                  const t = THEMES[k];
-                  const active = themeKey === k;
-                  return (
-                    <button key={k} onClick={() => setThemeKey(k)} style={{
-                      background: active ? `linear-gradient(135deg, ${t.accent}33, ${t.accent2}22)` : "rgba(0,0,0,0.3)",
-                      border: `1px solid ${active ? t.accent : "#333"}`,
-                      borderLeft: `3px solid ${t.accent}`,
-                      padding: "12px 10px", cursor: "pointer", color: "#e8e8e8",
-                      fontFamily: "monospace", textAlign: "left",
-                      boxShadow: active ? `0 0 15px ${t.accent}55` : "none",
-                    }}>
-                      <div style={{ display: "flex", gap: 4, marginBottom: 6 }}>
-                        <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.accent, boxShadow: `0 0 8px ${t.accent}` }} />
-                        <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.accent2 }} />
-                      </div>
-                      <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 2, color: active ? t.accent : "#ccc" }}>{t.name}</div>
-                      <div style={{ fontSize: 9, color: "#666", marginTop: 2 }}>{active ? "◉ ACTIVE" : "○ SELECT"}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* VICTORIES — cinematic photo cards with hard-hitting one-liners */}
-            <div style={CARD}>
-              <div style={TITLE}><span style={{ color: G }}>▸</span> <span style={{ color: G }}>VICTORIES</span></div>
-              {[
-                { d: 1,   label: "DAY 1 · THE FIRST STEP",     line: "The first step is the heaviest. Most surrender here — but you did not.", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=1200&q=90" },
-                { d: 7,   label: "DAY 7 · IRON WEEK",           line: "One full week. 95% quit before this line. You crossed it in silence.", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&q=90" },
-                { d: 21,  label: "DAY 21 · NEURAL FORGE",       line: "Twenty-one days. Your brain has begun rewiring. The old you is dying.", img: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=1200&q=90" },
-                { d: 60,  label: "DAY 60 · STEEL SPINE",        line: "Sixty days of war with yourself — and you kept winning every single dawn.", img: "https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=1200&q=90" },
-                { d: 90,  label: "DAY 90 · IDENTITY SHIFT",     line: "Ninety days. You are no longer trying to change — you have already changed.", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=90" },
-                { d: 120, label: "DAY 120 · FORGED IN FIRE",    line: "Four months of fire. What was once impossible is now your ordinary day.", img: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=1200&q=90" },
-                { d: 170, label: "DAY 170 · UNBREAKABLE",       line: "One hundred seventy sunrises. You cannot be stopped by weakness anymore.", img: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=1200&q=90" },
-                { d: 290, label: "DAY 290 · MASTER OF SELF",    line: "Two hundred ninety days. You command yourself where others still beg themselves.", img: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=1200&q=90" },
-                { d: 360, label: "DAY 360 · LEGEND STATUS",     line: "One year. You did not build a habit — you became a different human being.", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=1200&q=90" },
-              ].map((v, i) => {
-                const done = streak >= v.d;
-                const progress = Math.min(100, Math.round((streak / v.d) * 100));
-                return (
-                  <div key={i} style={{
-                    position: "relative", marginBottom: 18, overflow: "hidden", borderRadius: 4,
-                    border: `1px solid ${done ? G + "aa" : "#1a1a2a"}`,
-                    borderLeft: `4px solid ${done ? G : "#2a2a3a"}`,
-                    background: "#0a0a15",
-                    boxShadow: done ? `0 8px 32px ${G}33, 0 0 0 1px ${G}22 inset` : "0 4px 16px rgba(0,0,0,0.5)",
-                    backdropFilter: "blur(10px)",
-                  }}>
-                    <div style={{ position: "relative", height: 420, overflow: "hidden" }}>
-                      <img src={v.img} alt={v.label} style={{
-                        width: "100%", height: "100%", objectFit: "cover", objectPosition: "center",
-                        filter: done ? "contrast(1.12) saturate(1.2)" : "grayscale(0.85) brightness(0.45) contrast(1.1)",
-                        transition: "all 0.4s ease",
-                      }} />
-                      <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(5,5,15,0.15) 0%, rgba(5,5,15,0.55) 55%, rgba(5,5,15,0.98) 100%)` }} />
-
-                      {/* Top badge */}
-                      <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                        <div style={{
-                          fontSize: 10, fontWeight: 900, letterSpacing: 3, padding: "6px 10px",
-                          background: done ? `${G}dd` : "rgba(0,0,0,0.75)",
-                          color: done ? "#000" : G,
-                          border: `1px solid ${done ? G : G + "44"}`,
-                          borderRadius: 2,
-                          boxShadow: done ? `0 0 20px ${G}88` : "none",
-                        }}>
-                          {done ? "◉ CONQUERED" : "◌ LOCKED"}
-                        </div>
-                        <div style={{
-                          fontSize: 28, fontWeight: 900, color: done ? G : "#4a4a5a",
-                          textShadow: done ? `0 0 20px ${G}` : "none",
-                          letterSpacing: -1, lineHeight: 1,
-                        }}>
-                          {v.d}<span style={{ fontSize: 11, letterSpacing: 2, marginLeft: 3 }}>D</span>
-                        </div>
-                      </div>
-
-                      {/* Bottom text block */}
-                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 18px 22px" }}>
-                        <div style={{
-                          fontSize: 11, fontWeight: 900, letterSpacing: 4,
-                          color: done ? G : "#888", marginBottom: 10,
-                          textShadow: done ? `0 0 12px ${G}88` : "none",
-                        }}>
-                          {v.label}
-                        </div>
-                        <div style={{
-                          fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.25,
-                          letterSpacing: -0.3, marginBottom: 14,
-                          textShadow: "0 2px 20px rgba(0,0,0,0.9)",
-                        }}>
-                          "{v.line}"
-                        </div>
-
-                        {/* Progress bar */}
-                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <div style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.1)", borderRadius: 2, overflow: "hidden" }}>
-                            <div style={{
-                              width: `${progress}%`, height: "100%",
-                              background: done ? G : `linear-gradient(90deg, ${G}66, ${G})`,
-                              boxShadow: `0 0 8px ${G}`,
-                              transition: "width 0.6s ease",
-                            }} />
-                          </div>
-                          <div style={{ fontSize: 10, fontWeight: 900, color: done ? G : "#aaa", letterSpacing: 1, minWidth: 60, textAlign: "right" }}>
-                            {done ? "100%" : `${Math.max(0, v.d - streak)}D LEFT`}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>}
+            {tab === "home" && <HomeTab G={G} G2={G2} coins={coins} streak={streak} tasks={tasks} tick={tick} />}
+            {tab === "rank" && <RankTab G={G} board={board} fallbackAvatar={fallbackAvatar} />}
+            {tab === "quotes" && <QuotesTab G={G} />}
+            {tab === "zen" && <ZenTab G={G} G2={G2} med={med} />}
+            {tab === "stats" && <StatsTab G={G} G2={G2} weekly={weekly} />}
+            {tab === "profile" && (
+              <ProfileTab
+                G={G} G2={G2}
+                coins={coins} streak={streak}
+                myName={myName} myAvatar={myAvatar} uploading={uploading}
+                themeKey={themeKey} setThemeKey={setThemeKey}
+                board={board}
+                openCropper={openCropper}
+                fallbackAvatar={fallbackAvatar}
+              />
+            )}
           </>}
         </div>
 
@@ -1248,7 +528,6 @@ function App() {
               </>
             )}
 
-
             {proof.mode === "quiz" && (
               <>
                 <div style={{ fontSize: 9, color: G, letterSpacing: 3, marginBottom: 8 }}>
@@ -1315,274 +594,6 @@ function App() {
           onCancel={() => setCropSrc(null)}
           onConfirm={uploadCroppedBlob}
         />
-      )}
-    </div>
-  );
-}
-
-function CropModal({ src, accent, accent2, busy, onCancel, onConfirm }: {
-  src: string; accent: string; accent2: string; busy: boolean;
-  onCancel: () => void; onConfirm: (blob: Blob) => void;
-}) {
-  const BOX = 280; // preview viewport (square)
-  const imgRef = useRef<HTMLImageElement | null>(null);
-  const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [pos, setPos] = useState({ x: 0, y: 0 });
-  const drag = useRef<{ sx: number; sy: number; px: number; py: number } | null>(null);
-
-  // Base scale: cover the box
-  const baseScale = natural ? Math.max(BOX / natural.w, BOX / natural.h) : 1;
-  const scale = baseScale * zoom;
-  const dispW = natural ? natural.w * scale : 0;
-  const dispH = natural ? natural.h * scale : 0;
-
-  const clamp = (x: number, y: number) => {
-    const minX = BOX - dispW, minY = BOX - dispH;
-    return { x: Math.min(0, Math.max(minX, x)), y: Math.min(0, Math.max(minY, y)) };
-  };
-
-  useEffect(() => { if (natural) setPos(p => clamp(p.x, p.y)); // re-clamp on zoom
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [zoom, natural]);
-
-  const onDown = (cx: number, cy: number) => {
-    drag.current = { sx: cx, sy: cy, px: pos.x, py: pos.y };
-  };
-  const onMove = (cx: number, cy: number) => {
-    if (!drag.current) return;
-    const nx = drag.current.px + (cx - drag.current.sx);
-    const ny = drag.current.py + (cy - drag.current.sy);
-    setPos(clamp(nx, ny));
-  };
-  const onUp = () => { drag.current = null; };
-
-  const doConfirm = async () => {
-    const img = imgRef.current;
-    if (!img || !natural) return;
-    const OUT = 512;
-    const canvas = document.createElement("canvas");
-    canvas.width = OUT; canvas.height = OUT;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    // Map preview coords → source coords. Source region visible in preview:
-    const srcX = -pos.x / scale;
-    const srcY = -pos.y / scale;
-    const srcSize = BOX / scale;
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, OUT, OUT);
-    ctx.drawImage(img, srcX, srcY, srcSize, srcSize, 0, 0, OUT, OUT);
-    canvas.toBlob(b => { if (b) onConfirm(b); }, "image/jpeg", 0.9);
-  };
-
-  return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)",
-      zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
-    }}>
-      <div style={{
-        width: "100%", maxWidth: 360, background: "#0a0a19",
-        border: `1px solid ${accent}`, borderLeft: `4px solid ${accent}`,
-        boxShadow: `0 0 40px ${accent}66`, padding: 18, fontFamily: "monospace",
-      }}>
-        <div style={{ fontSize: 10, color: accent, letterSpacing: 4, marginBottom: 4 }}>◈ CROP & FIT</div>
-        <div style={{ fontSize: 14, fontWeight: 900, color: "#fff", letterSpacing: 2, marginBottom: 12 }}>
-          POSITION YOUR FACE
-        </div>
-
-        <div
-          onMouseDown={e => { e.preventDefault(); onDown(e.clientX, e.clientY); }}
-          onMouseMove={e => onMove(e.clientX, e.clientY)}
-          onMouseUp={onUp}
-          onMouseLeave={onUp}
-          onTouchStart={e => { const t = e.touches[0]; onDown(t.clientX, t.clientY); }}
-          onTouchMove={e => { const t = e.touches[0]; onMove(t.clientX, t.clientY); }}
-          onTouchEnd={onUp}
-          style={{
-            position: "relative", width: BOX, height: BOX, margin: "0 auto",
-            overflow: "hidden", background: "#000",
-            border: `1px solid ${accent}66`, cursor: drag.current ? "grabbing" : "grab",
-            touchAction: "none", userSelect: "none",
-          }}
-        >
-          {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <img
-            ref={imgRef}
-            src={src}
-            draggable={false}
-            onLoad={e => {
-              const el = e.currentTarget;
-              const w = el.naturalWidth, h = el.naturalHeight;
-              const bs = Math.max(BOX / w, BOX / h);
-              const dW = w * bs, dH = h * bs;
-              setNatural({ w, h });
-              setPos({ x: (BOX - dW) / 2, y: (BOX - dH) / 2 });
-              setZoom(1);
-            }}
-            style={{
-              position: "absolute",
-              left: pos.x, top: pos.y,
-              width: dispW || "auto", height: dispH || "auto",
-              maxWidth: "none", pointerEvents: "none",
-            }}
-          />
-          {/* circle mask overlay */}
-          <div style={{
-            position: "absolute", inset: 0, pointerEvents: "none",
-            boxShadow: `0 0 0 9999px rgba(0,0,0,0.55)`,
-            borderRadius: "50%",
-          }} />
-          <div style={{
-            position: "absolute", inset: 0, pointerEvents: "none",
-            border: `2px dashed ${accent}`, borderRadius: "50%",
-            boxShadow: `0 0 20px ${accent}88`,
-          }} />
-        </div>
-
-        <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: 10, color: accent, letterSpacing: 2 }}>ZOOM</span>
-          <input
-            type="range" min={1} max={4} step={0.01} value={zoom}
-            onChange={e => setZoom(parseFloat(e.target.value))}
-            style={{ flex: 1, accentColor: accent }}
-          />
-          <span style={{ fontSize: 10, color: "#888", width: 32, textAlign: "right" }}>{zoom.toFixed(1)}x</span>
-        </div>
-
-        <div style={{ fontSize: 9, color: "#666", letterSpacing: 1, marginTop: 8, textAlign: "center" }}>
-          DRAG TO REPOSITION · CIRCLE = FINAL CROP
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 14 }}>
-          <button
-            onClick={onCancel}
-            disabled={busy}
-            style={{
-              padding: 10, background: "transparent", border: `1px solid #333`,
-              color: "#aaa", fontFamily: "monospace", fontSize: 11, fontWeight: 800,
-              letterSpacing: 3, cursor: busy ? "wait" : "pointer",
-            }}
-          >CANCEL</button>
-          <button
-            onClick={doConfirm}
-            disabled={busy || !natural}
-            style={{
-              padding: 10, background: `linear-gradient(90deg, ${accent}, ${accent2})`,
-              border: "none", color: "#000", fontFamily: "monospace", fontSize: 11, fontWeight: 900,
-              letterSpacing: 3, cursor: busy ? "wait" : "pointer",
-              boxShadow: `0 0 15px ${accent}88`,
-              opacity: busy ? 0.7 : 1,
-            }}
-          >{busy ? "SAVING…" : "USE PHOTO"}</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
-const PLAN_LABELS: Record<string, string> = {
-  dwt_pro_monthly: "DWT PRO · MONTHLY",
-  dwt_pro_yearly:  "DWT PRO · YEARLY",
-};
-
-function ManageSubscriptionCard() {
-  const G = "#00d4ff";
-  const R = "#ff4d4d";
-  const [busy, setBusy] = useState(false);
-  const [switching, setSwitching] = useState(false);
-  const [uid, setUid] = useState<string | null>(null);
-  useEffect(() => { supabase.auth.getUser().then(({ data }) => setUid(data.user?.id ?? null)); }, []);
-  const { sub, reload } = useSubscription(uid);
-
-  const open = async () => {
-    setBusy(true);
-    try {
-      const { url } = await openCustomerPortal({ data: { environment: getPaddleEnvironment() } });
-      window.open(url, "_blank", "noopener");
-    } catch (e) {
-      toast.error("Couldn't open portal", { description: e instanceof Error ? e.message : "Try again in a moment." });
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const isYearly = sub?.price_id === "dwt_pro_yearly";
-  const targetPriceId = isYearly ? "dwt_pro_monthly" : "dwt_pro_yearly";
-  const targetLabel   = isYearly ? "SWITCH TO MONTHLY" : "UPGRADE TO YEARLY (SAVE ~47%)";
-
-  const doSwitch = async () => {
-    if (!confirm(isYearly
-      ? "Switch to monthly billing? Paddle will credit any unused time from your yearly plan."
-      : "Upgrade to yearly billing? Paddle will charge the prorated difference now."
-    )) return;
-    setSwitching(true);
-    try {
-      await switchSubscriptionPlan({ data: { environment: getPaddleEnvironment(), targetPriceId } });
-      toast.success(isYearly ? "Switched to monthly" : "Upgraded to yearly");
-      setTimeout(reload, 1500); // let the webhook land
-    } catch (e) {
-      toast.error("Plan switch failed", { description: e instanceof Error ? e.message : "Try again in a moment." });
-    } finally {
-      setSwitching(false);
-    }
-  };
-
-  const planLabel = sub ? (PLAN_LABELS[sub.price_id] ?? sub.price_id) : "DWT PRO";
-  const endDate   = sub?.current_period_end ? new Date(sub.current_period_end) : null;
-  const endStr    = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
-  const isTrial   = sub?.status === "trialing";
-  const isCanceled = sub?.status === "canceled" || sub?.cancel_at_period_end;
-  const isPastDue  = sub?.status === "past_due";
-
-  const statusLine = isPastDue
-    ? { color: R, text: "⚠ PAYMENT FAILED — update your card to keep access." }
-    : isCanceled && endStr
-      ? { color: "#ffb84d", text: `◌ CANCELED — access ends ${endStr}` }
-      : isTrial && endStr
-        ? { color: G, text: `◉ FREE TRIAL — renews on ${endStr}` }
-        : endStr
-          ? { color: G, text: `◉ ACTIVE — renews on ${endStr}` }
-          : { color: G, text: "◉ ACTIVE" };
-
-  return (
-    <div style={{
-      marginTop: 14, padding: 16, background: "rgba(10,10,25,0.7)",
-      border: `1px solid ${isPastDue ? R : G}44`, borderLeft: `3px solid ${isPastDue ? R : G}`, borderRadius: 4,
-    }}>
-      <div style={{ fontSize: 10, color: isPastDue ? R : G, letterSpacing: 3, marginBottom: 6, fontFamily: "monospace" }}>◈ SUBSCRIPTION</div>
-      <div style={{ fontSize: 14, color: "#fff", letterSpacing: 2, fontWeight: 900, fontFamily: "monospace" }}>{planLabel}</div>
-      <div style={{ marginTop: 6, fontSize: 11, color: statusLine.color, letterSpacing: 1.5, fontFamily: "monospace", lineHeight: 1.5 }}>
-        {statusLine.text}
-      </div>
-      <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
-        View your plan, update your card, download invoices, or cancel anytime.
-      </div>
-      <button
-        onClick={open}
-        disabled={busy}
-        style={{
-          marginTop: 12, width: "100%", padding: "12px 16px",
-          background: busy ? "#333" : `linear-gradient(135deg, ${isPastDue ? R : G}33, transparent)`,
-          border: `1px solid ${isPastDue ? R : G}`, color: isPastDue ? R : G,
-          fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
-          cursor: busy ? "wait" : "pointer", borderRadius: 2,
-          boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
-        }}
-      >{busy ? "◌ OPENING…" : isPastDue ? "⚠ UPDATE PAYMENT METHOD →" : "⚙ MANAGE SUBSCRIPTION →"}</button>
-
-      {sub && !isCanceled && !isPastDue && (
-        <button
-          onClick={doSwitch}
-          disabled={switching}
-          style={{
-            marginTop: 8, width: "100%", padding: "10px 16px",
-            background: "transparent",
-            border: `1px dashed ${G}77`, color: G,
-            fontFamily: "monospace", fontSize: 10, fontWeight: 900, letterSpacing: 2.5,
-            cursor: switching ? "wait" : "pointer", borderRadius: 2,
-          }}
-        >{switching ? "◌ SWITCHING…" : targetLabel}</button>
       )}
     </div>
   );
