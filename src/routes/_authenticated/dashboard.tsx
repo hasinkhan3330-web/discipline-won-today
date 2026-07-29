@@ -149,7 +149,43 @@ function App() {
       bars.push(Math.min(100, Math.round((counts[d] || 0) / total * 100)));
     }
     setWeekly(bars);
+
+    // ---- lifetime stats ----
+    const thirtyAgo = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
+    const [{ data: allComps }, { data: earns }] = await Promise.all([
+      supabase.from("task_completions").select("task_id, completed_on").eq("user_id", uid),
+      supabase.from("coin_transactions").select("amount").eq("user_id", uid).gt("amount", 0),
+    ]);
+
+    const byDay: Record<string, number> = {};
+    const byTask: Record<string, number> = {};
+    (allComps || []).forEach(c => {
+      if (c.completed_on >= thirtyAgo) byDay[c.completed_on] = (byDay[c.completed_on] || 0) + 1;
+      byTask[c.task_id as string] = (byTask[c.task_id as string] || 0) + 1;
+    });
+
+    const heat: { date: string; count: number }[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      heat.push({ date: d, count: byDay[d] || 0 });
+    }
+
+    let topTask: { icon: string; name: string; count: number } | null = null;
+    Object.entries(byTask).forEach(([tid, count]) => {
+      if (!topTask || count > topTask.count) {
+        const t = (taskRows || []).find(r => r.id === tid);
+        if (t) topTask = { icon: t.icon, name: t.name, count };
+      }
+    });
+
+    setLife({
+      bestStreak: (prof as any)?.longest_streak ?? prof?.streak ?? 0,
+      lifetimeCoins: (earns || []).reduce((s, e) => s + (e.amount || 0), 0),
+      heat,
+      topTask,
+    });
   };
+
 
   useEffect(() => { refreshAll(); }, []);
 
