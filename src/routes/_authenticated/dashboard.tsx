@@ -75,6 +75,20 @@ function App() {
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [trialReady, setTrialReady] = useState(false);
   const { isActive: hasActiveSubscription, loading: subLoading } = useSubscription(myId);
+  // Authoritative entitlement, computed server-side from the bearer token.
+  const checkEntitlement = useServerFn(getEntitlement);
+  const [serverEntitled, setServerEntitled] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!myId) return;
+    let cancelled = false;
+    const run = () => checkEntitlement()
+      .then(r => { if (!cancelled) setServerEntitled(!!(r as any)?.entitled); })
+      .catch(() => { if (!cancelled) setServerEntitled(false); });
+    run();
+    window.addEventListener("focus", run);
+    window.addEventListener("subscription:refresh", run);
+    return () => { cancelled = true; window.removeEventListener("focus", run); window.removeEventListener("subscription:refresh", run); };
+  }, [myId, checkEntitlement, hasActiveSubscription]);
 
   const fallbackAvatar = (n: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=0a0a19&color=00ff88&size=200&bold=true`;
 
