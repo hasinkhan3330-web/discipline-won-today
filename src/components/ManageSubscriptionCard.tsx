@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { openCustomerPortal, switchSubscriptionPlan } from "@/utils/payments.functions";
@@ -16,19 +16,40 @@ export function ManageSubscriptionCard() {
   const [busy, setBusy] = useState(false);
   const [switching, setSwitching] = useState(false);
   const [uid, setUid] = useState<string | null>(null);
-  useEffect(() => { supabase.auth.getUser().then(({ data }) => setUid(data.user?.id ?? null)); }, []);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => { mounted.current = false; };
+  }, []);
+
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (mounted.current) setUid(session?.user?.id ?? null);
+    });
+    supabase.auth.getUser().then(({ data }) => { if (mounted.current) setUid(data.user?.id ?? null); });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
   const { sub, reload } = useSubscription(uid);
 
   const open = async () => {
     setBusy(true);
+    // Open the tab synchronously (Safari/iOS blocks popups opened after await).
+    const tab = window.open("", "_blank", "noopener");
     try {
       const { url } = await openCustomerPortal({ data: { environment: getPaddleEnvironment() } });
-      if (url) window.open(url, "_blank", "noopener");
-      else toast.message("No active subscription to manage yet.");
+      if (url) {
+        if (tab) tab.location.href = url;
+        else window.open(url, "_blank", "noopener");
+      } else {
+        tab?.close();
+        toast.message("No active subscription to manage yet.");
+      }
     } catch (e) {
+      tab?.close();
       toast.error("Couldn't open portal", { description: e instanceof Error ? e.message : "Try again in a moment." });
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(false);
     }
   };
 
@@ -45,11 +66,12 @@ export function ManageSubscriptionCard() {
     try {
       await switchSubscriptionPlan({ data: { environment: getPaddleEnvironment(), targetPriceId } });
       toast.success(isYearly ? "Switched to monthly" : "Upgraded to yearly");
-      setTimeout(reload, 1500);
+      const t = setTimeout(() => { if (mounted.current) reload(); }, 1500);
+      void t;
     } catch (e) {
       toast.error("Plan switch failed", { description: e instanceof Error ? e.message : "Try again in a moment." });
     } finally {
-      setSwitching(false);
+      if (mounted.current) setSwitching(false);
     }
   };
 
