@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
+import { BlurLock } from "@/components/BlurLock";
 import { SpaceWallpaper } from "@/components/SpaceWallpaper";
 import { CropModal } from "@/components/CropModal";
 import { THEMES, MILESTONES, wallpaperLevel, type ThemeKey } from "@/constants/themes";
@@ -91,6 +92,7 @@ function App() {
   const [uploading, setUploading] = useState(false);
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [trialReady, setTrialReady] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
   const { isActive: hasActiveSubscription, loading: subLoading } = useSubscription(myId);
   // Authoritative entitlement, computed server-side from the bearer token.
   const checkEntitlement = useServerFn(getEntitlement);
@@ -597,13 +599,30 @@ function App() {
             </div>
           )}
 
-          {premiumLocked && myId && <Paywall userId={myId} email={myEmail} />}
+          {showPaywall && myId && (
+            <div style={{ position: "fixed", inset: 0, zIndex: 200, overflowY: "auto", background: "#000" }}>
+              <button onClick={() => setShowPaywall(false)} style={{ position: "fixed", top: 12, right: 12, zIndex: 201, background: "rgba(0,0,0,0.6)", border: `1px solid ${G}66`, color: G, fontFamily: "monospace", fontSize: 11, letterSpacing: 2, padding: "6px 10px", cursor: "pointer" }}>✕ CLOSE</button>
+              <Paywall userId={myId} email={myEmail} />
+            </div>
+          )}
 
-          {!premiumLocked && <>
+          <>
             {tab === "home" && <HomeTab G={G} G2={G2} coins={coins} streak={streak} tasks={tasks} tick={tick} />}
-            {tab === "rank" && <RankTab G={G} board={board} fallbackAvatar={fallbackAvatar} />}
-            {tab === "quotes" && <QuotesTab G={G} />}
-            {tab === "zen" && <ZenTab G={G} G2={G2} med={med} />}
+            {tab === "rank" && (
+              <BlurLock G={G} G2={G2} active={premiumLocked} note="Leaderboard is hidden after your free 3 days. Subscribe to see who is ranked where." onUnlock={() => setShowPaywall(true)}>
+                <RankTab G={G} board={board} fallbackAvatar={fallbackAvatar} />
+              </BlurLock>
+            )}
+            {tab === "quotes" && (
+              <BlurLock G={G} G2={G2} active={premiumLocked} blur={false} note="Today's legend is visible — the quote stays blurred until you subscribe." onUnlock={() => setShowPaywall(true)}>
+                <QuotesTab G={G} />
+              </BlurLock>
+            )}
+            {tab === "zen" && (
+              <BlurLock G={G} G2={G2} active={premiumLocked} note="Zen Protocol is frozen after your free 3 days. Subscribe to breathe again." onUnlock={() => setShowPaywall(true)}>
+                <ZenTab G={G} G2={G2} med={med} />
+              </BlurLock>
+            )}
             {tab === "stats" && <StatsTab G={G} G2={G2} weekly={weekly} life={life ? { ...life, medMinutes: med.medLifetime } : undefined} />}
             {tab === "profile" && (
               <ProfileTab
@@ -619,7 +638,7 @@ function App() {
               />
 
             )}
-          </>}
+          </>
         </div>
 
         {/* BOTTOM NAV */}
