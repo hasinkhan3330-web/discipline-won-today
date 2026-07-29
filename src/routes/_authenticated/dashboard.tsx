@@ -9,7 +9,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
 import { SpaceWallpaper } from "@/components/SpaceWallpaper";
 import { CropModal } from "@/components/CropModal";
-import { THEMES, type ThemeKey } from "@/constants/themes";
+import { THEMES, MILESTONES, wallpaperLevel, type ThemeKey } from "@/constants/themes";
 import { useMeditation } from "@/hooks/useMeditation";
 import { cardStyle, titleStyle } from "@/tabs/styles";
 import { HomeTab } from "@/tabs/HomeTab";
@@ -60,14 +60,25 @@ function App() {
   };
   const [screen, setScreen] = useState<"splash" | "app">("splash");
   const [tab, setTab] = useState("home");
-  const [themeKey, setThemeKey] = useState<ThemeKey>("space");
+  const [themeKey, setThemeKeyState] = useState<ThemeKey>("space");
+  const setThemeKey = (k: ThemeKey) => {
+    setThemeKeyState(k);
+    try { localStorage.setItem("dwt_theme", k); } catch {}
+  };
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("dwt_theme") as ThemeKey | null;
+      if (saved && THEMES[saved]) setThemeKeyState(saved);
+    } catch {}
+  }, []);
+  const [celebration, setCelebration] = useState<(typeof MILESTONES)[number] | null>(null);
 
   const [coins, setCoins] = useState(0);
   const [streak, setStreak] = useState(0);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [board, setBoard] = useState<{ n: string; c: number; s: number; img: string; you?: boolean }[]>([]);
   const [weekly, setWeekly] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
-  const [life, setLife] = useState<{ bestStreak: number; lifetimeCoins: number; heat: { date: string; count: number }[]; topTask: { icon: string; name: string; count: number } | null } | null>(null);
+  const [life, setLife] = useState<{ bestStreak: number; lifetimeCoins: number; heat: { date: string; count: number }[]; topTask: { icon: string; name: string; count: number } | null; taskTotal?: number } | null>(null);
 
   const [myId, setMyId] = useState<string | null>(null);
   const [myEmail, setMyEmail] = useState<string | null>(null);
@@ -199,11 +210,29 @@ function App() {
       lifetimeCoins: (earns || []).reduce((s, e) => s + (e.amount || 0), 0),
       heat,
       topTask,
+      taskTotal: (taskRows || []).length,
     });
   };
 
 
   useEffect(() => { refreshAll(); }, []);
+
+  // ---- streak milestones: auto-evolve theme + wallpaper, celebrate once ----
+  useEffect(() => {
+    if (!streak) return;
+    const reached = [...MILESTONES].reverse().find(m => streak >= m.d);
+    if (!reached) return;
+    let seen = 0;
+    try { seen = Number(localStorage.getItem("dwt_milestone") || 0); } catch {}
+    if (seen >= reached.d) return;
+    try { localStorage.setItem("dwt_milestone", String(reached.d)); } catch {}
+    setThemeKey(reached.theme);
+    setCelebration(reached);
+    toast.success(`${reached.icon} ${reached.title}`, { description: reached.line });
+    const t = setTimeout(() => setCelebration(null), 7000);
+    return () => clearTimeout(t);
+  }, [streak]);
+
 
   const [cropSrc, setCropSrc] = useState<string | null>(null);
 

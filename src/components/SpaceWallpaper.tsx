@@ -1,19 +1,41 @@
-export function SpaceWallpaper({ accent }: { accent: string }) {
+export function SpaceWallpaper({ accent, level = 0 }: { accent: string; level?: number }) {
   // deterministic star field
-  const stars = Array.from({ length: 90 }, (_, i) => {
+  const starCount = 90 + level * 30;
+  const stars = Array.from({ length: starCount }, (_, i) => {
     const x = (i * 37) % 100;
     const y = (i * 71) % 100;
     const s = ((i * 13) % 3) + 1;
     const d = ((i * 7) % 40) / 10;
     return { x, y, s, d, k: i };
   });
-  const shootingStars = [0, 1, 2, 3];
+  const shootingStars = Array.from({ length: 4 + level * 2 }, (_, i) => i);
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 0, overflow: "hidden", pointerEvents: "none", background: "radial-gradient(ellipse at 20% 10%, #1a0a3e 0%, #0a0620 40%, #000 100%)" }}>
       {/* nebula glow */}
       <div style={{ position: "absolute", top: "-20%", right: "-10%", width: 500, height: 500, background: `radial-gradient(circle, ${accent}22 0%, transparent 60%)`, filter: "blur(40px)" }} />
       <div style={{ position: "absolute", bottom: "-10%", left: "-20%", width: 500, height: 500, background: "radial-gradient(circle, #7b5cff33 0%, transparent 60%)", filter: "blur(40px)" }} />
+
+      {/* level 1+ : aurora curtain */}
+      {level >= 1 && (
+        <div style={{
+          position: "absolute", top: "-10%", left: "-25%", width: "150%", height: "60%",
+          background: `linear-gradient(115deg, transparent 20%, ${accent}33 45%, #8a5bff33 60%, transparent 80%)`,
+          filter: "blur(50px)", animation: "aurora-drift 18s ease-in-out infinite",
+        }} />
+      )}
+
+      {/* level 2+ : neural orbital rings */}
+      {level >= 2 && [0, 1].map(i => (
+        <div key={`ring${i}`} style={{
+          position: "absolute", left: "50%", top: "55%",
+          width: 420 + i * 200, height: 420 + i * 200, marginLeft: -(210 + i * 100), marginTop: -(210 + i * 100),
+          borderRadius: "50%", border: `1px solid ${accent}${i ? "18" : "28"}`,
+          animation: `ring-orbit ${26 + i * 14}s linear infinite${i ? " reverse" : ""}`,
+        }}>
+          <div style={{ position: "absolute", top: -3, left: "50%", width: 6, height: 6, borderRadius: "50%", background: accent, boxShadow: `0 0 14px ${accent}` }} />
+        </div>
+      ))}
 
       {/* earth — equirectangular NASA Blue Marble wrapped on a rotating sphere */}
       <div style={{ position: "absolute", top: 50, right: 20, width: 120, height: 120 }}>
@@ -44,12 +66,23 @@ export function SpaceWallpaper({ accent }: { accent: string }) {
       {/* shooting stars */}
       {shootingStars.map(i => (
         <div key={i} style={{
-          position: "absolute", top: `${10 + i * 20}%`, left: "-10%",
+          position: "absolute", top: `${8 + i * 12}%`, left: "-10%",
           width: 120, height: 1, background: `linear-gradient(90deg, transparent, ${accent}, #fff)`,
           boxShadow: `0 0 8px ${accent}`,
-          animation: `shoot 6s linear ${i * 2.2}s infinite`,
+          animation: `shoot 6s linear ${i * 1.4}s infinite`,
           transform: "rotate(20deg)",
         }} />
+      ))}
+
+      {/* level 3 : rocket launch */}
+      {level >= 3 && [0, 1].map(i => (
+        <div key={`rk${i}`} style={{
+          position: "absolute", bottom: "-15%", left: `${18 + i * 48}%`,
+          animation: `rocket-fly ${9 + i * 3}s linear ${i * 4}s infinite`,
+        }}>
+          <div style={{ fontSize: 26, transform: "rotate(-12deg)", filter: `drop-shadow(0 0 12px ${accent})` }}>🚀</div>
+          <div style={{ position: "absolute", top: 24, left: 6, width: 4, height: 90, background: `linear-gradient(180deg, ${accent}, transparent)`, filter: "blur(3px)", opacity: 0.8 }} />
+        </div>
       ))}
 
       {/* scanline grid */}
