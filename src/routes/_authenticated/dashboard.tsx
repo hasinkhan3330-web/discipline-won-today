@@ -348,9 +348,12 @@ function App() {
   };
 
   const trialActive = !!trialEndsAt && new Date(trialEndsAt) > new Date();
-  const premiumUnlocked = hasActiveSubscription || trialActive;
+  // Server verdict is authoritative; client state only avoids a loading flash.
+  const premiumUnlocked = serverEntitled === null
+    ? (hasActiveSubscription || trialActive)
+    : serverEntitled;
   const premiumTabs = ["rank", "quotes", "zen"];
-  const gateReady = trialReady && !!myId && !subLoading;
+  const gateReady = trialReady && !!myId && !subLoading && serverEntitled !== null;
   const premiumLocked = gateReady && premiumTabs.includes(tab) && !premiumUnlocked;
   const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
 
