@@ -784,14 +784,22 @@ function App() {
 
             {proof.mode === "result" && (
               <div style={{ textAlign: "center", padding: "10px 0" }}>
-                <div style={{ fontSize: 48, marginBottom: 10 }}>{proof.correct ? "✅" : "❌"}</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: proof.correct ? G : "#ff4466", letterSpacing: 2, marginBottom: 8 }}>
-                  {proof.correct ? "PROOF ACCEPTED" : "PROOF FAILED"}
+                <div style={{ fontSize: 48, marginBottom: 10 }}>{proof.verdict?.awake ? "✅" : "❌"}</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: proof.verdict?.awake ? G : "#ff4466", letterSpacing: 2, marginBottom: 8 }}>
+                  {proof.verdict?.awake ? "AWAKE CONFIRMED" : "NOT CONFIRMED"}
+                </div>
+                <div style={{ fontSize: 10, color: "#888", letterSpacing: 2, marginBottom: 10 }}>
+                  AI CONFIDENCE <span style={{ color: proof.verdict?.awake ? G : "#ff4466", fontWeight: 900 }}>{proof.verdict?.score ?? 0}%</span>
+                </div>
+                <div style={{ height: 6, background: "#0a0a15", border: `1px solid ${G}22`, marginBottom: 14, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${proof.verdict?.score ?? 0}%`, background: `linear-gradient(90deg,${G},${G2})`, boxShadow: `0 0 10px ${G}`, transition: "width 0.6s" }} />
                 </div>
                 <div style={{ fontSize: 11, color: "#aaa", marginBottom: 16, lineHeight: 1.5 }}>
-                  {proof.correct
+                  {proof.verdict?.awake
                     ? <>+{proof.wakePts ?? 10} coins added. {proof.wakeLine || "You rose while the world slept."}</>
-                    : <>Correct answer was <span style={{ color: G }}>{proof.answer}</span>. No coins — but the discipline still counts.</>}
+                    : proof.correct
+                      ? <>Answer was right, but the sensor read sleepy signals. Try again fully awake.</>
+                      : <>Correct answer was <span style={{ color: G }}>{proof.answer}</span>. No coins — but the discipline still counts.</>}
                 </div>
                 <button onClick={() => setProof(null)} style={{
                   width: "100%", padding: 10, background: `linear-gradient(90deg, ${G}, ${G2})`,
@@ -799,6 +807,7 @@ function App() {
                   fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
                 }}>CONTINUE</button>
               </div>
+
             )}
           </div>
         </div>
