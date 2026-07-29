@@ -66,11 +66,12 @@ export function ManageSubscriptionCard() {
     try {
       await switchSubscriptionPlan({ data: { environment: getPaddleEnvironment(), targetPriceId } });
       toast.success(isYearly ? "Switched to monthly" : "Upgraded to yearly");
-      setTimeout(reload, 1500);
+      const t = setTimeout(() => { if (mounted.current) reload(); }, 1500);
+      void t;
     } catch (e) {
       toast.error("Plan switch failed", { description: e instanceof Error ? e.message : "Try again in a moment." });
     } finally {
-      setSwitching(false);
+      if (mounted.current) setSwitching(false);
     }
   };
 
