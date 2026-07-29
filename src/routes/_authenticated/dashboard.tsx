@@ -251,7 +251,7 @@ function App() {
     setThemeKey(reached.theme);
     setCelebration(reached);
     toast.success(`${reached.icon} ${reached.title}`, { description: reached.line });
-    const t = setTimeout(() => setCelebration(null), 7000);
+    const t = setTimeout(() => setCelebration(null), reached.ms);
     return () => clearTimeout(t);
   }, [streak, streakLoaded]);
 
