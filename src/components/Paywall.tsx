@@ -42,7 +42,10 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
         // Fires on successful checkout — the successUrl redirect handles UI,
         // but this lets the PaywallGate refetch instantly if the user closes
         // the overlay before the redirect completes.
-        onCompleted: () => window.dispatchEvent(new Event("focus")),
+        onCompleted: () => {
+          window.dispatchEvent(new Event("subscription:refresh"));
+          window.dispatchEvent(new Event("focus"));
+        },
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Checkout failed");

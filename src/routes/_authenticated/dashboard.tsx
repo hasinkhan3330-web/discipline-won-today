@@ -72,7 +72,7 @@ function App() {
   const [uploading, setUploading] = useState(false);
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [trialReady, setTrialReady] = useState(false);
-  const { isActive: hasActiveSubscription } = useSubscription(myId);
+  const { isActive: hasActiveSubscription, loading: subLoading } = useSubscription(myId);
 
   const fallbackAvatar = (n: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=0a0a19&color=00ff88&size=200&bold=true`;
 
@@ -295,7 +295,8 @@ function App() {
   const trialActive = !!trialEndsAt && new Date(trialEndsAt) > new Date();
   const premiumUnlocked = hasActiveSubscription || trialActive;
   const premiumTabs = ["rank", "quotes", "zen"];
-  const premiumLocked = trialReady && premiumTabs.includes(tab) && !premiumUnlocked;
+  const gateReady = trialReady && !!myId && !subLoading;
+  const premiumLocked = gateReady && premiumTabs.includes(tab) && !premiumUnlocked;
   const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
 
   const keyframes = `
@@ -375,7 +376,7 @@ function App() {
         {/* CONTENT */}
         <div style={{ flex: 1, overflowY: "auto", padding: "14px 12px 90px", animation: "fadeUp 0.4s ease-out" }} key={tab}>
 
-          {trialReady && trialActive && !hasActiveSubscription && (
+          {gateReady && trialActive && !hasActiveSubscription && (
             <div style={{ ...CARD, borderLeft: `3px solid ${G}`, fontSize: 11, color: "#ddd", letterSpacing: 1.5, lineHeight: 1.5 }}>
               <span style={{ color: G, fontWeight: 900 }}>◉ FREE ACCESS ACTIVE</span> · {trialDaysLeft} DAY{trialDaysLeft === 1 ? "" : "S"} LEFT. Home, Stats and You stay open; Rank, Quotes and Zen become PRO after trial.
             </div>
@@ -412,7 +413,7 @@ function App() {
         }}>
           {TABS.map(n => {
             const active = tab === n.id;
-            const locked = trialReady && premiumTabs.includes(n.id) && !premiumUnlocked;
+            const locked = gateReady && premiumTabs.includes(n.id) && !premiumUnlocked;
             return (
               <button key={n.id} onClick={() => setTab(n.id)} style={{
                 flex: 1, padding: "10px 4px 12px", background: "transparent", border: "none", cursor: "pointer",
