@@ -4,7 +4,7 @@ import { getPremiumQuotes, type QuoteCombo } from "@/utils/premium.functions";
 
 export function QuotesTab({ G }: { G: string }) {
   const fetchQuotes = useServerFn(getPremiumQuotes);
-  const [data, setData] = useState<{ today: QuoteCombo; upcoming: QuoteCombo[]; todayNumber: number } | null>(null);
+  const [data, setData] = useState<{ today: QuoteCombo; upcoming: QuoteCombo[]; todayNumber: number; locked?: boolean } | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -14,6 +14,7 @@ export function QuotesTab({ G }: { G: string }) {
       .catch(() => { if (!cancelled) setErr("PRO ACCESS REQUIRED"); });
     return () => { cancelled = true; };
   }, [fetchQuotes]);
+
 
   const now = new Date();
   const dateLabel = now.toLocaleDateString(undefined, { weekday: "long", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
