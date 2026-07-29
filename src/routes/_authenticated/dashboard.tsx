@@ -25,10 +25,10 @@ import alarmRooster from "@/assets/mixkit-rooster-crowing-in-the-morning-2462.wa
 import alarmClassic from "@/assets/mixkit-classic-alarm-995.wav.asset.json";
 
 const WAKE_OPTIONS = [
-  { time: "4AM", pts: 10, tag: "ELITE", line: "The world sleeps. You rise." },
-  { time: "5AM", pts: 7,  tag: "STRONG", line: "Before the sun. Before the noise." },
-  { time: "6AM", pts: 5,  tag: "SOLID", line: "First light. First move." },
-  { time: "7AM", pts: 3,  tag: "BASE",  line: "Better than yesterday." },
+  { time: "4AM", pts: 21, tag: "ELITE", line: "The world sleeps. You rise." },
+  { time: "5AM", pts: 17, tag: "STRONG", line: "Before the sun. Before the noise." },
+  { time: "6AM", pts: 9,  tag: "SOLID", line: "First light. First move." },
+  { time: "7AM", pts: 5,  tag: "BASE",  line: "Better than yesterday." },
 ] as const;
 
 const RINGTONES = [
@@ -312,7 +312,7 @@ function App() {
     }
     const { data, error } = await supabase.rpc("complete_task", { _task_id: uuid });
     if (typeof overridePts === "number") {
-      await supabase.from("tasks").update({ pts: 10 }).eq("id", uuid);
+      await supabase.from("tasks").update({ pts: 21 }).eq("id", uuid);
     }
     if (error) { console.error(error); return; }
     const row = Array.isArray(data) ? data[0] : data;
