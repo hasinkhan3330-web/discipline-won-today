@@ -512,12 +512,47 @@ function App() {
       {celebration && (
         <div onClick={() => setCelebration(null)} style={{
           position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgba(3,3,10,0.82)", backdropFilter: "blur(6px)", padding: 24, cursor: "pointer",
+          background: "rgba(3,3,10,0.82)", backdropFilter: "blur(6px)", padding: 24, cursor: "pointer", overflow: "hidden",
         }}>
+          {/* boom blast rings — 21 days and beyond */}
+          {celebration.intensity >= 2 && Array.from({ length: celebration.intensity * 2 }, (_, i) => (
+            <div key={`br${i}`} style={{
+              position: "absolute", left: "50%", top: "50%", width: 220, height: 220, marginLeft: -110, marginTop: -110,
+              borderRadius: "50%", border: `2px solid ${i % 2 ? G2 : G}`,
+              animation: `boom-ring ${1.6 + i * 0.2}s ease-out ${i * 0.45}s infinite`,
+            }} />
+          ))}
+          {/* confetti / sparks */}
+          {celebration.intensity >= 2 && Array.from({ length: celebration.intensity * 18 }, (_, i) => (
+            <div key={`cf${i}`} style={{
+              position: "absolute", top: 0, left: `${(i * 37) % 100}%`,
+              width: 5, height: 12, background: i % 3 === 0 ? "#fff" : i % 3 === 1 ? G : G2,
+              boxShadow: `0 0 8px ${G}`,
+              animation: `confetti-fall ${2.4 + ((i * 13) % 20) / 10}s linear ${(i % 12) * 0.25}s infinite`,
+            }} />
+          ))}
+          {/* supernova flash for the biggest tiers */}
+          {celebration.intensity >= 3 && (
+            <div style={{
+              position: "absolute", left: "50%", top: "50%", width: 420, height: 420, marginLeft: -210, marginTop: -210,
+              borderRadius: "50%", background: `radial-gradient(circle, ${G}66 0%, transparent 65%)`,
+              filter: "blur(24px)", animation: "nova-pulse 2.4s ease-in-out infinite",
+            }} />
+          )}
+          {/* launch sequence rockets at 365 */}
+          {celebration.intensity >= 4 && [0, 1, 2].map(i => (
+            <div key={`cr${i}`} style={{
+              position: "absolute", bottom: "-10%", left: `${12 + i * 34}%`, fontSize: 34,
+              filter: `drop-shadow(0 0 14px ${G})`,
+              animation: `rocket-fly ${4 + i}s linear ${i * 0.8}s infinite`,
+            }}>🚀</div>
+          ))}
+
           <div style={{
             position: "relative", maxWidth: 340, width: "100%", textAlign: "center", padding: "30px 22px",
             background: "rgba(10,10,25,0.9)", border: `1px solid ${G}`, borderRadius: 4,
-            boxShadow: `0 0 50px ${G}66, inset 0 0 30px ${G}22`, animation: "celebrate-pop 0.5s ease-out",
+            boxShadow: `0 0 ${30 + celebration.intensity * 20}px ${G}88, inset 0 0 30px ${G}22`,
+            animation: "celebrate-pop 0.5s ease-out",
           }}>
             <div style={{ fontSize: 52, filter: `drop-shadow(0 0 18px ${G})` }}>{celebration.icon}</div>
             <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 3, color: "#fff", marginTop: 10, textShadow: `0 0 14px ${G}` }}>{celebration.title}</div>
@@ -528,6 +563,7 @@ function App() {
           </div>
         </div>
       )}
+
 
       <div style={{ position: "relative", zIndex: 2, maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         {/* TOPBAR */}
