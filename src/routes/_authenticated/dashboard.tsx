@@ -221,21 +221,38 @@ function App() {
 
   useEffect(() => { refreshAll(); }, []);
 
-  // ---- streak milestones: auto-evolve theme + wallpaper, celebrate once ----
+  // ---- streak milestones: auto-evolve theme + wallpaper, celebrate once; revert on break ----
   useEffect(() => {
-    if (!streak) return;
+    if (!streakLoaded) return;
+
+    // 1) if the active theme is no longer unlocked (streak broke), fall back to base
+    setThemeKeyState(prev => {
+      if (streak >= THEMES[prev].unlock) return prev;
+      try { localStorage.setItem("dwt_theme", "space"); } catch {}
+      return "space";
+    });
+
     const reached = [...MILESTONES].reverse().find(m => streak >= m.d);
-    if (!reached) return;
     let seen = 0;
     try { seen = Number(localStorage.getItem("dwt_milestone") || 0); } catch {}
-    if (seen >= reached.d) return;
+
+    // 2) streak dropped below the last celebrated milestone -> reset so it can re-celebrate later
+    if (seen > (reached?.d ?? 0)) {
+      try { localStorage.setItem("dwt_milestone", String(reached?.d ?? 0)); } catch {}
+      setCelebration(null);
+      return;
+    }
+
+    // 3) new milestone reached
+    if (!reached || seen >= reached.d) return;
     try { localStorage.setItem("dwt_milestone", String(reached.d)); } catch {}
     setThemeKey(reached.theme);
     setCelebration(reached);
     toast.success(`${reached.icon} ${reached.title}`, { description: reached.line });
     const t = setTimeout(() => setCelebration(null), 7000);
     return () => clearTimeout(t);
-  }, [streak]);
+  }, [streak, streakLoaded]);
+
 
 
   const [cropSrc, setCropSrc] = useState<string | null>(null);
