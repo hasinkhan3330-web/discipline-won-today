@@ -312,7 +312,7 @@ function App() {
     }
     const { data, error } = await supabase.rpc("complete_task", { _task_id: uuid });
     if (typeof overridePts === "number") {
-      await supabase.from("tasks").update({ pts: 10 }).eq("id", uuid);
+      await supabase.from("tasks").update({ pts: 21 }).eq("id", uuid);
     }
     if (error) { console.error(error); return; }
     const row = Array.isArray(data) ? data[0] : data;
