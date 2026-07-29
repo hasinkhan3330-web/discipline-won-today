@@ -75,6 +75,8 @@ function App() {
 
   const [coins, setCoins] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [streakLoaded, setStreakLoaded] = useState(false);
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [board, setBoard] = useState<{ n: string; c: number; s: number; img: string; you?: boolean }[]>([]);
   const [weekly, setWeekly] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
