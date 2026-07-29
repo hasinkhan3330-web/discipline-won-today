@@ -289,7 +289,7 @@ function App() {
 
   // 4AM proof-of-wakeup state
   const [proof, setProof] = useState<null | {
-    mode: "time" | "choose" | "quiz" | "result";
+    mode: "time" | "choose" | "quiz" | "scan" | "result";
     wakePts?: number;
     wakeTime?: string;
     wakeLine?: string;
@@ -298,7 +298,13 @@ function App() {
     answer?: number;
     input?: string;
     correct?: boolean;
+    startedAt?: number;
+    firstKeyMs?: number;
+    keyTimes?: number[];
+    corrections?: number;
+    verdict?: WakeVerdict;
   }>(null);
+
   const [ringtone, setRingtone] = useState<string>(() => {
     if (typeof window === "undefined") return "loud";
     return localStorage.getItem("dwt_ringtone") || "loud";
