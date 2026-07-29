@@ -43,7 +43,10 @@ export function AccountStatusStrip() {
     setBusy(true);
     try {
       const { url } = await openCustomerPortal({ data: { environment: env } });
-      window.open(url, "_blank", "noopener");
+      if (url) window.open(url, "_blank", "noopener");
+      else toast.message("No active subscription to manage yet.");
+    } catch {
+      toast.error("Couldn't open billing portal", { description: "Try again in a moment." });
     } finally { setBusy(false); }
   };
 
