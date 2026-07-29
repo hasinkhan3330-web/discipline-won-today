@@ -148,6 +148,8 @@ function App() {
       setMyName(prof.display_name || "YOU");
       setMyAvatar(prof.avatar_url || "");
     }
+    setStreakLoaded(true);
+
 
     const doneIds = new Set((doneToday || []).map(d => d.task_id as string));
     setTasks((taskRows || []).map((r, i) => ({
