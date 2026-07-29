@@ -1,10 +1,11 @@
+import type React from "react";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getPremiumQuotes, type QuoteCombo } from "@/utils/premium.functions";
 
 export function QuotesTab({ G }: { G: string }) {
   const fetchQuotes = useServerFn(getPremiumQuotes);
-  const [data, setData] = useState<{ today: QuoteCombo; upcoming: QuoteCombo[]; todayNumber: number } | null>(null);
+  const [data, setData] = useState<{ today: QuoteCombo; upcoming: QuoteCombo[]; todayNumber: number; locked?: boolean } | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -14,6 +15,7 @@ export function QuotesTab({ G }: { G: string }) {
       .catch(() => { if (!cancelled) setErr("PRO ACCESS REQUIRED"); });
     return () => { cancelled = true; };
   }, [fetchQuotes]);
+
 
   const now = new Date();
   const dateLabel = now.toLocaleDateString(undefined, { weekday: "long", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
@@ -29,6 +31,11 @@ export function QuotesTab({ G }: { G: string }) {
   if (!data) return <div style={{ padding: 24, textAlign: "center", fontSize: 11, letterSpacing: 3, color: G }}>LOADING LEGENDS…</div>;
 
   const { today, upcoming, todayNumber } = data;
+  const locked = !!data.locked;
+  const qBlur: React.CSSProperties = locked
+    ? { filter: "blur(6px)", userSelect: "none", pointerEvents: "none" }
+    : {};
+
 
   return (
     <>
@@ -51,7 +58,7 @@ export function QuotesTab({ G }: { G: string }) {
         </div>
         <div style={{ padding: 18, fontSize: 15, color: "#f0f0f0", lineHeight: 1.7, fontStyle: "italic", borderTop: `1px solid ${G}44` }}>
           <span style={{ color: G, fontSize: 26, marginRight: 4 }}>"</span>
-          {today.q}
+          <span style={qBlur}>{today.q}</span>
           <span style={{ color: G, fontSize: 26, marginLeft: 4 }}>"</span>
         </div>
       </div>
@@ -73,7 +80,7 @@ export function QuotesTab({ G }: { G: string }) {
           </div>
           <div style={{ padding: 16, fontSize: 14, color: "#f0f0f0", lineHeight: 1.7, fontStyle: "italic", borderTop: `1px solid ${G}44` }}>
             <span style={{ color: G, fontSize: 24, marginRight: 4 }}>"</span>
-            {q.q}
+            <span style={qBlur}>{q.q}</span>
             <span style={{ color: G, fontSize: 24, marginLeft: 4 }}>"</span>
           </div>
         </div>
