@@ -9,7 +9,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
 import { SpaceWallpaper } from "@/components/SpaceWallpaper";
 import { CropModal } from "@/components/CropModal";
-import { THEMES, type ThemeKey } from "@/constants/themes";
+import { THEMES, MILESTONES, wallpaperLevel, type ThemeKey } from "@/constants/themes";
 import { useMeditation } from "@/hooks/useMeditation";
 import { cardStyle, titleStyle } from "@/tabs/styles";
 import { HomeTab } from "@/tabs/HomeTab";
@@ -60,14 +60,25 @@ function App() {
   };
   const [screen, setScreen] = useState<"splash" | "app">("splash");
   const [tab, setTab] = useState("home");
-  const [themeKey, setThemeKey] = useState<ThemeKey>("space");
+  const [themeKey, setThemeKeyState] = useState<ThemeKey>("space");
+  const setThemeKey = (k: ThemeKey) => {
+    setThemeKeyState(k);
+    try { localStorage.setItem("dwt_theme", k); } catch {}
+  };
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("dwt_theme") as ThemeKey | null;
+      if (saved && THEMES[saved]) setThemeKeyState(saved);
+    } catch {}
+  }, []);
+  const [celebration, setCelebration] = useState<(typeof MILESTONES)[number] | null>(null);
 
   const [coins, setCoins] = useState(0);
   const [streak, setStreak] = useState(0);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [board, setBoard] = useState<{ n: string; c: number; s: number; img: string; you?: boolean }[]>([]);
   const [weekly, setWeekly] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
-  const [life, setLife] = useState<{ bestStreak: number; lifetimeCoins: number; heat: { date: string; count: number }[]; topTask: { icon: string; name: string; count: number } | null } | null>(null);
+  const [life, setLife] = useState<{ bestStreak: number; lifetimeCoins: number; heat: { date: string; count: number }[]; topTask: { icon: string; name: string; count: number } | null; taskTotal?: number } | null>(null);
 
   const [myId, setMyId] = useState<string | null>(null);
   const [myEmail, setMyEmail] = useState<string | null>(null);
@@ -199,11 +210,29 @@ function App() {
       lifetimeCoins: (earns || []).reduce((s, e) => s + (e.amount || 0), 0),
       heat,
       topTask,
+      taskTotal: (taskRows || []).length,
     });
   };
 
 
   useEffect(() => { refreshAll(); }, []);
+
+  // ---- streak milestones: auto-evolve theme + wallpaper, celebrate once ----
+  useEffect(() => {
+    if (!streak) return;
+    const reached = [...MILESTONES].reverse().find(m => streak >= m.d);
+    if (!reached) return;
+    let seen = 0;
+    try { seen = Number(localStorage.getItem("dwt_milestone") || 0); } catch {}
+    if (seen >= reached.d) return;
+    try { localStorage.setItem("dwt_milestone", String(reached.d)); } catch {}
+    setThemeKey(reached.theme);
+    setCelebration(reached);
+    toast.success(`${reached.icon} ${reached.title}`, { description: reached.line });
+    const t = setTimeout(() => setCelebration(null), 7000);
+    return () => clearTimeout(t);
+  }, [streak]);
+
 
   const [cropSrc, setCropSrc] = useState<string | null>(null);
 
@@ -375,7 +404,7 @@ function App() {
     return (
       <div style={{ width: "100%", height: "100vh", background: "#000", position: "relative", overflow: "hidden", fontFamily: "monospace" }}>
         <style>{keyframes}</style>
-        <SpaceWallpaper accent={G} />
+        <SpaceWallpaper accent={G} level={wallpaperLevel(streak)} />
         <div style={{ position: "relative", zIndex: 2, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", border: `1px solid ${G}44`, animation: "orbit 8s linear infinite" }}>
             <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 20px ${G}` }} />
@@ -407,7 +436,27 @@ function App() {
   return (
     <div style={{ width: "100%", minHeight: "100vh", color: "#e8e8e8", fontFamily: "monospace", position: "relative", overflow: "hidden" }}>
       <style>{keyframes}</style>
-      <SpaceWallpaper accent={G} />
+      <SpaceWallpaper accent={G} level={wallpaperLevel(streak)} />
+
+      {celebration && (
+        <div onClick={() => setCelebration(null)} style={{
+          position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center",
+          background: "rgba(3,3,10,0.82)", backdropFilter: "blur(6px)", padding: 24, cursor: "pointer",
+        }}>
+          <div style={{
+            position: "relative", maxWidth: 340, width: "100%", textAlign: "center", padding: "30px 22px",
+            background: "rgba(10,10,25,0.9)", border: `1px solid ${G}`, borderRadius: 4,
+            boxShadow: `0 0 50px ${G}66, inset 0 0 30px ${G}22`, animation: "celebrate-pop 0.5s ease-out",
+          }}>
+            <div style={{ fontSize: 52, filter: `drop-shadow(0 0 18px ${G})` }}>{celebration.icon}</div>
+            <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 3, color: "#fff", marginTop: 10, textShadow: `0 0 14px ${G}` }}>{celebration.title}</div>
+            <div style={{ width: 90, height: 2, background: `linear-gradient(90deg,transparent,${G},transparent)`, margin: "12px auto" }} />
+            <div style={{ fontSize: 12, color: "#ccc", letterSpacing: 1.2, lineHeight: 1.6 }}>{celebration.line}</div>
+            <div style={{ fontSize: 10, color: G, letterSpacing: 3, marginTop: 16 }}>◉ NEW THEME + WALLPAPER ACTIVATED</div>
+            <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginTop: 8 }}>[ TAP TO CONTINUE ]</div>
+          </div>
+        </div>
+      )}
 
       <div style={{ position: "relative", zIndex: 2, maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         {/* TOPBAR */}
@@ -417,7 +466,7 @@ function App() {
             <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: `0 0 12px ${G}` }}>DWT</div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {(Object.keys(THEMES) as ThemeKey[]).map(k => (
+            {(Object.keys(THEMES) as ThemeKey[]).filter(k => streak >= THEMES[k].unlock).map(k => (
               <button key={k} onClick={() => setThemeKey(k)} title={THEMES[k].name} style={{
                 width: 18, height: 18, borderRadius: "50%",
                 background: `linear-gradient(135deg, ${THEMES[k].accent}, ${THEMES[k].accent2})`,
@@ -426,6 +475,7 @@ function App() {
                 boxShadow: themeKey === k ? `0 0 10px ${THEMES[k].accent}` : "none",
               }} />
             ))}
+
             <div style={{ background: `linear-gradient(135deg,${G}22,${G2}22)`, border: `1px solid ${G}66`, padding: "5px 10px", fontSize: 13, fontWeight: 700, color: G, marginLeft: 4, borderRadius: 2 }}>🪙 {coins}</div>
             <button onClick={handleSignOut} title="Sign out" style={{ background: "transparent", border: `1px solid ${G}55`, color: "#aaa", padding: "5px 8px", fontSize: 10, letterSpacing: 2, fontFamily: "monospace", cursor: "pointer", borderRadius: 2 }}>EXIT</button>
           </div>
@@ -457,7 +507,10 @@ function App() {
                 board={board}
                 openCropper={openCropper}
                 fallbackAvatar={fallbackAvatar}
+                todayDone={tasks.filter(t => t.done).length}
+                todayTotal={tasks.length}
               />
+
             )}
           </>}
         </div>

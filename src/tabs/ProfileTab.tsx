@@ -31,6 +31,7 @@ export function ProfileTab({
   themeKey, setThemeKey,
   board, openCropper,
   fallbackAvatar,
+  todayDone = 0, todayTotal = 0,
 }: {
   G: string; G2: string;
   coins: number; streak: number;
@@ -39,9 +40,14 @@ export function ProfileTab({
   board: BoardEntry[];
   openCropper: (f: File) => void;
   fallbackAvatar: (n: string) => string;
+  todayDone?: number; todayTotal?: number;
 }) {
   const CARD = cardStyle(G);
   const TITLE = titleStyle;
+
+  const dayPct = todayTotal ? Math.round((todayDone / todayTotal) * 100) : 0;
+  const zone = dayPct >= 100 ? "#00ff88" : dayPct >= 50 ? "#ffcc33" : "#ff3b5c";
+  const zoneLabel = dayPct >= 100 ? "PERFECT DAY · 100%" : dayPct >= 50 ? "ALMOST THERE" : "DANGER ZONE";
 
   let idx = 0;
   for (let i = 0; i < TIERS.length; i++) if (coins >= TIERS[i].min) idx = i;
@@ -51,6 +57,7 @@ export function ProfileTab({
 
   const roster = board.length ? board : [{ n: myName.toUpperCase(), c: coins, s: streak, img: fallbackAvatar(myName), you: true }];
   const [top, second, third] = roster;
+
 
   return (
     <>
@@ -87,6 +94,64 @@ export function ProfileTab({
           <div style={{ fontSize: 9, color: "#666", marginTop: 6, letterSpacing: 1 }}>CROP · FIT · SYNCS TO RANK</div>
         </div>
       </div>
+
+      {/* DAILY POWER COLUMN */}
+      <div style={{ ...CARD, borderLeft: `2px solid ${zone}`, position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 90% 0%, ${zone}22, transparent 60%)`, pointerEvents: "none" }} />
+        <div style={{ position: "relative", zIndex: 2 }}>
+          <div style={{ ...TITLE, marginBottom: 10 }}>
+            <span style={{ color: zone }}>▸</span> TODAY'S <span style={{ color: zone }}>POWER COLUMN</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            {/* vertical glow column */}
+            <div style={{
+              width: 34, height: 132, borderRadius: 4, background: "#07070f",
+              border: `1px solid ${zone}55`, position: "relative", overflow: "hidden",
+              boxShadow: `0 0 16px ${zone}44 inset`,
+            }}>
+              <div style={{
+                position: "absolute", left: 0, right: 0, bottom: 0, height: `${dayPct}%`,
+                background: `linear-gradient(180deg, ${zone}, ${zone}66)`,
+                boxShadow: `0 0 22px ${zone}, 0 0 44px ${zone}88`,
+                animation: "cell-glow 2.2s ease-in-out infinite",
+                transition: "height 0.6s ease",
+              }} />
+              {[25, 50, 75].map(p => (
+                <div key={p} style={{ position: "absolute", left: 0, right: 0, bottom: `${p}%`, height: 1, background: "rgba(255,255,255,0.12)" }} />
+              ))}
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ fontSize: 30, fontWeight: 900, color: zone, textShadow: `0 0 18px ${zone}` }}>{dayPct}%</div>
+                {/* shiny tick */}
+                <div style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 17, fontWeight: 900, color: "#04040a",
+                  background: dayPct >= 100 ? `linear-gradient(135deg, #b6ffdd, #00ff88)` : "rgba(0,0,0,0.4)",
+                  border: `1.5px solid ${dayPct >= 100 ? "#00ff88" : "#2a2a3a"}`,
+                  boxShadow: dayPct >= 100 ? "0 0 18px #00ff88, 0 0 38px #00ff8877" : "none",
+                  animation: dayPct >= 100 ? "tick-shine 1.6s ease-in-out infinite" : "none",
+                }}>{dayPct >= 100 ? "✓" : ""}</div>
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 900, letterSpacing: 2.5, color: zone, marginTop: 4 }}>{zoneLabel}</div>
+              <div style={{ fontSize: 10, color: "#888", letterSpacing: 1.5, marginTop: 4 }}>
+                {todayDone}/{todayTotal} TASKS DONE TODAY
+              </div>
+              <div style={{ fontSize: 9, color: "#666", letterSpacing: 1.2, marginTop: 6, lineHeight: 1.5 }}>
+                {dayPct >= 100
+                  ? "No excuses left. The column is full — discipline won today."
+                  : dayPct >= 50
+                    ? "Yellow means unfinished. Finish it before midnight."
+                    : "Red column. Every missed day costs you 3 coins."}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
 
       <div style={{ ...CARD, position: "relative", overflow: "hidden", padding: 18 }}>
         <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 15% 10%, ${G}22, transparent 60%)`, pointerEvents: "none" }} />
@@ -172,13 +237,15 @@ export function ProfileTab({
           {(Object.keys(THEMES) as ThemeKey[]).map(k => {
             const t = THEMES[k];
             const active = themeKey === k;
+            const locked = streak < t.unlock;
             return (
-              <button key={k} onClick={() => setThemeKey(k)} style={{
+              <button key={k} onClick={() => { if (!locked) setThemeKey(k); }} disabled={locked} style={{
                 background: active ? `linear-gradient(135deg, ${t.accent}33, ${t.accent2}22)` : "rgba(0,0,0,0.3)",
                 border: `1px solid ${active ? t.accent : "#333"}`,
-                borderLeft: `3px solid ${t.accent}`,
-                padding: "12px 10px", cursor: "pointer", color: "#e8e8e8",
+                borderLeft: `3px solid ${locked ? "#333" : t.accent}`,
+                padding: "12px 10px", cursor: locked ? "not-allowed" : "pointer", color: "#e8e8e8",
                 fontFamily: "monospace", textAlign: "left",
+                opacity: locked ? 0.45 : 1,
                 boxShadow: active ? `0 0 15px ${t.accent}55` : "none",
               }}>
                 <div style={{ display: "flex", gap: 4, marginBottom: 6 }}>
@@ -186,10 +253,13 @@ export function ProfileTab({
                   <div style={{ width: 12, height: 12, borderRadius: "50%", background: t.accent2 }} />
                 </div>
                 <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: 2, color: active ? t.accent : "#ccc" }}>{t.name}</div>
-                <div style={{ fontSize: 9, color: "#666", marginTop: 2 }}>{active ? "◉ ACTIVE" : "○ SELECT"}</div>
+                <div style={{ fontSize: 9, color: "#666", marginTop: 2 }}>
+                  {locked ? `🔒 ${t.unlock}-DAY STREAK` : active ? "◉ ACTIVE" : "○ SELECT"}
+                </div>
               </button>
             );
           })}
+
         </div>
       </div>
 

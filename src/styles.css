@@ -163,4 +163,37 @@
   to { background-position: -200% 50%; }
 }
 
+@keyframes aurora-drift {
+  0%, 100% { transform: translateX(-4%) skewY(-2deg); opacity: 0.55; }
+  50% { transform: translateX(6%) skewY(3deg); opacity: 0.9; }
+}
+
+@keyframes ring-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rocket-fly {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-135vh) translateX(60px); opacity: 0; }
+}
+
+@keyframes cell-glow {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.45); }
+}
+
+@keyframes tick-shine {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+@keyframes celebrate-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 
