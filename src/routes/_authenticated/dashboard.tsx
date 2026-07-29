@@ -1,5 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { getEntitlement } from "@/utils/premium.functions";
 import { User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
