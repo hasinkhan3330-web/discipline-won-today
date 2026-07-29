@@ -446,7 +446,7 @@ function App() {
             <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: `0 0 12px ${G}` }}>DWT</div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {(Object.keys(THEMES) as ThemeKey[]).map(k => (
+            {(Object.keys(THEMES) as ThemeKey[]).filter(k => streak >= THEMES[k].unlock).map(k => (
               <button key={k} onClick={() => setThemeKey(k)} title={THEMES[k].name} style={{
                 width: 18, height: 18, borderRadius: "50%",
                 background: `linear-gradient(135deg, ${THEMES[k].accent}, ${THEMES[k].accent2})`,
@@ -455,6 +455,7 @@ function App() {
                 boxShadow: themeKey === k ? `0 0 10px ${THEMES[k].accent}` : "none",
               }} />
             ))}
+
             <div style={{ background: `linear-gradient(135deg,${G}22,${G2}22)`, border: `1px solid ${G}66`, padding: "5px 10px", fontSize: 13, fontWeight: 700, color: G, marginLeft: 4, borderRadius: 2 }}>🪙 {coins}</div>
             <button onClick={handleSignOut} title="Sign out" style={{ background: "transparent", border: `1px solid ${G}55`, color: "#aaa", padding: "5px 8px", fontSize: 10, letterSpacing: 2, fontFamily: "monospace", cursor: "pointer", borderRadius: 2 }}>EXIT</button>
           </div>
