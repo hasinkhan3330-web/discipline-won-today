@@ -38,7 +38,29 @@ export function useSubscription(userId: string | null) {
       { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${userId}` },
       () => load()
     ).subscribe();
-    return () => { supabase.removeChannel(ch); };
+
+    // Refetch when the user returns to the tab (checkout overlay / portal).
+    const onFocus = () => load();
+    const onVisible = () => { if (document.visibilityState === "visible") load(); };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+
+    // After checkout completes, the webhook writes the row asynchronously.
+    // Poll briefly so the tabs unlock without a manual refresh.
+    let timers: ReturnType<typeof setTimeout>[] = [];
+    const onCheckout = () => {
+      timers.forEach(clearTimeout);
+      timers = [1000, 2500, 4000, 6000, 9000, 13000, 18000, 25000].map(ms => setTimeout(load, ms));
+    };
+    window.addEventListener("subscription:refresh", onCheckout);
+
+    return () => {
+      supabase.removeChannel(ch);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("subscription:refresh", onCheckout);
+      timers.forEach(clearTimeout);
+    };
   }, [userId, load]);
 
   const isActive = !!sub && (() => {
