@@ -23,7 +23,8 @@ export function ManageSubscriptionCard() {
     setBusy(true);
     try {
       const { url } = await openCustomerPortal({ data: { environment: getPaddleEnvironment() } });
-      window.open(url, "_blank", "noopener");
+      if (url) window.open(url, "_blank", "noopener");
+      else toast.message("No active subscription to manage yet.");
     } catch (e) {
       toast.error("Couldn't open portal", { description: e instanceof Error ? e.message : "Try again in a moment." });
     } finally {
