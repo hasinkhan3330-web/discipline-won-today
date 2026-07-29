@@ -415,12 +415,30 @@ function App() {
 
   const submitProof = () => {
     if (!proof || proof.mode !== "quiz") return;
+    stopAlarm();
+    const now = Date.now();
+    const started = proof.startedAt ?? now;
+    const times = proof.keyTimes ?? [];
+    const gaps = times.slice(1).map((t, i) => t - times[i]);
     const correct = Number(proof.input) === proof.answer;
-    setProof({ ...proof, mode: "result", correct });
-    if (correct && wakeTask && !wakeTask.done) {
-      completeTaskRpc((wakeTask as any)._uuid, proof.wakePts ?? 10);
-    }
+    const verdict = analyzeWake({
+      firstKeyMs: proof.firstKeyMs ?? now - started,
+      totalMs: now - started,
+      keyGaps: gaps,
+      corrections: proof.corrections ?? 0,
+      correct,
+      claimed: proof.wakeTime || "4AM",
+      hour: new Date().getHours(),
+    });
+    setProof({ ...proof, mode: "scan", correct, verdict });
+    setTimeout(() => {
+      setProof(p => (p && p.mode === "scan" ? { ...p, mode: "result" } : p));
+      if (verdict.awake && wakeTask && !wakeTask.done) {
+        completeTaskRpc((wakeTask as any)._uuid, proof.wakePts ?? 10);
+      }
+    }, 2800);
   };
+
 
   const tick = (id: number) => {
     const t = tasks.find(x => x.id === id);
