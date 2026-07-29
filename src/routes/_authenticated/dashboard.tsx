@@ -713,8 +713,11 @@ function App() {
 
             {proof.mode === "quiz" && (
               <>
-                <div style={{ fontSize: 9, color: G, letterSpacing: 3, marginBottom: 8 }}>
-                  {proof.subject === "math" ? "🧮 MATH" : "⚛️ PHYSICS"}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <div style={{ fontSize: 9, color: G, letterSpacing: 3 }}>
+                    {proof.subject === "math" ? "🧮 MATH" : "⚛️ PHYSICS"}
+                  </div>
+                  <div style={{ fontSize: 9, color: "#ff4466", letterSpacing: 2, animation: "pulse 1s infinite" }}>🔔 ALARM RINGING</div>
                 </div>
                 <div style={{
                   padding: 16, background: "rgba(0,0,0,0.5)", border: `1px solid ${G}44`,
@@ -722,7 +725,17 @@ function App() {
                 }}>{proof.question}</div>
                 <input
                   autoFocus type="number" inputMode="numeric" value={proof.input ?? ""}
-                  onChange={e => setProof({ ...proof, input: e.target.value })}
+                  onChange={e => {
+                    const now = Date.now();
+                    const prev = proof.input ?? "";
+                    setProof({
+                      ...proof,
+                      input: e.target.value,
+                      keyTimes: [...(proof.keyTimes ?? []), now],
+                      firstKeyMs: proof.firstKeyMs ?? now - (proof.startedAt ?? now),
+                      corrections: (proof.corrections ?? 0) + (e.target.value.length < prev.length ? 1 : 0),
+                    });
+                  }}
                   onKeyDown={e => e.key === "Enter" && submitProof()}
                   placeholder="Your answer"
                   style={{
@@ -738,13 +751,36 @@ function App() {
                   fontFamily: "monospace", fontSize: 12, fontWeight: 900, letterSpacing: 3,
                   boxShadow: proof.input ? `0 0 20px ${G}66` : "none",
                 }}>SUBMIT PROOF</button>
-                <button onClick={() => setProof(null)} style={{
+                <button onClick={() => { stopAlarm(); setProof(null); }} style={{
                   marginTop: 8, width: "100%", padding: 6, background: "transparent",
                   border: "none", color: "#555", cursor: "pointer",
                   fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
                 }}>CANCEL</button>
               </>
             )}
+
+            {proof.mode === "scan" && (
+              <div style={{ padding: "6px 0" }}>
+                <div style={{ position: "relative", height: 90, border: `1px solid ${G}44`, background: "rgba(0,0,0,0.5)", overflow: "hidden", marginBottom: 14 }}>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34 }}>🧠</div>
+                  <div style={{ position: "absolute", left: 0, right: 0, height: 26, background: `linear-gradient(180deg, transparent, ${G}55, transparent)`, animation: "scan-sweep 1.2s linear infinite" }} />
+                </div>
+                <div style={{ fontSize: 11, color: "#fff", letterSpacing: 3, fontWeight: 900, textAlign: "center", marginBottom: 10 }}>AI WAKE SENSOR · ANALYSING</div>
+                {(proof.verdict?.factors ?? []).map((f, i) => (
+                  <div key={f.label} style={{
+                    display: "flex", justifyContent: "space-between", fontSize: 10, letterSpacing: 1.5,
+                    padding: "6px 8px", marginBottom: 4, background: "rgba(0,0,0,0.4)",
+                    border: `1px solid ${f.ok ? G + "55" : "#ff446655"}`,
+                    animation: `fadeUp 0.3s ease-out ${i * 0.25}s both`,
+                  }}>
+                    <span style={{ color: "#999" }}>{f.ok ? "◉" : "○"} {f.label}</span>
+                    <span style={{ color: f.ok ? G : "#ff4466" }}>{f.value}</span>
+                  </div>
+                ))}
+                <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, textAlign: "center", marginTop: 10 }}>ON-DEVICE · NO DATA LEAVES YOUR PHONE</div>
+              </div>
+            )}
+
 
             {proof.mode === "result" && (
               <div style={{ textAlign: "center", padding: "10px 0" }}>
