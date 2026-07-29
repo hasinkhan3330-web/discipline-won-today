@@ -1,10 +1,21 @@
-import { dayCombo, rot } from "@/constants/legends";
+import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { getPremiumQuotes, type QuoteCombo } from "@/utils/premium.functions";
 
 export function QuotesTab({ G }: { G: string }) {
+  const fetchQuotes = useServerFn(getPremiumQuotes);
+  const [data, setData] = useState<{ today: QuoteCombo; upcoming: QuoteCombo[]; todayNumber: number } | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchQuotes()
+      .then(r => { if (!cancelled) setData(r as any); })
+      .catch(() => { if (!cancelled) setErr("PRO ACCESS REQUIRED"); });
+    return () => { cancelled = true; };
+  }, [fetchQuotes]);
+
   const now = new Date();
-  const dayIdx = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
-  const today = dayCombo(dayIdx);
-  const todayI = rot(dayIdx, 999);
   const dateLabel = now.toLocaleDateString(undefined, { weekday: "long", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
   const countdown = () => {
     const t = new Date(); t.setHours(24, 0, 0, 0);
@@ -12,8 +23,12 @@ export function QuotesTab({ G }: { G: string }) {
     const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000);
     return `${String(h).padStart(2,"0")}H ${String(m).padStart(2,"0")}M`;
   };
-  const upcoming = Array.from({ length: 30 }, (_, k) => ({ ...dayCombo(dayIdx + k + 1), _k: k }));
   const fallback = (name: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0a0a19&color=00ff88&size=400&bold=true&font-size=0.42`;
+
+  if (err) return <div style={{ padding: 24, textAlign: "center", fontSize: 11, letterSpacing: 3, color: G }}>◌ {err}</div>;
+  if (!data) return <div style={{ padding: 24, textAlign: "center", fontSize: 11, letterSpacing: 3, color: G }}>LOADING LEGENDS…</div>;
+
+  const { today, upcoming, todayNumber } = data;
 
   return (
     <>
@@ -31,7 +46,7 @@ export function QuotesTab({ G }: { G: string }) {
           <img src={today.img} alt={today.p} style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "center top", filter: "contrast(1.08) saturate(1.15)" }} onError={(e) => { const el = e.currentTarget as HTMLImageElement; if (!el.dataset.fb) { el.dataset.fb = "1"; el.style.objectFit = "cover"; el.src = fallback(today.p); } }} />
           <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, transparent 55%, rgba(10,10,25,0.97) 100%)`, pointerEvents: "none" }} />
           <div style={{ position: "absolute", top: 10, left: 10, fontSize: 9, color: "#000", letterSpacing: 2, padding: "5px 10px", background: G, fontWeight: 800 }}>◉ LEGEND OF THE DAY</div>
-          <div style={{ position: "absolute", top: 10, right: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "5px 10px", background: "rgba(0,0,0,0.7)", border: `1px solid ${G}66` }}>#{String(todayI + 1).padStart(3, "0")}</div>
+          <div style={{ position: "absolute", top: 10, right: 10, fontSize: 9, color: G, letterSpacing: 2, padding: "5px 10px", background: "rgba(0,0,0,0.7)", border: `1px solid ${G}66` }}>#{String(todayNumber).padStart(3, "0")}</div>
           <div style={{ position: "absolute", bottom: 12, left: 14, fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 14px ${G}` }}>{today.p}</div>
         </div>
         <div style={{ padding: 18, fontSize: 15, color: "#f0f0f0", lineHeight: 1.7, fontStyle: "italic", borderTop: `1px solid ${G}44` }}>
