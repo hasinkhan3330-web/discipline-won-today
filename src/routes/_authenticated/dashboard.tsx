@@ -487,7 +487,10 @@ function App() {
                 board={board}
                 openCropper={openCropper}
                 fallbackAvatar={fallbackAvatar}
+                todayDone={tasks.filter(t => t.done).length}
+                todayTotal={tasks.length}
               />
+
             )}
           </>}
         </div>
