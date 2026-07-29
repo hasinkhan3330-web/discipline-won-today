@@ -1,5 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { getEntitlement } from "@/utils/premium.functions";
 import { User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -75,6 +77,20 @@ function App() {
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [trialReady, setTrialReady] = useState(false);
   const { isActive: hasActiveSubscription, loading: subLoading } = useSubscription(myId);
+  // Authoritative entitlement, computed server-side from the bearer token.
+  const checkEntitlement = useServerFn(getEntitlement);
+  const [serverEntitled, setServerEntitled] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!myId) return;
+    let cancelled = false;
+    const run = () => checkEntitlement()
+      .then(r => { if (!cancelled) setServerEntitled(!!(r as any)?.entitled); })
+      .catch(() => { if (!cancelled) setServerEntitled(false); });
+    run();
+    window.addEventListener("focus", run);
+    window.addEventListener("subscription:refresh", run);
+    return () => { cancelled = true; window.removeEventListener("focus", run); window.removeEventListener("subscription:refresh", run); };
+  }, [myId, checkEntitlement, hasActiveSubscription]);
 
   const fallbackAvatar = (n: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=0a0a19&color=00ff88&size=200&bold=true`;
 
@@ -332,9 +348,12 @@ function App() {
   };
 
   const trialActive = !!trialEndsAt && new Date(trialEndsAt) > new Date();
-  const premiumUnlocked = hasActiveSubscription || trialActive;
+  // Server verdict is authoritative; client state only avoids a loading flash.
+  const premiumUnlocked = serverEntitled === null
+    ? (hasActiveSubscription || trialActive)
+    : serverEntitled;
   const premiumTabs = ["rank", "quotes", "zen"];
-  const gateReady = trialReady && !!myId && !subLoading;
+  const gateReady = trialReady && !!myId && !subLoading && serverEntitled !== null;
   const premiumLocked = gateReady && premiumTabs.includes(tab) && !premiumUnlocked;
   const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
 
