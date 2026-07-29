@@ -27,13 +27,13 @@ export const openCustomerPortal = createServerFn({ method: "POST" })
       .limit(1)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    if (!sub) throw new Error("No subscription found");
+    if (!sub) return { url: null as string | null, reason: "no_subscription" as const };
     const paddle = getPaddleClient(sub.environment as PaddleEnv);
     const session = await paddle.customerPortalSessions.create(
       sub.paddle_customer_id as string,
       [sub.paddle_subscription_id as string],
     );
-    return { url: session.urls.general.overview as string };
+    return { url: session.urls.general.overview as string, reason: null };
   });
 
 // Switch a user's active subscription between price IDs (monthly <-> yearly).
