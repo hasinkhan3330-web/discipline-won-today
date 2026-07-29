@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getPaddleEnvironment } from "@/lib/paddle";
 import { openCustomerPortal } from "@/utils/payments.functions";
+import { toast } from "sonner";
 
 // Sitewide banner: shows the orange TEST MODE strip in preview builds,
 // and a red "PAYMENT FAILED — update card" strip whenever the current
@@ -43,7 +44,10 @@ export function AccountStatusStrip() {
     setBusy(true);
     try {
       const { url } = await openCustomerPortal({ data: { environment: env } });
-      window.open(url, "_blank", "noopener");
+      if (url) window.open(url, "_blank", "noopener");
+      else toast.message("No active subscription to manage yet.");
+    } catch {
+      toast.error("Couldn't open billing portal", { description: "Try again in a moment." });
     } finally { setBusy(false); }
   };
 
