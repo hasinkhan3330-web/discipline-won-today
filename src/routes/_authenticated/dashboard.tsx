@@ -396,7 +396,7 @@ function App() {
     if (typeof overridePts === "number") {
       await supabase.from("tasks").update({ pts: 21 }).eq("id", uuid);
     }
-    if (error) { console.error(error); return; }
+    if (error) { console.error(error); toast.error("Could not save that task", { description: error.message }); return; }
     const row = Array.isArray(data) ? data[0] : data;
     if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
     setTasks(p => p.map(t => (t as any)._uuid === uuid ? { ...t, done: true } : t));
