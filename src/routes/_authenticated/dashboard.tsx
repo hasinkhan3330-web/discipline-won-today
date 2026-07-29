@@ -428,7 +428,7 @@ function App() {
             {tab === "rank" && <RankTab G={G} board={board} fallbackAvatar={fallbackAvatar} />}
             {tab === "quotes" && <QuotesTab G={G} />}
             {tab === "zen" && <ZenTab G={G} G2={G2} med={med} />}
-            {tab === "stats" && <StatsTab G={G} G2={G2} weekly={weekly} />}
+            {tab === "stats" && <StatsTab G={G} G2={G2} weekly={weekly} life={life ? { ...life, medMinutes: med.medLifetime } : undefined} />}
             {tab === "profile" && (
               <ProfileTab
                 G={G} G2={G2}
