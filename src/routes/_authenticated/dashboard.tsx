@@ -65,6 +65,8 @@ function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [board, setBoard] = useState<{ n: string; c: number; s: number; img: string; you?: boolean }[]>([]);
   const [weekly, setWeekly] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [life, setLife] = useState<{ bestStreak: number; lifetimeCoins: number; heat: { date: string; count: number }[]; topTask: { icon: string; name: string; count: number } | null } | null>(null);
+
   const [myId, setMyId] = useState<string | null>(null);
   const [myEmail, setMyEmail] = useState<string | null>(null);
   const [myName, setMyName] = useState<string>("YOU");
