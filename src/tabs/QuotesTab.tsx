@@ -30,6 +30,11 @@ export function QuotesTab({ G }: { G: string }) {
   if (!data) return <div style={{ padding: 24, textAlign: "center", fontSize: 11, letterSpacing: 3, color: G }}>LOADING LEGENDS…</div>;
 
   const { today, upcoming, todayNumber } = data;
+  const locked = !!data.locked;
+  const qBlur: React.CSSProperties = locked
+    ? { filter: "blur(6px)", userSelect: "none", pointerEvents: "none" }
+    : {};
+
 
   return (
     <>
