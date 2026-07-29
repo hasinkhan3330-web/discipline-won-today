@@ -54,7 +54,8 @@ export function useMeditation(
   const fmtT = (s: number) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 
   return {
-    medMin, medLeft, medRun, setMedRun, medSessions, medTotal,
+    medMin, medLeft, medRun, setMedRun, medSessions, medTotal, medLifetime,
     medPhase, medPhaseLabel, pickMed, fmtT,
+
   };
 }
