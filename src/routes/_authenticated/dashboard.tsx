@@ -10,6 +10,8 @@ import { Paywall } from "@/components/Paywall";
 import { SpaceWallpaper } from "@/components/SpaceWallpaper";
 import { CropModal } from "@/components/CropModal";
 import { THEMES, MILESTONES, wallpaperLevel, type ThemeKey } from "@/constants/themes";
+import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
+
 import { useMeditation } from "@/hooks/useMeditation";
 import { cardStyle, titleStyle } from "@/tabs/styles";
 import { HomeTab } from "@/tabs/HomeTab";
@@ -249,7 +251,7 @@ function App() {
     setThemeKey(reached.theme);
     setCelebration(reached);
     toast.success(`${reached.icon} ${reached.title}`, { description: reached.line });
-    const t = setTimeout(() => setCelebration(null), 7000);
+    const t = setTimeout(() => setCelebration(null), reached.ms);
     return () => clearTimeout(t);
   }, [streak, streakLoaded]);
 
@@ -289,7 +291,7 @@ function App() {
 
   // 4AM proof-of-wakeup state
   const [proof, setProof] = useState<null | {
-    mode: "time" | "choose" | "quiz" | "result";
+    mode: "time" | "choose" | "quiz" | "scan" | "result";
     wakePts?: number;
     wakeTime?: string;
     wakeLine?: string;
@@ -298,7 +300,13 @@ function App() {
     answer?: number;
     input?: string;
     correct?: boolean;
+    startedAt?: number;
+    firstKeyMs?: number;
+    keyTimes?: number[];
+    corrections?: number;
+    verdict?: WakeVerdict;
   }>(null);
+
   const [ringtone, setRingtone] = useState<string>(() => {
     if (typeof window === "undefined") return "loud";
     return localStorage.getItem("dwt_ringtone") || "loud";
@@ -349,10 +357,34 @@ function App() {
     return ops[Math.floor(Math.random()*ops.length)]();
   };
 
+  // live alarm that rings while the wake challenge is on screen
+  const alarmRef = useRef<HTMLAudioElement | null>(null);
+  const stopAlarm = () => {
+    try { alarmRef.current?.pause(); } catch {}
+    alarmRef.current = null;
+  };
+  const startAlarm = () => {
+    try {
+      stopAlarm();
+      const r = RINGTONES.find(x => x.id === ringtone) || RINGTONES[0];
+      const a = new Audio(r.url);
+      a.loop = true;
+      a.volume = 1;
+      alarmRef.current = a;
+      a.play().catch(() => {});
+    } catch {}
+  };
+  useEffect(() => () => stopAlarm(), []);
+
   const startProof = (subject: "math" | "physics") => {
     const { q, a } = buildQuestion(subject);
-    setProof(p => ({ ...(p || {}), mode: "quiz", subject, question: q, answer: a, input: "" }));
+    startAlarm();
+    setProof(p => ({
+      ...(p || {}), mode: "quiz", subject, question: q, answer: a, input: "",
+      startedAt: Date.now(), keyTimes: [], corrections: 0, firstKeyMs: undefined,
+    }));
   };
+
 
   const wakeTask = tasks.find(t => /wake/i.test(t.name)) || tasks[0];
 
@@ -383,12 +415,30 @@ function App() {
 
   const submitProof = () => {
     if (!proof || proof.mode !== "quiz") return;
+    stopAlarm();
+    const now = Date.now();
+    const started = proof.startedAt ?? now;
+    const times = proof.keyTimes ?? [];
+    const gaps = times.slice(1).map((t, i) => t - times[i]);
     const correct = Number(proof.input) === proof.answer;
-    setProof({ ...proof, mode: "result", correct });
-    if (correct && wakeTask && !wakeTask.done) {
-      completeTaskRpc((wakeTask as any)._uuid, proof.wakePts ?? 10);
-    }
+    const verdict = analyzeWake({
+      firstKeyMs: proof.firstKeyMs ?? now - started,
+      totalMs: now - started,
+      keyGaps: gaps,
+      corrections: proof.corrections ?? 0,
+      correct,
+      claimed: proof.wakeTime || "4AM",
+      hour: new Date().getHours(),
+    });
+    setProof({ ...proof, mode: "scan", correct, verdict });
+    setTimeout(() => {
+      setProof(p => (p && p.mode === "scan" ? { ...p, mode: "result" } : p));
+      if (verdict.awake && wakeTask && !wakeTask.done) {
+        completeTaskRpc((wakeTask as any)._uuid, proof.wakePts ?? 10);
+      }
+    }, 2800);
   };
+
 
   const tick = (id: number) => {
     const t = tasks.find(x => x.id === id);
@@ -462,12 +512,47 @@ function App() {
       {celebration && (
         <div onClick={() => setCelebration(null)} style={{
           position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center",
-          background: "rgba(3,3,10,0.82)", backdropFilter: "blur(6px)", padding: 24, cursor: "pointer",
+          background: "rgba(3,3,10,0.82)", backdropFilter: "blur(6px)", padding: 24, cursor: "pointer", overflow: "hidden",
         }}>
+          {/* boom blast rings — 21 days and beyond */}
+          {celebration.intensity >= 2 && Array.from({ length: celebration.intensity * 2 }, (_, i) => (
+            <div key={`br${i}`} style={{
+              position: "absolute", left: "50%", top: "50%", width: 220, height: 220, marginLeft: -110, marginTop: -110,
+              borderRadius: "50%", border: `2px solid ${i % 2 ? G2 : G}`,
+              animation: `boom-ring ${1.6 + i * 0.2}s ease-out ${i * 0.45}s infinite`,
+            }} />
+          ))}
+          {/* confetti / sparks */}
+          {celebration.intensity >= 2 && Array.from({ length: celebration.intensity * 18 }, (_, i) => (
+            <div key={`cf${i}`} style={{
+              position: "absolute", top: 0, left: `${(i * 37) % 100}%`,
+              width: 5, height: 12, background: i % 3 === 0 ? "#fff" : i % 3 === 1 ? G : G2,
+              boxShadow: `0 0 8px ${G}`,
+              animation: `confetti-fall ${2.4 + ((i * 13) % 20) / 10}s linear ${(i % 12) * 0.25}s infinite`,
+            }} />
+          ))}
+          {/* supernova flash for the biggest tiers */}
+          {celebration.intensity >= 3 && (
+            <div style={{
+              position: "absolute", left: "50%", top: "50%", width: 420, height: 420, marginLeft: -210, marginTop: -210,
+              borderRadius: "50%", background: `radial-gradient(circle, ${G}66 0%, transparent 65%)`,
+              filter: "blur(24px)", animation: "nova-pulse 2.4s ease-in-out infinite",
+            }} />
+          )}
+          {/* launch sequence rockets at 365 */}
+          {celebration.intensity >= 4 && [0, 1, 2].map(i => (
+            <div key={`cr${i}`} style={{
+              position: "absolute", bottom: "-10%", left: `${12 + i * 34}%`, fontSize: 34,
+              filter: `drop-shadow(0 0 14px ${G})`,
+              animation: `rocket-fly ${4 + i}s linear ${i * 0.8}s infinite`,
+            }}>🚀</div>
+          ))}
+
           <div style={{
             position: "relative", maxWidth: 340, width: "100%", textAlign: "center", padding: "30px 22px",
             background: "rgba(10,10,25,0.9)", border: `1px solid ${G}`, borderRadius: 4,
-            boxShadow: `0 0 50px ${G}66, inset 0 0 30px ${G}22`, animation: "celebrate-pop 0.5s ease-out",
+            boxShadow: `0 0 ${30 + celebration.intensity * 20}px ${G}88, inset 0 0 30px ${G}22`,
+            animation: "celebrate-pop 0.5s ease-out",
           }}>
             <div style={{ fontSize: 52, filter: `drop-shadow(0 0 18px ${G})` }}>{celebration.icon}</div>
             <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 3, color: "#fff", marginTop: 10, textShadow: `0 0 14px ${G}` }}>{celebration.title}</div>
@@ -478,6 +563,7 @@ function App() {
           </div>
         </div>
       )}
+
 
       <div style={{ position: "relative", zIndex: 2, maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         {/* TOPBAR */}
@@ -663,8 +749,11 @@ function App() {
 
             {proof.mode === "quiz" && (
               <>
-                <div style={{ fontSize: 9, color: G, letterSpacing: 3, marginBottom: 8 }}>
-                  {proof.subject === "math" ? "🧮 MATH" : "⚛️ PHYSICS"}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <div style={{ fontSize: 9, color: G, letterSpacing: 3 }}>
+                    {proof.subject === "math" ? "🧮 MATH" : "⚛️ PHYSICS"}
+                  </div>
+                  <div style={{ fontSize: 9, color: "#ff4466", letterSpacing: 2, animation: "pulse 1s infinite" }}>🔔 ALARM RINGING</div>
                 </div>
                 <div style={{
                   padding: 16, background: "rgba(0,0,0,0.5)", border: `1px solid ${G}44`,
@@ -672,7 +761,17 @@ function App() {
                 }}>{proof.question}</div>
                 <input
                   autoFocus type="number" inputMode="numeric" value={proof.input ?? ""}
-                  onChange={e => setProof({ ...proof, input: e.target.value })}
+                  onChange={e => {
+                    const now = Date.now();
+                    const prev = proof.input ?? "";
+                    setProof({
+                      ...proof,
+                      input: e.target.value,
+                      keyTimes: [...(proof.keyTimes ?? []), now],
+                      firstKeyMs: proof.firstKeyMs ?? now - (proof.startedAt ?? now),
+                      corrections: (proof.corrections ?? 0) + (e.target.value.length < prev.length ? 1 : 0),
+                    });
+                  }}
                   onKeyDown={e => e.key === "Enter" && submitProof()}
                   placeholder="Your answer"
                   style={{
@@ -688,7 +787,7 @@ function App() {
                   fontFamily: "monospace", fontSize: 12, fontWeight: 900, letterSpacing: 3,
                   boxShadow: proof.input ? `0 0 20px ${G}66` : "none",
                 }}>SUBMIT PROOF</button>
-                <button onClick={() => setProof(null)} style={{
+                <button onClick={() => { stopAlarm(); setProof(null); }} style={{
                   marginTop: 8, width: "100%", padding: 6, background: "transparent",
                   border: "none", color: "#555", cursor: "pointer",
                   fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
@@ -696,16 +795,47 @@ function App() {
               </>
             )}
 
+            {proof.mode === "scan" && (
+              <div style={{ padding: "6px 0" }}>
+                <div style={{ position: "relative", height: 90, border: `1px solid ${G}44`, background: "rgba(0,0,0,0.5)", overflow: "hidden", marginBottom: 14 }}>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34 }}>🧠</div>
+                  <div style={{ position: "absolute", left: 0, right: 0, height: 26, background: `linear-gradient(180deg, transparent, ${G}55, transparent)`, animation: "scan-sweep 1.2s linear infinite" }} />
+                </div>
+                <div style={{ fontSize: 11, color: "#fff", letterSpacing: 3, fontWeight: 900, textAlign: "center", marginBottom: 10 }}>AI WAKE SENSOR · ANALYSING</div>
+                {(proof.verdict?.factors ?? []).map((f, i) => (
+                  <div key={f.label} style={{
+                    display: "flex", justifyContent: "space-between", fontSize: 10, letterSpacing: 1.5,
+                    padding: "6px 8px", marginBottom: 4, background: "rgba(0,0,0,0.4)",
+                    border: `1px solid ${f.ok ? G + "55" : "#ff446655"}`,
+                    animation: `fadeUp 0.3s ease-out ${i * 0.25}s both`,
+                  }}>
+                    <span style={{ color: "#999" }}>{f.ok ? "◉" : "○"} {f.label}</span>
+                    <span style={{ color: f.ok ? G : "#ff4466" }}>{f.value}</span>
+                  </div>
+                ))}
+                <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, textAlign: "center", marginTop: 10 }}>ON-DEVICE · NO DATA LEAVES YOUR PHONE</div>
+              </div>
+            )}
+
+
             {proof.mode === "result" && (
               <div style={{ textAlign: "center", padding: "10px 0" }}>
-                <div style={{ fontSize: 48, marginBottom: 10 }}>{proof.correct ? "✅" : "❌"}</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: proof.correct ? G : "#ff4466", letterSpacing: 2, marginBottom: 8 }}>
-                  {proof.correct ? "PROOF ACCEPTED" : "PROOF FAILED"}
+                <div style={{ fontSize: 48, marginBottom: 10 }}>{proof.verdict?.awake ? "✅" : "❌"}</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: proof.verdict?.awake ? G : "#ff4466", letterSpacing: 2, marginBottom: 8 }}>
+                  {proof.verdict?.awake ? "AWAKE CONFIRMED" : "NOT CONFIRMED"}
+                </div>
+                <div style={{ fontSize: 10, color: "#888", letterSpacing: 2, marginBottom: 10 }}>
+                  AI CONFIDENCE <span style={{ color: proof.verdict?.awake ? G : "#ff4466", fontWeight: 900 }}>{proof.verdict?.score ?? 0}%</span>
+                </div>
+                <div style={{ height: 6, background: "#0a0a15", border: `1px solid ${G}22`, marginBottom: 14, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${proof.verdict?.score ?? 0}%`, background: `linear-gradient(90deg,${G},${G2})`, boxShadow: `0 0 10px ${G}`, transition: "width 0.6s" }} />
                 </div>
                 <div style={{ fontSize: 11, color: "#aaa", marginBottom: 16, lineHeight: 1.5 }}>
-                  {proof.correct
+                  {proof.verdict?.awake
                     ? <>+{proof.wakePts ?? 10} coins added. {proof.wakeLine || "You rose while the world slept."}</>
-                    : <>Correct answer was <span style={{ color: G }}>{proof.answer}</span>. No coins — but the discipline still counts.</>}
+                    : proof.correct
+                      ? <>Answer was right, but the sensor read sleepy signals. Try again fully awake.</>
+                      : <>Correct answer was <span style={{ color: G }}>{proof.answer}</span>. No coins — but the discipline still counts.</>}
                 </div>
                 <button onClick={() => setProof(null)} style={{
                   width: "100%", padding: 10, background: `linear-gradient(90deg, ${G}, ${G2})`,
@@ -713,6 +843,7 @@ function App() {
                   fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
                 }}>CONTINUE</button>
               </div>
+
             )}
           </div>
         </div>
