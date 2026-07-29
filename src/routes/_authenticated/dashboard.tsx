@@ -10,6 +10,8 @@ import { Paywall } from "@/components/Paywall";
 import { SpaceWallpaper } from "@/components/SpaceWallpaper";
 import { CropModal } from "@/components/CropModal";
 import { THEMES, MILESTONES, wallpaperLevel, type ThemeKey } from "@/constants/themes";
+import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
+
 import { useMeditation } from "@/hooks/useMeditation";
 import { cardStyle, titleStyle } from "@/tabs/styles";
 import { HomeTab } from "@/tabs/HomeTab";
