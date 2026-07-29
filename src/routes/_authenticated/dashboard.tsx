@@ -436,7 +436,27 @@ function App() {
   return (
     <div style={{ width: "100%", minHeight: "100vh", color: "#e8e8e8", fontFamily: "monospace", position: "relative", overflow: "hidden" }}>
       <style>{keyframes}</style>
-      <SpaceWallpaper accent={G} />
+      <SpaceWallpaper accent={G} level={wallpaperLevel(streak)} />
+
+      {celebration && (
+        <div onClick={() => setCelebration(null)} style={{
+          position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center",
+          background: "rgba(3,3,10,0.82)", backdropFilter: "blur(6px)", padding: 24, cursor: "pointer",
+        }}>
+          <div style={{
+            position: "relative", maxWidth: 340, width: "100%", textAlign: "center", padding: "30px 22px",
+            background: "rgba(10,10,25,0.9)", border: `1px solid ${G}`, borderRadius: 4,
+            boxShadow: `0 0 50px ${G}66, inset 0 0 30px ${G}22`, animation: "celebrate-pop 0.5s ease-out",
+          }}>
+            <div style={{ fontSize: 52, filter: `drop-shadow(0 0 18px ${G})` }}>{celebration.icon}</div>
+            <div style={{ fontSize: 16, fontWeight: 900, letterSpacing: 3, color: "#fff", marginTop: 10, textShadow: `0 0 14px ${G}` }}>{celebration.title}</div>
+            <div style={{ width: 90, height: 2, background: `linear-gradient(90deg,transparent,${G},transparent)`, margin: "12px auto" }} />
+            <div style={{ fontSize: 12, color: "#ccc", letterSpacing: 1.2, lineHeight: 1.6 }}>{celebration.line}</div>
+            <div style={{ fontSize: 10, color: G, letterSpacing: 3, marginTop: 16 }}>◉ NEW THEME + WALLPAPER ACTIVATED</div>
+            <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginTop: 8 }}>[ TAP TO CONTINUE ]</div>
+          </div>
+        </div>
+      )}
 
       <div style={{ position: "relative", zIndex: 2, maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         {/* TOPBAR */}
