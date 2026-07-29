@@ -57,7 +57,7 @@ export function QuotesTab({ G }: { G: string }) {
         </div>
         <div style={{ padding: 18, fontSize: 15, color: "#f0f0f0", lineHeight: 1.7, fontStyle: "italic", borderTop: `1px solid ${G}44` }}>
           <span style={{ color: G, fontSize: 26, marginRight: 4 }}>"</span>
-          {today.q}
+          <span style={qBlur}>{today.q}</span>
           <span style={{ color: G, fontSize: 26, marginLeft: 4 }}>"</span>
         </div>
       </div>
@@ -79,7 +79,7 @@ export function QuotesTab({ G }: { G: string }) {
           </div>
           <div style={{ padding: 16, fontSize: 14, color: "#f0f0f0", lineHeight: 1.7, fontStyle: "italic", borderTop: `1px solid ${G}44` }}>
             <span style={{ color: G, fontSize: 24, marginRight: 4 }}>"</span>
-            {q.q}
+            <span style={qBlur}>{q.q}</span>
             <span style={{ color: G, fontSize: 24, marginLeft: 4 }}>"</span>
           </div>
         </div>
