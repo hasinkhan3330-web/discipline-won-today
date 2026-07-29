@@ -40,21 +40,34 @@ export const getEntitlement = createServerFn({ method: "GET" })
 
 /**
  * Premium quote content. The legend library lives in a server-only module and
- * is never shipped in the client bundle — unentitled users get a 403 instead.
+ * is never shipped in the client bundle. Unentitled users still get the legend
+ * photo + name, but the quote text is replaced by same-length filler that is
+ * rendered blurred — the real words never leave the server.
  */
+const FILLER_WORDS = [
+  "discipline", "focus", "rise", "silent", "power", "every", "morning", "grind",
+  "never", "stop", "believe", "become", "stronger", "today", "again", "forward",
+];
+
+function maskQuote(q: string): string {
+  const words = q.split(/\s+/);
+  return words.map((w, i) => FILLER_WORDS[(i * 7 + w.length) % FILLER_WORDS.length]).join(" ");
+}
+
 export const getPremiumQuotes = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    if (!(await isEntitled(context.supabase, context.userId))) {
-      throw new Response("Subscription required", { status: 403 });
-    }
+    const entitled = await isEntitled(context.supabase, context.userId);
     const { dayCombo, rot, LEGENDS } = await import("@/constants/legends.server");
     const now = new Date();
     const dayIdx = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
+    const shape = (c: QuoteCombo): QuoteCombo => (entitled ? c : { ...c, q: maskQuote(c.q) });
     return {
       dayIdx,
+      locked: !entitled,
       todayNumber: rot(dayIdx, LEGENDS.length) + 1,
-      today: dayCombo(dayIdx) as QuoteCombo,
-      upcoming: Array.from({ length: 30 }, (_, k) => dayCombo(dayIdx + k + 1) as QuoteCombo),
+      today: shape(dayCombo(dayIdx) as QuoteCombo),
+      upcoming: Array.from({ length: 30 }, (_, k) => shape(dayCombo(dayIdx + k + 1) as QuoteCombo)),
     };
   });
+
