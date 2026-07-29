@@ -65,6 +65,8 @@ function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [board, setBoard] = useState<{ n: string; c: number; s: number; img: string; you?: boolean }[]>([]);
   const [weekly, setWeekly] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [life, setLife] = useState<{ bestStreak: number; lifetimeCoins: number; heat: { date: string; count: number }[]; topTask: { icon: string; name: string; count: number } | null } | null>(null);
+
   const [myId, setMyId] = useState<string | null>(null);
   const [myEmail, setMyEmail] = useState<string | null>(null);
   const [myName, setMyName] = useState<string>("YOU");
@@ -105,7 +107,8 @@ function App() {
     const sevenAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
 
     const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
-      supabase.from("profiles").select("display_name, coins, streak, avatar_url").eq("id", uid).maybeSingle(),
+      supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url").eq("id", uid).maybeSingle(),
+
       supabase.from("tasks").select("id, icon, name, pts, sort_order").eq("user_id", uid).eq("is_active", true).order("sort_order"),
       supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
       supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20),
@@ -146,7 +149,43 @@ function App() {
       bars.push(Math.min(100, Math.round((counts[d] || 0) / total * 100)));
     }
     setWeekly(bars);
+
+    // ---- lifetime stats ----
+    const thirtyAgo = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
+    const [{ data: allComps }, { data: earns }] = await Promise.all([
+      supabase.from("task_completions").select("task_id, completed_on").eq("user_id", uid),
+      supabase.from("coin_transactions").select("amount").eq("user_id", uid).gt("amount", 0),
+    ]);
+
+    const byDay: Record<string, number> = {};
+    const byTask: Record<string, number> = {};
+    (allComps || []).forEach(c => {
+      if (c.completed_on >= thirtyAgo) byDay[c.completed_on] = (byDay[c.completed_on] || 0) + 1;
+      byTask[c.task_id as string] = (byTask[c.task_id as string] || 0) + 1;
+    });
+
+    const heat: { date: string; count: number }[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+      heat.push({ date: d, count: byDay[d] || 0 });
+    }
+
+    let topTask: { icon: string; name: string; count: number } | null = null;
+    Object.entries(byTask).forEach(([tid, count]) => {
+      if (!topTask || count > topTask.count) {
+        const t = (taskRows || []).find(r => r.id === tid);
+        if (t) topTask = { icon: t.icon, name: t.name, count };
+      }
+    });
+
+    setLife({
+      bestStreak: (prof as any)?.longest_streak ?? prof?.streak ?? 0,
+      lifetimeCoins: (earns || []).reduce((s, e) => s + (e.amount || 0), 0),
+      heat,
+      topTask,
+    });
   };
+
 
   useEffect(() => { refreshAll(); }, []);
 
@@ -389,7 +428,7 @@ function App() {
             {tab === "rank" && <RankTab G={G} board={board} fallbackAvatar={fallbackAvatar} />}
             {tab === "quotes" && <QuotesTab G={G} />}
             {tab === "zen" && <ZenTab G={G} G2={G2} med={med} />}
-            {tab === "stats" && <StatsTab G={G} G2={G2} weekly={weekly} />}
+            {tab === "stats" && <StatsTab G={G} G2={G2} weekly={weekly} life={life ? { ...life, medMinutes: med.medLifetime } : undefined} />}
             {tab === "profile" && (
               <ProfileTab
                 G={G} G2={G2}

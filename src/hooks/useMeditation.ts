@@ -11,6 +11,13 @@ export function useMeditation(
   const [medRun, setMedRun] = useState(false);
   const [medSessions, setMedSessions] = useState(0);
   const [medTotal, setMedTotal] = useState(0);
+  const [medLifetime, setMedLifetime] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setMedLifetime(Number(localStorage.getItem("dwt_med_minutes") || 0));
+  }, []);
+
 
   useEffect(() => {
     if (!medRun) return;
@@ -20,6 +27,12 @@ export function useMeditation(
           setMedRun(false);
           setMedSessions(x => x + 1);
           setMedTotal(x => x + medMin);
+          setMedLifetime(x => {
+            const next = x + medMin;
+            if (typeof window !== "undefined") localStorage.setItem("dwt_med_minutes", String(next));
+            return next;
+          });
+
           const medTask = tasks.find(t => /medit/i.test(t.name));
           if (medTask && !medTask.done && medTask._uuid) completeTaskRpc(medTask._uuid);
           return medMin * 60;
@@ -41,7 +54,8 @@ export function useMeditation(
   const fmtT = (s: number) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
 
   return {
-    medMin, medLeft, medRun, setMedRun, medSessions, medTotal,
+    medMin, medLeft, medRun, setMedRun, medSessions, medTotal, medLifetime,
     medPhase, medPhaseLabel, pickMed, fmtT,
+
   };
 }
