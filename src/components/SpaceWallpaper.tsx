@@ -74,8 +74,50 @@ export function SpaceWallpaper({ accent, level = 0 }: { accent: string; level?: 
         }} />
       ))}
 
-      {/* level 3 : rocket launch */}
-      {level >= 3 && [0, 1].map(i => (
+      {/* level 3+ : plasma energy arcs */}
+      {level >= 3 && [0, 1, 2].map(i => (
+        <div key={`arc${i}`} style={{
+          position: "absolute", left: `${-10 + i * 30}%`, top: `${20 + i * 18}%`,
+          width: "70%", height: 2,
+          background: `linear-gradient(90deg, transparent, ${accent}, transparent)`,
+          filter: "blur(1px)", opacity: 0.55,
+          animation: `plasma-wave ${7 + i * 2}s ease-in-out ${i * 1.3}s infinite`,
+        }} />
+      ))}
+
+      {/* level 4+ : quantum helix */}
+      {level >= 4 && (
+        <div style={{ position: "absolute", left: "6%", top: "12%", height: "70%", width: 60 }}>
+          {Array.from({ length: 18 }, (_, i) => (
+            <div key={`hx${i}`} style={{
+              position: "absolute", top: `${i * 5.4}%`, left: 0, width: 8, height: 8, borderRadius: "50%",
+              background: i % 2 ? accent : "#fff", boxShadow: `0 0 12px ${accent}`,
+              animation: `helix-spin 4s linear ${i * 0.12}s infinite`, opacity: 0.7,
+            }} />
+          ))}
+        </div>
+      )}
+
+      {/* level 5+ : nova flare */}
+      {level >= 5 && (
+        <div style={{
+          position: "absolute", left: "50%", top: "20%", width: 260, height: 260, marginLeft: -130,
+          borderRadius: "50%", background: `radial-gradient(circle, ${accent}55 0%, transparent 65%)`,
+          filter: "blur(20px)", animation: "nova-pulse 5s ease-in-out infinite",
+        }} />
+      )}
+
+      {/* level 6+ : titan hex shield */}
+      {level >= 6 && (
+        <div style={{
+          position: "absolute", inset: 0,
+          background: `repeating-linear-gradient(60deg, ${accent}0f 0 1px, transparent 1px 26px), repeating-linear-gradient(-60deg, ${accent}0f 0 1px, transparent 1px 26px)`,
+          animation: "nova-pulse 9s ease-in-out infinite",
+        }} />
+      )}
+
+      {/* level 7 : rocket launch */}
+      {level >= 7 && [0, 1].map(i => (
         <div key={`rk${i}`} style={{
           position: "absolute", bottom: "-15%", left: `${18 + i * 48}%`,
           animation: `rocket-fly ${9 + i * 3}s linear ${i * 4}s infinite`,
@@ -84,6 +126,7 @@ export function SpaceWallpaper({ accent, level = 0 }: { accent: string; level?: 
           <div style={{ position: "absolute", top: 24, left: 6, width: 4, height: 90, background: `linear-gradient(180deg, ${accent}, transparent)`, filter: "blur(3px)", opacity: 0.8 }} />
         </div>
       ))}
+
 
       {/* scanline grid */}
       <div style={{ position: "absolute", inset: 0, background: `linear-gradient(${accent}05 1px, transparent 1px), linear-gradient(90deg, ${accent}05 1px, transparent 1px)`, backgroundSize: "40px 40px", opacity: 0.4 }} />
