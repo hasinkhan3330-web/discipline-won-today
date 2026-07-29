@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getPaddleEnvironment } from "@/lib/paddle";
 import { openCustomerPortal } from "@/utils/payments.functions";
+import { toast } from "sonner";
 
 // Sitewide banner: shows the orange TEST MODE strip in preview builds,
 // and a red "PAYMENT FAILED — update card" strip whenever the current
