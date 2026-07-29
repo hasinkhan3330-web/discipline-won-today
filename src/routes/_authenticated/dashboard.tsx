@@ -107,7 +107,8 @@ function App() {
     const sevenAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
 
     const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
-      supabase.from("profiles").select("display_name, coins, streak, avatar_url").eq("id", uid).maybeSingle(),
+      supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url").eq("id", uid).maybeSingle(),
+
       supabase.from("tasks").select("id, icon, name, pts, sort_order").eq("user_id", uid).eq("is_active", true).order("sort_order"),
       supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
       supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20),
