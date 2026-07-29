@@ -27,6 +27,12 @@ export function useMeditation(
           setMedRun(false);
           setMedSessions(x => x + 1);
           setMedTotal(x => x + medMin);
+          setMedLifetime(x => {
+            const next = x + medMin;
+            if (typeof window !== "undefined") localStorage.setItem("dwt_med_minutes", String(next));
+            return next;
+          });
+
           const medTask = tasks.find(t => /medit/i.test(t.name));
           if (medTask && !medTask.done && medTask._uuid) completeTaskRpc(medTask._uuid);
           return medMin * 60;
