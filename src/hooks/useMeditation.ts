@@ -11,6 +11,13 @@ export function useMeditation(
   const [medRun, setMedRun] = useState(false);
   const [medSessions, setMedSessions] = useState(0);
   const [medTotal, setMedTotal] = useState(0);
+  const [medLifetime, setMedLifetime] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setMedLifetime(Number(localStorage.getItem("dwt_med_minutes") || 0));
+  }, []);
+
 
   useEffect(() => {
     if (!medRun) return;
