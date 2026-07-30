@@ -37,14 +37,16 @@ export function ManageSubscriptionCard() {
     // Open the tab synchronously (Safari/iOS blocks popups opened after await).
     const tab = window.open("", "_blank", "noopener");
     try {
-      const { url } = await openCustomerPortal({ data: { environment: (getStripeEnvironmentSafe() ?? "sandbox") } });
-      if (url) {
-        if (tab) tab.location.href = url;
-        else window.open(url, "_blank", "noopener");
+      const res = await openCustomerPortal({ data: { environment: (getStripeEnvironmentSafe() ?? "sandbox") } });
+      if ("error" in res) throw new Error(res.error);
+      if (res.url) {
+        if (tab) tab.location.href = res.url;
+        else window.open(res.url, "_blank", "noopener");
       } else {
         tab?.close();
         toast.message("No active subscription to manage yet.");
       }
+
     } catch (e) {
       tab?.close();
       toast.error("Couldn't open portal", { description: e instanceof Error ? e.message : "Try again in a moment." });
