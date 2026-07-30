@@ -1,20 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { usePaddleCheckout } from "@/hooks/usePaddleCheckout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { getPaddleEnvironment } from "@/lib/paddle";
+import { StripeEmbeddedCheckout } from "@/components/StripeEmbeddedCheckout";
+import { getStripeEnvironmentSafe } from "@/lib/stripe";
+import { detectRegion, priceIdFor, REGION_PRICING, type Region } from "@/lib/region";
 
 
 const G = "#00d4ff";
 const G2 = "#a855f7";
-
-type Plan = { id: string; label: string; price: string; sub: string; tag?: string };
-
-// Displayed prices are illustrative — Paddle shows the actual localized price at checkout.
-const PLANS: Plan[] = [
-  { id: "dwt_pro_yearly",  label: "YEARLY",  price: "$24.99 / yr",  sub: "US $29.99 · IN ₹999",  tag: "SAVE 47%" },
-  { id: "dwt_pro_monthly", label: "MONTHLY", price: "$3.99 / mo",   sub: "US $4.99 · IN ₹49" },
-];
 
 const PERKS = [
   "Full Wake Protocol (4AM–7AM tiers + custom ringtones)",
@@ -26,31 +19,15 @@ const PERKS = [
 ];
 
 export function Paywall({ userId, email }: { userId: string; email?: string | null }) {
-  const { openCheckout, loading } = usePaddleCheckout();
-  const [selected, setSelected] = useState<string>("dwt_pro_yearly");
-  const [error, setError] = useState<string | null>(null);
+  void userId; void email;
+  const [region, setRegion] = useState<Region>("ROW");
+  const [cycle, setCycle] = useState<"monthly" | "yearly">("yearly");
+  const [checkout, setCheckout] = useState<string | null>(null);
 
+  useEffect(() => { detectRegion().then(setRegion); }, []);
+
+  const pricing = REGION_PRICING[region];
   const signOut = async () => { await supabase.auth.signOut(); };
-
-  const start = async () => {
-    setError(null);
-    try {
-      await openCheckout({
-        priceId: selected,
-        userId,
-        customerEmail: email || undefined,
-        // Fires on successful checkout — the successUrl redirect handles UI,
-        // but this lets the PaywallGate refetch instantly if the user closes
-        // the overlay before the redirect completes.
-        onCompleted: () => {
-          window.dispatchEvent(new Event("subscription:refresh"));
-          window.dispatchEvent(new Event("focus"));
-        },
-      });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Checkout failed");
-    }
-  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
@@ -62,16 +39,17 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
           <p style={{ marginTop: 14, fontSize: 12, color: "#aaa", letterSpacing: 1 }}>
             Start with <span style={{ color: G, fontWeight: 900 }}>3 DAYS FREE</span>. Cancel anytime before you're charged.
           </p>
+          <p style={{ marginTop: 6, fontSize: 9, color: "#666", letterSpacing: 2 }}>◈ REGION: {pricing.label}</p>
         </div>
 
         <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 12 }}>
-          {PLANS.map(p => {
-            const active = selected === p.id;
+          {(["yearly", "monthly"] as const).map(c => {
+            const active = cycle === c;
             return (
               <button
-                key={p.id}
+                key={c}
                 type="button"
-                onClick={() => setSelected(p.id)}
+                onClick={() => { setCycle(c); setCheckout(null); }}
                 style={{
                   textAlign: "left", padding: 16, cursor: "pointer",
                   background: active ? `linear-gradient(135deg, ${G}22, ${G2}22)` : "rgba(10,10,25,0.7)",
@@ -81,11 +59,11 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ letterSpacing: 3, fontWeight: 900, fontSize: 13 }}>{p.label}</div>
-                  {p.tag && <div style={{ background: G, color: "#000", fontSize: 9, fontWeight: 900, padding: "2px 8px", letterSpacing: 2, borderRadius: 2 }}>{p.tag}</div>}
+                  <div style={{ letterSpacing: 3, fontWeight: 900, fontSize: 13 }}>{c.toUpperCase()}</div>
+                  {c === "yearly" && <div style={{ background: G, color: "#000", fontSize: 9, fontWeight: 900, padding: "2px 8px", letterSpacing: 2, borderRadius: 2 }}>{pricing.save}</div>}
                 </div>
-                <div style={{ marginTop: 8, fontSize: 20, fontWeight: 900, color: G }}>{p.price}</div>
-                <div style={{ marginTop: 4, fontSize: 10, color: "#888", letterSpacing: 1 }}>{p.sub}</div>
+                <div style={{ marginTop: 8, fontSize: 20, fontWeight: 900, color: G }}>{c === "yearly" ? pricing.yearly : pricing.monthly}</div>
+                <div style={{ marginTop: 4, fontSize: 10, color: "#888", letterSpacing: 1 }}>3 days free, then billed {c}</div>
               </button>
             );
           })}
@@ -99,20 +77,19 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
           ))}
         </ul>
 
-        {error && (
-          <div style={{ marginTop: 16, fontSize: 11, padding: "10px 12px", borderRadius: 2, background: "#3a0f0f", border: "1px solid #ff4d4d55", color: "#ff9a9a" }}>{error}</div>
+        {checkout ? (
+          <StripeEmbeddedCheckout priceId={checkout} />
+        ) : (
+          <button
+            onClick={() => setCheckout(priceIdFor(region, cycle))}
+            style={{ marginTop: 20, width: "100%", padding: "16px 20px", background: G, color: "#000", fontWeight: 900, letterSpacing: 3, fontSize: 13, border: "none", borderRadius: 2, cursor: "pointer", boxShadow: `0 0 28px ${G}77` }}
+          >
+            START 3-DAY FREE TRIAL
+          </button>
         )}
 
-        <button
-          onClick={start}
-          disabled={loading}
-          style={{ marginTop: 20, width: "100%", padding: "16px 20px", background: loading ? "#333" : G, color: "#000", fontWeight: 900, letterSpacing: 3, fontSize: 13, border: "none", borderRadius: 2, cursor: loading ? "wait" : "pointer", boxShadow: `0 0 28px ${G}77` }}
-        >
-          {loading ? "OPENING CHECKOUT..." : "START 3-DAY FREE TRIAL"}
-        </button>
-
         <p style={{ marginTop: 12, fontSize: 10, color: "#666", letterSpacing: 1, textAlign: "center" }}>
-          Payments handled by Paddle. Taxes calculated by your region.
+          Secure checkout. Taxes calculated for your region.
         </p>
 
         <button onClick={signOut} style={{ marginTop: 20, width: "100%", background: "transparent", border: "none", color: "#666", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, cursor: "pointer" }}>
@@ -122,6 +99,7 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
     </div>
   );
 }
+
 
 export function PaywallLoading() {
   return (
