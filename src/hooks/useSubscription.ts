@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getPaddleEnvironment } from "@/lib/paddle";
+import { getStripeEnvironmentSafe } from "@/lib/stripe";
 
 export type SubscriptionRow = {
   status: string;
@@ -20,7 +20,7 @@ export function useSubscription(userId: string | null) {
       .from("subscriptions")
       .select("status, price_id, current_period_end, cancel_at_period_end")
       .eq("user_id", userId)
-      .eq("environment", getPaddleEnvironment())
+      .eq("environment", (getStripeEnvironmentSafe() ?? "sandbox"))
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();

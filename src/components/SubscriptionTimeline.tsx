@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getPaddleEnvironment } from "@/lib/paddle";
+import { getStripeEnvironmentSafe } from "@/lib/stripe";
 
 type EventRow = {
   id: string;
@@ -53,7 +53,7 @@ export function SubscriptionTimeline() {
         .from("payment_events")
         .select("id, event_type, status, amount, currency, created_at")
         .eq("user_id", uid)
-        .eq("environment", getPaddleEnvironment())
+        .eq("environment", (getStripeEnvironmentSafe() ?? "sandbox"))
         .order("created_at", { ascending: false })
         .limit(10);
       if (!cancelled) setRows((data as EventRow[]) ?? []);
