@@ -2,13 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { openCustomerPortal, switchSubscriptionPlan } from "@/utils/payments.functions";
-import { getPaddleEnvironment } from "@/lib/paddle";
+import { getStripeEnvironmentSafe } from "@/lib/stripe";
 import { useSubscription } from "@/hooks/useSubscription";
 
-const PLAN_LABELS: Record<string, string> = {
-  dwt_pro_monthly: "DWT PRO · MONTHLY",
-  dwt_pro_yearly:  "DWT PRO · YEARLY",
-};
+const planLabelFor = (id?: string) =>
+  !id ? "DWT PRO" : id.includes("yearly") ? "DWT PRO · YEARLY" : "DWT PRO · MONTHLY";
 
 export function ManageSubscriptionCard() {
   const G = "#00d4ff";
@@ -37,14 +35,16 @@ export function ManageSubscriptionCard() {
     // Open the tab synchronously (Safari/iOS blocks popups opened after await).
     const tab = window.open("", "_blank", "noopener");
     try {
-      const { url } = await openCustomerPortal({ data: { environment: getPaddleEnvironment() } });
-      if (url) {
-        if (tab) tab.location.href = url;
-        else window.open(url, "_blank", "noopener");
+      const res = await openCustomerPortal({ data: { environment: (getStripeEnvironmentSafe() ?? "sandbox") } });
+      if ("error" in res) throw new Error(res.error);
+      if (res.url) {
+        if (tab) tab.location.href = res.url;
+        else window.open(res.url, "_blank", "noopener");
       } else {
         tab?.close();
         toast.message("No active subscription to manage yet.");
       }
+
     } catch (e) {
       tab?.close();
       toast.error("Couldn't open portal", { description: e instanceof Error ? e.message : "Try again in a moment." });
@@ -53,18 +53,19 @@ export function ManageSubscriptionCard() {
     }
   };
 
-  const isYearly = sub?.price_id === "dwt_pro_yearly";
-  const targetPriceId = isYearly ? "dwt_pro_monthly" : "dwt_pro_yearly";
+  const isYearly = !!sub?.price_id?.includes("yearly");
+  const targetPriceId = isYearly ? (sub?.price_id ?? "").replace("yearly", "monthly") : (sub?.price_id ?? "").replace("monthly", "yearly");
   const targetLabel   = isYearly ? "SWITCH TO MONTHLY" : "UPGRADE TO YEARLY (SAVE ~47%)";
 
   const doSwitch = async () => {
     if (!confirm(isYearly
-      ? "Switch to monthly billing? Paddle will credit any unused time from your yearly plan."
-      : "Upgrade to yearly billing? Paddle will charge the prorated difference now."
+      ? "Switch to monthly billing? Stripe will credit any unused time from your yearly plan."
+      : "Upgrade to yearly billing? Stripe will charge the prorated difference now."
     )) return;
     setSwitching(true);
     try {
-      await switchSubscriptionPlan({ data: { environment: getPaddleEnvironment(), targetPriceId } });
+      const res = await switchSubscriptionPlan({ data: { environment: (getStripeEnvironmentSafe() ?? "sandbox"), targetPriceId } });
+      if ("error" in res) throw new Error(res.error);
       toast.success(isYearly ? "Switched to monthly" : "Upgraded to yearly");
       const t = setTimeout(() => { if (mounted.current) reload(); }, 1500);
       void t;
@@ -75,7 +76,7 @@ export function ManageSubscriptionCard() {
     }
   };
 
-  const planLabel = sub ? (PLAN_LABELS[sub.price_id] ?? sub.price_id) : "DWT PRO";
+  const planLabel = planLabelFor(sub?.price_id);
   const endDate   = sub?.current_period_end ? new Date(sub.current_period_end) : null;
   const endStr    = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
   const isTrial   = sub?.status === "trialing";

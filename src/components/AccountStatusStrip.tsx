@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getPaddleEnvironment } from "@/lib/paddle";
+import { getStripeEnvironmentSafe } from "@/lib/stripe";
 import { openCustomerPortal } from "@/utils/payments.functions";
 import { toast } from "sonner";
 
 // Sitewide banner: shows the orange TEST MODE strip in preview builds,
 // and a red "PAYMENT FAILED — update card" strip whenever the current
-// subscription is in Paddle's dunning (past_due) state. Both strips
+// subscription is in Stripe's dunning (past_due) state. Both strips
 // render at the top of every authenticated screen.
 export function AccountStatusStrip() {
-  const env = getPaddleEnvironment();
+  const env = (getStripeEnvironmentSafe() ?? "sandbox");
   const [pastDue, setPastDue] = useState(false);
   const [cancelInfo, setCancelInfo] = useState<{ endDate: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,9 +43,11 @@ export function AccountStatusStrip() {
   const openPortal = async () => {
     setBusy(true);
     try {
-      const { url } = await openCustomerPortal({ data: { environment: env } });
-      if (url) window.open(url, "_blank", "noopener");
+      const res = await openCustomerPortal({ data: { environment: env } });
+      if ("error" in res) throw new Error(res.error);
+      if (res.url) window.open(res.url, "_blank", "noopener");
       else toast.message("No active subscription to manage yet.");
+
     } catch {
       toast.error("Couldn't open billing portal", { description: "Try again in a moment." });
     } finally { setBusy(false); }

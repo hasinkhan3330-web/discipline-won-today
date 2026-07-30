@@ -26,10 +26,10 @@ function Refund() {
     <p>Every DWT plan starts with a <b>3-day free trial</b>. You will not be charged during the trial. Cancel any time before day 4 to avoid all charges.</p>
 
     <h2>3. How to Request a Refund</h2>
-    <p>Refunds are processed by our Merchant of Record, <b>Paddle.com</b>. To request a refund:</p>
+    <p>Refunds are processed through our payment processor, <b>Stripe</b>. To request a refund:</p>
     <ul>
-      <li>Visit <a href="https://paddle.net" style={{color:"#00d4ff"}}>paddle.net</a> and sign in with the email used at checkout, or</li>
-      <li>Email us at <b>support@nx-ai.app</b> — we'll forward your request to Paddle.</li>
+      <li>Open the billing portal from your profile and review your invoices, or</li>
+      <li>Email us at <b>support@nx-ai.app</b> — we'll process your request directly.</li>
     </ul>
     <p>Refunds are returned to the original payment method within 5–10 business days.</p>
 

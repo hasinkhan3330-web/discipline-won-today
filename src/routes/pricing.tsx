@@ -75,7 +75,7 @@ function Pricing() {
             <Link to="/refund" style={{ color: "#888", textDecoration: "none" }}>REFUND</Link>
           </div>
           <div style={{ marginTop: 16, fontSize: 10, color: "#444" }}>
-            Payments processed by Paddle.com — our Merchant of Record
+            Payments processed securely by Stripe
           </div>
         </footer>
       </div>
