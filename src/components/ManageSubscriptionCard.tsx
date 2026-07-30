@@ -5,10 +5,8 @@ import { openCustomerPortal, switchSubscriptionPlan } from "@/utils/payments.fun
 import { getStripeEnvironmentSafe } from "@/lib/stripe";
 import { useSubscription } from "@/hooks/useSubscription";
 
-const PLAN_LABELS: Record<string, string> = {
-  dwt_pro_monthly: "DWT PRO · MONTHLY",
-  dwt_pro_yearly:  "DWT PRO · YEARLY",
-};
+const planLabelFor = (id?: string) =>
+  !id ? "DWT PRO" : id.includes("yearly") ? "DWT PRO · YEARLY" : "DWT PRO · MONTHLY";
 
 export function ManageSubscriptionCard() {
   const G = "#00d4ff";
@@ -55,8 +53,8 @@ export function ManageSubscriptionCard() {
     }
   };
 
-  const isYearly = sub?.price_id === "dwt_pro_yearly";
-  const targetPriceId = isYearly ? "dwt_pro_monthly" : "dwt_pro_yearly";
+  const isYearly = !!sub?.price_id?.includes("yearly");
+  const targetPriceId = isYearly ? (sub?.price_id ?? "").replace("yearly", "monthly") : (sub?.price_id ?? "").replace("monthly", "yearly");
   const targetLabel   = isYearly ? "SWITCH TO MONTHLY" : "UPGRADE TO YEARLY (SAVE ~47%)";
 
   const doSwitch = async () => {
@@ -66,7 +64,8 @@ export function ManageSubscriptionCard() {
     )) return;
     setSwitching(true);
     try {
-      await switchSubscriptionPlan({ data: { environment: (getStripeEnvironmentSafe() ?? "sandbox"), targetPriceId } });
+      const res = await switchSubscriptionPlan({ data: { environment: (getStripeEnvironmentSafe() ?? "sandbox"), targetPriceId } });
+      if ("error" in res) throw new Error(res.error);
       toast.success(isYearly ? "Switched to monthly" : "Upgraded to yearly");
       const t = setTimeout(() => { if (mounted.current) reload(); }, 1500);
       void t;
@@ -77,7 +76,7 @@ export function ManageSubscriptionCard() {
     }
   };
 
-  const planLabel = sub ? (PLAN_LABELS[sub.price_id] ?? sub.price_id) : "DWT PRO";
+  const planLabel = planLabelFor(sub?.price_id);
   const endDate   = sub?.current_period_end ? new Date(sub.current_period_end) : null;
   const endStr    = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
   const isTrial   = sub?.status === "trialing";
