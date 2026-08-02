@@ -135,6 +135,43 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
             }
           }
 
+          // Standard Checkout (one-time order): this is where access is granted.
+          if (eventType === "payment.captured" && payment?.order_id && !payment.subscription_id) {
+            const buyerId: string | null = payment.notes?.userId ?? null;
+            const priceKey: string = payment.notes?.price_key ?? "dwt_pro_monthly_inr";
+            if (buyerId) {
+              const now = new Date();
+              const end = new Date(now);
+              if (priceKey.includes("yearly")) end.setFullYear(end.getFullYear() + 1);
+              else end.setMonth(end.getMonth() + 1);
+
+              const { error: grantError } = await supabase.from("subscriptions").upsert(
+                {
+                  user_id: buyerId,
+                  provider: "razorpay",
+                  provider_subscription_id: payment.order_id,
+                  provider_customer_id: payment.customer_id ?? null,
+                  price_id: priceKey,
+                  product_id: null,
+                  status: "active",
+                  current_period_start: now.toISOString(),
+                  current_period_end: end.toISOString(),
+                  cancel_at_period_end: true,
+                  environment,
+                  updated_at: now.toISOString(),
+                } as never,
+                { onConflict: "provider,provider_subscription_id" },
+              );
+              if (grantError) {
+                console.error(`Razorpay webhook: access grant failed for ${payment.order_id}:`, grantError.message);
+                return new Response("Grant write failed", { status: 500 });
+              }
+            } else {
+              console.error(`Razorpay webhook: payment.captured ${payment.id} has no userId note — cannot grant access`);
+            }
+          }
+
+
           await supabase.from("payment_events").insert({
             provider_event_id: eventId,
             event_type: eventType,

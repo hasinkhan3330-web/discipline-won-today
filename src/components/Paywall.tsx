@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { RazorpayCheckoutButton } from "@/components/RazorpayCheckoutButton";
+import { RazorpayPayButton } from "@/components/RazorpayPayButton";
 import { PRICING, type Cycle } from "@/lib/pricing";
 
 const G = "#00d4ff";
@@ -72,7 +72,7 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
           ))}
         </ul>
 
-        <RazorpayCheckoutButton priceKey={plan.priceKey} email={email} />
+        <RazorpayPayButton priceKey={plan.priceKey} email={email} />
 
         <p style={{ marginTop: 12, fontSize: 10, color: "#666", letterSpacing: 1, textAlign: "center" }}>
           Secure checkout by Razorpay. UPI, cards, netbanking and wallets supported.
