@@ -116,3 +116,66 @@ export function mapStatus(status: string): string {
 }
 
 export const TRIAL_DAYS = 3;
+
+/* ------------------------------------------------------------------ */
+/* Standard Checkout (Orders)                                          */
+/* ------------------------------------------------------------------ */
+
+export type RazorpayOrder = {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  receipt?: string | null;
+  notes?: Record<string, string>;
+};
+
+/** Creates a one-time order for Razorpay Standard Checkout. */
+export async function createOrder(input: {
+  amount: number;
+  currency: string;
+  receipt: string;
+  notes: Record<string, string>;
+}): Promise<RazorpayOrder> {
+  return rzp<RazorpayOrder>("/orders", {
+    method: "POST",
+    body: {
+      amount: input.amount,
+      currency: input.currency,
+      receipt: input.receipt.slice(0, 40),
+      payment_capture: 1,
+      notes: input.notes,
+    },
+  });
+}
+
+export async function fetchOrder(orderId: string): Promise<RazorpayOrder> {
+  return rzp<RazorpayOrder>(`/orders/${orderId}`);
+}
+
+/**
+ * Verifies the checkout handler signature:
+ * HMAC_SHA256(order_id + "|" + payment_id, RAZORPAY_KEY_SECRET).
+ */
+export async function verifyCheckoutSignature(input: {
+  orderId: string;
+  paymentId: string;
+  signature: string;
+}): Promise<boolean> {
+  const { createHmac, timingSafeEqual } = await import("crypto");
+  const expected = createHmac("sha256", env("RAZORPAY_KEY_SECRET"))
+    .update(`${input.orderId}|${input.paymentId}`)
+    .digest("hex");
+  const a = Buffer.from(input.signature, "utf8");
+  const b = Buffer.from(expected, "utf8");
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
+}
+
+/** How long one paid cycle lasts, as an ISO timestamp from `from`. */
+export function periodEndFor(priceKey: PriceKey, from: Date = new Date()): string {
+  const end = new Date(from);
+  if (CATALOG[priceKey].period === "yearly") end.setFullYear(end.getFullYear() + 1);
+  else end.setMonth(end.getMonth() + 1);
+  return end.toISOString();
+}
