@@ -41,7 +41,8 @@ function Pricing() {
             <div key={p.region} style={{ background: "#0a0a0a", border: `1px solid ${G}33`, padding: 24, borderRadius: 4 }}>
               <div style={{ color: G, letterSpacing: 3, fontSize: 10 }}>{p.region.toUpperCase()}</div>
               <div style={{ marginTop: 16, fontSize: 28, color: "#fff", fontWeight: 900 }}>{p.monthly}<span style={{ fontSize: 12, color: "#888" }}>/mo</span></div>
-              <div style={{ marginTop: 4, fontSize: 16, color: "#aaa" }}>{p.yearly}<span style={{ fontSize: 11, color: "#888" }}>/yr</span></div>
+              <div style={{ marginTop: 4, fontSize: 16, color: "#aaa" }}>{p.yearly}<span style={{ fontSize: 11, color: "#888" }}>/yr total</span></div>
+
               <div style={{ marginTop: 16, fontSize: 11, color: "#666", lineHeight: 1.6 }}>{p.note}</div>
             </div>
           ))}
