@@ -280,11 +280,9 @@ export type Database = {
           product_id: string | null
           provider: string
           provider_customer_id: string | null
-          provider_subscription_id: string | null
+          provider_subscription_id: string
           short_url: string | null
           status: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
           updated_at: string | null
           user_id: string
         }
@@ -299,11 +297,9 @@ export type Database = {
           product_id?: string | null
           provider?: string
           provider_customer_id?: string | null
-          provider_subscription_id?: string | null
+          provider_subscription_id: string
           short_url?: string | null
           status?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -318,11 +314,9 @@ export type Database = {
           product_id?: string | null
           provider?: string
           provider_customer_id?: string | null
-          provider_subscription_id?: string | null
+          provider_subscription_id?: string
           short_url?: string | null
           status?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
           updated_at?: string | null
           user_id?: string
         }
