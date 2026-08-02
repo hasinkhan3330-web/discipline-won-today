@@ -4,7 +4,12 @@ export type PaymentEnv = "sandbox" | "live";
 
 export type RazorpayCheckoutOptions = {
   key: string;
-  subscription_id: string;
+  /** Standard Checkout (one-time order) */
+  order_id?: string;
+  amount?: number;
+  currency?: string;
+  /** Subscription checkout */
+  subscription_id?: string;
   name: string;
   description?: string;
   image?: string;
@@ -13,11 +18,13 @@ export type RazorpayCheckoutOptions = {
   theme?: { color?: string };
   handler: (response: {
     razorpay_payment_id: string;
-    razorpay_subscription_id: string;
+    razorpay_order_id?: string;
+    razorpay_subscription_id?: string;
     razorpay_signature: string;
   }) => void;
   modal?: { ondismiss?: () => void; escape?: boolean; backdropclose?: boolean };
 };
+
 
 type RazorpayInstance = {
   open: () => void;
