@@ -335,3 +335,82 @@ export const switchSubscriptionPlan = createServerFn({ method: "POST" })
       return { error: getRazorpayErrorMessage(err) };
     }
   });
+
+/* ------------------------------------------------------------------ */
+/* Standard Checkout — one-time orders                                 */
+/* ------------------------------------------------------------------ */
+
+type OrderResult =
+  | {
+      orderId: string;
+      amount: number;
+      currency: string;
+      keyId: string;
+      environment: "sandbox" | "live";
+      priceKey: string;
+    }
+  | { error: string };
+
+/** Creates a Razorpay order server-side for Standard Checkout. */
+export const createPaymentOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { priceKey: string }) => {
+    if (!/^[a-z0-9_]{3,64}$/.test(data.priceKey)) throw new Error("Invalid priceKey");
+    return data;
+  })
+  .handler(async ({ data, context }): Promise<OrderResult> => {
+    try {
+      const { createOrder, isPriceKey, CATALOG, getKeyId, getPaymentEnv } = await import("@/lib/razorpay.server");
+      if (!isPriceKey(data.priceKey)) throw new Error("Unknown plan");
+      const plan = CATALOG[data.priceKey];
+
+      const order = await createOrder({
+        amount: plan.amount,
+        currency: plan.currency,
+        receipt: `dwt_${Date.now().toString(36)}`,
+        notes: { userId: context.userId, price_key: data.priceKey },
+      });
+
+      return {
+        orderId: order.id,
+        amount: order.amount,
+        currency: order.currency,
+        keyId: getKeyId(),
+        environment: getPaymentEnv(),
+        priceKey: data.priceKey,
+      };
+    } catch (error) {
+      const { getRazorpayErrorMessage } = await import("@/lib/razorpay.server");
+      return { error: getRazorpayErrorMessage(error) };
+    }
+  });
+
+/**
+ * Verifies the signature returned by Razorpay Checkout. This confirms the
+ * payment attempt is authentic — access is still granted only by the
+ * `payment.captured` webhook.
+ */
+export const verifyPaymentSignature = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: { orderId: string; paymentId: string; signature: string }) => {
+    if (!/^order_[A-Za-z0-9]+$/.test(data.orderId)) throw new Error("Invalid orderId");
+    if (!/^pay_[A-Za-z0-9]+$/.test(data.paymentId)) throw new Error("Invalid paymentId");
+    if (!/^[a-f0-9]{40,128}$/.test(data.signature)) throw new Error("Invalid signature");
+    return data;
+  })
+  .handler(async ({ data, context }): Promise<{ verified: boolean } | { error: string }> => {
+    try {
+      const { verifyCheckoutSignature, fetchOrder } = await import("@/lib/razorpay.server");
+      const ok = await verifyCheckoutSignature(data);
+      if (!ok) return { verified: false };
+
+      const order = await fetchOrder(data.orderId);
+      if (order.notes?.userId && order.notes.userId !== context.userId) {
+        return { error: "Order does not belong to this account" };
+      }
+      return { verified: true };
+    } catch (error) {
+      const { getRazorpayErrorMessage } = await import("@/lib/razorpay.server");
+      return { error: getRazorpayErrorMessage(error) };
+    }
+  });
