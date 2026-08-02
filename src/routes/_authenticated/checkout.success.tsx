@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getStripeEnvironmentSafe } from "@/lib/stripe";
 
 
 const G = "#00d4ff";
@@ -33,7 +32,6 @@ function SuccessPage() {
         .from("subscriptions")
         .select("status")
         .eq("user_id", u.user.id)
-        .eq("environment", (getStripeEnvironmentSafe() ?? "sandbox"))
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
