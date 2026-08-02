@@ -1,18 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getStripeEnvironmentSafe } from "@/lib/stripe";
-import { openCustomerPortal } from "@/utils/payments.functions";
-import { toast } from "sonner";
 
-// Sitewide banner: shows the orange TEST MODE strip in preview builds,
-// and a red "PAYMENT FAILED — update card" strip whenever the current
-// subscription is in Stripe's dunning (past_due) state. Both strips
-// render at the top of every authenticated screen.
+// Sitewide banner: shows a red "PAYMENT FAILED" strip whenever the current
+// subscription mandate is failing, and an amber strip when the subscription
+// is set to end. Both render at the top of every authenticated screen.
 export function AccountStatusStrip() {
-  const env = (getStripeEnvironmentSafe() ?? "sandbox");
   const [pastDue, setPastDue] = useState(false);
+  const [shortUrl, setShortUrl] = useState<string | null>(null);
   const [cancelInfo, setCancelInfo] = useState<{ endDate: string } | null>(null);
-  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -21,14 +16,14 @@ export function AccountStatusStrip() {
       if (!u.user) return;
       const { data } = await supabase
         .from("subscriptions")
-        .select("status, cancel_at_period_end, current_period_end")
+        .select("status, cancel_at_period_end, current_period_end, short_url")
         .eq("user_id", u.user.id)
-        .eq("environment", env)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       if (cancelled) return;
       setPastDue(data?.status === "past_due");
+      setShortUrl((data?.short_url as string | null) ?? null);
       const willCancel = !!data && (data.cancel_at_period_end || data.status === "canceled") && !!data.current_period_end && new Date(data.current_period_end) > new Date();
       setCancelInfo(willCancel
         ? { endDate: new Date(data!.current_period_end!).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) }
@@ -37,34 +32,22 @@ export function AccountStatusStrip() {
     load();
     const onFocus = () => load();
     window.addEventListener("focus", onFocus);
-    return () => { cancelled = true; window.removeEventListener("focus", onFocus); };
-  }, [env]);
+    window.addEventListener("subscription:refresh", onFocus);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("subscription:refresh", onFocus);
+    };
+  }, []);
 
-  const openPortal = async () => {
-    setBusy(true);
-    try {
-      const res = await openCustomerPortal({ data: { environment: env } });
-      if ("error" in res) throw new Error(res.error);
-      if (res.url) window.open(res.url, "_blank", "noopener");
-      else toast.message("No active subscription to manage yet.");
-
-    } catch {
-      toast.error("Couldn't open billing portal", { description: "Try again in a moment." });
-    } finally { setBusy(false); }
-  };
+  const linkStyle = (bg: string, fg: string) => ({
+    marginLeft: 8, background: bg, color: fg, border: "none",
+    padding: "3px 10px", fontFamily: "monospace", fontSize: 10, fontWeight: 900,
+    letterSpacing: 2, borderRadius: 2, textDecoration: "none", display: "inline-block",
+  }) as const;
 
   return (
     <>
-      {env === "sandbox" && (
-        <div style={{
-          width: "100%", background: "#ff9500", color: "#111",
-          padding: "6px 12px", textAlign: "center",
-          fontFamily: "monospace", fontSize: 10, letterSpacing: 2, fontWeight: 900,
-          borderBottom: "1px solid #cc7700",
-        }}>
-          ◈ TEST MODE — payments in preview are simulated · use card 4242 4242 4242 4242
-        </div>
-      )}
       {pastDue && (
         <div style={{
           width: "100%", background: "#3a0f0f", color: "#ffb3b3",
@@ -72,14 +55,8 @@ export function AccountStatusStrip() {
           fontFamily: "monospace", fontSize: 11, letterSpacing: 2, fontWeight: 800,
           borderBottom: "1px solid #ff4d4d55",
         }}>
-          ⚠ PAYMENT FAILED — we're retrying. <button
-            onClick={openPortal} disabled={busy}
-            style={{
-              marginLeft: 8, background: "#ff4d4d", color: "#000", border: "none",
-              padding: "3px 10px", fontFamily: "monospace", fontSize: 10, fontWeight: 900,
-              letterSpacing: 2, cursor: busy ? "wait" : "pointer", borderRadius: 2,
-            }}
-          >{busy ? "…" : "UPDATE CARD"}</button>
+          ⚠ PAYMENT FAILED — we're retrying.
+          {shortUrl && <a href={shortUrl} target="_blank" rel="noopener noreferrer" style={linkStyle("#ff4d4d", "#000")}>UPDATE PAYMENT</a>}
         </div>
       )}
       {!pastDue && cancelInfo && (
@@ -89,14 +66,7 @@ export function AccountStatusStrip() {
           fontFamily: "monospace", fontSize: 11, letterSpacing: 2, fontWeight: 800,
           borderBottom: "1px solid #ffb84d55",
         }}>
-          ◌ SUBSCRIPTION ENDS {cancelInfo.endDate.toUpperCase()} — <button
-            onClick={openPortal} disabled={busy}
-            style={{
-              marginLeft: 8, background: "#ffb84d", color: "#111", border: "none",
-              padding: "3px 10px", fontFamily: "monospace", fontSize: 10, fontWeight: 900,
-              letterSpacing: 2, cursor: busy ? "wait" : "pointer", borderRadius: 2,
-            }}
-          >{busy ? "…" : "RESUME"}</button>
+          ◌ SUBSCRIPTION ENDS {cancelInfo.endDate.toUpperCase()}
         </div>
       )}
     </>

@@ -1,12 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getStripeEnvironmentSafe } from "@/lib/stripe";
 
 export type SubscriptionRow = {
   status: string;
   price_id: string;
   current_period_end: string | null;
   cancel_at_period_end: boolean;
+  short_url: string | null;
 };
 
 export function useSubscription(userId: string | null) {
@@ -18,9 +18,8 @@ export function useSubscription(userId: string | null) {
     setLoading(true);
     const { data } = await supabase
       .from("subscriptions")
-      .select("status, price_id, current_period_end, cancel_at_period_end")
+      .select("status, price_id, current_period_end, cancel_at_period_end, short_url")
       .eq("user_id", userId)
-      .eq("environment", (getStripeEnvironmentSafe() ?? "sandbox"))
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -39,7 +38,7 @@ export function useSubscription(userId: string | null) {
       () => load()
     ).subscribe();
 
-    // Refetch when the user returns to the tab (checkout overlay / portal).
+    // Refetch when the user returns to the tab (checkout overlay).
     const onFocus = () => load();
     const onVisible = () => { if (document.visibilityState === "visible") load(); };
     window.addEventListener("focus", onFocus);
