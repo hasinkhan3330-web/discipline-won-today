@@ -116,6 +116,25 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           }
 
 
+          // Explicit one-off payment events (Razorpay sends these alongside subscription events).
+          if ((eventType === "payment.captured" || eventType === "payment.failed") && payment) {
+            const linkedSubId: string | null = payment.subscription_id ?? sub?.id ?? null;
+            if (linkedSubId) {
+              const { error: payWriteError } = await supabase
+                .from("subscriptions")
+                .update({
+                  status: eventType === "payment.captured" ? "active" : "past_due",
+                  updated_at: new Date().toISOString(),
+                } as never)
+                .eq("provider", "razorpay")
+                .eq("provider_subscription_id", linkedSubId);
+              if (payWriteError) {
+                console.error(`Razorpay webhook: ${eventType} write failed for ${linkedSubId}:`, payWriteError.message);
+                return new Response("Payment write failed", { status: 500 });
+              }
+            }
+          }
+
           await supabase.from("payment_events").insert({
             provider_event_id: eventId,
             event_type: eventType,
