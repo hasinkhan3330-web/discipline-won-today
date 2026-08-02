@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { RazorpayCheckoutButton } from "@/components/RazorpayCheckoutButton";
+import { RazorpayPayButton } from "@/components/RazorpayPayButton";
 import { PRICING, type Cycle } from "@/lib/pricing";
 
 const G = "#00d4ff";
