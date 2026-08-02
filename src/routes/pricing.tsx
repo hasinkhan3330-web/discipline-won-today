@@ -17,11 +17,10 @@ export const Route = createFileRoute("/pricing")({
 const G = "#00d4ff", G2 = "#a855f7";
 
 const PLANS = [
-  { region: "India", monthly: "₹49", yearly: "₹999", note: "Localized pricing for Indian customers" },
-  { region: "United States", monthly: "$4.99", yearly: "$29.99", note: "USD pricing for US customers" },
-  { region: "Europe", monthly: "€3.99", yearly: "€24.99", note: "EUR pricing for European customers" },
-  { region: "Rest of World", monthly: "$3.49", yearly: "$20.99", note: "Discounted global pricing" },
+  { region: "Monthly", monthly: "₹49", yearly: "₹588", note: "Billed ₹49 every month after your free trial" },
+  { region: "Yearly · Save 30%", monthly: "₹83", yearly: "₹999", note: "Billed ₹999 once a year after your free trial" },
 ];
+
 
 function Pricing() {
   return (
