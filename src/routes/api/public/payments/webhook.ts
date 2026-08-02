@@ -95,21 +95,26 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
               updated_at: new Date().toISOString(),
             };
 
-            if (userId) {
-              await supabase
-                .from("subscriptions")
-                .upsert({ ...record, user_id: userId } as never, {
-                  onConflict: "provider,provider_subscription_id",
-                });
-            } else {
-              // No userId in notes (rare) — update the existing row if we already know it.
-              await supabase
-                .from("subscriptions")
-                .update(record as never)
-                .eq("provider", "razorpay")
-                .eq("provider_subscription_id", sub.id);
+            const { error: writeError } = userId
+              ? await supabase
+                  .from("subscriptions")
+                  .upsert({ ...record, user_id: userId } as never, {
+                    onConflict: "provider,provider_subscription_id",
+                  })
+              : // No userId in notes (rare) — update the existing row if we already know it.
+                await supabase
+                  .from("subscriptions")
+                  .update(record as never)
+                  .eq("provider", "razorpay")
+                  .eq("provider_subscription_id", sub.id);
+
+            if (writeError) {
+              // Return non-2xx so Razorpay retries the delivery.
+              console.error(`Razorpay webhook: subscription write failed for ${sub.id}:`, writeError.message);
+              return new Response("Subscription write failed", { status: 500 });
             }
           }
+
 
           await supabase.from("payment_events").insert({
             provider_event_id: eventId,
