@@ -72,7 +72,7 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
           ))}
         </ul>
 
-        <RazorpayCheckoutButton priceKey={plan.priceKey} email={email} />
+        <RazorpayPayButton priceKey={plan.priceKey} email={email} />
 
         <p style={{ marginTop: 12, fontSize: 10, color: "#666", letterSpacing: 1, textAlign: "center" }}>
           Secure checkout by Razorpay. UPI, cards, netbanking and wallets supported.
