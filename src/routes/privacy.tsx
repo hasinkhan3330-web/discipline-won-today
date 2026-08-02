@@ -27,7 +27,7 @@ function Privacy() {
       <li><b>Account data:</b> email address, password (hashed), display name, profile photo.</li>
       <li><b>Usage data:</b> task completions, coin balances, meditation sessions, wake-up verification results, streaks.</li>
       <li><b>Device & log data:</b> IP address, browser type, session timestamps, error logs.</li>
-      <li><b>Payment data:</b> handled entirely by our payment processor, Stripe. We receive only a customer ID, subscription status, and billing period — never card numbers.</li>
+      <li><b>Payment data:</b> handled entirely by our payment processor, Razorpay. We receive only a subscription ID, subscription status, and billing period — never card numbers or UPI credentials.</li>
     </ul>
 
     <h2>3. How We Use Your Data</h2>
@@ -41,7 +41,7 @@ function Privacy() {
 
     <h2>4. Data Sharing — Recipients</h2>
     <ul>
-      <li><b>Stripe, Inc.</b> — payment processing, subscription management, tax calculation, and invoicing.</li>
+      <li><b>Razorpay Software Private Limited</b> — payment processing, subscription mandates, and invoicing (data processed in India).</li>
       <li><b>Cloud hosting & database subprocessors</b> — for storing account data securely.</li>
       <li><b>Professional advisers</b> (legal, accounting) where necessary.</li>
       <li><b>Authorities</b> where required by law.</li>
@@ -49,7 +49,7 @@ function Privacy() {
     <p>We do not sell your personal data.</p>
 
     <h2>5. International Transfers</h2>
-    <p>Where personal data leaves the UK / EEA, we rely on Standard Contractual Clauses or equivalent safeguards. Stripe acts as an independent controller for payment data and applies its own safeguards.</p>
+    <p>Payment data is processed and stored in India by Razorpay in line with RBI data-localisation rules. Razorpay acts as an independent controller for payment data and applies its own safeguards.</p>
 
     <h2>6. Data Retention</h2>
     <p>We retain account data for as long as your account is active. If you delete your account, we delete or anonymise your personal data within 90 days, except where retention is required by law (e.g. tax and payment records retained for up to 10 years).</p>
