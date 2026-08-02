@@ -35,7 +35,7 @@ function Terms() {
     <p>NX AI retains all rights, title, and interest in DWT, including software, documentation, branding, and the DWT design system. You are granted a limited, non-exclusive, non-transferable right to use DWT within your subscribed plan.</p>
 
     <h2>6. Payment, Subscription & Merchant of Record</h2>
-    <p>Payments are processed securely by <b>Stripe</b>. Card details are entered directly into Stripe's hosted checkout and are never stored on our servers. Payment, billing, tax, cancellation, and refund mechanics are governed by these Terms together with <a href="https://stripe.com/legal/consumer" style={{color:"#00d4ff"}}>Stripe's consumer terms</a>. Billing questions can be sent to us directly.</p>
+    <p>Payments are processed securely by <b>Razorpay Software Private Limited</b>, an RBI-authorised payment aggregator. Card, UPI, netbanking and wallet details are entered directly into Razorpay's hosted checkout and are never stored on our servers. Payment, billing, cancellation, and refund mechanics are governed by these Terms together with <a href="https://razorpay.com/terms/" style={{color:"#00d4ff"}}>Razorpay's terms</a>. Billing questions can be sent to us directly.</p>
     <p>Subscriptions renew automatically at the end of each billing period until cancelled. You may cancel at any time via the account portal. A 3-day free trial is offered on all plans — you will not be charged until day 4.</p>
 
     <h2>7. User Content</h2>

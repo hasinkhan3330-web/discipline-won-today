@@ -26,7 +26,7 @@ function Refund() {
     <p>Every DWT plan starts with a <b>3-day free trial</b>. You will not be charged during the trial. Cancel any time before day 4 to avoid all charges.</p>
 
     <h2>3. How to Request a Refund</h2>
-    <p>Refunds are processed through our payment processor, <b>Stripe</b>. To request a refund:</p>
+    <p>Refunds are processed through our payment processor, <b>Razorpay</b>, back to your original payment method (UPI, card, netbanking or wallet) within 5–10 business days. To request a refund:</p>
     <ul>
       <li>Open the billing portal from your profile and review your invoices, or</li>
       <li>Email us at <b>support@nx-ai.app</b> — we'll process your request directly.</li>

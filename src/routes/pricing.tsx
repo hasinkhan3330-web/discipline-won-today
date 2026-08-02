@@ -17,11 +17,10 @@ export const Route = createFileRoute("/pricing")({
 const G = "#00d4ff", G2 = "#a855f7";
 
 const PLANS = [
-  { region: "India", monthly: "₹49", yearly: "₹999", note: "Localized pricing for Indian customers" },
-  { region: "United States", monthly: "$4.99", yearly: "$29.99", note: "USD pricing for US customers" },
-  { region: "Europe", monthly: "€3.99", yearly: "€24.99", note: "EUR pricing for European customers" },
-  { region: "Rest of World", monthly: "$3.49", yearly: "$20.99", note: "Discounted global pricing" },
+  { region: "Monthly", monthly: "₹49", yearly: "₹588", note: "Billed ₹49 every month after your free trial" },
+  { region: "Yearly · Save 30%", monthly: "₹83", yearly: "₹999", note: "Billed ₹999 once a year after your free trial" },
 ];
+
 
 function Pricing() {
   return (
@@ -42,7 +41,8 @@ function Pricing() {
             <div key={p.region} style={{ background: "#0a0a0a", border: `1px solid ${G}33`, padding: 24, borderRadius: 4 }}>
               <div style={{ color: G, letterSpacing: 3, fontSize: 10 }}>{p.region.toUpperCase()}</div>
               <div style={{ marginTop: 16, fontSize: 28, color: "#fff", fontWeight: 900 }}>{p.monthly}<span style={{ fontSize: 12, color: "#888" }}>/mo</span></div>
-              <div style={{ marginTop: 4, fontSize: 16, color: "#aaa" }}>{p.yearly}<span style={{ fontSize: 11, color: "#888" }}>/yr</span></div>
+              <div style={{ marginTop: 4, fontSize: 16, color: "#aaa" }}>{p.yearly}<span style={{ fontSize: 11, color: "#888" }}>/yr total</span></div>
+
               <div style={{ marginTop: 16, fontSize: 11, color: "#666", lineHeight: 1.6 }}>{p.note}</div>
             </div>
           ))}
@@ -75,7 +75,7 @@ function Pricing() {
             <Link to="/refund" style={{ color: "#888", textDecoration: "none" }}>REFUND</Link>
           </div>
           <div style={{ marginTop: 16, fontSize: 10, color: "#444" }}>
-            Payments processed securely by Stripe
+            Payments processed securely by Razorpay · UPI, cards, netbanking & wallets
           </div>
         </footer>
       </div>

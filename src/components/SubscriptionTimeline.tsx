@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getStripeEnvironmentSafe } from "@/lib/stripe";
 
 type EventRow = {
   id: string;
@@ -16,11 +15,17 @@ const R = "#ff4d4d";
 const Y = "#ffb84d";
 
 const META: Record<string, { label: string; color: string; icon: string }> = {
-  "subscription.created":        { label: "SUBSCRIPTION CREATED",  color: G, icon: "◉" },
-  "subscription.updated":        { label: "SUBSCRIPTION UPDATED",  color: G, icon: "⟳" },
-  "subscription.canceled":       { label: "SUBSCRIPTION CANCELED", color: Y, icon: "◌" },
-  "transaction.completed":       { label: "PAYMENT SUCCEEDED",     color: G, icon: "✓" },
-  "transaction.payment_failed":  { label: "PAYMENT FAILED",        color: R, icon: "⚠" },
+  "subscription.authenticated": { label: "MANDATE APPROVED",       color: G, icon: "◉" },
+  "subscription.activated":     { label: "SUBSCRIPTION ACTIVE",    color: G, icon: "◉" },
+  "subscription.charged":       { label: "PAYMENT SUCCEEDED",      color: G, icon: "✓" },
+  "subscription.updated":       { label: "SUBSCRIPTION UPDATED",   color: G, icon: "⟳" },
+  "subscription.pending":       { label: "PAYMENT RETRYING",       color: Y, icon: "⚠" },
+  "subscription.halted":        { label: "PAYMENT FAILED",         color: R, icon: "⚠" },
+  "subscription.cancelled":     { label: "SUBSCRIPTION CANCELED",  color: Y, icon: "◌" },
+  "subscription.paused":        { label: "SUBSCRIPTION PAUSED",    color: Y, icon: "❙❙" },
+  "subscription.resumed":       { label: "SUBSCRIPTION RESUMED",   color: G, icon: "▶" },
+  "subscription.completed":     { label: "SUBSCRIPTION COMPLETED", color: Y, icon: "◍" },
+  "payment.failed":             { label: "PAYMENT FAILED",         color: R, icon: "⚠" },
 };
 
 function fmt(iso: string) {
@@ -31,7 +36,7 @@ function fmt(iso: string) {
 function money(amount: number | null, currency: string | null) {
   if (amount == null) return null;
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "USD" }).format(amount);
+    return new Intl.NumberFormat(undefined, { style: "currency", currency: currency || "INR" }).format(amount);
   } catch {
     return `${amount} ${currency ?? ""}`.trim();
   }
@@ -53,7 +58,6 @@ export function SubscriptionTimeline() {
         .from("payment_events")
         .select("id, event_type, status, amount, currency, created_at")
         .eq("user_id", uid)
-        .eq("environment", (getStripeEnvironmentSafe() ?? "sandbox"))
         .order("created_at", { ascending: false })
         .limit(10);
       if (!cancelled) setRows((data as EventRow[]) ?? []);

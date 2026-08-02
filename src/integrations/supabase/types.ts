@@ -112,6 +112,45 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_plans: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          environment: string
+          id: string
+          period: string
+          plan_id: string
+          price_key: string
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency: string
+          environment: string
+          id?: string
+          period: string
+          plan_id: string
+          price_key: string
+          provider?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          environment?: string
+          id?: string
+          period?: string
+          plan_id?: string
+          price_key?: string
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       coin_transactions: {
         Row: {
           amount: number
@@ -238,10 +277,12 @@ export type Database = {
           environment: string
           id: string
           price_id: string
-          product_id: string
+          product_id: string | null
+          provider: string
+          provider_customer_id: string | null
+          provider_subscription_id: string
+          short_url: string | null
           status: string
-          stripe_customer_id: string
-          stripe_subscription_id: string
           updated_at: string | null
           user_id: string
         }
@@ -253,10 +294,12 @@ export type Database = {
           environment?: string
           id?: string
           price_id: string
-          product_id: string
+          product_id?: string | null
+          provider?: string
+          provider_customer_id?: string | null
+          provider_subscription_id: string
+          short_url?: string | null
           status?: string
-          stripe_customer_id: string
-          stripe_subscription_id: string
           updated_at?: string | null
           user_id: string
         }
@@ -268,10 +311,12 @@ export type Database = {
           environment?: string
           id?: string
           price_id?: string
-          product_id?: string
+          product_id?: string | null
+          provider?: string
+          provider_customer_id?: string | null
+          provider_subscription_id?: string
+          short_url?: string | null
           status?: string
-          stripe_customer_id?: string
-          stripe_subscription_id?: string
           updated_at?: string | null
           user_id?: string
         }
