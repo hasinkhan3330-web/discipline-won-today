@@ -133,7 +133,19 @@ export function PaywallGate({ children }: { children: React.ReactNode }) {
         setUserId(data.user.id);
         setEmail(data.user.email ?? null);
         await refresh(data.user.id);
+        // Inside the Android app, re-check Google Play on every launch so a
+        // reinstall or a renewal unlocks PRO without any user action.
+        if (await isNativeBillingAvailable().catch(() => false)) {
+          try {
+            const { initPlayBilling } = await import("@/lib/play-billing");
+            const { syncPlayEntitlement } = await import("@/utils/play-billing.functions");
+            await initPlayBilling(data.user.id);
+            await syncPlayEntitlement({ data: {} } as never);
+            await refresh(data.user.id);
+          } catch { /* offline or not configured yet */ }
+        }
       }
+
       setReady(true);
     })();
   }, []);
