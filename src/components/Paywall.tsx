@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { RazorpayPayButton } from "@/components/RazorpayPayButton";
+import { PlayBillingButton } from "@/components/PlayBillingButton";
+import { isNativeBillingAvailable } from "@/lib/play-billing";
 import { PRICING, type Cycle } from "@/lib/pricing";
 
 const G = "#00d4ff";
@@ -17,11 +19,16 @@ const PERKS = [
 ];
 
 export function Paywall({ userId, email }: { userId: string; email?: string | null }) {
-  void userId;
   const [cycle, setCycle] = useState<Cycle>("yearly");
+  const [native, setNative] = useState(false);
+
+  useEffect(() => {
+    isNativeBillingAvailable().then(setNative).catch(() => setNative(false));
+  }, []);
 
   const plan = PRICING[cycle];
   const signOut = async () => { await supabase.auth.signOut(); };
+
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
@@ -72,11 +79,17 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
           ))}
         </ul>
 
-        <RazorpayPayButton priceKey={plan.priceKey} email={email} />
+        {native
+          ? <PlayBillingButton userId={userId} cycle={cycle} />
+          : <RazorpayPayButton priceKey={plan.priceKey} email={email} />}
+
 
         <p style={{ marginTop: 12, fontSize: 10, color: "#666", letterSpacing: 1, textAlign: "center" }}>
-          Secure checkout by Razorpay. UPI, cards, netbanking and wallets supported.
+          {native
+            ? "Billed securely through Google Play. Manage or cancel anytime in Play Store → Subscriptions."
+            : "Secure checkout by Razorpay. UPI, cards, netbanking and wallets supported."}
         </p>
+
 
         <button onClick={signOut} style={{ marginTop: 20, width: "100%", background: "transparent", border: "none", color: "#666", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, cursor: "pointer" }}>
           SIGN OUT
@@ -120,7 +133,19 @@ export function PaywallGate({ children }: { children: React.ReactNode }) {
         setUserId(data.user.id);
         setEmail(data.user.email ?? null);
         await refresh(data.user.id);
+        // Inside the Android app, re-check Google Play on every launch so a
+        // reinstall or a renewal unlocks PRO without any user action.
+        if (await isNativeBillingAvailable().catch(() => false)) {
+          try {
+            const { initPlayBilling } = await import("@/lib/play-billing");
+            const { syncPlayEntitlement } = await import("@/utils/play-billing.functions");
+            await initPlayBilling(data.user.id);
+            await syncPlayEntitlement({ data: {} } as never);
+            await refresh(data.user.id);
+          } catch { /* offline or not configured yet */ }
+        }
       }
+
       setReady(true);
     })();
   }, []);
