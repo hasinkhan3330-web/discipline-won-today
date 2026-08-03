@@ -85,8 +85,11 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
 
 
         <p style={{ marginTop: 12, fontSize: 10, color: "#666", letterSpacing: 1, textAlign: "center" }}>
-          Secure checkout by Razorpay. UPI, cards, netbanking and wallets supported.
+          {native
+            ? "Billed securely through Google Play. Manage or cancel anytime in Play Store → Subscriptions."
+            : "Secure checkout by Razorpay. UPI, cards, netbanking and wallets supported."}
         </p>
+
 
         <button onClick={signOut} style={{ marginTop: 20, width: "100%", background: "transparent", border: "none", color: "#666", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, cursor: "pointer" }}>
           SIGN OUT
