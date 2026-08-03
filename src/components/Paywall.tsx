@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { RazorpayPayButton } from "@/components/RazorpayPayButton";
+import { PlayBillingButton } from "@/components/PlayBillingButton";
+import { isNativeBillingAvailable } from "@/lib/play-billing";
 import { PRICING, type Cycle } from "@/lib/pricing";
 
 const G = "#00d4ff";
@@ -17,11 +19,16 @@ const PERKS = [
 ];
 
 export function Paywall({ userId, email }: { userId: string; email?: string | null }) {
-  void userId;
   const [cycle, setCycle] = useState<Cycle>("yearly");
+  const [native, setNative] = useState(false);
+
+  useEffect(() => {
+    isNativeBillingAvailable().then(setNative).catch(() => setNative(false));
+  }, []);
 
   const plan = PRICING[cycle];
   const signOut = async () => { await supabase.auth.signOut(); };
+
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
