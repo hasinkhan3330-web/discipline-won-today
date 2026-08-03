@@ -35,7 +35,7 @@ export const syncPlayEntitlement = createServerFn({ method: "POST" })
           provider: "google_play",
           provider_subscription_id: `rc_${ent.originalAppUserId ?? context.userId}`,
           provider_customer_id: ent.originalAppUserId ?? context.userId,
-          price_id: priceKey,
+          price_id: priceKeyFor(ent.productId),
           product_id: ent.productId,
           status: "active",
           current_period_start: null,
