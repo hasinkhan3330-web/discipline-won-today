@@ -585,7 +585,11 @@ function App() {
               }} />
             ))}
 
+            {gateReady && !hasActiveSubscription && (
+              <button onClick={() => setShowPaywall(true)} title="Go PRO" style={{ background: `linear-gradient(135deg, ${G}, ${G2})`, border: "none", color: "#000", padding: "5px 9px", fontSize: 10, fontWeight: 900, letterSpacing: 2, fontFamily: "monospace", cursor: "pointer", borderRadius: 2, boxShadow: `0 0 14px ${G}66` }}>GO PRO</button>
+            )}
             <div style={{ background: `linear-gradient(135deg,${G}22,${G2}22)`, border: `1px solid ${G}66`, padding: "5px 10px", fontSize: 13, fontWeight: 700, color: G, marginLeft: 4, borderRadius: 2 }}>🪙 {coins}</div>
+
             <button onClick={handleSignOut} title="Sign out" style={{ background: "transparent", border: `1px solid ${G}55`, color: "#aaa", padding: "5px 8px", fontSize: 10, letterSpacing: 2, fontFamily: "monospace", cursor: "pointer", borderRadius: 2 }}>EXIT</button>
           </div>
         </div>
