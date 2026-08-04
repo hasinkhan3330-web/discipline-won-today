@@ -9,9 +9,19 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "android:sync": "cap sync android",
+    "android:open": "cap open android",
+    "android:run": "cap run android",
+    "android:clean": "cd android && ./gradlew clean",
+    "android:apk": "npm run android:sync && cd android && ./gradlew assembleRelease",
+    "android:aab": "npm run android:sync && cd android && ./gradlew bundleRelease",
+    "android:release": "npm run android:apk && npm run android:aab",
+    "android:verify": "cd android && ./gradlew signingReport"
   },
+
   "dependencies": {
+    "@capacitor/android": "^7",
     "@capacitor/core": "^7",
     "@hookform/resolvers": "^5.2.2",
     "@lovable.dev/cloud-auth-js": "^1.1.2",

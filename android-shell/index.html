@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Discipline Won Today</title>
+    <style>
+      :root { color-scheme: dark; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #05060f;
+        color: #e6ebff;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      .wrap {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        text-align: center;
+        padding: 24px;
+      }
+      .mark {
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: 0.28em;
+        background: linear-gradient(90deg, #7dd3fc, #a78bfa);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .sub { font-size: 13px; letter-spacing: 0.22em; opacity: 0.6; text-transform: uppercase; }
+      .ring {
+        width: 44px; height: 44px; border-radius: 50%;
+        border: 2px solid rgba(125, 211, 252, 0.25);
+        border-top-color: #7dd3fc;
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="mark">DWT</div>
+      <div class="ring"></div>
+      <div class="sub">Discipline Won Today</div>
+      <div class="sub" style="opacity: 0.35">Connecting…</div>
+    </div>
+  </body>
+</html>
