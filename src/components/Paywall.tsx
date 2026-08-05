@@ -108,7 +108,18 @@ export function PaywallLoading() {
   );
 }
 
+type SubRow = { status: string; current_period_end: string | null };
+
+function isRowActive(s: SubRow): boolean {
+  const end = s.current_period_end ? new Date(s.current_period_end) : null;
+  const notExpired = !end || end > new Date();
+  if (["active", "trialing", "past_due"].includes(s.status) && notExpired) return true;
+  if (s.status === "canceled" && end && end > new Date()) return true;
+  return false;
+}
+
 export function PaywallGate({ children }: { children: React.ReactNode }) {
+
   const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
