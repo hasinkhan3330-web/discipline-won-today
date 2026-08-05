@@ -72,12 +72,8 @@ export function useSubscription(userId: string | null) {
     };
   }, [userId, load]);
 
-  const isActive = !!sub && (() => {
-    const notExpired = !sub.current_period_end || new Date(sub.current_period_end) > new Date();
-    if (["active", "trialing", "past_due"].includes(sub.status) && notExpired) return true;
-    if (sub.status === "canceled" && sub.current_period_end && new Date(sub.current_period_end) > new Date()) return true;
-    return false;
-  })();
+  const isActive = !!sub && rowActive(sub);
+
 
   return { sub, loading, isActive, reload: load };
 }
