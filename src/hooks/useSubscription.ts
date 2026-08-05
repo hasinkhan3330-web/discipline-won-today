@@ -9,6 +9,14 @@ export type SubscriptionRow = {
   short_url: string | null;
 };
 
+function rowActive(s: SubscriptionRow): boolean {
+  const end = s.current_period_end ? new Date(s.current_period_end) : null;
+  const notExpired = !end || end > new Date();
+  if (["active", "trialing", "past_due"].includes(s.status) && notExpired) return true;
+  if (s.status === "canceled" && end && end > new Date()) return true;
+  return false;
+}
+
 export function useSubscription(userId: string | null) {
   const [sub, setSub] = useState<SubscriptionRow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -16,16 +24,18 @@ export function useSubscription(userId: string | null) {
   const load = useCallback(async () => {
     if (!userId) { setSub(null); setLoading(false); return; }
     setLoading(true);
+    // Razorpay (web) and Google Play rows both live here — prefer any active one.
     const { data } = await supabase
       .from("subscriptions")
       .select("status, price_id, current_period_end, cancel_at_period_end, short_url")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    setSub((data as SubscriptionRow) || null);
+      .limit(20);
+    const rows = (data ?? []) as SubscriptionRow[];
+    setSub(rows.find(rowActive) ?? rows[0] ?? null);
     setLoading(false);
   }, [userId]);
+
 
   useEffect(() => { load(); }, [load]);
 
@@ -62,12 +72,8 @@ export function useSubscription(userId: string | null) {
     };
   }, [userId, load]);
 
-  const isActive = !!sub && (() => {
-    const notExpired = !sub.current_period_end || new Date(sub.current_period_end) > new Date();
-    if (["active", "trialing", "past_due"].includes(sub.status) && notExpired) return true;
-    if (sub.status === "canceled" && sub.current_period_end && new Date(sub.current_period_end) > new Date()) return true;
-    return false;
-  })();
+  const isActive = !!sub && rowActive(sub);
+
 
   return { sub, loading, isActive, reload: load };
 }

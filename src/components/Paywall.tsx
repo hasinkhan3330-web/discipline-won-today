@@ -108,22 +108,35 @@ export function PaywallLoading() {
   );
 }
 
+type SubRow = { status: string; current_period_end: string | null };
+
+function isRowActive(s: SubRow): boolean {
+  const end = s.current_period_end ? new Date(s.current_period_end) : null;
+  const notExpired = !end || end > new Date();
+  if (["active", "trialing", "past_due"].includes(s.status) && notExpired) return true;
+  if (s.status === "canceled" && end && end > new Date()) return true;
+  return false;
+}
+
 export function PaywallGate({ children }: { children: React.ReactNode }) {
+
   const [userId, setUserId] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [sub, setSub] = useState<{ status: string; current_period_end: string | null } | null>(null);
 
   const refresh = async (uid: string) => {
+    // Any provider (Razorpay web OR Google Play) may hold the active entitlement.
     const { data } = await supabase
       .from("subscriptions")
       .select("status, current_period_end")
       .eq("user_id", uid)
       .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    setSub(data as { status: string; current_period_end: string | null } | null);
+      .limit(20);
+    const rows = (data ?? []) as { status: string; current_period_end: string | null }[];
+    setSub(rows.find(isRowActive) ?? rows[0] ?? null);
   };
+
 
 
   useEffect(() => {
@@ -170,13 +183,8 @@ export function PaywallGate({ children }: { children: React.ReactNode }) {
   if (!ready) return <PaywallLoading />;
   if (!userId) return <PaywallLoading />;
 
-  const active = !!sub && (() => {
-    const end = sub.current_period_end ? new Date(sub.current_period_end) : null;
-    const notExpired = !end || end > new Date();
-    if (["active", "trialing", "past_due"].includes(sub.status) && notExpired) return true;
-    if (sub.status === "canceled" && end && end > new Date()) return true;
-    return false;
-  })();
+  const active = !!sub && isRowActive(sub);
+
 
   if (!active) return <Paywall userId={userId} email={email} />;
   return <>{children}</>;
