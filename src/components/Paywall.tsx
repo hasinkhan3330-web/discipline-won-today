@@ -115,15 +115,17 @@ export function PaywallGate({ children }: { children: React.ReactNode }) {
   const [sub, setSub] = useState<{ status: string; current_period_end: string | null } | null>(null);
 
   const refresh = async (uid: string) => {
+    // Any provider (Razorpay web OR Google Play) may hold the active entitlement.
     const { data } = await supabase
       .from("subscriptions")
       .select("status, current_period_end")
       .eq("user_id", uid)
       .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    setSub(data as { status: string; current_period_end: string | null } | null);
+      .limit(20);
+    const rows = (data ?? []) as { status: string; current_period_end: string | null }[];
+    setSub(rows.find(isRowActive) ?? rows[0] ?? null);
   };
+
 
 
   useEffect(() => {
