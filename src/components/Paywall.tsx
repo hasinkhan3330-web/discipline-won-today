@@ -183,13 +183,8 @@ export function PaywallGate({ children }: { children: React.ReactNode }) {
   if (!ready) return <PaywallLoading />;
   if (!userId) return <PaywallLoading />;
 
-  const active = !!sub && (() => {
-    const end = sub.current_period_end ? new Date(sub.current_period_end) : null;
-    const notExpired = !end || end > new Date();
-    if (["active", "trialing", "past_due"].includes(sub.status) && notExpired) return true;
-    if (sub.status === "canceled" && end && end > new Date()) return true;
-    return false;
-  })();
+  const active = !!sub && isRowActive(sub);
+
 
   if (!active) return <Paywall userId={userId} email={email} />;
   return <>{children}</>;
