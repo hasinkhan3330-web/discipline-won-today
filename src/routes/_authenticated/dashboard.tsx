@@ -652,7 +652,7 @@ function App() {
               <Link to="/terms" style={{ color: "#888", textDecoration: "none", fontSize: 10, letterSpacing: 1.5 }}>TERMS</Link>
               <Link to="/refund" style={{ color: "#888", textDecoration: "none", fontSize: 10, letterSpacing: 1.5 }}>REFUND</Link>
             </div>
-            <div style={{ marginTop: 10, fontSize: 9, color: "#444", letterSpacing: 1 }}>Payments processed securely by Razorpay · UPI & cards</div>
+            <div style={{ marginTop: 10, fontSize: 9, color: "#444", letterSpacing: 1 }}>Subscriptions billed securely by Google Play</div>
           </div>
         </div>
 

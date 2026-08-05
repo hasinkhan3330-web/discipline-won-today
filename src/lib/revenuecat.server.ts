@@ -4,7 +4,7 @@
  * from RevenueCat's REST API with the secret key before unlocking PRO.
  */
 
-export const ENTITLEMENT_ID = "pro";
+export const ENTITLEMENT_ID = "premium";
 
 export type VerifiedEntitlement = {
   active: boolean;

@@ -76,7 +76,7 @@ function Landing() {
             <Link to="/terms" style={{ color: "#888", textDecoration: "none" }}>TERMS</Link>
             <Link to="/refund" style={{ color: "#888", textDecoration: "none" }}>REFUND</Link>
           </div>
-          <div style={{ marginTop: 12, fontSize: 9, color: "#444" }}>Payments processed securely by Razorpay · UPI & cards</div>
+          <div style={{ marginTop: 12, fontSize: 9, color: "#444" }}>Subscriptions billed securely by Google Play</div>
         </footer>
       </div>
     </div>

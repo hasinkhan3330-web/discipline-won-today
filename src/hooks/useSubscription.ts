@@ -24,7 +24,7 @@ export function useSubscription(userId: string | null) {
   const load = useCallback(async () => {
     if (!userId) { setSub(null); setLoading(false); return; }
     setLoading(true);
-    // Razorpay (web) and Google Play rows both live here — prefer any active one.
+    // Google Play entitlement rows live here — prefer any active one.
     const { data } = await supabase
       .from("subscriptions")
       .select("status, price_id, current_period_end, cancel_at_period_end, short_url")
