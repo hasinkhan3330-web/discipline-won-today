@@ -75,7 +75,7 @@ function Pricing() {
             <Link to="/refund" style={{ color: "#888", textDecoration: "none" }}>REFUND</Link>
           </div>
           <div style={{ marginTop: 16, fontSize: 10, color: "#444" }}>
-            Payments processed securely by Razorpay · UPI, cards, netbanking & wallets
+            Subscriptions are sold and billed securely through Google Play Billing
           </div>
         </footer>
       </div>

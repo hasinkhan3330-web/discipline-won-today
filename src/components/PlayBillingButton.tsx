@@ -8,7 +8,7 @@ const G = "#00d4ff";
 
 /**
  * Official Google Play Billing checkout (via RevenueCat) + Restore Purchase.
- * Rendered only inside the Android app; the web build keeps Razorpay.
+ * Rendered only inside the Android app (Google Play Billing is the only payment path).
  */
 export function PlayBillingButton({
   userId,

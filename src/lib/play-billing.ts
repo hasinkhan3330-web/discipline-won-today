@@ -1,16 +1,33 @@
 /**
  * Google Play Billing via the RevenueCat Capacitor plugin.
  *
- * Everything here is browser-safe: the native plugin is imported dynamically
- * and only when the app actually runs inside the Capacitor Android shell.
- * On the web the helpers report "not available" and the existing Razorpay
- * checkout keeps working unchanged.
+ * This is the ONLY payment path in the app. Everything here is browser-safe:
+ * the native plugin is imported dynamically and only when the app actually
+ * runs inside the Capacitor Android shell.
  */
 
 import type { Cycle } from "@/lib/pricing";
 
+/* ------------------------------------------------------------------ */
+/*  ▼▼▼  FILL THESE TWO THINGS IN  ▼▼▼                                 */
+/* ------------------------------------------------------------------ */
+
+/** 1. RevenueCat Android PUBLIC SDK key (starts with `goog_...`).
+ *     RevenueCat dashboard → Project → API keys → Android (public).
+ *     Either paste it here, or set VITE_REVENUECAT_ANDROID_API_KEY. */
+export const REVENUECAT_ANDROID_PUBLIC_KEY = "";
+
+/** 2. Play Console subscription product IDs (Monetize → Subscriptions).
+ *     These must match the products attached to your RevenueCat offering. */
+export const PLAY_PRODUCT_ID: Record<Cycle, string> = {
+  monthly: "dwt_premium_monthly",
+  yearly: "dwt_premium_yearly",
+};
+
+/* ------------------------------------------------------------------ */
+
 /** RevenueCat entitlement identifier configured in the RevenueCat dashboard. */
-export const ENTITLEMENT_ID = "pro";
+export const ENTITLEMENT_ID = "premium";
 
 /** Package identifiers inside the RevenueCat "default" offering. */
 export const PACKAGE_ID: Record<Cycle, string[]> = {
@@ -18,7 +35,10 @@ export const PACKAGE_ID: Record<Cycle, string[]> = {
   yearly: ["$rc_annual", "annual", "yearly"],
 };
 
-const ANDROID_API_KEY = import.meta.env['VITE_REVENUECAT_ANDROID_API_KEY'] as string | undefined;
+const ANDROID_API_KEY =
+  (import.meta.env['VITE_REVENUECAT_ANDROID_API_KEY'] as string | undefined) ||
+  REVENUECAT_ANDROID_PUBLIC_KEY ||
+  undefined;
 
 let initialised: string | null = null;
 
@@ -66,7 +86,9 @@ export async function purchaseCycle(appUserId: string, cycle: Cycle): Promise<{ 
   if (!offering) throw new Error("No Play products available. Check your RevenueCat offering.");
 
   const wanted = PACKAGE_ID[cycle];
+  const productId = PLAY_PRODUCT_ID[cycle];
   const pkg =
+    offering.availablePackages.find(p => p.product.identifier.startsWith(productId)) ??
     offering.availablePackages.find(p => wanted.includes(p.identifier)) ??
     offering.availablePackages.find(p =>
       cycle === "yearly"
@@ -87,8 +109,16 @@ export async function restorePlayPurchases(appUserId: string): Promise<{ active:
   return { active: hasEntitlement(customerInfo) };
 }
 
-/** True when the user is already cancelling/purchase-cancelled the Play sheet. */
+/** True when the user cancelled/dismissed the Play purchase sheet. */
 export function isUserCancelled(error: unknown): boolean {
   const e = error as { code?: string | number; message?: string } | undefined;
   return e?.code === "1" || e?.code === 1 || /cancel/i.test(e?.message ?? "");
+}
+
+/** Deep link to the Play Store subscription management screen. */
+export function playManageUrl(productId?: string | null): string {
+  const pkg = "app.lovable.disciplinewontoday";
+  return productId
+    ? `https://play.google.com/store/account/subscriptions?sku=${encodeURIComponent(productId)}&package=${pkg}`
+    : `https://play.google.com/store/account/subscriptions?package=${pkg}`;
 }
