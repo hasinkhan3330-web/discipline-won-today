@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { RazorpayPayButton } from "@/components/RazorpayPayButton";
 import { PlayBillingButton } from "@/components/PlayBillingButton";
 import { isNativeBillingAvailable } from "@/lib/play-billing";
 import { PRICING, type Cycle } from "@/lib/pricing";
@@ -18,7 +16,7 @@ const PERKS = [
   "3 days free — cancel anytime",
 ];
 
-export function Paywall({ userId, email }: { userId: string; email?: string | null }) {
+export function Paywall({ userId }: { userId: string; email?: string | null }) {
   const [cycle, setCycle] = useState<Cycle>("yearly");
   const [native, setNative] = useState(false);
 
@@ -26,13 +24,11 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
     isNativeBillingAvailable().then(setNative).catch(() => setNative(false));
   }, []);
 
-  const plan = PRICING[cycle];
   const signOut = async () => { await supabase.auth.signOut(); };
 
 
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
-      <PaymentTestModeBanner />
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "40px 20px 60px" }}>
         <div style={{ textAlign: "center" }}>
           <h1 style={{ fontSize: 32, fontWeight: 900, letterSpacing: 6, color: "#fff", textShadow: `0 0 20px ${G}` }}>DWT PRO</h1>
@@ -40,7 +36,7 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
           <p style={{ marginTop: 14, fontSize: 12, color: "#aaa", letterSpacing: 1 }}>
             Start with <span style={{ color: G, fontWeight: 900 }}>3 DAYS FREE</span>. Cancel anytime before you're charged.
           </p>
-          <p style={{ marginTop: 6, fontSize: 9, color: "#666", letterSpacing: 2 }}>◈ UPI · CARDS · NETBANKING · WALLETS</p>
+          <p style={{ marginTop: 6, fontSize: 9, color: "#666", letterSpacing: 2 }}>◈ SECURED BY GOOGLE PLAY BILLING</p>
         </div>
 
         <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -79,15 +75,25 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
           ))}
         </ul>
 
-        {native
-          ? <PlayBillingButton userId={userId} cycle={cycle} />
-          : <RazorpayPayButton priceKey={plan.priceKey} email={email} />}
+        {native ? (
+          <PlayBillingButton userId={userId} cycle={cycle} />
+        ) : (
+          <div
+            style={{
+              marginTop: 20, width: "100%", padding: "16px 20px", textAlign: "center",
+              background: "#181818", color: "#888", fontWeight: 900, letterSpacing: 3,
+              fontSize: 12, borderRadius: 2, border: `1px solid ${G}33`,
+            }}
+          >
+            AVAILABLE IN THE ANDROID APP
+          </div>
+        )}
 
 
         <p style={{ marginTop: 12, fontSize: 10, color: "#666", letterSpacing: 1, textAlign: "center" }}>
           {native
             ? "Billed securely through Google Play. Manage or cancel anytime in Play Store → Subscriptions."
-            : "Secure checkout by Razorpay. UPI, cards, netbanking and wallets supported."}
+            : "Subscriptions are sold only through Google Play. Install DWT from the Play Store to subscribe."}
         </p>
 
 
@@ -126,7 +132,6 @@ export function PaywallGate({ children }: { children: React.ReactNode }) {
   const [sub, setSub] = useState<{ status: string; current_period_end: string | null } | null>(null);
 
   const refresh = async (uid: string) => {
-    // Any provider (Razorpay web OR Google Play) may hold the active entitlement.
     const { data } = await supabase
       .from("subscriptions")
       .select("status, current_period_end")
