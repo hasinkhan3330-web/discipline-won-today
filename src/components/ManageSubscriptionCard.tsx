@@ -1,20 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { cancelSubscription, switchSubscriptionPlan } from "@/utils/payments.functions";
 import { useSubscription } from "@/hooks/useSubscription";
-import { PRICING, planLabelFor } from "@/lib/pricing";
+import { planLabelFor } from "@/lib/pricing";
+import {
+  isNativeBillingAvailable,
+  playManageUrl,
+  restorePlayPurchases,
+  PLAY_PRODUCT_ID,
+} from "@/lib/play-billing";
+import { syncPlayEntitlement } from "@/utils/play-billing.functions";
 
 export function ManageSubscriptionCard() {
   const G = "#00d4ff";
   const R = "#ff4d4d";
-  const [busy, setBusy] = useState(false);
-  const [switching, setSwitching] = useState(false);
+  const [restoring, setRestoring] = useState(false);
+  const [native, setNative] = useState(false);
   const [uid, setUid] = useState<string | null>(null);
   const mounted = useRef(true);
   useEffect(() => {
     mounted.current = true;
     return () => { mounted.current = false; };
+  }, []);
+
+  useEffect(() => {
+    isNativeBillingAvailable().then(v => { if (mounted.current) setNative(v); }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -28,8 +38,7 @@ export function ManageSubscriptionCard() {
   const { sub, reload } = useSubscription(uid);
 
   const isYearly = !!sub?.price_id?.includes("yearly");
-  const targetPriceKey = isYearly ? PRICING.monthly.priceKey : PRICING.yearly.priceKey;
-  const targetLabel = isYearly ? "SWITCH TO MONTHLY (₹49/mo)" : "UPGRADE TO YEARLY (₹999/yr · SAVE 30%)";
+  const manageUrl = playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly);
 
   const endDate = sub?.current_period_end ? new Date(sub.current_period_end) : null;
   const endStr = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
@@ -37,43 +46,28 @@ export function ManageSubscriptionCard() {
   const isCanceled = sub?.status === "canceled" || sub?.cancel_at_period_end;
   const isPastDue = sub?.status === "past_due";
 
-  const doCancel = async () => {
-    if (!confirm(`Cancel DWT PRO?\n\nYou keep full access until ${endStr ?? "the end of your current cycle"}. No further charges after that.`)) return;
-    setBusy(true);
+  const doRestore = async () => {
+    if (!uid) return;
+    setRestoring(true);
     try {
-      const res = await cancelSubscription({ data: { immediate: false } });
+      if (native) await restorePlayPurchases(uid);
+      const res = await syncPlayEntitlement({ data: {} } as never);
       if ("error" in res) throw new Error(res.error);
-      toast.success("Subscription canceled", { description: endStr ? `Access continues until ${endStr}.` : "Access continues until your cycle ends." });
+      if (res.active) toast.success("Purchase restored", { description: "DWT PRO is unlocked." });
+      else toast.message("No active purchase found", { description: "Sign in with the Google account used for the purchase." });
+      window.dispatchEvent(new Event("subscription:refresh"));
       setTimeout(() => { if (mounted.current) reload(); }, 1200);
     } catch (e) {
-      toast.error("Couldn't cancel", { description: e instanceof Error ? e.message : "Try again in a moment." });
+      toast.error("Restore failed", { description: e instanceof Error ? e.message : "Try again in a moment." });
     } finally {
-      if (mounted.current) setBusy(false);
-    }
-  };
-
-  const doSwitch = async () => {
-    if (!confirm(isYearly
-      ? "Switch to monthly billing? Your yearly plan runs to the end of its cycle, then monthly billing starts — you are never double-charged."
-      : "Upgrade to yearly billing? Your monthly plan runs to the end of its cycle, then yearly billing starts — you are never double-charged."
-    )) return;
-    setSwitching(true);
-    try {
-      const res = await switchSubscriptionPlan({ data: { targetPriceKey } });
-      if ("error" in res) throw new Error(res.error);
-      toast.success(isYearly ? "Switching to monthly" : "Upgrading to yearly", { description: endStr ? `Takes effect on ${endStr}.` : "Takes effect at the end of your cycle." });
-      setTimeout(() => { if (mounted.current) reload(); }, 1500);
-    } catch (e) {
-      toast.error("Plan switch failed", { description: e instanceof Error ? e.message : "Try again in a moment." });
-    } finally {
-      if (mounted.current) setSwitching(false);
+      if (mounted.current) setRestoring(false);
     }
   };
 
   const planLabel = planLabelFor(sub?.price_id);
 
   const statusLine = isPastDue
-    ? { color: R, text: "⚠ PAYMENT FAILED — Razorpay is retrying your mandate." }
+    ? { color: R, text: "⚠ PAYMENT FAILED — Google Play is retrying your payment." }
     : isCanceled && endStr
       ? { color: "#ffb84d", text: `◌ CANCELED — access ends ${endStr}` }
       : isTrial && endStr
@@ -93,51 +87,33 @@ export function ManageSubscriptionCard() {
         {statusLine.text}
       </div>
       <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
-        Billed by Razorpay. Invoices and payment receipts are emailed to you after every charge.
+        Billed by Google Play. Upgrade, downgrade or cancel anytime in Play Store → Subscriptions.
       </div>
 
-      {sub?.short_url && (
-        <a
-          href={sub.short_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: "block", marginTop: 12, padding: "12px 16px", textAlign: "center",
-            background: `linear-gradient(135deg, ${isPastDue ? R : G}33, transparent)`,
-            border: `1px solid ${isPastDue ? R : G}`, color: isPastDue ? R : G,
-            fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
-            textDecoration: "none", borderRadius: 2, boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
-          }}
-        >{isPastDue ? "⚠ UPDATE PAYMENT METHOD →" : "⚙ VIEW BILLING PAGE →"}</a>
-      )}
+      <a
+        href={manageUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: "block", marginTop: 12, padding: "12px 16px", textAlign: "center",
+          background: `linear-gradient(135deg, ${isPastDue ? R : G}33, transparent)`,
+          border: `1px solid ${isPastDue ? R : G}`, color: isPastDue ? R : G,
+          fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
+          textDecoration: "none", borderRadius: 2, boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
+        }}
+      >{isPastDue ? "⚠ FIX PAYMENT IN GOOGLE PLAY →" : "⚙ MANAGE IN GOOGLE PLAY →"}</a>
 
-      {sub && !isCanceled && (
-        <button
-          onClick={doSwitch}
-          disabled={switching}
-          style={{
-            marginTop: 8, width: "100%", padding: "10px 16px",
-            background: "transparent",
-            border: `1px dashed ${G}77`, color: G,
-            fontFamily: "monospace", fontSize: 10, fontWeight: 900, letterSpacing: 2.5,
-            cursor: switching ? "wait" : "pointer", borderRadius: 2,
-          }}
-        >{switching ? "◌ SWITCHING…" : targetLabel}</button>
-      )}
-
-      {sub && !isCanceled && (
-        <button
-          onClick={doCancel}
-          disabled={busy}
-          style={{
-            marginTop: 8, width: "100%", padding: "10px 16px",
-            background: "transparent",
-            border: `1px solid ${R}55`, color: R,
-            fontFamily: "monospace", fontSize: 10, fontWeight: 900, letterSpacing: 2.5,
-            cursor: busy ? "wait" : "pointer", borderRadius: 2,
-          }}
-        >{busy ? "◌ CANCELING…" : "CANCEL SUBSCRIPTION"}</button>
-      )}
+      <button
+        onClick={doRestore}
+        disabled={restoring || !uid}
+        style={{
+          marginTop: 8, width: "100%", padding: "10px 16px",
+          background: "transparent",
+          border: `1px dashed ${G}77`, color: G,
+          fontFamily: "monospace", fontSize: 10, fontWeight: 900, letterSpacing: 2.5,
+          cursor: restoring ? "wait" : "pointer", borderRadius: 2,
+        }}
+      >{restoring ? "◌ RESTORING…" : "RESTORE PURCHASES"}</button>
     </div>
   );
 }
