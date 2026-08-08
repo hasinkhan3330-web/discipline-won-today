@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PlayBillingButton } from "@/components/PlayBillingButton";
+import { RazorpayPayButton } from "@/components/RazorpayPayButton";
+
 import { isNativeBillingAvailable } from "@/lib/play-billing";
 import { PRICING, type Cycle } from "@/lib/pricing";
 
