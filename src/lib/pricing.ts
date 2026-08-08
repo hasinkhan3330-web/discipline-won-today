@@ -18,6 +18,13 @@ export const PRICING: Record<Cycle, { priceKey: string; display: string; sub: st
 
 export const TRIAL_DAYS = 3;
 
+/** Razorpay charges in paise (INR). */
+export const AMOUNT_PAISE: Record<Cycle, number> = {
+  monthly: 9900,
+  yearly: 99900,
+};
+
+
 export function planLabelFor(priceId?: string | null): string {
   if (!priceId) return "DWT PRO";
   return priceId.includes("yearly") ? "DWT PRO · YEARLY" : "DWT PRO · MONTHLY";
