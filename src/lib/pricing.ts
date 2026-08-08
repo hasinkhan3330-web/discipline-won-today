@@ -5,14 +5,14 @@ export type Cycle = "monthly" | "yearly";
 export const PRICING: Record<Cycle, { priceKey: string; display: string; sub: string; save?: string }> = {
   monthly: {
     priceKey: "dwt_pro_monthly_play",
-    display: "₹49 / month",
-    sub: "Billed monthly by Google Play after your free trial",
+    display: "₹99 / month",
+    sub: "Billed ₹99 monthly by Google Play after your free trial",
   },
   yearly: {
     priceKey: "dwt_pro_yearly_play",
     display: "₹999 / year",
-    sub: "Billed yearly by Google Play after your free trial",
-    save: "SAVE 30%",
+    sub: "Billed ₹999 yearly by Google Play after your free trial",
+    save: "SAVE 16%",
   },
 };
 
