@@ -233,8 +233,9 @@ export function ProfileTab({
         </div>
       )}
 
-      <div style={CARD}>
-        <div style={TITLE}><span style={{ color: G }}>▸</span> THEME <span style={{ color: G }}>SELECTOR</span></div>
+      {tab === "themes" && (
+      <Accordion G={G} title={<span>THEME SELECTOR</span>} defaultOpen>
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           {(Object.keys(THEMES) as ThemeKey[]).map(k => {
             const t = THEMES[k];
