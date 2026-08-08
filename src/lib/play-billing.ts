@@ -15,7 +15,7 @@ import type { Cycle } from "@/lib/pricing";
 /** 1. RevenueCat Android PUBLIC SDK key (starts with `goog_...`).
  *     RevenueCat dashboard → Project → API keys → Android (public).
  *     Either paste it here, or set VITE_REVENUECAT_ANDROID_API_KEY. */
-export const REVENUECAT_ANDROID_PUBLIC_KEY = "";
+export const REVENUECAT_ANDROID_PUBLIC_KEY = "test_xnCGAoUukcDaVpDzpJEpBxtDghu";
 
 /** 2. Play Console subscription product IDs (Monetize → Subscriptions).
  *     These must match the products attached to your RevenueCat offering. */
