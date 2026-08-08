@@ -301,8 +301,9 @@ export function DeepFocus({ G, G2, onComplete }: {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 10, letterSpacing: 1.5, color: i === trackIdx ? "#fff" : "#999" }}>{t.name}</div>
                       <div style={{ fontSize: 8, color: missing[t.id] ? "#ff5566" : "#666", letterSpacing: 1, marginTop: 2 }}>
-                        {missing[t.id] ? `ADD public/audio/track${t.id}.mp3` : t.tag}
+                        {missing[t.id] ? "TRACK UNAVAILABLE" : t.tag}
                       </div>
+
                     </div>
                     {i === trackIdx && <span style={{ fontSize: 10, color: G }}>◉</span>}
                   </div>
