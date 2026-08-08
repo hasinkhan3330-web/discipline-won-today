@@ -641,7 +641,7 @@ function App() {
           )}
 
           <>
-            {tab === "home" && <HomeTab G={G} G2={G2} coins={coins} streak={streak} tasks={tasks} tick={tick} />}
+            {tab === "home" && <HomeTab G={G} G2={G2} coins={coins} streak={streak} tasks={tasks} tick={tick} onFocusComplete={onFocusComplete} />}
             {tab === "rank" && (
               <BlurLock G={G} G2={G2} active={premiumLocked} note="Leaderboard is hidden after your free 3 days. Subscribe to see who is ranked where." onUnlock={() => setShowPaywall(true)}>
                 <RankTab G={G} board={board} fallbackAvatar={fallbackAvatar} />
