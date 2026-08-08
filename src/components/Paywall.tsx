@@ -78,23 +78,16 @@ export function Paywall({ userId }: { userId: string; email?: string | null }) {
         {native ? (
           <PlayBillingButton userId={userId} cycle={cycle} />
         ) : (
-          <div
-            style={{
-              marginTop: 20, width: "100%", padding: "16px 20px", textAlign: "center",
-              background: "#181818", color: "#888", fontWeight: 900, letterSpacing: 3,
-              fontSize: 12, borderRadius: 2, border: `1px solid ${G}33`,
-            }}
-          >
-            AVAILABLE IN THE ANDROID APP
-          </div>
+          <RazorpayPayButton cycle={cycle} email={email} />
         )}
 
 
         <p style={{ marginTop: 12, fontSize: 10, color: "#666", letterSpacing: 1, textAlign: "center" }}>
           {native
             ? "Billed securely through Google Play. Manage or cancel anytime in Play Store → Subscriptions."
-            : "Subscriptions are sold only through Google Play. Install DWT from the Play Store to subscribe."}
+            : "Billed securely through Razorpay (UPI, cards, netbanking). Inside the Android app, Google Play Billing is used."}
         </p>
+
 
 
         <button onClick={signOut} style={{ marginTop: 20, width: "100%", background: "transparent", border: "none", color: "#666", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, cursor: "pointer" }}>
