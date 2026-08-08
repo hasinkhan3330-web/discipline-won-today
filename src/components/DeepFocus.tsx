@@ -16,13 +16,22 @@ const APP_GROUPS: { group: string; icon: string; apps: string[] }[] = [
   { group: "VIDEO STREAMING", icon: "📺", apps: ["YouTube", "Netflix", "Prime Video", "Hotstar"] },
 ];
 
+import gamma40 from "@/assets/audio/gamma40.mp3.asset.json";
+import alpha8d from "@/assets/audio/alpha8d.mp3.asset.json";
+import solfeggio528 from "@/assets/audio/solfeggio528.mp3.asset.json";
+import zen432 from "@/assets/audio/zen432.mp3.asset.json";
+import focusMatrix from "@/assets/audio/focusmatrix.mp3.asset.json";
+import battleWave from "@/assets/audio/battlewave.mp3.asset.json";
+
 const TRACKS = [
-  { id: 1, name: "FOCUS FREQUENCY 1", tag: "40Hz GAMMA", src: "/audio/track1.mp3" },
-  { id: 2, name: "BINAURAL BEATS", tag: "THETA FLOW", src: "/audio/track2.mp3" },
-  { id: 3, name: "DEEP SOLFEGGIO", tag: "528Hz AMBIENT", src: "/audio/track3.mp3" },
-  { id: 4, name: "SPACE / ATMOSPHERIC", tag: "COSMIC DRIFT", src: "/audio/track4.mp3" },
-  { id: 5, name: "NOISE CANCELLATION", tag: "RAIN LAYER", src: "/audio/track5.mp3" },
+  { id: 1, name: "40Hz GAMMA + BROWN NOISE", tag: "10:00 · PURE BINAURAL", src: gamma40.url },
+  { id: 2, name: "BINAURAL ALPHA WAVES 8D", tag: "09:50 · ALPHA FLOW", src: alpha8d.url },
+  { id: 3, name: "528Hz HEALING + NATURE", tag: "07:16 · SOLFEGGIO", src: solfeggio528.url },
+  { id: 4, name: "432Hz ZEN STRESS RELIEF", tag: "08:27 · DEEP CALM", src: zen432.url },
+  { id: 5, name: "FOCUS MATRIX DEEP HOUSE", tag: "05:32 · STUDY DRIVE", src: focusMatrix.url },
+  { id: 6, name: "BATTLE WAVE", tag: "01:52 · WAR MODE", src: battleWave.url },
 ];
+
 
 const LS_KEY = "dwt_focus_session";
 
