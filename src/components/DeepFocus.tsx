@@ -123,34 +123,32 @@ export function DeepFocus({ G, G2, onComplete }: {
   /* ---------------- IDLE: tier picker ---------------- */
   if (phase === "idle") {
     return (
-      <div style={CARD}>
-        <div style={titleStyle}><span style={{ color: G }}>▸</span> DEEP <span style={{ color: G }}>FOCUS SYSTEM</span></div>
-        <div style={{ fontSize: 10, color: "#888", letterSpacing: 1.4, lineHeight: 1.6, marginBottom: 12 }}>
-          LOCK YOUR APPS. LOCK YOUR MIND. UNLIMITED SESSIONS PER DAY — STACK THEM BACK-TO-BACK AND CLIMB THE LEADERBOARD.
+      <div style={{ ...CARD, padding: 12, marginBottom: 8 }}>
+        <div style={{ ...titleStyle, marginBottom: 6 }}><span style={{ color: G }}>▸</span> DEEP <span style={{ color: G }}>FOCUS SYSTEM</span></div>
+        <div style={{ fontSize: 8.5, color: "#888", letterSpacing: 1.2, lineHeight: 1.5, marginBottom: 10 }}>
+          LOCK YOUR APPS. STACK UNLIMITED SESSIONS. CLIMB THE LEADERBOARD.
         </div>
-        {FOCUS_TIERS.map(t => (
-          <button key={t.id} onClick={() => { setTier(t); setPhase("setup"); }} style={{
-            width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 12,
-            padding: "13px 12px", marginBottom: 8, cursor: "pointer",
-            background: `linear-gradient(90deg, ${G}14, transparent)`,
-            border: `1px solid ${G}33`, borderLeft: `3px solid ${G}`, color: "#e8e8e8", fontFamily: "monospace",
-          }}>
-            <div style={{ width: 44, height: 44, border: `1px solid ${G}55`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)" }}>
-              <div style={{ fontSize: 15, fontWeight: 900, color: G, textShadow: `0 0 10px ${G}88` }}>{t.minutes >= 60 ? Math.floor(t.minutes / 60) : t.minutes}</div>
-              <div style={{ fontSize: 7, color: "#777", letterSpacing: 1 }}>{t.minutes >= 60 ? "HRS" : "MIN"}</div>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2 }}>{t.label}</div>
-              <div style={{ fontSize: 9, color: "#777", letterSpacing: 2, marginTop: 3 }}>{t.sub}</div>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: G }}>+{t.reward}</div>
-              <div style={{ fontSize: 8, color: "#666", letterSpacing: 1 }}>COINS · PTS</div>
-            </div>
-          </button>
-        ))}
-        {penalty > 0 && <div style={{ fontSize: 9, color: "#ff5566", letterSpacing: 2, marginTop: 4 }}>◉ LAST SESSION ABANDONED · -{penalty} PTS PENALTY</div>}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
+          {FOCUS_TIERS.map(t => (
+            <button key={t.id} onClick={() => { setTier(t); setPhase("setup"); }} style={{
+              padding: "10px 6px", cursor: "pointer", textAlign: "center", borderRadius: 2,
+              background: `linear-gradient(160deg, ${G}18, transparent)`,
+              border: `1px solid ${G}33`, borderTop: `2px solid ${G}`, color: "#e8e8e8", fontFamily: "monospace",
+            }}>
+              <div style={{ fontSize: 18, fontWeight: 900, color: G, textShadow: `0 0 12px ${G}88`, lineHeight: 1 }}>
+                {t.minutes >= 60 ? Math.floor(t.minutes / 60) : t.minutes}
+                <span style={{ fontSize: 8, color: "#777", marginLeft: 2 }}>{t.minutes >= 60 ? "H" : "M"}</span>
+              </div>
+              <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1, marginTop: 4 }}>{t.label}</div>
+              <div style={{ fontSize: 7.5, color: "#777", letterSpacing: 1.2, marginTop: 2 }}>{t.sub}</div>
+              <div style={{ fontSize: 10, fontWeight: 900, color: G, marginTop: 5 }}>+{t.reward}</div>
+              <div style={{ fontSize: 7, color: "#666", letterSpacing: 1 }}>COINS · PTS</div>
+            </button>
+          ))}
+        </div>
+        {penalty > 0 && <div style={{ fontSize: 8.5, color: "#ff5566", letterSpacing: 1.5, marginTop: 6 }}>◉ LAST SESSION ABANDONED · -{penalty} PTS</div>}
       </div>
+
     );
   }
 
@@ -251,7 +249,7 @@ export function DeepFocus({ G, G2, onComplete }: {
   if (phase === "active" && tier) {
     const total = tier.minutes * 60;
     const pct = total ? (total - left) / total : 0;
-    const R = 92, C = 2 * Math.PI * R;
+    const R = 74, C = 2 * Math.PI * R;
     const track = TRACKS[trackIdx]!;
     return (
       <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "radial-gradient(circle at 50% 35%, #0a0a1e 0%, #03030a 70%)", overflowY: "auto", padding: "24px 16px", fontFamily: "monospace" }}>
@@ -261,14 +259,14 @@ export function DeepFocus({ G, G2, onComplete }: {
           </div>
           <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginTop: 6 }}>{blocked.length} APPS BLOCKED · {tier.sub}</div>
 
-          <div style={{ position: "relative", width: 220, height: 220, margin: "24px auto" }}>
-            <svg width="220" height="220" style={{ transform: "rotate(-90deg)" }}>
-              <circle cx="110" cy="110" r={R} fill="none" stroke="#15152a" strokeWidth="8" />
-              <circle cx="110" cy="110" r={R} fill="none" stroke={G} strokeWidth="8" strokeLinecap="round"
+          <div style={{ position: "relative", width: 180, height: 180, margin: "16px auto" }}>
+            <svg width="180" height="180" style={{ transform: "rotate(-90deg)" }}>
+              <circle cx="90" cy="90" r={R} fill="none" stroke="#15152a" strokeWidth="8" />
+              <circle cx="90" cy="90" r={R} fill="none" stroke={G} strokeWidth="8" strokeLinecap="round"
                 strokeDasharray={C} strokeDashoffset={C * (1 - pct)} style={{ filter: `drop-shadow(0 0 10px ${G})`, transition: "stroke-dashoffset .3s linear" }} />
             </svg>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ fontSize: 30, fontWeight: 900, color: "#fff", textShadow: `0 0 18px ${G}`, letterSpacing: 2 }}>{fmt(left)}</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", textShadow: `0 0 18px ${G}`, letterSpacing: 2 }}>{fmt(left)}</div>
               <div style={{ fontSize: 9, color: "#777", letterSpacing: 3, marginTop: 6 }}>{Math.round(pct * 100)}% COMPLETE</div>
             </div>
           </div>
@@ -291,7 +289,7 @@ export function DeepFocus({ G, G2, onComplete }: {
               <span style={{ fontSize: 10, color: G }}>{showAudio ? "▾" : "▸"}</span>
             </button>
             {showAudio && (
-              <div style={{ padding: "0 12px 12px" }}>
+              <div style={{ padding: "0 12px 12px", maxHeight: 190, overflowY: "auto" }}>
                 {TRACKS.map((t, i) => (
                   <div key={t.id} onClick={() => setTrackIdx(i)} style={{
                     display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", marginBottom: 4, cursor: "pointer",

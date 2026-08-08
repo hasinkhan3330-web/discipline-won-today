@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { cardStyle, titleStyle } from "./styles";
 import { THEMES, type ThemeKey } from "@/constants/themes";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
 import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
+import { SubTabs, Accordion, Rail } from "@/components/Collapse";
 
 type BoardEntry = { n: string; c: number; s: number; img: string; you?: boolean };
 
@@ -44,6 +46,8 @@ export function ProfileTab({
 }) {
   const CARD = cardStyle(G);
   const TITLE = titleStyle;
+  const [tab, setTab] = useState("rank");
+
 
   const dayPct = todayTotal ? Math.round((todayDone / todayTotal) * 100) : 0;
   const zone = dayPct >= 100 ? "#00ff88" : dayPct >= 50 ? "#ffcc33" : "#ff3b5c";
@@ -61,13 +65,13 @@ export function ProfileTab({
 
   return (
     <>
-      <div style={{ ...CARD, display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ position: "relative", width: 76, height: 76, flexShrink: 0 }}>
+      <div style={{ ...CARD, padding: 12, marginBottom: 8, display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}>
           <img
             src={myAvatar || fallbackAvatar(myName)}
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(myName); }}
             alt="me"
-            style={{ width: 76, height: 76, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}`, boxShadow: `0 0 18px ${G}88` }}
+            style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}`, boxShadow: `0 0 18px ${G}88` }}
           />
           <div style={{ position: "absolute", bottom: -2, right: -2, width: 24, height: 24, borderRadius: "50%", background: G, color: "#000", fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 10px ${G}` }}>◉</div>
         </div>
@@ -96,7 +100,7 @@ export function ProfileTab({
       </div>
 
       {/* DAILY POWER COLUMN */}
-      <div style={{ ...CARD, borderLeft: `2px solid ${zone}`, position: "relative", overflow: "hidden" }}>
+      <div style={{ ...CARD, padding: 12, marginBottom: 8, borderLeft: `2px solid ${zone}`, position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 90% 0%, ${zone}22, transparent 60%)`, pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 2 }}>
           <div style={{ ...TITLE, marginBottom: 10 }}>
@@ -105,7 +109,7 @@ export function ProfileTab({
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             {/* vertical glow column */}
             <div style={{
-              width: 34, height: 132, borderRadius: 4, background: "#07070f",
+              width: 28, height: 104, borderRadius: 4, background: "#07070f",
               border: `1px solid ${zone}55`, position: "relative", overflow: "hidden",
               boxShadow: `0 0 16px ${zone}44 inset`,
             }}>
@@ -153,7 +157,15 @@ export function ProfileTab({
 
 
 
-      <div style={{ ...CARD, position: "relative", overflow: "hidden", padding: 18 }}>
+      <SubTabs G={G} active={tab} onChange={setTab} tabs={[
+        { id: "rank", label: "RANK" },
+        { id: "themes", label: "THEMES" },
+        { id: "plan", label: "PLAN" },
+      ]} />
+
+      {tab === "rank" && (
+      <div style={{ ...CARD, position: "relative", overflow: "hidden", padding: 14 }}>
+
         <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 15% 10%, ${G}22, transparent 60%)`, pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 2 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
@@ -196,11 +208,18 @@ export function ProfileTab({
           </div>
         </div>
       </div>
+      )}
 
-      <ManageSubscriptionCard />
-      <SubscriptionTimeline />
 
-      {top && (
+      {tab === "plan" && (
+        <>
+          <ManageSubscriptionCard />
+          <SubscriptionTimeline />
+        </>
+      )}
+
+      {tab === "rank" && top && (
+
         <div style={{ ...CARD, textAlign: "center", padding: 22, position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 260, height: 260, borderRadius: "50%", background: `radial-gradient(circle, ${G}44, transparent 70%)` }} />
           <div style={{ position: "relative", zIndex: 2 }}>
@@ -231,8 +250,9 @@ export function ProfileTab({
         </div>
       )}
 
-      <div style={CARD}>
-        <div style={TITLE}><span style={{ color: G }}>▸</span> THEME <span style={{ color: G }}>SELECTOR</span></div>
+      {tab === "themes" && (
+      <Accordion G={G} title={<span>THEME SELECTOR</span>} defaultOpen>
+
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
           {(Object.keys(THEMES) as ThemeKey[]).map(k => {
             const t = THEMES[k];
@@ -261,85 +281,62 @@ export function ProfileTab({
           })}
 
         </div>
-      </div>
+      </Accordion>
+      )}
 
-      <div style={CARD}>
-        <div style={TITLE}><span style={{ color: G }}>▸</span> <span style={{ color: G }}>VICTORIES</span></div>
-        {VICTORIES.map((v, i) => {
-          const done = streak >= v.d;
-          const progress = Math.min(100, Math.round((streak / v.d) * 100));
-          return (
-            <div key={i} style={{
-              position: "relative", marginBottom: 18, overflow: "hidden", borderRadius: 4,
-              border: `1px solid ${done ? G + "aa" : "#1a1a2a"}`,
-              borderLeft: `4px solid ${done ? G : "#2a2a3a"}`,
-              background: "#0a0a15",
-              boxShadow: done ? `0 8px 32px ${G}33, 0 0 0 1px ${G}22 inset` : "0 4px 16px rgba(0,0,0,0.5)",
-              backdropFilter: "blur(10px)",
-            }}>
-              <div style={{ position: "relative", height: 420, overflow: "hidden" }}>
-                <img src={v.img} alt={v.label} style={{
-                  width: "100%", height: "100%", objectFit: "cover", objectPosition: "center",
-                  filter: done ? "contrast(1.12) saturate(1.2)" : "grayscale(0.85) brightness(0.45) contrast(1.1)",
-                  transition: "all 0.4s ease",
-                }} />
-                <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(5,5,15,0.15) 0%, rgba(5,5,15,0.55) 55%, rgba(5,5,15,0.98) 100%)` }} />
 
-                <div style={{ position: "absolute", top: 12, left: 12, right: 12, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{
-                    fontSize: 10, fontWeight: 900, letterSpacing: 3, padding: "6px 10px",
-                    background: done ? `${G}dd` : "rgba(0,0,0,0.75)",
-                    color: done ? "#000" : G,
-                    border: `1px solid ${done ? G : G + "44"}`,
-                    borderRadius: 2,
-                    boxShadow: done ? `0 0 20px ${G}88` : "none",
-                  }}>
-                    {done ? "◉ CONQUERED" : "◌ LOCKED"}
-                  </div>
-                  <div style={{
-                    fontSize: 28, fontWeight: 900, color: done ? G : "#4a4a5a",
-                    textShadow: done ? `0 0 20px ${G}` : "none",
-                    letterSpacing: -1, lineHeight: 1,
-                  }}>
-                    {v.d}<span style={{ fontSize: 11, letterSpacing: 2, marginLeft: 3 }}>D</span>
-                  </div>
-                </div>
-
-                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 18px 22px" }}>
-                  <div style={{
-                    fontSize: 11, fontWeight: 900, letterSpacing: 4,
-                    color: done ? G : "#888", marginBottom: 10,
-                    textShadow: done ? `0 0 12px ${G}88` : "none",
-                  }}>
-                    {v.label}
-                  </div>
-                  <div style={{
-                    fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.25,
-                    letterSpacing: -0.3, marginBottom: 14,
-                    textShadow: "0 2px 20px rgba(0,0,0,0.9)",
-                  }}>
-                    "{v.line}"
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <div style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.1)", borderRadius: 2, overflow: "hidden" }}>
-                      <div style={{
-                        width: `${progress}%`, height: "100%",
-                        background: done ? G : `linear-gradient(90deg, ${G}66, ${G})`,
-                        boxShadow: `0 0 8px ${G}`,
-                        transition: "width 0.6s ease",
-                      }} />
+      {tab === "themes" && (
+      <Accordion G={G} title={<span>VICTORIES</span>} defaultOpen>
+        <Rail>
+          {VICTORIES.map((v, i) => {
+            const done = streak >= v.d;
+            const progress = Math.min(100, Math.round((streak / v.d) * 100));
+            return (
+              <div key={i} style={{
+                position: "relative", flex: "0 0 190px", scrollSnapAlign: "start",
+                overflow: "hidden", borderRadius: 4,
+                border: `1px solid ${done ? G + "aa" : "#1a1a2a"}`,
+                borderLeft: `3px solid ${done ? G : "#2a2a3a"}`,
+                background: "#0a0a15",
+                boxShadow: done ? `0 6px 22px ${G}33` : "0 4px 14px rgba(0,0,0,0.5)",
+              }}>
+                <div style={{ position: "relative", height: 200, overflow: "hidden" }}>
+                  <img src={v.img} alt={v.label} loading="lazy" style={{
+                    width: "100%", height: "100%", objectFit: "cover", objectPosition: "center",
+                    filter: done ? "contrast(1.12) saturate(1.2)" : "grayscale(0.85) brightness(0.45)",
+                  }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(5,5,15,0.1) 0%, rgba(5,5,15,0.6) 55%, rgba(5,5,15,0.98) 100%)" }} />
+                  <div style={{ position: "absolute", top: 8, left: 8, right: 8, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div style={{
+                      fontSize: 7.5, fontWeight: 900, letterSpacing: 1.6, padding: "3px 6px", borderRadius: 2,
+                      background: done ? `${G}dd` : "rgba(0,0,0,0.75)", color: done ? "#000" : G,
+                      border: `1px solid ${done ? G : G + "44"}`,
+                    }}>{done ? "◉ CONQUERED" : "◌ LOCKED"}</div>
+                    <div style={{ fontSize: 17, fontWeight: 900, color: done ? G : "#4a4a5a", textShadow: done ? `0 0 14px ${G}` : "none", lineHeight: 1 }}>
+                      {v.d}<span style={{ fontSize: 8, marginLeft: 2 }}>D</span>
                     </div>
-                    <div style={{ fontSize: 10, fontWeight: 900, color: done ? G : "#aaa", letterSpacing: 1, minWidth: 60, textAlign: "right" }}>
-                      {done ? "100%" : `${Math.max(0, v.d - streak)}D LEFT`}
+                  </div>
+                  <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 10px 12px" }}>
+                    <div style={{ fontSize: 7.5, fontWeight: 900, letterSpacing: 2, color: done ? G : "#888", marginBottom: 5 }}>{v.label}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#fff", lineHeight: 1.35, marginBottom: 8, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>"{v.line}"</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <div style={{ flex: 1, height: 3, background: "rgba(255,255,255,0.1)", borderRadius: 2, overflow: "hidden" }}>
+                        <div style={{ width: `${progress}%`, height: "100%", background: done ? G : `linear-gradient(90deg, ${G}66, ${G})`, boxShadow: `0 0 8px ${G}` }} />
+                      </div>
+                      <div style={{ fontSize: 8, fontWeight: 900, color: done ? G : "#aaa", letterSpacing: 0.5 }}>
+                        {done ? "100%" : `${Math.max(0, v.d - streak)}D`}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </Rail>
+        <div style={{ fontSize: 8, color: "#666", letterSpacing: 1.5, marginTop: 6 }}>← SWIPE TO EXPLORE MILESTONES →</div>
+      </Accordion>
+      )}
     </>
   );
 }
+
