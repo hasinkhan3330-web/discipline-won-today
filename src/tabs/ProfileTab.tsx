@@ -206,6 +206,8 @@ export function ProfileTab({
           </div>
         </div>
       </div>
+      )}
+
 
       {tab === "plan" && (
         <>
