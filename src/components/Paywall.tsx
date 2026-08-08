@@ -18,7 +18,7 @@ const PERKS = [
   "3 days free — cancel anytime",
 ];
 
-export function Paywall({ userId }: { userId: string; email?: string | null }) {
+export function Paywall({ userId, email }: { userId: string; email?: string | null }) {
   const [cycle, setCycle] = useState<Cycle>("yearly");
   const [native, setNative] = useState(false);
 
