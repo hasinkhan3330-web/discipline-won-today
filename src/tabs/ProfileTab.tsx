@@ -199,10 +199,15 @@ export function ProfileTab({
         </div>
       </div>
 
-      <ManageSubscriptionCard />
-      <SubscriptionTimeline />
+      {tab === "plan" && (
+        <>
+          <ManageSubscriptionCard />
+          <SubscriptionTimeline />
+        </>
+      )}
 
-      {top && (
+      {tab === "rank" && top && (
+
         <div style={{ ...CARD, textAlign: "center", padding: 22, position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -60, left: "50%", transform: "translateX(-50%)", width: 260, height: 260, borderRadius: "50%", background: `radial-gradient(circle, ${G}44, transparent 70%)` }} />
           <div style={{ position: "relative", zIndex: 2 }}>
