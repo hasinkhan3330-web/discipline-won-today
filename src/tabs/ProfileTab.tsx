@@ -65,13 +65,13 @@ export function ProfileTab({
 
   return (
     <>
-      <div style={{ ...CARD, display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ position: "relative", width: 76, height: 76, flexShrink: 0 }}>
+      <div style={{ ...CARD, padding: 12, marginBottom: 8, display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}>
           <img
             src={myAvatar || fallbackAvatar(myName)}
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(myName); }}
             alt="me"
-            style={{ width: 76, height: 76, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}`, boxShadow: `0 0 18px ${G}88` }}
+            style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover", border: `2px solid ${G}`, boxShadow: `0 0 18px ${G}88` }}
           />
           <div style={{ position: "absolute", bottom: -2, right: -2, width: 24, height: 24, borderRadius: "50%", background: G, color: "#000", fontSize: 13, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: `0 0 10px ${G}` }}>◉</div>
         </div>
@@ -100,7 +100,7 @@ export function ProfileTab({
       </div>
 
       {/* DAILY POWER COLUMN */}
-      <div style={{ ...CARD, borderLeft: `2px solid ${zone}`, position: "relative", overflow: "hidden" }}>
+      <div style={{ ...CARD, padding: 12, marginBottom: 8, borderLeft: `2px solid ${zone}`, position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 90% 0%, ${zone}22, transparent 60%)`, pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 2 }}>
           <div style={{ ...TITLE, marginBottom: 10 }}>
@@ -109,7 +109,7 @@ export function ProfileTab({
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             {/* vertical glow column */}
             <div style={{
-              width: 34, height: 132, borderRadius: 4, background: "#07070f",
+              width: 28, height: 104, borderRadius: 4, background: "#07070f",
               border: `1px solid ${zone}55`, position: "relative", overflow: "hidden",
               boxShadow: `0 0 16px ${zone}44 inset`,
             }}>
