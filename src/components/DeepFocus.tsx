@@ -123,34 +123,32 @@ export function DeepFocus({ G, G2, onComplete }: {
   /* ---------------- IDLE: tier picker ---------------- */
   if (phase === "idle") {
     return (
-      <div style={CARD}>
-        <div style={titleStyle}><span style={{ color: G }}>▸</span> DEEP <span style={{ color: G }}>FOCUS SYSTEM</span></div>
-        <div style={{ fontSize: 10, color: "#888", letterSpacing: 1.4, lineHeight: 1.6, marginBottom: 12 }}>
-          LOCK YOUR APPS. LOCK YOUR MIND. UNLIMITED SESSIONS PER DAY — STACK THEM BACK-TO-BACK AND CLIMB THE LEADERBOARD.
+      <div style={{ ...CARD, padding: 12, marginBottom: 8 }}>
+        <div style={{ ...titleStyle, marginBottom: 6 }}><span style={{ color: G }}>▸</span> DEEP <span style={{ color: G }}>FOCUS SYSTEM</span></div>
+        <div style={{ fontSize: 8.5, color: "#888", letterSpacing: 1.2, lineHeight: 1.5, marginBottom: 10 }}>
+          LOCK YOUR APPS. STACK UNLIMITED SESSIONS. CLIMB THE LEADERBOARD.
         </div>
-        {FOCUS_TIERS.map(t => (
-          <button key={t.id} onClick={() => { setTier(t); setPhase("setup"); }} style={{
-            width: "100%", textAlign: "left", display: "flex", alignItems: "center", gap: 12,
-            padding: "13px 12px", marginBottom: 8, cursor: "pointer",
-            background: `linear-gradient(90deg, ${G}14, transparent)`,
-            border: `1px solid ${G}33`, borderLeft: `3px solid ${G}`, color: "#e8e8e8", fontFamily: "monospace",
-          }}>
-            <div style={{ width: 44, height: 44, border: `1px solid ${G}55`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)" }}>
-              <div style={{ fontSize: 15, fontWeight: 900, color: G, textShadow: `0 0 10px ${G}88` }}>{t.minutes >= 60 ? Math.floor(t.minutes / 60) : t.minutes}</div>
-              <div style={{ fontSize: 7, color: "#777", letterSpacing: 1 }}>{t.minutes >= 60 ? "HRS" : "MIN"}</div>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, letterSpacing: 2 }}>{t.label}</div>
-              <div style={{ fontSize: 9, color: "#777", letterSpacing: 2, marginTop: 3 }}>{t.sub}</div>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 12, fontWeight: 800, color: G }}>+{t.reward}</div>
-              <div style={{ fontSize: 8, color: "#666", letterSpacing: 1 }}>COINS · PTS</div>
-            </div>
-          </button>
-        ))}
-        {penalty > 0 && <div style={{ fontSize: 9, color: "#ff5566", letterSpacing: 2, marginTop: 4 }}>◉ LAST SESSION ABANDONED · -{penalty} PTS PENALTY</div>}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
+          {FOCUS_TIERS.map(t => (
+            <button key={t.id} onClick={() => { setTier(t); setPhase("setup"); }} style={{
+              padding: "10px 6px", cursor: "pointer", textAlign: "center", borderRadius: 2,
+              background: `linear-gradient(160deg, ${G}18, transparent)`,
+              border: `1px solid ${G}33`, borderTop: `2px solid ${G}`, color: "#e8e8e8", fontFamily: "monospace",
+            }}>
+              <div style={{ fontSize: 18, fontWeight: 900, color: G, textShadow: `0 0 12px ${G}88`, lineHeight: 1 }}>
+                {t.minutes >= 60 ? Math.floor(t.minutes / 60) : t.minutes}
+                <span style={{ fontSize: 8, color: "#777", marginLeft: 2 }}>{t.minutes >= 60 ? "H" : "M"}</span>
+              </div>
+              <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1, marginTop: 4 }}>{t.label}</div>
+              <div style={{ fontSize: 7.5, color: "#777", letterSpacing: 1.2, marginTop: 2 }}>{t.sub}</div>
+              <div style={{ fontSize: 10, fontWeight: 900, color: G, marginTop: 5 }}>+{t.reward}</div>
+              <div style={{ fontSize: 7, color: "#666", letterSpacing: 1 }}>COINS · PTS</div>
+            </button>
+          ))}
+        </div>
+        {penalty > 0 && <div style={{ fontSize: 8.5, color: "#ff5566", letterSpacing: 1.5, marginTop: 6 }}>◉ LAST SESSION ABANDONED · -{penalty} PTS</div>}
       </div>
+
     );
   }
 
