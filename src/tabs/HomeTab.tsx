@@ -57,6 +57,9 @@ export function HomeTab({ G, G2, coins, streak, tasks, tick, onFocusComplete }: 
           </div>
         ))}
       </div>
+
+      <DeepFocus G={G} G2={G2} onComplete={onFocusComplete} />
     </>
   );
 }
+
