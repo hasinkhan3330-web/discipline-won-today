@@ -1,13 +1,16 @@
 import { cardStyle, titleStyle } from "./styles";
+import { DeepFocus, type FocusTier } from "@/components/DeepFocus";
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
 
-export function HomeTab({ G, G2, coins, streak, tasks, tick }: {
+export function HomeTab({ G, G2, coins, streak, tasks, tick, onFocusComplete }: {
   G: string; G2: string;
   coins: number; streak: number;
   tasks: Task[];
   tick: (id: number) => void;
+  onFocusComplete: (tier: FocusTier, lockMode: "strict" | "flex", apps: string[]) => Promise<number | null>;
 }) {
+
   const CARD = cardStyle(G);
   const TITLE = titleStyle;
   const done = tasks.filter(t => t.done).length;
