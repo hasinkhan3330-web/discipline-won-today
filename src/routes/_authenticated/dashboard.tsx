@@ -415,6 +415,36 @@ function App() {
 
   const med = useMeditation(tasks as any, completeTaskRpc);
 
+  const onFocusComplete = async (
+    tier: { id: string; reward: number },
+    lockMode: "strict" | "flex",
+    apps: string[],
+  ): Promise<number | null> => {
+    const { data, error } = await (supabase as any).rpc("complete_focus_session", {
+      _tier: tier.id, _lock_mode: lockMode, _blocked_apps: apps,
+    });
+    if (error) {
+      console.error(error);
+      toast.error("Could not credit that focus session", { description: error.message });
+      return null;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    const newCoins = row?.coins ?? null;
+    if (typeof newCoins === "number") setCoins(newCoins);
+    toast.success(`+${tier.reward} coins · focus session logged`);
+    supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
+      if (!leaders) return;
+      setBoard(leaders.map(l => ({
+        n: (l.display_name || l.username || "USER").toUpperCase().replace(/\s+/g, "_"),
+        c: l.coins ?? 0, s: l.streak ?? 0,
+        img: l.avatar_url || fallbackAvatar(l.display_name || l.username || "U"),
+        you: l.id === myId,
+      })));
+    });
+    return newCoins;
+  };
+
+
   const submitProof = () => {
     if (!proof || proof.mode !== "quiz") return;
     stopAlarm();
