@@ -155,7 +155,15 @@ export function ProfileTab({
 
 
 
-      <div style={{ ...CARD, position: "relative", overflow: "hidden", padding: 18 }}>
+      <SubTabs G={G} active={tab} onChange={setTab} tabs={[
+        { id: "rank", label: "RANK" },
+        { id: "themes", label: "THEMES" },
+        { id: "plan", label: "PLAN" },
+      ]} />
+
+      {tab === "rank" && (
+      <div style={{ ...CARD, position: "relative", overflow: "hidden", padding: 14 }}>
+
         <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 15% 10%, ${G}22, transparent 60%)`, pointerEvents: "none" }} />
         <div style={{ position: "relative", zIndex: 2 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
