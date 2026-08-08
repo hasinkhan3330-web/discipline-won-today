@@ -17,8 +17,8 @@ export const Route = createFileRoute("/pricing")({
 const G = "#00d4ff", G2 = "#a855f7";
 
 const PLANS = [
-  { region: "Monthly", monthly: "₹49", yearly: "₹588", note: "Billed ₹49 every month after your free trial" },
-  { region: "Yearly · Save 30%", monthly: "₹83", yearly: "₹999", note: "Billed ₹999 once a year after your free trial" },
+  { region: "Monthly", monthly: "₹99", yearly: "₹1188", note: "Billed ₹99 every month after your free trial" },
+  { region: "Yearly · Save 16%", monthly: "₹83", yearly: "₹999", note: "Billed ₹999 once a year after your free trial" },
 ];
 
 
