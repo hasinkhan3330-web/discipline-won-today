@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { cardStyle, titleStyle } from "./styles";
+import { SubTabs } from "@/components/Collapse";
 
 export type LifeStats = {
   bestStreak: number;
@@ -26,18 +28,18 @@ function Calendar({ G }: { G: string }) {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
-        <div style={{ fontSize: 13, fontWeight: 900, color: "#fff", letterSpacing: 3 }}>{MONTHS[m]} {y}</div>
-        <div style={{ fontSize: 10, letterSpacing: 2, color: G }}>{String(today).padStart(2, "0")}/{String(m + 1).padStart(2, "0")}/{y}</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8 }}>
+        <div style={{ fontSize: 12, fontWeight: 900, color: "#fff", letterSpacing: 2.5 }}>{MONTHS[m]} {y}</div>
+        <div style={{ fontSize: 9, letterSpacing: 1.5, color: G }}>{String(today).padStart(2, "0")}/{String(m + 1).padStart(2, "0")}/{y}</div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 4 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3 }}>
         {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
-          <div key={i} style={{ textAlign: "center", fontSize: 9, letterSpacing: 1, color: "#666" }}>{d}</div>
+          <div key={i} style={{ textAlign: "center", fontSize: 8, letterSpacing: 1, color: "#666" }}>{d}</div>
         ))}
         {cells.map((d, i) => (
           <div key={i} style={{
             aspectRatio: "1 / 1", display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 11, fontWeight: d === today ? 900 : 600, borderRadius: 2,
+            fontSize: 10, fontWeight: d === today ? 900 : 600, borderRadius: 2,
             color: d ? (d === today ? "#000" : "#bbb") : "transparent",
             background: d === today ? G : d ? "rgba(0,0,0,0.35)" : "transparent",
             border: d ? `1px solid ${d === today ? G : G + "1a"}` : "none",
@@ -53,12 +55,12 @@ function Calendar({ G }: { G: string }) {
 function Metric({ G, label, value, sub }: { G: string; label: string; value: string; sub?: string }) {
   return (
     <div style={{
-      flex: 1, minWidth: 120, padding: "12px 10px", borderRadius: 2,
+      padding: "10px 8px", borderRadius: 2,
       background: "rgba(0,0,0,0.35)", border: `1px solid ${G}22`, borderLeft: `2px solid ${G}`,
     }}>
-      <div style={{ fontSize: 9, letterSpacing: 2, color: "#777", fontFamily: "monospace" }}>{label}</div>
-      <div style={{ fontSize: 22, fontWeight: 900, color: G, textShadow: `0 0 12px ${G}66`, marginTop: 4 }}>{value}</div>
-      {sub && <div style={{ fontSize: 9, color: "#888", letterSpacing: 1, marginTop: 2 }}>{sub}</div>}
+      <div style={{ fontSize: 8, letterSpacing: 1.4, color: "#777", fontFamily: "monospace" }}>{label}</div>
+      <div style={{ fontSize: 17, fontWeight: 900, color: G, textShadow: `0 0 12px ${G}66`, marginTop: 3 }}>{value}</div>
+      {sub && <div style={{ fontSize: 7.5, color: "#888", letterSpacing: 1, marginTop: 1 }}>{sub}</div>}
     </div>
   );
 }
@@ -66,28 +68,65 @@ function Metric({ G, label, value, sub }: { G: string; label: string; value: str
 export function StatsTab({ G, G2, weekly, life }: { G: string; G2: string; weekly: number[]; life?: LifeStats }) {
   const CARD = cardStyle(G);
   const total = Math.max(1, life?.taskTotal || 1);
+  const [tab, setTab] = useState("progress");
 
   return (
     <>
-      {life && (
-        <>
-          <div style={CARD}>
-            <div style={titleStyle}><span style={{ color: G }}>▸</span> ALL <span style={{ color: G }}>TIME</span></div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              <Metric G={G} label="BEST STREAK" value={`🔥 ${life.bestStreak}`} sub="DAYS UNBROKEN" />
-              <Metric G={G} label="LIFETIME COINS" value={`${life.lifetimeCoins}`} sub="TOTAL EARNED" />
-              <Metric G={G} label="MEDITATION" value={`${life.medMinutes}m`} sub="TOTAL STILLNESS" />
-            </div>
-          </div>
+      <SubTabs G={G} active={tab} onChange={setTab} tabs={[
+        { id: "progress", label: "PROGRESS" },
+        { id: "cal", label: "CALENDAR" },
+      ]} />
 
-          <div style={CARD}>
-            <div style={titleStyle}><span style={{ color: G }}>▸</span> CURRENT <span style={{ color: G }}>CALENDAR</span></div>
+      {tab === "progress" && (
+        <>
+          {life && (
+            <div style={{ ...CARD, padding: 12, marginBottom: 8 }}>
+              <div style={{ ...titleStyle, marginBottom: 8 }}><span style={{ color: G }}>▸</span> ALL <span style={{ color: G }}>TIME</span></div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
+                <Metric G={G} label="BEST STREAK" value={`🔥${life.bestStreak}`} sub="DAYS" />
+                <Metric G={G} label="LIFETIME" value={`${life.lifetimeCoins}`} sub="COINS" />
+                <Metric G={G} label="MEDITATION" value={`${life.medMinutes}m`} sub="STILLNESS" />
+              </div>
+              {life.topTask && (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8, padding: "8px 10px", borderRadius: 2, background: "rgba(0,0,0,0.35)", border: `1px solid ${G}22`, borderLeft: `2px solid ${G}` }}>
+                  <div style={{ fontSize: 20 }}>{life.topTask.icon}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "#eee", letterSpacing: 1.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{life.topTask.name.toUpperCase()}</div>
+                    <div style={{ fontSize: 8, color: "#777", letterSpacing: 1.2, marginTop: 1 }}>MOST CONQUERED</div>
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: G, textShadow: `0 0 12px ${G}66` }}>{life.topTask.count}×</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div style={{ ...CARD, padding: 12 }}>
+            <div style={{ ...titleStyle, marginBottom: 8 }}><span style={{ color: G }}>▸</span> WEEKLY <span style={{ color: G }}>PROGRESS</span></div>
+            {["MON", "TUE", "WED", "THU", "FRI", "SAT", "TDY"].map((d, i) => {
+              const v = weekly[i] ?? 0;
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
+                  <div style={{ width: 30, fontSize: 8.5, color: "#666", letterSpacing: 1.5 }}>{d}</div>
+                  <div style={{ flex: 1, height: 6, background: "#0a0a15", borderRadius: 4, border: `1px solid ${G}22`, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${v}%`, background: `linear-gradient(90deg,${G},${G2})`, boxShadow: `0 0 8px ${G}` }} />
+                  </div>
+                  <div style={{ width: 28, fontSize: 9.5, color: G, textAlign: "right", fontWeight: 700 }}>{v}%</div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {tab === "cal" && life && (
+        <>
+          <div style={{ ...CARD, padding: 12, marginBottom: 8 }}>
             <Calendar G={G} />
           </div>
 
-          <div style={CARD}>
-            <div style={titleStyle}><span style={{ color: G }}>▸</span> 30 DAY <span style={{ color: G }}>HEATMAP</span></div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: 5 }}>
+          <div style={{ ...CARD, padding: 12 }}>
+            <div style={{ ...titleStyle, marginBottom: 8 }}><span style={{ color: G }}>▸</span> 30 DAY <span style={{ color: G }}>HEATMAP</span></div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: 4 }}>
               {life.heat.map(h => {
                 const pct = Math.min(100, Math.round((h.count / total) * 100));
                 const c = zoneColor(pct);
@@ -110,50 +149,21 @@ export function StatsTab({ G, G2, weekly, life }: { G: string; G2: string; weekl
                 );
               })}
             </div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", fontSize: 9, color: "#777", letterSpacing: 1.5, marginTop: 10 }}>
-              {[["#00ff88", "100% DONE"], ["#ffcc33", "50–99%"], ["#ff3b5c", "UNDER 50%"]].map(([c, l]) => (
-                <span key={l} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                  <span style={{ width: 9, height: 9, borderRadius: 2, background: c, boxShadow: `0 0 8px ${c}` }} />{l}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", fontSize: 8, color: "#777", letterSpacing: 1.2, marginTop: 8 }}>
+              {[["#00ff88", "100%"], ["#ffcc33", "50–99%"], ["#ff3b5c", "UNDER 50%"]].map(([c, l]) => (
+                <span key={l} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 2, background: c, boxShadow: `0 0 8px ${c}` }} />{l}
                 </span>
               ))}
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#666", letterSpacing: 2, marginTop: 6 }}>
-              <span>30 DAYS AGO</span><span>TODAY</span>
+              <span style={{ marginLeft: "auto", color: "#666" }}>30D AGO → TODAY</span>
             </div>
           </div>
-
-
-          {life.topTask && (
-            <div style={CARD}>
-              <div style={titleStyle}><span style={{ color: G }}>▸</span> MOST <span style={{ color: G }}>CONQUERED</span></div>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ fontSize: 30 }}>{life.topTask.icon}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#eee", letterSpacing: 2 }}>{life.topTask.name.toUpperCase()}</div>
-                  <div style={{ fontSize: 10, color: "#777", letterSpacing: 1.5, marginTop: 2 }}>COMPLETED ALL TIME</div>
-                </div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: G, textShadow: `0 0 12px ${G}66` }}>{life.topTask.count}×</div>
-              </div>
-            </div>
-          )}
         </>
       )}
 
-      <div style={CARD}>
-        <div style={titleStyle}><span style={{ color: G }}>▸</span> WEEKLY <span style={{ color: G }}>PROGRESS</span></div>
-        {["MON", "TUE", "WED", "THU", "FRI", "SAT", "TDY"].map((d, i) => {
-          const v = weekly[i] ?? 0;
-          return (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 34, fontSize: 10, color: "#666", letterSpacing: 2 }}>{d}</div>
-              <div style={{ flex: 1, height: 8, background: "#0a0a15", borderRadius: 4, border: `1px solid ${G}22`, overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${v}%`, background: `linear-gradient(90deg,${G},${G2})`, boxShadow: `0 0 8px ${G}` }} />
-              </div>
-              <div style={{ width: 32, fontSize: 11, color: G, textAlign: "right", fontWeight: 700 }}>{v}%</div>
-            </div>
-          );
-        })}
-      </div>
+      {tab === "cal" && !life && (
+        <div style={{ ...CARD, padding: 14, fontSize: 10, color: "#777", letterSpacing: 1.5 }}>◌ LOADING…</div>
+      )}
     </>
   );
 }
