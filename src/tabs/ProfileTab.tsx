@@ -264,7 +264,9 @@ export function ProfileTab({
           })}
 
         </div>
-      </div>
+      </Accordion>
+      )}
+
 
       {tab === "themes" && (
       <Accordion G={G} title={<span>VICTORIES</span>} defaultOpen>
