@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { cardStyle, titleStyle } from "./styles";
 import { THEMES, type ThemeKey } from "@/constants/themes";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
 import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
+import { SubTabs, Accordion, Rail } from "@/components/Collapse";
 
 type BoardEntry = { n: string; c: number; s: number; img: string; you?: boolean };
 
