@@ -46,6 +46,8 @@ export function ProfileTab({
 }) {
   const CARD = cardStyle(G);
   const TITLE = titleStyle;
+  const [tab, setTab] = useState("rank");
+
 
   const dayPct = todayTotal ? Math.round((todayDone / todayTotal) * 100) : 0;
   const zone = dayPct >= 100 ? "#00ff88" : dayPct >= 50 ? "#ffcc33" : "#ff3b5c";
