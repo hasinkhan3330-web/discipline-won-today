@@ -178,6 +178,39 @@ export type Database = {
         }
         Relationships: []
       }
+      focus_sessions: {
+        Row: {
+          blocked_apps: string[]
+          coins_awarded: number
+          created_at: string
+          id: string
+          lock_mode: string
+          minutes: number
+          tier: string
+          user_id: string
+        }
+        Insert: {
+          blocked_apps?: string[]
+          coins_awarded?: number
+          created_at?: string
+          id?: string
+          lock_mode?: string
+          minutes: number
+          tier: string
+          user_id: string
+        }
+        Update: {
+          blocked_apps?: string[]
+          coins_awarded?: number
+          created_at?: string
+          id?: string
+          lock_mode?: string
+          minutes?: number
+          tier?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       payment_events: {
         Row: {
           amount: number | null
@@ -439,6 +472,14 @@ export type Database = {
         Returns: {
           awarded: number
           coins: number
+        }[]
+      }
+      complete_focus_session: {
+        Args: { _blocked_apps?: string[]; _lock_mode?: string; _tier: string }
+        Returns: {
+          awarded: number
+          coins: number
+          minutes: number
         }[]
       }
       complete_task: {
