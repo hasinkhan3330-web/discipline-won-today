@@ -22,6 +22,7 @@ import solfeggio528 from "@/assets/audio/solfeggio528.mp3.asset.json";
 import zen432 from "@/assets/audio/zen432.mp3.asset.json";
 import focusMatrix from "@/assets/audio/focusmatrix.mp3.asset.json";
 import battleWave from "@/assets/audio/battlewave.mp3.asset.json";
+import eagleFocus from "@/assets/eagle-focus.jpg.asset.json";
 
 const TRACKS = [
   { id: 1, name: "40Hz GAMMA + BROWN NOISE", tag: "10:00 · PURE BINAURAL", src: gamma40.url },
