@@ -339,6 +339,9 @@ function App() {
   const theme = THEMES[themeKey];
   const G = theme.accent;
   const G2 = theme.accent2;
+  // wallpaper follows the selected theme, but never below what the streak has unlocked
+  const wallLevel = Math.max(theme.wall, wallpaperLevel(streak));
+
 
   const buildQuestion = (subject: "math" | "physics") => {
     if (subject === "math") {
