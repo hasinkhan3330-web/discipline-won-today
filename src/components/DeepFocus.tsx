@@ -260,15 +260,30 @@ export function DeepFocus({ G, G2, onComplete }: {
           </div>
           <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginTop: 6 }}>{blocked.length} APPS BLOCKED · {tier.sub}</div>
 
-          <div style={{ position: "relative", width: 180, height: 180, margin: "16px auto" }}>
-            <svg width="180" height="180" style={{ transform: "rotate(-90deg)" }}>
-              <circle cx="90" cy="90" r={R} fill="none" stroke="#15152a" strokeWidth="8" />
-              <circle cx="90" cy="90" r={R} fill="none" stroke={G} strokeWidth="8" strokeLinecap="round"
-                strokeDasharray={C} strokeDashoffset={C * (1 - pct)} style={{ filter: `drop-shadow(0 0 10px ${G})`, transition: "stroke-dashoffset .3s linear" }} />
-            </svg>
-            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-              <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", textShadow: `0 0 18px ${G}`, letterSpacing: 2 }}>{fmt(left)}</div>
-              <div style={{ fontSize: 9, color: "#777", letterSpacing: 3, marginTop: 6 }}>{Math.round(pct * 100)}% COMPLETE</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, flexWrap: "wrap", margin: "14px 0" }}>
+            <div style={{ position: "relative", width: 180, height: 180 }}>
+              <svg width="180" height="180" style={{ transform: "rotate(-90deg)" }}>
+                <circle cx="90" cy="90" r={R} fill="none" stroke="#15152a" strokeWidth="8" />
+                <circle cx="90" cy="90" r={R} fill="none" stroke={G} strokeWidth="8" strokeLinecap="round"
+                  strokeDasharray={C} strokeDashoffset={C * (1 - pct)} style={{ filter: `drop-shadow(0 0 10px ${G})`, transition: "stroke-dashoffset .3s linear" }} />
+              </svg>
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", textShadow: `0 0 18px ${G}`, letterSpacing: 2 }}>{fmt(left)}</div>
+                <div style={{ fontSize: 9, color: "#777", letterSpacing: 3, marginTop: 6 }}>{Math.round(pct * 100)}% COMPLETE</div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+              <div style={{
+                width: 120, height: 120, borderRadius: "50%", overflow: "hidden",
+                border: `2px solid ${G}`, boxShadow: `0 0 22px ${G}88, inset 0 0 30px rgba(0,0,0,0.6)`,
+                background: "#000", position: "relative",
+              }}>
+                <img src={eagleFocus.url} alt="Focus Guardian Eagle" style={{ width: "100%", height: "100%", objectFit: "cover", filter: "contrast(1.1) saturate(1.1)" }} />
+                <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 30%, transparent 40%, rgba(0,0,0,0.5) 100%)` }} />
+              </div>
+              <div style={{ fontSize: 8, letterSpacing: 2.5, color: G, textShadow: `0 0 8px ${G}` }}>◉ EYES ON YOU</div>
+              <div style={{ fontSize: 7.5, color: "#666", letterSpacing: 1.2, maxWidth: 130, textAlign: "center", lineHeight: 1.4 }}>DON'T LOOK AWAY. THE EAGLE NEVER BLINKS.</div>
             </div>
           </div>
 
