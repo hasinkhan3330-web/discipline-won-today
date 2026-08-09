@@ -1,16 +1,17 @@
 export const THEMES = {
-  space:   { name: "COSMOS",    accent: "#00d4ff", accent2: "#7b5cff", glow: "0 0 20px #00d4ff", unlock: 0 },
-  blood:   { name: "BLOOD",     accent: "#ff2e4d", accent2: "#ff6a00", glow: "0 0 20px #ff2e4d", unlock: 0 },
-  matrix:  { name: "MATRIX",    accent: "#00ff88", accent2: "#00d46a", glow: "0 0 20px #00ff88", unlock: 0 },
-  gold:    { name: "GOLD",      accent: "#ffcc33", accent2: "#ff8800", glow: "0 0 20px #ffcc33", unlock: 0 },
-  aurora:  { name: "AURORA",    accent: "#39ffd0", accent2: "#8a5bff", glow: "0 0 20px #39ffd0", unlock: 7 },
-  neural:  { name: "NEURAL",    accent: "#ff4fd8", accent2: "#00e5ff", glow: "0 0 20px #ff4fd8", unlock: 21 },
-  plasma:  { name: "PLASMA",    accent: "#7cf5ff", accent2: "#ff2ea6", glow: "0 0 20px #7cf5ff", unlock: 49 },
-  quantum: { name: "QUANTUM",   accent: "#a6ff3d", accent2: "#00b3ff", glow: "0 0 20px #a6ff3d", unlock: 90 },
-  nova:    { name: "NOVA",      accent: "#ff8a3d", accent2: "#ff2ea6", glow: "0 0 20px #ff8a3d", unlock: 170 },
-  titan:   { name: "TITAN",     accent: "#c9d6ff", accent2: "#5a7bff", glow: "0 0 20px #c9d6ff", unlock: 250 },
-  ignite:  { name: "IGNITION",  accent: "#ff7a18", accent2: "#ffd93b", glow: "0 0 20px #ff7a18", unlock: 365 },
+  space:   { name: "COSMOS",    accent: "#00d4ff", accent2: "#7b5cff", glow: "0 0 20px #00d4ff", unlock: 0,   wall: 0 },
+  blood:   { name: "BLOOD",     accent: "#ff2e4d", accent2: "#ff6a00", glow: "0 0 20px #ff2e4d", unlock: 0,   wall: 1 },
+  matrix:  { name: "MATRIX",    accent: "#00ff88", accent2: "#00d46a", glow: "0 0 20px #00ff88", unlock: 0,   wall: 2 },
+  gold:    { name: "GOLD",      accent: "#ffcc33", accent2: "#ff8800", glow: "0 0 20px #ffcc33", unlock: 0,   wall: 3 },
+  aurora:  { name: "AURORA",    accent: "#39ffd0", accent2: "#8a5bff", glow: "0 0 20px #39ffd0", unlock: 7,   wall: 1 },
+  neural:  { name: "NEURAL",    accent: "#ff4fd8", accent2: "#00e5ff", glow: "0 0 20px #ff4fd8", unlock: 21,  wall: 2 },
+  plasma:  { name: "PLASMA",    accent: "#7cf5ff", accent2: "#ff2ea6", glow: "0 0 20px #7cf5ff", unlock: 49,  wall: 3 },
+  quantum: { name: "QUANTUM",   accent: "#a6ff3d", accent2: "#00b3ff", glow: "0 0 20px #a6ff3d", unlock: 90,  wall: 4 },
+  nova:    { name: "NOVA",      accent: "#ff8a3d", accent2: "#ff2ea6", glow: "0 0 20px #ff8a3d", unlock: 170, wall: 5 },
+  titan:   { name: "TITAN",     accent: "#c9d6ff", accent2: "#5a7bff", glow: "0 0 20px #c9d6ff", unlock: 250, wall: 6 },
+  ignite:  { name: "IGNITION",  accent: "#ff7a18", accent2: "#ffd93b", glow: "0 0 20px #ff7a18", unlock: 365, wall: 7 },
 } as const;
+
 
 export type ThemeKey = keyof typeof THEMES;
 
