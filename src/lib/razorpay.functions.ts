@@ -67,19 +67,51 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) => verifySchema.parse(input))
   .handler(async ({ data, context }) => {
+    const keyId = process.env["RAZORPAY_KEY_ID"];
     const keySecret = process.env["RAZORPAY_KEY_SECRET"];
-    if (!keySecret) return { active: false, error: "Payments are not configured yet." };
+    if (!keyId || !keySecret) return { active: false, error: "Payments are not configured yet." };
 
     const expected = await hmacHex(keySecret, `${data.razorpay_order_id}|${data.razorpay_payment_id}`);
     if (expected !== data.razorpay_signature) {
       return { active: false, error: "Payment could not be verified." };
     }
 
-    const { PRICING } = await import("@/lib/pricing");
+    // Never trust the client-supplied cycle: read it back from the paid order.
+    const orderRes = await fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(data.razorpay_order_id)}`, {
+      headers: { Authorization: `Basic ${btoa(`${keyId}:${keySecret}`)}` },
+    });
+    if (!orderRes.ok) {
+      console.error("razorpay order lookup failed", orderRes.status);
+      return { active: false, error: "Payment could not be verified." };
+    }
+    const order = (await orderRes.json()) as {
+      amount_paid?: number;
+      amount?: number;
+      status?: string;
+      notes?: { user_id?: string; cycle?: string };
+    };
+
+    if (order.notes?.user_id !== context.userId) {
+      return { active: false, error: "Payment could not be verified." };
+    }
+    if (order.status !== "paid") {
+      return { active: false, error: "Payment is not completed yet." };
+    }
+
+    const { AMOUNT_PAISE, PRICING } = await import("@/lib/pricing");
+    const cycle: "monthly" | "yearly" = order.notes?.cycle === "yearly" ? "yearly" : "monthly";
+    if (order.notes?.cycle !== cycle) {
+      return { active: false, error: "Payment could not be verified." };
+    }
+    if ((order.amount_paid ?? 0) < AMOUNT_PAISE[cycle]) {
+      return { active: false, error: "Payment could not be verified." };
+    }
+
     const now = new Date();
     const end = new Date(now);
-    if (data.cycle === "yearly") end.setFullYear(end.getFullYear() + 1);
+    if (cycle === "yearly") end.setFullYear(end.getFullYear() + 1);
     else end.setMonth(end.getMonth() + 1);
+
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("subscriptions").upsert(
@@ -88,8 +120,8 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
         provider: "razorpay",
         provider_subscription_id: data.razorpay_order_id,
         provider_customer_id: context.userId,
-        price_id: PRICING[data.cycle].priceKey,
-        product_id: data.cycle,
+        price_id: PRICING[cycle].priceKey,
+        product_id: cycle,
         status: "active",
         current_period_start: now.toISOString(),
         current_period_end: end.toISOString(),
