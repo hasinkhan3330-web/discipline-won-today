@@ -621,7 +621,9 @@ function App() {
                   style={{
                     position: "relative",
                     width: 18, height: 18, borderRadius: "50%",
-                    background: `linear-gradient(135deg, ${THEMES[k].accent}, ${THEMES[k].accent2})`,
+                    background: THEME_PHOTO[k]
+                      ? `url(${THEME_PHOTO[k]}) center/cover`
+                      : `linear-gradient(135deg, ${THEMES[k].accent}, ${THEMES[k].accent2})`,
                     border: themeKey === k ? `2px solid #fff` : isPro ? `1px solid #ffcc33` : `1px solid #333`,
                     cursor: "pointer", padding: 0,
                     opacity: proLocked ? 0.55 : 1,
