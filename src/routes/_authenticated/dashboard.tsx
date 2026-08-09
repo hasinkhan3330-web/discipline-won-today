@@ -10,7 +10,7 @@ import { Paywall } from "@/components/Paywall";
 import { BlurLock } from "@/components/BlurLock";
 import { SpaceWallpaper } from "@/components/SpaceWallpaper";
 import { CropModal } from "@/components/CropModal";
-import { THEMES, MILESTONES, type ThemeKey } from "@/constants/themes";
+import { THEMES, MILESTONES, THEME_PHOTO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
 import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
 
 import { useMeditation } from "@/hooks/useMeditation";
@@ -341,6 +341,7 @@ function App() {
   const G2 = theme.accent2;
   // wallpaper is bound to the selected theme — changing theme changes wallpaper too
   const wallLevel = theme.wall;
+  const wallPhoto = THEME_PHOTO[themeKey];
 
 
 
@@ -511,7 +512,7 @@ function App() {
     return (
       <div style={{ width: "100%", height: "100vh", background: "#000", position: "relative", overflow: "hidden", fontFamily: "monospace" }}>
         <style>{keyframes}</style>
-        <SpaceWallpaper accent={G} level={wallLevel} />
+        <SpaceWallpaper accent={G} level={wallLevel} photo={wallPhoto} />
         <div style={{ position: "relative", zIndex: 2, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", border: `1px solid ${G}44`, animation: "orbit 8s linear infinite" }}>
             <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 20px ${G}` }} />
@@ -543,7 +544,7 @@ function App() {
   return (
     <div style={{ width: "100%", minHeight: "100vh", color: "#e8e8e8", fontFamily: "monospace", position: "relative", overflow: "hidden" }}>
       <style>{keyframes}</style>
-      <SpaceWallpaper accent={G} level={wallLevel} />
+      <SpaceWallpaper accent={G} level={wallLevel} photo={wallPhoto} />
 
       {celebration && (
         <div onClick={() => setCelebration(null)} style={{
@@ -609,15 +610,32 @@ function App() {
             <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: `0 0 12px ${G}` }}>DWT</div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {(Object.keys(THEMES) as ThemeKey[]).filter(k => streak >= THEMES[k].unlock).map(k => (
-              <button key={k} onClick={() => setThemeKey(k)} title={THEMES[k].name} style={{
-                width: 18, height: 18, borderRadius: "50%",
-                background: `linear-gradient(135deg, ${THEMES[k].accent}, ${THEMES[k].accent2})`,
-                border: themeKey === k ? `2px solid #fff` : `1px solid #333`,
-                cursor: "pointer", padding: 0,
-                boxShadow: themeKey === k ? `0 0 10px ${THEMES[k].accent}` : "none",
-              }} />
-            ))}
+            {(Object.keys(THEMES) as ThemeKey[]).filter(k => streak >= THEMES[k].unlock).map(k => {
+              const isPro = PRO_THEMES.includes(k);
+              const proLocked = isPro && gateReady && !premiumUnlocked;
+              return (
+                <button
+                  key={k}
+                  onClick={() => (proLocked ? setShowPaywall(true) : setThemeKey(k))}
+                  title={isPro ? `${THEMES[k].name} · PRO` : THEMES[k].name}
+                  style={{
+                    position: "relative",
+                    width: 18, height: 18, borderRadius: "50%",
+                    background: `linear-gradient(135deg, ${THEMES[k].accent}, ${THEMES[k].accent2})`,
+                    border: themeKey === k ? `2px solid #fff` : isPro ? `1px solid #ffcc33` : `1px solid #333`,
+                    cursor: "pointer", padding: 0,
+                    opacity: proLocked ? 0.55 : 1,
+                    boxShadow: themeKey === k ? `0 0 10px ${THEMES[k].accent}` : isPro ? `0 0 8px #ffcc3388` : "none",
+                  }}
+                >
+                  {isPro && (
+                    <span style={{ position: "absolute", top: -7, right: -5, fontSize: 8, lineHeight: 1, filter: "drop-shadow(0 0 4px #ffcc33)" }}>
+                      {proLocked ? "🔒" : "👑"}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
 
             {gateReady && !hasActiveSubscription && (
               <button onClick={() => setShowPaywall(true)} title="Go PRO" style={{ background: `linear-gradient(135deg, ${G}, ${G2})`, border: "none", color: "#000", padding: "5px 9px", fontSize: 10, fontWeight: 900, letterSpacing: 2, fontFamily: "monospace", cursor: "pointer", borderRadius: 2, boxShadow: `0 0 14px ${G}66` }}>GO PRO</button>
