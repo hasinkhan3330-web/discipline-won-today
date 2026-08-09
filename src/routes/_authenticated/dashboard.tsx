@@ -511,7 +511,7 @@ function App() {
     return (
       <div style={{ width: "100%", height: "100vh", background: "#000", position: "relative", overflow: "hidden", fontFamily: "monospace" }}>
         <style>{keyframes}</style>
-        <SpaceWallpaper accent={G} level={wallpaperLevel(streak)} />
+        <SpaceWallpaper accent={G} level={wallLevel} />
         <div style={{ position: "relative", zIndex: 2, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", border: `1px solid ${G}44`, animation: "orbit 8s linear infinite" }}>
             <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 20px ${G}` }} />
@@ -543,7 +543,7 @@ function App() {
   return (
     <div style={{ width: "100%", minHeight: "100vh", color: "#e8e8e8", fontFamily: "monospace", position: "relative", overflow: "hidden" }}>
       <style>{keyframes}</style>
-      <SpaceWallpaper accent={G} level={wallpaperLevel(streak)} />
+      <SpaceWallpaper accent={G} level={wallLevel} />
 
       {celebration && (
         <div onClick={() => setCelebration(null)} style={{
