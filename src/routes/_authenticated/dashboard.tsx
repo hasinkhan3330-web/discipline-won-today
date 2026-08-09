@@ -10,7 +10,7 @@ import { Paywall } from "@/components/Paywall";
 import { BlurLock } from "@/components/BlurLock";
 import { SpaceWallpaper } from "@/components/SpaceWallpaper";
 import { CropModal } from "@/components/CropModal";
-import { THEMES, MILESTONES, wallpaperLevel, type ThemeKey } from "@/constants/themes";
+import { THEMES, MILESTONES, type ThemeKey } from "@/constants/themes";
 import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
 
 import { useMeditation } from "@/hooks/useMeditation";
