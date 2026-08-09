@@ -1,3 +1,5 @@
+import nightHighway from "@/assets/night-highway.jpg.asset.json";
+
 export const THEMES = {
   space:   { name: "COSMOS",    accent: "#00d4ff", accent2: "#7b5cff", glow: "0 0 20px #00d4ff", unlock: 0,   wall: 0 },
   blood:   { name: "BLOOD",     accent: "#ff2e4d", accent2: "#ff6a00", glow: "0 0 20px #ff2e4d", unlock: 0,   wall: 1 },
@@ -10,7 +12,16 @@ export const THEMES = {
   nova:    { name: "NOVA",      accent: "#ff8a3d", accent2: "#ff2ea6", glow: "0 0 20px #ff8a3d", unlock: 170, wall: 5 },
   titan:   { name: "TITAN",     accent: "#c9d6ff", accent2: "#5a7bff", glow: "0 0 20px #c9d6ff", unlock: 250, wall: 6 },
   ignite:  { name: "IGNITION",  accent: "#ff7a18", accent2: "#ffd93b", glow: "0 0 20px #ff7a18", unlock: 365, wall: 7 },
+  midnight:{ name: "MIDNIGHT",  accent: "#dfe9f5", accent2: "#7f8da3", glow: "0 0 20px #dfe9f5", unlock: 0,   wall: 0 },
 } as const;
+
+/** Photo wallpapers bound to a theme (rendered under the animated layers). */
+export const THEME_PHOTO: Partial<Record<ThemeKey, string>> = {
+  midnight: nightHighway.url,
+};
+
+/** Themes reserved for PRO members. */
+export const PRO_THEMES: ThemeKey[] = ["midnight"];
 
 
 export type ThemeKey = keyof typeof THEMES;

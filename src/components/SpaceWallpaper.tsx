@@ -1,4 +1,4 @@
-export function SpaceWallpaper({ accent, level = 0 }: { accent: string; level?: number }) {
+export function SpaceWallpaper({ accent, level = 0, photo }: { accent: string; level?: number; photo?: string }) {
   // deterministic star field
   const starCount = 90 + level * 30;
   const stars = Array.from({ length: starCount }, (_, i) => {
@@ -12,9 +12,27 @@ export function SpaceWallpaper({ accent, level = 0 }: { accent: string; level?: 
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 0, overflow: "hidden", pointerEvents: "none", background: "radial-gradient(ellipse at 20% 10%, #1a0a3e 0%, #0a0620 40%, #000 100%)" }}>
+      {/* photo wallpaper layer */}
+      {photo && (
+        <>
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url(${photo})`, backgroundSize: "cover", backgroundPosition: "center bottom",
+            opacity: 0.85, transform: "scale(1.04)", animation: "wall-drift 26s ease-in-out infinite alternate",
+          }} />
+          <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0.75) 100%)` }} />
+          <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 50% 62%, ${accent}1f 0%, transparent 55%)` }} />
+        </>
+      )}
+
       {/* nebula glow */}
-      <div style={{ position: "absolute", top: "-20%", right: "-10%", width: 500, height: 500, background: `radial-gradient(circle, ${accent}22 0%, transparent 60%)`, filter: "blur(40px)" }} />
-      <div style={{ position: "absolute", bottom: "-10%", left: "-20%", width: 500, height: 500, background: "radial-gradient(circle, #7b5cff33 0%, transparent 60%)", filter: "blur(40px)" }} />
+      {!photo && (
+        <>
+          <div style={{ position: "absolute", top: "-20%", right: "-10%", width: 500, height: 500, background: `radial-gradient(circle, ${accent}22 0%, transparent 60%)`, filter: "blur(40px)" }} />
+          <div style={{ position: "absolute", bottom: "-10%", left: "-20%", width: 500, height: 500, background: "radial-gradient(circle, #7b5cff33 0%, transparent 60%)", filter: "blur(40px)" }} />
+        </>
+      )}
+
 
       {/* level 1+ : aurora curtain */}
       {level >= 1 && (
