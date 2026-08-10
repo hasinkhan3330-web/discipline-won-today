@@ -1,4 +1,4 @@
-export function SpaceWallpaper({ accent, level = 0, photo }: { accent: string; level?: number; photo?: string }) {
+export function SpaceWallpaper({ accent, level = 0, photo, video }: { accent: string; level?: number; photo?: string; video?: string }) {
   // deterministic star field
   const starCount = 90 + level * 30;
   const stars = Array.from({ length: starCount }, (_, i) => {
@@ -9,6 +9,31 @@ export function SpaceWallpaper({ accent, level = 0, photo }: { accent: string; l
     return { x, y, s, d, k: i };
   });
   const shootingStars = Array.from({ length: 4 + level * 2 }, (_, i) => i);
+
+  // ── CINEMATIC VIDEO WALLPAPER (infinite loop, no space layers) ──
+  if (video) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 0, overflow: "hidden", pointerEvents: "none", background: "#000" }}>
+        <video
+          src={video}
+          poster={photo}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          style={{
+            position: "absolute", inset: 0, width: "100%", height: "100%",
+            objectFit: "cover", transform: "scale(1.06)",
+            animation: "wall-drift 26s ease-in-out infinite alternate",
+          }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.28) 45%, rgba(0,0,0,0.82) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at 50% 45%, ${accent}1a 0%, transparent 60%)` }} />
+        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(${accent}05 1px, transparent 1px), linear-gradient(90deg, ${accent}05 1px, transparent 1px)`, backgroundSize: "44px 44px", opacity: 0.25 }} />
+      </div>
+    );
+  }
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 0, overflow: "hidden", pointerEvents: "none", background: "radial-gradient(ellipse at 20% 10%, #1a0a3e 0%, #0a0620 40%, #000 100%)" }}>
