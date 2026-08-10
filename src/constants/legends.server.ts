@@ -67,10 +67,14 @@ export const LEGENDS: { p: string; imgs: string[]; qs: string[] }[] = [
 ];
 
 // Fixed random-ish permutation so each day pulls a fresh (person, quote, photo) combo.
+// The person cycles every LEGENDS.length days; the quote/photo indices also advance
+// with the cycle count, so the same person+quote pair only recurs after many months.
 export const rot = (s: number, m: number) => ((s % m) + m) % m;
 export const dayCombo = (dayIdx: number) => {
-  const person = LEGENDS[rot(dayIdx * 7 + 3, LEGENDS.length)];
-  const q = person.qs[rot(dayIdx * 5 + 1, person.qs.length)];
-  const img = person.imgs[rot(dayIdx * 3 + 2, person.imgs.length)];
+  const n = LEGENDS.length;
+  const cycle = Math.floor(dayIdx / n);
+  const person = LEGENDS[rot(dayIdx * 7 + 3, n)];
+  const q = person.qs[rot(dayIdx * 5 + 1 + cycle, person.qs.length)];
+  const img = person.imgs[rot(dayIdx * 3 + 2 + cycle, person.imgs.length)];
   return { p: person.p, q, img };
 };
