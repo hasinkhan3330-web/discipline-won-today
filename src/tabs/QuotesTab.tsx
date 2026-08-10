@@ -7,19 +7,34 @@ export function QuotesTab({ G }: { G: string }) {
   const fetchQuotes = useServerFn(getPremiumQuotes);
   const [data, setData] = useState<{ today: QuoteCombo; upcoming: QuoteCombo[]; todayNumber: number; locked?: boolean } | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  // Bumped at local midnight (and every minute for the countdown) so the card
+  // swaps to the new legend automatically without a manual reload.
+  const [tick, setTick] = useState(0);
+  const [dayKey, setDayKey] = useState(() => new Date().toDateString());
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTick(t => t + 1);
+      const k = new Date().toDateString();
+      setDayKey(prev => (prev === k ? prev : k));
+    }, 30000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
+    setErr(null);
     fetchQuotes()
       .then(r => { if (!cancelled) setData(r as any); })
       .catch(() => { if (!cancelled) setErr("PRO ACCESS REQUIRED"); });
     return () => { cancelled = true; };
-  }, [fetchQuotes]);
+  }, [fetchQuotes, dayKey]);
 
 
   const now = new Date();
   const dateLabel = now.toLocaleDateString(undefined, { weekday: "long", day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
   const countdown = () => {
+    void tick;
     const t = new Date(); t.setHours(24, 0, 0, 0);
     const ms = t.getTime() - Date.now();
     const h = Math.floor(ms / 3600000); const m = Math.floor((ms % 3600000) / 60000);
