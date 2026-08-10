@@ -22,7 +22,17 @@ import solfeggio528 from "@/assets/audio/solfeggio528.mp3.asset.json";
 import zen432 from "@/assets/audio/zen432.mp3.asset.json";
 import focusMatrix from "@/assets/audio/focusmatrix.mp3.asset.json";
 import battleWave from "@/assets/audio/battlewave.mp3.asset.json";
-import eagleFocus from "@/assets/eagle-focus.jpg.asset.json";
+import eagleMentor from "@/assets/eagle-mentor.jpg.asset.json";
+
+const MENTOR_LINES = [
+  "THE EAGLE NEVER BLINKS. NEITHER DO YOU.",
+  "ONE SCREEN. ONE MISSION. NO ESCAPE.",
+  "PREDATORS FOCUS. PREY SCROLLS.",
+  "ALTITUDE IS EARNED IN SILENCE.",
+  "YOUR ATTENTION IS THE ONLY CURRENCY.",
+  "STAY. THE SUMMIT IS CLOSER THAN COMFORT.",
+];
+
 
 const TRACKS = [
   { id: 1, name: "40Hz GAMMA + BROWN NOISE", tag: "10:00 · PURE BINAURAL", src: gamma40.url },
@@ -275,16 +285,22 @@ export function DeepFocus({ G, G2, onComplete }: {
 
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
               <div style={{
-                width: 120, height: 120, borderRadius: "50%", overflow: "hidden",
-                border: `2px solid ${G}`, boxShadow: `0 0 22px ${G}88, inset 0 0 30px rgba(0,0,0,0.6)`,
+                width: 132, height: 186, borderRadius: 14, overflow: "hidden",
+                border: "1px solid rgba(212,175,55,0.55)",
+                boxShadow: `0 0 26px rgba(212,175,55,0.25), 0 0 40px ${G}33, inset 0 0 40px rgba(0,0,0,0.8)`,
                 background: "#000", position: "relative",
               }}>
-                <img src={eagleFocus.url} alt="Focus Guardian Eagle" style={{ width: "100%", height: "100%", objectFit: "cover", filter: "contrast(1.1) saturate(1.1)" }} />
-                <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 30%, transparent 40%, rgba(0,0,0,0.5) 100%)` }} />
+                <img src={eagleMentor.url} alt="Eagle mentor watching your focus session" style={{ width: "100%", height: "100%", objectFit: "cover", filter: "contrast(1.15) saturate(1.05) brightness(1.02)" }} />
+                <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 38%, transparent 30%, rgba(0,0,0,0.78) 100%)" }} />
+                <div style={{ position: "absolute", left: 0, right: 0, height: 40, background: `linear-gradient(180deg, transparent, ${G}22, transparent)`, animation: "scan-sweep 3.6s linear infinite" }} />
+                <div style={{ position: "absolute", bottom: 6, left: 0, right: 0, textAlign: "center", fontSize: 7.5, letterSpacing: 2, color: "#d4af37", textShadow: "0 0 10px rgba(212,175,55,0.8)" }}>MENTOR MODE</div>
               </div>
               <div style={{ fontSize: 8, letterSpacing: 2.5, color: G, textShadow: `0 0 8px ${G}` }}>◉ EYES ON YOU</div>
-              <div style={{ fontSize: 7.5, color: "#666", letterSpacing: 1.2, maxWidth: 130, textAlign: "center", lineHeight: 1.4 }}>DON'T LOOK AWAY. THE EAGLE NEVER BLINKS.</div>
+              <div style={{ fontSize: 7.5, color: "#8a8a8a", letterSpacing: 1.2, maxWidth: 134, textAlign: "center", lineHeight: 1.5 }}>
+                {MENTOR_LINES[Math.floor(left / 15) % MENTOR_LINES.length]}
+              </div>
             </div>
+
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
