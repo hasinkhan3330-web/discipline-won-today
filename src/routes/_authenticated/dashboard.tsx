@@ -10,7 +10,7 @@ import { Paywall } from "@/components/Paywall";
 import { BlurLock } from "@/components/BlurLock";
 import { SpaceWallpaper } from "@/components/SpaceWallpaper";
 import { CropModal } from "@/components/CropModal";
-import { THEMES, MILESTONES, THEME_PHOTO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
+import { THEMES, MILESTONES, THEME_PHOTO, THEME_VIDEO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
 import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
 
 import { useMeditation } from "@/hooks/useMeditation";
@@ -63,7 +63,7 @@ function App() {
   };
   const [screen, setScreen] = useState<"splash" | "app">("splash");
   const [tab, setTab] = useState("home");
-  const [themeKey, setThemeKeyState] = useState<ThemeKey>("space");
+  const [themeKey, setThemeKeyState] = useState<ThemeKey>("hourglass");
   const setThemeKey = (k: ThemeKey) => {
     setThemeKeyState(k);
     try { localStorage.setItem("dwt_theme", k); } catch {}
@@ -342,6 +342,7 @@ function App() {
   // wallpaper is bound to the selected theme — changing theme changes wallpaper too
   const wallLevel = theme.wall;
   const wallPhoto = THEME_PHOTO[themeKey];
+  const wallVideo = THEME_VIDEO[themeKey];
 
 
 
@@ -512,7 +513,7 @@ function App() {
     return (
       <div style={{ width: "100%", height: "100vh", background: "#000", position: "relative", overflow: "hidden", fontFamily: "monospace" }}>
         <style>{keyframes}</style>
-        <SpaceWallpaper accent={G} level={wallLevel} photo={wallPhoto} />
+        <SpaceWallpaper accent={G} level={wallLevel} photo={wallPhoto} video={wallVideo} />
         <div style={{ position: "relative", zIndex: 2, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", border: `1px solid ${G}44`, animation: "orbit 8s linear infinite" }}>
             <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 20px ${G}` }} />
@@ -544,7 +545,7 @@ function App() {
   return (
     <div style={{ width: "100%", minHeight: "100vh", color: "#e8e8e8", fontFamily: "monospace", position: "relative", overflow: "hidden" }}>
       <style>{keyframes}</style>
-      <SpaceWallpaper accent={G} level={wallLevel} photo={wallPhoto} />
+      <SpaceWallpaper accent={G} level={wallLevel} photo={wallPhoto} video={wallVideo} />
 
       {celebration && (
         <div onClick={() => setCelebration(null)} style={{
