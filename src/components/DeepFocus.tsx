@@ -22,7 +22,17 @@ import solfeggio528 from "@/assets/audio/solfeggio528.mp3.asset.json";
 import zen432 from "@/assets/audio/zen432.mp3.asset.json";
 import focusMatrix from "@/assets/audio/focusmatrix.mp3.asset.json";
 import battleWave from "@/assets/audio/battlewave.mp3.asset.json";
-import eagleFocus from "@/assets/eagle-focus.jpg.asset.json";
+import eagleMentor from "@/assets/eagle-mentor.jpg.asset.json";
+
+const MENTOR_LINES = [
+  "THE EAGLE NEVER BLINKS. NEITHER DO YOU.",
+  "ONE SCREEN. ONE MISSION. NO ESCAPE.",
+  "PREDATORS FOCUS. PREY SCROLLS.",
+  "ALTITUDE IS EARNED IN SILENCE.",
+  "YOUR ATTENTION IS THE ONLY CURRENCY.",
+  "STAY. THE SUMMIT IS CLOSER THAN COMFORT.",
+];
+
 
 const TRACKS = [
   { id: 1, name: "40Hz GAMMA + BROWN NOISE", tag: "10:00 · PURE BINAURAL", src: gamma40.url },
