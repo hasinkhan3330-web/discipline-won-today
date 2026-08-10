@@ -15,6 +15,7 @@ export function SpaceWallpaper({ accent, level = 0, photo, video }: { accent: st
     return (
       <div style={{ position: "fixed", inset: 0, zIndex: 0, overflow: "hidden", pointerEvents: "none", background: "#000" }}>
         <video
+          ref={(el) => { if (el && el.paused) void el.play().catch(() => {}); }}
           src={video}
           poster={photo}
           autoPlay
