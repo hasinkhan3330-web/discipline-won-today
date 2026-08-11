@@ -145,7 +145,7 @@ export function ProfileTab({
               </div>
               <div style={{ fontSize: 9, color: "#666", letterSpacing: 1.2, marginTop: 6, lineHeight: 1.5 }}>
                 {dayPct >= 100
-                  ? "No excuses left. The column is full — discipline won today."
+                  ? "No excuses left. The column is full — habit locked."
                   : dayPct >= 50
                     ? "Yellow means unfinished. Finish it before midnight."
                     : "Red column. Every missed day costs you 3 coins."}
