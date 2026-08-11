@@ -1,5 +1,4 @@
-import { createRootRouteWithContext, Link, Outlet, Scripts } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { createRootRouteWithContext, Outlet, Scripts } from "@tanstack/react-router";
 import { QueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "@/styles.css?url";
@@ -10,16 +9,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>AXEN - Habit &amp; Discipline</title>
-        <meta name="description" content="Ultra-futuristic discipline tracker. Sign in to start your streak, missions, and cosmic meditation." />
-        <meta property="og:title" content="AXEN - Habit &amp; Discipline" />
-        <meta property="og:description" content="Ultra-futuristic discipline tracker. Sign in to start your streak, missions, and cosmic meditation." />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AXEN - Habit &amp; Discipline" />
-        <meta name="twitter:description" content="Ultra-futuristic discipline tracker. Sign in to start your streak, missions, and cosmic meditation." />
-        <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c0e4d78-f84f-44e6-9584-e7f572e4decc/id-preview-86879ee9--c14c9cb8-3c47-4db8-a3b5-dee64dd2f905.lovable.app-1784981303889.png" />
-        <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c0e4d78-f84f-44e6-9584-e7f572e4decc/id-preview-86879ee9--c14c9cb8-3c47-4db8-a3b5-dee64dd2f905.lovable.app-1784981303889.png" />
         <link rel="stylesheet" href={appCss} />
         <link rel="icon" href="/favicon.ico" type="image/x-icon" />
       </head>
@@ -36,7 +25,6 @@ function RootComponent() {
   return (
     <div style={{ minHeight: "100vh", background: "#000" }}>
       <Outlet />
-      <TanStackRouterDevtools />
     </div>
   );
 }
