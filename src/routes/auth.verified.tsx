@@ -5,10 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/auth/verified")({
   head: () => ({
     meta: [
-      { title: "Email verified — DWT" },
-      { name: "description", content: "Your DWT account email is verified. Sign in to begin." },
-      { property: "og:title", content: "Email verified — DWT" },
-      { property: "og:description", content: "Your DWT account email is verified. Sign in to begin." },
+      { title: "Email verified — AXEN" },
+      { name: "description", content: "Your AXEN account email is verified. Sign in to begin." },
+      { property: "og:title", content: "Email verified — AXEN" },
+      { property: "og:description", content: "Your AXEN account email is verified. Sign in to begin." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

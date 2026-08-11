@@ -6,10 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "Reset password — DWT" },
-      { name: "description", content: "Set a new password for your DWT account." },
-      { property: "og:title", content: "Reset password — DWT" },
-      { property: "og:description", content: "Set a new password for your DWT account." },
+      { title: "Reset password — AXEN" },
+      { name: "description", content: "Set a new password for your AXEN account." },
+      { property: "og:title", content: "Reset password — AXEN" },
+      { property: "og:description", content: "Set a new password for your AXEN account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -73,7 +73,7 @@ function ResetPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
       <div style={{ maxWidth: 420, width: "100%" }}>
-        <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: 5, textAlign: "center", color: "#fff", textShadow: `0 0 20px ${G}` }}>DWT</h1>
+        <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: 5, textAlign: "center", color: "#fff", textShadow: `0 0 20px ${G}` }}>AXEN</h1>
         <p style={{ textAlign: "center", letterSpacing: 3, fontSize: 10, color: G, marginTop: 4 }}>
           {done ? "PASSWORD UPDATED" : "SET NEW PASSWORD"}
         </p>
