@@ -3,9 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — DWT by NX AI" },
-      { name: "description", content: "Simple pricing for DWT. 3-day free trial. Monthly and yearly plans available worldwide." },
-      { property: "og:title", content: "DWT Pricing — 3-Day Free Trial" },
+      { title: "Pricing — AXEN by NX AI" },
+      { name: "description", content: "Simple pricing for AXEN. 3-day free trial. Monthly and yearly plans available worldwide." },
+      { property: "og:title", content: "AXEN Pricing — 3-Day Free Trial" },
       { property: "og:description", content: "Start your discipline journey with a 3-day free trial. Cancel anytime." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -27,7 +27,7 @@ function Pricing() {
     <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", padding: "40px 20px", backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
         <nav style={{ display: "flex", justifyContent: "space-between", marginBottom: 40 }}>
-          <Link to="/" style={{ color: G, textDecoration: "none", letterSpacing: 3, fontSize: 12 }}>← DWT</Link>
+          <Link to="/" style={{ color: G, textDecoration: "none", letterSpacing: 3, fontSize: 12 }}>← AXEN</Link>
           <Link to="/auth" style={{ color: G, textDecoration: "none", letterSpacing: 3, fontSize: 12 }}>SIGN IN →</Link>
         </nav>
         <h1 style={{ fontSize: 42, fontWeight: 900, letterSpacing: 4, textAlign: "center", color: "#fff", textShadow: `0 0 30px ${G}` }}>PRICING</h1>
@@ -68,7 +68,7 @@ function Pricing() {
         </div>
 
         <footer style={{ marginTop: 60, textAlign: "center", fontSize: 11, color: "#555", letterSpacing: 2 }}>
-          <div>DWT is a product of NX AI</div>
+          <div>AXEN is a product of NX AI</div>
           <div style={{ marginTop: 12, display: "flex", justifyContent: "center", gap: 20 }}>
             <Link to="/privacy" style={{ color: "#888", textDecoration: "none" }}>PRIVACY</Link>
             <Link to="/terms" style={{ color: "#888", textDecoration: "none" }}>TERMS</Link>
