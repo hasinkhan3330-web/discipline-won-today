@@ -10,10 +10,10 @@ export const Route = createFileRoute("/auth")({
 
   head: () => ({
     meta: [
-      { title: "Sign in — DWT" },
-      { name: "description", content: "Sign in or create an account to start tracking discipline on DWT." },
-      { property: "og:title", content: "Sign in — DWT" },
-      { property: "og:description", content: "Sign in or create an account to start tracking discipline on DWT." },
+      { title: "Sign in — AXEN" },
+      { name: "description", content: "Sign in or create an account to start tracking discipline on AXEN." },
+      { property: "og:title", content: "Sign in — AXEN" },
+      { property: "og:description", content: "Sign in or create an account to start tracking discipline on AXEN." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -200,7 +200,7 @@ function AuthPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
       <div style={{ maxWidth: 400, width: "100%" }}>
-        <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: 5, textAlign: "center", color: "#fff", textShadow: `0 0 20px ${G}` }}>DWT</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 900, letterSpacing: 5, textAlign: "center", color: "#fff", textShadow: `0 0 20px ${G}` }}>AXEN</h1>
         <p style={{ textAlign: "center", letterSpacing: 3, fontSize: 10, color: G, marginTop: 4 }}>
           {mode === "signin" ? "ENTER THE SYSTEM" : "INITIATE PROTOCOL"}
         </p>

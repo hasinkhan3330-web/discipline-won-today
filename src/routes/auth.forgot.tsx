@@ -6,10 +6,10 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/auth/forgot")({
   head: () => ({
     meta: [
-      { title: "Forgot password — DWT" },
-      { name: "description", content: "Reset your DWT account password with a secure email link." },
-      { property: "og:title", content: "Forgot password — DWT" },
-      { property: "og:description", content: "Reset your DWT account password with a secure email link." },
+      { title: "Forgot password — AXEN" },
+      { name: "description", content: "Reset your AXEN account password with a secure email link." },
+      { property: "og:title", content: "Forgot password — AXEN" },
+      { property: "og:description", content: "Reset your AXEN account password with a secure email link." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -61,7 +61,7 @@ function ForgotPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
       <div style={{ maxWidth: 420, width: "100%" }}>
-        <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: 5, textAlign: "center", color: "#fff", textShadow: `0 0 20px ${G}` }}>DWT</h1>
+        <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: 5, textAlign: "center", color: "#fff", textShadow: `0 0 20px ${G}` }}>AXEN</h1>
         <p style={{ textAlign: "center", letterSpacing: 3, fontSize: 10, color: G, marginTop: 4 }}>
           {sent ? "TRANSMISSION SENT" : "RECOVER ACCESS"}
         </p>

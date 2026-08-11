@@ -34,7 +34,7 @@ export function PlayBillingButton({
       return;
     }
     toast.success(via === "restore" ? "Purchase restored" : "Payment successful", {
-      description: "DWT PRO unlocked.",
+      description: "AXEN PRO unlocked.",
     });
     window.dispatchEvent(new Event("subscription:refresh"));
     onSuccess?.();

@@ -48,8 +48,8 @@ export function RazorpayPayButton({
           amount: order.amount,
           currency: order.currency,
           order_id: order.orderId,
-          name: "Discipline Won Today",
-          description: `DWT PRO · ${cycle.toUpperCase()} — ${PRICING[cycle].display}`,
+          name: "AXEN - Habit & Discipline",
+          description: `AXEN PRO · ${cycle.toUpperCase()} — ${PRICING[cycle].display}`,
           prefill: email ? { email } : undefined,
           theme: { color: G },
           modal: {
@@ -67,7 +67,7 @@ export function RazorpayPayButton({
             if (!res.active) {
               toast.error("Payment not verified", { description: res.error ?? "Please contact support." });
             } else {
-              toast.success("Payment successful", { description: "DWT PRO unlocked." });
+              toast.success("Payment successful", { description: "AXEN PRO unlocked." });
               window.dispatchEvent(new Event("subscription:refresh"));
               onSuccess?.();
             }

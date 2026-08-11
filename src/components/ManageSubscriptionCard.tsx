@@ -53,7 +53,7 @@ export function ManageSubscriptionCard() {
       if (native) await restorePlayPurchases(uid);
       const res = await syncPlayEntitlement({ data: {} } as never);
       if ("error" in res) throw new Error(res.error);
-      if (res.active) toast.success("Purchase restored", { description: "DWT PRO is unlocked." });
+      if (res.active) toast.success("Purchase restored", { description: "AXEN PRO is unlocked." });
       else toast.message("No active purchase found", { description: "Sign in with the Google account used for the purchase." });
       window.dispatchEvent(new Event("subscription:refresh"));
       setTimeout(() => { if (mounted.current) reload(); }, 1200);

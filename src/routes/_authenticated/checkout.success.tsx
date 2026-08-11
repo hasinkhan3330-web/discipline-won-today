@@ -9,10 +9,10 @@ const G2 = "#a855f7";
 export const Route = createFileRoute("/_authenticated/checkout/success")({
   head: () => ({
     meta: [
-      { title: "Welcome to DWT PRO" },
-      { name: "description", content: "Your DWT PRO trial is now active. The full system is unlocked." },
-      { property: "og:title", content: "Welcome to DWT PRO" },
-      { property: "og:description", content: "Your DWT PRO trial is now active." },
+      { title: "Welcome to AXEN PRO" },
+      { name: "description", content: "Your AXEN PRO trial is now active. The full system is unlocked." },
+      { property: "og:title", content: "Welcome to AXEN PRO" },
+      { property: "og:description", content: "Your AXEN PRO trial is now active." },
     ],
   }),
   component: SuccessPage,
@@ -63,7 +63,7 @@ function SuccessPage() {
         }}>◉</div>
         <div style={{ letterSpacing: 4, fontSize: 11, color: G, marginBottom: 8 }}>◈ ACCESS GRANTED</div>
         <h1 style={{ fontSize: 30, fontWeight: 900, letterSpacing: 6, color: "#fff", textShadow: `0 0 20px ${G}`, margin: "6px 0 14px" }}>
-          DWT PRO
+          AXEN PRO
         </h1>
         <p style={{ fontSize: 13, color: "#bbb", letterSpacing: 1, lineHeight: 1.6, margin: "0 auto 6px", maxWidth: 380 }}>
           Your <span style={{ color: G, fontWeight: 900 }}>3-day free trial</span> is active. The full system is unlocked — meditation, wake protocol, victories, the legend library, and your PRO badge.

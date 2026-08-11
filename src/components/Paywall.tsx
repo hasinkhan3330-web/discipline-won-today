@@ -33,7 +33,7 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
     <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
       <div style={{ maxWidth: 460, margin: "0 auto", padding: "40px 20px 60px" }}>
         <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontSize: 32, fontWeight: 900, letterSpacing: 6, color: "#fff", textShadow: `0 0 20px ${G}` }}>DWT PRO</h1>
+          <h1 style={{ fontSize: 32, fontWeight: 900, letterSpacing: 6, color: "#fff", textShadow: `0 0 20px ${G}` }}>AXEN PRO</h1>
           <p style={{ letterSpacing: 3, fontSize: 10, color: G, marginTop: 4 }}>UNLOCK THE FULL SYSTEM</p>
           <p style={{ marginTop: 14, fontSize: 12, color: "#aaa", letterSpacing: 1 }}>
             Start with <span style={{ color: G, fontWeight: 900 }}>3 DAYS FREE</span>. Cancel anytime before you're charged.

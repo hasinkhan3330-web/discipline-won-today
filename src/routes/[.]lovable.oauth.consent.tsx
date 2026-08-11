@@ -105,7 +105,7 @@ function Consent() {
   return (
     <Shell>
       <p style={{ marginTop: 12, fontSize: 13, letterSpacing: 1, lineHeight: 1.6 }}>
-        <b style={{ color: "#fff" }}>{clientName}</b> wants to connect to your Discipline Won Today account
+        <b style={{ color: "#fff" }}>{clientName}</b> wants to connect to your AXEN - Habit & Discipline account
         and act as you.
       </p>
       <p style={{ marginTop: 10, fontSize: 11, color: "#888", letterSpacing: 1, lineHeight: 1.6 }}>

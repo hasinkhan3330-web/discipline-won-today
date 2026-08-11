@@ -1,4 +1,4 @@
-/** DWT PRO catalog. Billing is handled exclusively by Google Play Billing. */
+/** AXEN PRO catalog. Billing is handled exclusively by Google Play Billing. */
 
 export type Cycle = "monthly" | "yearly";
 
@@ -26,6 +26,6 @@ export const AMOUNT_PAISE: Record<Cycle, number> = {
 
 
 export function planLabelFor(priceId?: string | null): string {
-  if (!priceId) return "DWT PRO";
-  return priceId.includes("yearly") ? "DWT PRO · YEARLY" : "DWT PRO · MONTHLY";
+  if (!priceId) return "AXEN PRO";
+  return priceId.includes("yearly") ? "AXEN PRO · YEARLY" : "AXEN PRO · MONTHLY";
 }
