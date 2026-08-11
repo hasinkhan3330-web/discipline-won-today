@@ -8,7 +8,7 @@ import recentCompletions from "./tools/recent-completions";
 const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unset";
 
 export default defineMcp({
-  name: "discipline-won-today-mcp",
+  name: "axen-mcp",
   title: "Discipline Won Today",
   version: "0.1.0",
   instructions:
