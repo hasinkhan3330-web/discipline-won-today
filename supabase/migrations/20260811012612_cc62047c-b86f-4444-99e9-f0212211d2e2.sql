@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.enforce_task_limit() FROM PUBLIC, anon, authenticated;
