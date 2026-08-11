@@ -11,7 +11,7 @@
   },
   "mcp": {
     "server": {
-      "name": "discipline-won-today-mcp",
+      "name": "axen-mcp",
       "version": "0.1.0",
       "title": "Discipline Won Today"
     },
