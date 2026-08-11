@@ -44,10 +44,10 @@ const RINGTONES = [
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "DWT — Discipline Won Today" },
-      { name: "description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, warrior quotes, streaks." },
-      { property: "og:title", content: "DWT — Discipline Won Today" },
-      { property: "og:description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, warrior quotes, streaks." },
+      { title: "AXEN - Habit & Discipline" },
+      { name: "description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, legendary quotes, streaks." },
+      { property: "og:title", content: "AXEN - Habit & Discipline" },
+      { property: "og:description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, legendary quotes, streaks." },
     ],
   }),
   component: App,
@@ -608,7 +608,7 @@ function App() {
         <div style={{ padding: "14px 16px", background: "rgba(10,10,25,0.7)", backdropFilter: "blur(20px)", borderBottom: `1px solid ${G}55`, display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 99, boxShadow: `0 2px 20px ${G}22` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 10px ${G}`, animation: "pulse 1.5s infinite" }} />
-            <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: `0 0 12px ${G}` }}>DWT</div>
+            <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: `0 0 12px ${G}` }}>AXEN</div>
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             {(Object.keys(THEMES) as ThemeKey[]).filter(k => streak >= THEMES[k].unlock).map(k => {
@@ -701,7 +701,7 @@ function App() {
 
           {/* LEGAL LINKS */}
           <div style={{ marginTop: 32, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${G}22` }}>
-            <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginBottom: 10 }}>◈ DWT · A PRODUCT OF NX AI</div>
+            <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginBottom: 10 }}>◈ AXEN · A PRODUCT OF NX AI</div>
             <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
               <Link to="/privacy" style={{ color: "#888", textDecoration: "none", fontSize: 10, letterSpacing: 1.5 }}>PRIVACY</Link>
               <Link to="/terms" style={{ color: "#888", textDecoration: "none", fontSize: 10, letterSpacing: 1.5 }}>TERMS</Link>
