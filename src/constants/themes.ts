@@ -24,6 +24,7 @@ export const THEMES = {
 export const THEME_PHOTO: Partial<Record<ThemeKey, string>> = {
   midnight: nightHighway.url,
   hourglass: hourglassPoster.url,
+  aurum: aurumPeak.url,
 };
 
 /** Looping cinematic video wallpapers bound to a theme (free for everyone). */
