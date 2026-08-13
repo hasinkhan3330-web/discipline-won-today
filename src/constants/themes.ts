@@ -1,4 +1,5 @@
 import nightHighway from "@/assets/night-highway.jpg.asset.json";
+import aurumPeak from "@/assets/aurum-peak.jpg.asset.json";
 import hourglassVideo from "@/assets/hourglass.mp4.asset.json";
 import hourglassPoster from "@/assets/hourglass-poster.jpg.asset.json";
 
