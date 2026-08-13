@@ -2,6 +2,8 @@ import nightHighway from "@/assets/night-highway.jpg.asset.json";
 import aurumPeak from "@/assets/aurum-peak.jpg.asset.json";
 import hourglassVideo from "@/assets/hourglass.mp4.asset.json";
 import hourglassPoster from "@/assets/hourglass-poster.jpg.asset.json";
+import horizonVideo from "@/assets/horizon.mp4.asset.json";
+import horizonPoster from "@/assets/horizon-poster.jpg.asset.json";
 
 export const THEMES = {
   space:   { name: "COSMOS",    accent: "#00d4ff", accent2: "#7b5cff", glow: "0 0 20px #00d4ff", unlock: 0,   wall: 0 },
