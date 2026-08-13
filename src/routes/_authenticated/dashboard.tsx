@@ -721,17 +721,25 @@ function App() {
           {TABS.map(n => {
             const active = tab === n.id;
             const locked = gateReady && premiumTabs.includes(n.id) && !premiumUnlocked;
+            const Ico = locked ? Lock : n.Icon;
             return (
               <button key={n.id} onClick={() => setTab(n.id)} style={{
-                flex: 1, padding: "10px 4px 12px", background: "transparent", border: "none", cursor: "pointer",
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                color: active ? G : "#555", position: "relative",
+                flex: 1, padding: "9px 2px 10px", background: "transparent", border: "none", cursor: "pointer",
+                display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
+                color: active ? G : "#5a5a6e", position: "relative", transition: "color .25s ease",
               }}>
-                {active && <div style={{ position: "absolute", top: 0, left: "20%", right: "20%", height: 2, background: G, boxShadow: `0 0 8px ${G}` }} />}
-                <span style={{ fontSize: 20, lineHeight: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", filter: active ? `drop-shadow(0 0 6px ${G})` : "none" }}>
-                  {locked ? "🔒" : n.id === "profile" ? <User size={20} strokeWidth={2} /> : n.icon}
+                {active && <div style={{ position: "absolute", top: 0, left: "24%", right: "24%", height: 2, background: `linear-gradient(90deg, transparent, ${G}, transparent)`, boxShadow: `0 0 10px ${G}` }} />}
+                <span style={{
+                  width: 38, height: 32, borderRadius: 999, display: "inline-flex", alignItems: "center", justifyContent: "center",
+                  background: active ? `linear-gradient(135deg, ${G}2e, ${G2}22)` : "transparent",
+                  border: `1px solid ${active ? `${G}66` : "transparent"}`,
+                  boxShadow: active ? `0 0 16px ${G}44, inset 0 1px 0 ${G}33` : "none",
+                  filter: active ? `drop-shadow(0 0 6px ${G}aa)` : "none",
+                  transition: "all .25s ease",
+                }}>
+                  <Ico size={active ? 21 : 19} strokeWidth={active ? 2.4 : 1.9} />
                 </span>
-                <span style={{ fontSize: 9, letterSpacing: 1.5, textTransform: "uppercase", fontWeight: 700 }}>{n.label}</span>
+                <span style={{ fontSize: 8.5, letterSpacing: 1.6, textTransform: "uppercase", fontWeight: 900, opacity: active ? 1 : 0.75 }}>{n.label}</span>
               </button>
             );
           })}
