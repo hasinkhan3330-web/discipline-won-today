@@ -534,12 +534,12 @@ function App() {
   const TITLE = titleStyle;
 
   const TABS = [
-    { id: "home", icon: "⚔️", label: "Home" },
-    { id: "rank", icon: "🏆", label: "Rank" },
-    { id: "quotes", icon: "💬", label: "Quotes" },
-    { id: "zen", icon: "🧘", label: "Zen" },
-    { id: "stats", icon: "📊", label: "Stats" },
-    { id: "profile", icon: "👤", label: "You" },
+    { id: "home", Icon: Swords, label: "Home" },
+    { id: "rank", Icon: Crown, label: "Rank" },
+    { id: "quotes", Icon: Quote, label: "Quotes" },
+    { id: "zen", Icon: Flower2, label: "Zen" },
+    { id: "stats", Icon: BarChart3, label: "Stats" },
+    { id: "profile", Icon: User, label: "You" },
   ];
 
   return (
