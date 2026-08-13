@@ -1,4 +1,5 @@
 import nightHighway from "@/assets/night-highway.jpg.asset.json";
+import aurumPeak from "@/assets/aurum-peak.jpg.asset.json";
 import hourglassVideo from "@/assets/hourglass.mp4.asset.json";
 import hourglassPoster from "@/assets/hourglass-poster.jpg.asset.json";
 
@@ -16,12 +17,14 @@ export const THEMES = {
   ignite:  { name: "IGNITION",  accent: "#ff7a18", accent2: "#ffd93b", glow: "0 0 20px #ff7a18", unlock: 365, wall: 7 },
   midnight:{ name: "MIDNIGHT",  accent: "#dfe9f5", accent2: "#7f8da3", glow: "0 0 20px #dfe9f5", unlock: 0,   wall: 0 },
   hourglass:{ name: "HOURGLASS", accent: "#d8dee9", accent2: "#8e9bad", glow: "0 0 20px #d8dee9", unlock: 0,  wall: 0 },
+  aurum:   { name: "AURUM",     accent: "#f5c451", accent2: "#8a5a12", glow: "0 0 22px #f5c451", unlock: 0,  wall: 0 },
 } as const;
 
 /** Photo wallpapers bound to a theme (rendered under the animated layers). */
 export const THEME_PHOTO: Partial<Record<ThemeKey, string>> = {
   midnight: nightHighway.url,
   hourglass: hourglassPoster.url,
+  aurum: aurumPeak.url,
 };
 
 /** Looping cinematic video wallpapers bound to a theme (free for everyone). */
