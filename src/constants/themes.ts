@@ -2,6 +2,8 @@ import nightHighway from "@/assets/night-highway.jpg.asset.json";
 import aurumPeak from "@/assets/aurum-peak.jpg.asset.json";
 import hourglassVideo from "@/assets/hourglass.mp4.asset.json";
 import hourglassPoster from "@/assets/hourglass-poster.jpg.asset.json";
+import horizonVideo from "@/assets/horizon.mp4.asset.json";
+import horizonPoster from "@/assets/horizon-poster.jpg.asset.json";
 
 export const THEMES = {
   space:   { name: "COSMOS",    accent: "#00d4ff", accent2: "#7b5cff", glow: "0 0 20px #00d4ff", unlock: 0,   wall: 0 },
@@ -18,6 +20,7 @@ export const THEMES = {
   midnight:{ name: "MIDNIGHT",  accent: "#dfe9f5", accent2: "#7f8da3", glow: "0 0 20px #dfe9f5", unlock: 0,   wall: 0 },
   hourglass:{ name: "HOURGLASS", accent: "#d8dee9", accent2: "#8e9bad", glow: "0 0 20px #d8dee9", unlock: 0,  wall: 0 },
   aurum:   { name: "AURUM",     accent: "#f5c451", accent2: "#8a5a12", glow: "0 0 22px #f5c451", unlock: 0,  wall: 0 },
+  horizon: { name: "HORIZON",   accent: "#ffb347", accent2: "#2e6f9e", glow: "0 0 22px #ffb347", unlock: 0,  wall: 0 },
 } as const;
 
 /** Photo wallpapers bound to a theme (rendered under the animated layers). */
@@ -25,15 +28,17 @@ export const THEME_PHOTO: Partial<Record<ThemeKey, string>> = {
   midnight: nightHighway.url,
   hourglass: hourglassPoster.url,
   aurum: aurumPeak.url,
+  horizon: horizonPoster.url,
 };
 
 /** Looping cinematic video wallpapers bound to a theme (free for everyone). */
 export const THEME_VIDEO: Partial<Record<ThemeKey, string>> = {
   hourglass: hourglassVideo.url,
+  horizon: horizonVideo.url,
 };
 
 /** Themes reserved for PRO members. */
-export const PRO_THEMES: ThemeKey[] = ["midnight"];
+export const PRO_THEMES: ThemeKey[] = ["midnight", "horizon"];
 
 
 export type ThemeKey = keyof typeof THEMES;
