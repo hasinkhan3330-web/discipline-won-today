@@ -28,15 +28,17 @@ export const THEME_PHOTO: Partial<Record<ThemeKey, string>> = {
   midnight: nightHighway.url,
   hourglass: hourglassPoster.url,
   aurum: aurumPeak.url,
+  horizon: horizonPoster.url,
 };
 
 /** Looping cinematic video wallpapers bound to a theme (free for everyone). */
 export const THEME_VIDEO: Partial<Record<ThemeKey, string>> = {
   hourglass: hourglassVideo.url,
+  horizon: horizonVideo.url,
 };
 
 /** Themes reserved for PRO members. */
-export const PRO_THEMES: ThemeKey[] = ["midnight"];
+export const PRO_THEMES: ThemeKey[] = ["midnight", "horizon"];
 
 
 export type ThemeKey = keyof typeof THEMES;
