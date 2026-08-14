@@ -1,7 +1,28 @@
 import { cardStyle, titleStyle } from "./styles";
 import { DeepFocus, type FocusTier } from "@/components/DeepFocus";
+import {
+  AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
+  Flame, Footprints, PenLine, Sparkles, Check, type LucideIcon,
+} from "lucide-react";
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
+
+const ICON_RULES: { k: RegExp; I: LucideIcon }[] = [
+  { k: /wake|alarm|4\s?am|morning/i, I: AlarmClock },
+  { k: /workout|gym|train|exercise|push/i, I: Dumbbell },
+  { k: /focus|read|study|book|learn/i, I: BookOpen },
+  { k: /junk|food|diet|eat|sugar/i, I: Salad },
+  { k: /shower|cold|water|hydrat/i, I: Droplets },
+  { k: /sleep|night|bed/i, I: Moon },
+  { k: /meditat|zen|breath|mind/i, I: Brain },
+  { k: /walk|run|steps|cardio/i, I: Footprints },
+  { k: /journal|write|plan/i, I: PenLine },
+  { k: /nofap|streak|disciplin/i, I: Flame },
+];
+
+function taskIcon(name: string): LucideIcon {
+  return ICON_RULES.find(r => r.k.test(name))?.I ?? Sparkles;
+}
 
 export function HomeTab({ G, G2, coins, streak, tasks, tick, onFocusComplete }: {
   G: string; G2: string;
