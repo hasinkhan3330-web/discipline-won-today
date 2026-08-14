@@ -496,7 +496,7 @@ function App() {
   const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
 
   const keyframes = `
-    @keyframes twinkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+    @keyframes twinkle { %,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
     @keyframes shoot { 0%{transform:translateX(0) translateY(0) rotate(20deg);opacity:0} 10%{opacity:1} 70%{opacity:1} 100%{transform:translateX(140vw) translateY(60vh) rotate(20deg);opacity:0} }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
     @keyframes glow { 0%,100%{text-shadow:0 0 20px ${G},0 0 40px ${G}} 50%{text-shadow:0 0 30px ${G},0 0 60px ${G},0 0 80px ${G2}} }
@@ -507,6 +507,11 @@ function App() {
     @keyframes breatheOut { from{transform:scale(1);box-shadow:0 0 120px ${G},0 0 240px ${G2}88} to{transform:scale(0.55);box-shadow:0 0 40px ${G}55} }
     @keyframes breatheHold { 0%,100%{transform:scale(1);box-shadow:0 0 120px ${G},0 0 240px ${G2}88} 50%{transform:scale(1.02);box-shadow:0 0 160px ${G},0 0 300px ${G2}} }
     @keyframes ringSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+    @keyframes nav-pulse { 0%,100%{box-shadow:0 -4px 20px ${G}22} 50%{box-shadow:0 -6px 28px ${G}44,0 0 16px ${G}33} }
+    @keyframes icon-float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-2px)} }
+    @keyframes glow-breathe { 0%,100%{filter:drop-shadow(0 0 4px ${G}88)} 50%{filter:drop-shadow(0 0 10px ${G}cc)} }
+    @keyframes press-burst { 0%{transform:scale(0.95);box-shadow:0 0 0 ${G}ff} 100%{transform:scale(1);box-shadow:0 0 0 8px transparent} }
+    @keyframes shimmer-sweep { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
   `;
 
   if (screen === "splash") {
