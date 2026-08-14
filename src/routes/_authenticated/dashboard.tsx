@@ -717,7 +717,7 @@ function App() {
         </div>
 
         {/* BOTTOM NAV */}
-        <div style={{
+        <div className="bottom-nav-shell" style={{
           position: "fixed", bottom: 0, left: 0, right: 0, maxWidth: 430, margin: "0 auto",
           background: "rgba(10,10,25,0.85)", backdropFilter: "blur(20px)",
           borderTop: `1px solid ${G}55`, display: "flex", zIndex: 99,
@@ -728,13 +728,13 @@ function App() {
             const locked = gateReady && premiumTabs.includes(n.id) && !premiumUnlocked;
             const Ico = locked ? Lock : n.Icon;
             return (
-              <button key={n.id} onClick={() => setTab(n.id)} style={{
+              <button key={n.id} className={`bottom-nav-tab ${active ? "bottom-nav-tab--active" : ""} ${locked ? "bottom-nav-tab--locked" : ""}`} onClick={() => setTab(n.id)} style={{
                 flex: 1, padding: "9px 2px 10px", background: "transparent", border: "none", cursor: "pointer",
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
-                color: active ? G : "#5a5a6e", position: "relative", transition: "color .25s ease",
+                color: active ? G : "#5a5a6e", position: "relative", transition: "color .25s ease, transform .12s ease",
               }}>
-                {active && <div style={{ position: "absolute", top: 0, left: "24%", right: "24%", height: 2, background: `linear-gradient(90deg, transparent, ${G}, transparent)`, boxShadow: `0 0 10px ${G}` }} />}
-                <span style={{
+                {active && <div className="bottom-nav-tab__bar" style={{ position: "absolute", top: 0, left: "24%", right: "24%", height: 2, background: `linear-gradient(90deg, transparent, ${G}, transparent)`, boxShadow: `0 0 10px ${G}` }} />}
+                <span className="bottom-nav-tab__halo" style={{
                   width: 38, height: 32, borderRadius: 999, display: "inline-flex", alignItems: "center", justifyContent: "center",
                   background: active ? `linear-gradient(135deg, ${G}2e, ${G2}22)` : "transparent",
                   border: `1px solid ${active ? `${G}66` : "transparent"}`,
@@ -742,12 +742,27 @@ function App() {
                   filter: active ? `drop-shadow(0 0 6px ${G}aa)` : "none",
                   transition: "all .25s ease",
                 }}>
-                  <Ico size={active ? 21 : 19} strokeWidth={active ? 2.4 : 1.9} />
+                  <Ico className="bottom-nav-tab__icon" size={active ? 21 : 19} strokeWidth={active ? 2.4 : 1.9} />
                 </span>
-                <span style={{ fontSize: 8.5, letterSpacing: 1.6, textTransform: "uppercase", fontWeight: 900, opacity: active ? 1 : 0.75 }}>{n.label}</span>
+                <span className="bottom-nav-tab__label" style={{ fontSize: 8.5, letterSpacing: 1.6, textTransform: "uppercase", fontWeight: 900, opacity: active ? 1 : 0.75 }}>{n.label}</span>
               </button>
             );
           })}
+          <style>{`
+            .bottom-nav-shell { animation: nav-pulse 4s ease-in-out infinite; }
+            .bottom-nav-tab { user-select: none; -webkit-tap-highlight-color: transparent; }
+            .bottom-nav-tab:hover { color: ${G} !important; transform: translateY(-2px); }
+            .bottom-nav-tab:hover .bottom-nav-tab__halo { background: linear-gradient(135deg, ${G}22, transparent); border-color: ${G}55; box-shadow: 0 0 16px ${G}55; }
+            .bottom-nav-tab:hover .bottom-nav-tab__icon { transform: scale(1.14); filter: drop-shadow(0 0 6px ${G}aa); animation: icon-float 1.6s ease-in-out infinite; }
+            .bottom-nav-tab:hover .bottom-nav-tab__label { opacity: 1; text-shadow: 0 0 8px ${G}66; }
+            .bottom-nav-tab:active { transform: scale(0.92); transition: transform .08s ease; }
+            .bottom-nav-tab:active .bottom-nav-tab__halo { animation: press-burst .35s ease-out; }
+            .bottom-nav-tab--active:hover .bottom-nav-tab__halo { background: linear-gradient(135deg, ${G}44, ${G2}22); border-color: ${G}88; box-shadow: 0 0 22px ${G}66, inset 0 1px 0 ${G}55; }
+            .bottom-nav-tab--active:hover .bottom-nav-tab__icon { animation: glow-breathe 1.4s ease-in-out infinite; }
+            .bottom-nav-tab--active .bottom-nav-tab__bar { animation: shimmer-sweep 1.8s linear infinite; }
+            .bottom-nav-tab--locked .bottom-nav-tab__icon { opacity: .75; }
+            .bottom-nav-tab--locked:hover .bottom-nav-tab__icon { opacity: 1; transform: scale(1.1); }
+          `}</style>
         </div>
       </div>
 
