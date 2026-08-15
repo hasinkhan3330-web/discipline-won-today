@@ -69,7 +69,7 @@ function Landing() {
         </div>
 
         <footer style={{ marginTop: 60, fontSize: 10, color: "#555", letterSpacing: 2 }}>
-          <div>AXEN · A PRODUCT OF NX AI</div>
+          <div>AXEN · A PRODUCT OF NEXT AI</div>
           <div style={{ marginTop: 12, display: "flex", justifyContent: "center", gap: 16 }}>
             <Link to="/pricing" style={{ color: "#888", textDecoration: "none" }}>PRICING</Link>
             <Link to="/privacy" style={{ color: "#888", textDecoration: "none" }}>PRIVACY</Link>

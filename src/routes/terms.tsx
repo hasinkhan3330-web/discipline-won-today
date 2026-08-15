@@ -3,10 +3,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms & Conditions — AXEN by NX AI" },
-      { name: "description", content: "Terms and conditions for using the AXEN application, operated by NX AI." },
+      { title: "Terms & Conditions — AXEN by NEXT AI" },
+      { name: "description", content: "Terms and conditions for using the AXEN application, operated by NEXT AI." },
       { property: "og:title", content: "Terms & Conditions — AXEN" },
-      { property: "og:description", content: "The agreement between you and NX AI when using AXEN." },
+      { property: "og:description", content: "The agreement between you and NEXT AI when using AXEN." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -17,10 +17,10 @@ export const Route = createFileRoute("/terms")({
 function Terms() {
   return <LegalShell title="TERMS & CONDITIONS">
     <p><b>Last updated:</b> July 25, 2026</p>
-    <p>These Terms & Conditions ("Terms") govern your use of the AXEN - Habit & Discipline ("AXEN") application, operated by <b>NX AI</b> ("we", "us", "our"). By creating an account or continuing to use AXEN, you agree to these Terms.</p>
+    <p>These Terms & Conditions ("Terms") govern your use of the AXEN - Habit & Discipline ("AXEN") application, operated by <b>NEXT AI</b> ("we", "us", "our"). By creating an account or continuing to use AXEN, you agree to these Terms.</p>
 
     <h2>1. Who You Are Contracting With</h2>
-    <p>You are entering into an agreement with NX AI, the operator of AXEN. You confirm you are of legal age in your jurisdiction, or, if using AXEN on behalf of an organization, that you have authority to bind it.</p>
+    <p>You are entering into an agreement with NEXT AI, the operator of AXEN. You confirm you are of legal age in your jurisdiction, or, if using AXEN on behalf of an organization, that you have authority to bind it.</p>
 
     <h2>2. The Service</h2>
     <p>AXEN is a discipline and habit-tracking application that provides wake-up verification, mission tracking, meditation guides, and motivational content. Features may change over time.</p>
@@ -32,14 +32,14 @@ function Terms() {
     <p>You must not: (a) use AXEN for any unlawful purpose; (b) engage in fraud, spam, or abuse; (c) infringe intellectual property rights; (d) interfere with security — including malware, probing, scraping, or automated access; (e) attempt to reverse engineer, resell, or redistribute the service; (f) circumvent technical limits or payment mechanisms.</p>
 
     <h2>5. Intellectual Property</h2>
-    <p>NX AI retains all rights, title, and interest in AXEN, including software, documentation, branding, and the AXEN design system. You are granted a limited, non-exclusive, non-transferable right to use AXEN within your subscribed plan.</p>
+    <p>NEXT AI retains all rights, title, and interest in AXEN, including software, documentation, branding, and the AXEN design system. You are granted a limited, non-exclusive, non-transferable right to use AXEN within your subscribed plan.</p>
 
     <h2>6. Payment, Subscription & Merchant of Record</h2>
     <p>Payments are processed securely by <b>Google Play Billing</b> (Google LLC). Payment methods are entered directly into the Google Play purchase sheet and are never stored on our servers. Purchases, renewals, cancellations and refunds are governed by these Terms together with <a href="https://play.google.com/intl/en_us/about/play-terms/" style={{color:"#00d4ff"}}>Google Play's Terms of Service</a>. Billing questions can be sent to us directly.</p>
     <p>Subscriptions renew automatically at the end of each billing period until cancelled. You may cancel at any time via the account portal. A 3-day free trial is offered on all plans — you will not be charged until day 4.</p>
 
     <h2>7. User Content</h2>
-    <p>You retain ownership of content you upload (e.g. profile photos). You grant NX AI a limited licence to host and process it solely to provide the service.</p>
+    <p>You retain ownership of content you upload (e.g. profile photos). You grant NEXT AI a limited licence to host and process it solely to provide the service.</p>
 
     <h2>8. Service Availability</h2>
     <p>We do not guarantee uninterrupted or error-free performance. We may perform maintenance, add or remove features, and update the service.</p>
@@ -51,10 +51,10 @@ function Terms() {
     <p>To the fullest extent permitted by law, AXEN is provided "as is" without warranties of merchantability or fitness for a particular purpose. Our aggregate liability is capped at the fees you paid in the 12 months preceding the claim. We exclude liability for indirect, consequential, or special damages, except where such exclusion is prohibited by law (including for fraud, death, or personal injury).</p>
 
     <h2>11. Indemnity</h2>
-    <p>You indemnify NX AI against claims arising from your content, unlawful use of AXEN, or breach of these Terms.</p>
+    <p>You indemnify NEXT AI against claims arising from your content, unlawful use of AXEN, or breach of these Terms.</p>
 
     <h2>12. Governing Law & Disputes</h2>
-    <p>These Terms are governed by the laws of the jurisdiction in which NX AI is established. Disputes will be resolved in the competent courts of that jurisdiction.</p>
+    <p>These Terms are governed by the laws of the jurisdiction in which NEXT AI is established. Disputes will be resolved in the competent courts of that jurisdiction.</p>
 
     <h2>13. Assignment</h2>
     <p>You may not assign these Terms without our consent. We may assign them in connection with a merger, acquisition, or sale of assets.</p>
@@ -63,7 +63,7 @@ function Terms() {
     <p>Neither party is liable for failure to perform due to events beyond reasonable control.</p>
 
     <h2>15. Contact</h2>
-    <p>Questions? Email <b>support@nx-ai.app</b>.</p>
+    <p>Questions? Email <b>support@next-ai.app</b>.</p>
   </LegalShell>;
 }
 
@@ -83,7 +83,7 @@ function LegalShell({ title, children }: { title: string; children: React.ReactN
         <h1 style={{ color: "#fff", letterSpacing: 4, fontSize: 32, textShadow: `0 0 20px ${G}` }}>{title}</h1>
         <div style={{ marginTop: 24, fontSize: 14, lineHeight: 1.8 }} className="legal">{children}</div>
         <footer style={{ marginTop: 60, textAlign: "center", fontSize: 11, color: "#555" }}>
-          AXEN is a product of NX AI · support@nx-ai.app
+          AXEN is a product of NEXT AI · support@next-ai.app
         </footer>
         <style>{`.legal h2{color:${G};letter-spacing:2px;font-size:14px;margin-top:32px}.legal ul{padding-left:20px}.legal li{margin:6px 0}.legal b{color:#fff}`}</style>
       </div>
