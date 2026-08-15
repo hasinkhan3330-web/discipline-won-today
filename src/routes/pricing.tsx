@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — AXEN by NX AI" },
+      { title: "Pricing — AXEN by NEXT AI" },
       { name: "description", content: "Simple pricing for AXEN. 3-day free trial. Monthly and yearly plans available worldwide." },
       { property: "og:title", content: "AXEN Pricing — 3-Day Free Trial" },
       { property: "og:description", content: "Start your discipline journey with a 3-day free trial. Cancel anytime." },
@@ -68,7 +68,7 @@ function Pricing() {
         </div>
 
         <footer style={{ marginTop: 60, textAlign: "center", fontSize: 11, color: "#555", letterSpacing: 2 }}>
-          <div>AXEN is a product of NX AI</div>
+          <div>AXEN is a product of NEXT AI</div>
           <div style={{ marginTop: 12, display: "flex", justifyContent: "center", gap: 20 }}>
             <Link to="/privacy" style={{ color: "#888", textDecoration: "none" }}>PRIVACY</Link>
             <Link to="/terms" style={{ color: "#888", textDecoration: "none" }}>TERMS</Link>

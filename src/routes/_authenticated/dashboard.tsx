@@ -706,7 +706,7 @@ function App() {
 
           {/* LEGAL LINKS */}
           <div style={{ marginTop: 32, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${G}22` }}>
-            <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginBottom: 10 }}>◈ AXEN · A PRODUCT OF NX AI</div>
+            <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginBottom: 10 }}>◈ AXEN · A PRODUCT OF NEXT AI</div>
             <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
               <Link to="/privacy" style={{ color: "#888", textDecoration: "none", fontSize: 10, letterSpacing: 1.5 }}>PRIVACY</Link>
               <Link to="/terms" style={{ color: "#888", textDecoration: "none", fontSize: 10, letterSpacing: 1.5 }}>TERMS</Link>
