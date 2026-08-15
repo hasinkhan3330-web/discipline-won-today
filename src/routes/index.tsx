@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import axenLogo from "@/assets/axen-logo.png";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,8 +44,8 @@ function Landing() {
   return (
     <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
       <div style={{ maxWidth: 520, width: "100%", textAlign: "center" }}>
-        <h1 style={{ fontSize: 44, fontWeight: 900, letterSpacing: 6, margin: 0, color: "#fff", textShadow: `0 0 30px ${G}` }}>AXEN</h1>
-        <p style={{ letterSpacing: 4, fontSize: 11, color: G, marginTop: 8 }}>HABIT & DISCIPLINE</p>
+        <img src={axenLogo} alt="AXEN" style={{ width: "100%", maxWidth: 280, margin: "0 auto", display: "block", filter: "drop-shadow(0 0 30px #00d4ff88)" }} />
+        <p style={{ letterSpacing: 4, fontSize: 12, color: G, marginTop: 12, fontWeight: 700 }}>HABIT & DISCIPLINE</p>
         <p style={{ marginTop: 32, fontSize: 15, lineHeight: 1.7, color: "#bbb" }}>
           The ultra-futuristic discipline tracker. Wake at 4AM. Solve a math challenge to prove it. Meditate with WHO 4-4-4-4 box breathing. Rise through 9 victory milestones from Day 1 to Day 360.
         </p>
