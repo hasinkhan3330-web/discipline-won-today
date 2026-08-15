@@ -12,6 +12,7 @@ import { SpaceWallpaper } from "@/components/SpaceWallpaper";
 import { CropModal } from "@/components/CropModal";
 import { THEMES, MILESTONES, THEME_PHOTO, THEME_VIDEO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
 import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
+import axenLogo from "@/assets/axen-logo.png";
 
 import { useMeditation } from "@/hooks/useMeditation";
 import { cardStyle, titleStyle } from "@/tabs/styles";
@@ -611,9 +612,9 @@ function App() {
       <div style={{ position: "relative", zIndex: 2, maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         {/* TOPBAR */}
         <div style={{ padding: "14px 16px", background: "rgba(10,10,25,0.7)", backdropFilter: "blur(20px)", borderBottom: `1px solid ${G}55`, display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 99, boxShadow: `0 2px 20px ${G}22` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 10px ${G}`, animation: "pulse 1.5s infinite" }} />
-            <div style={{ fontSize: 18, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: `0 0 12px ${G}` }}>AXEN</div>
+            <img src={axenLogo} alt="AXEN" style={{ height: 24, width: "auto", filter: `drop-shadow(0 0 8px ${G})` }} />
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             {(Object.keys(THEMES) as ThemeKey[]).filter(k => streak >= THEMES[k].unlock).map(k => {
