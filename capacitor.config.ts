@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 /**
- * Discipline Won Today — Capacitor config.
+ * AXEN Habit & Discipline — Capacitor config.
  *
  * This app is a TanStack Start (SSR) app, so the Android shell loads the
  * deployed web app instead of a fully static export. `android-shell/` holds a
@@ -14,7 +14,7 @@ const serverUrl = process.env.CAP_SERVER_URL ?? "https://discipline-won-today.lo
 
 const config: CapacitorConfig = {
   appId: "app.lovable.disciplinewontoday",
-  appName: "Discipline Won Today",
+  appName: "AXEN Habit & Discipline",
   webDir: "android-shell",
   server: {
     url: serverUrl,

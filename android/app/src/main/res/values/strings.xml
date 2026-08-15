@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Discipline Won Today</string>
-    <string name="title_activity_main">Discipline Won Today</string>
+    <string name="app_name">AXEN Habit &amp; Discipline</string>
+    <string name="title_activity_main">AXEN Habit &amp; Discipline</string>
     <string name="package_name">app.lovable.disciplinewontoday</string>
     <string name="custom_url_scheme">app.lovable.disciplinewontoday</string>
 </resources>
