@@ -1,4 +1,4 @@
-# Android Release Build — Discipline Won Today
+# Android Release Build — AXEN Habit & Discipline
 
 How to produce a **signed** Android release (APK for direct install, AAB for Google Play).
 
