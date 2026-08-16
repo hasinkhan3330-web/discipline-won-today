@@ -1,6 +1,37 @@
 # Android Release Build — AXEN Habit & Discipline
 
-How to produce a **signed** Android release (APK for direct install, AAB for Google Play).
+## Quick start (fixes "Gradle project sync failed" / "Could not read script")
+
+The `android/` folder is a **generated native project**. It must be prepared from the
+project root before Android Studio can sync it — and it must be opened as a folder,
+never from inside a ZIP.
+
+```bash
+# 1. Unzip the project somewhere real (Desktop/axen), NOT a temp/ZIP viewer path
+# 2. From the project root (folder containing package.json):
+npm install
+npx cap sync android        # or: npm run android:prepare
+```
+
+Then in Android Studio: **File > Open** and select the `android` folder itself
+(not the project root, not the ZIP). Let Gradle sync finish, then **Build > Build
+Bundle(s)/APK(s)**.
+
+If Gradle can't find the SDK, copy `android/local.properties.example` to
+`android/local.properties` and set `sdk.dir`.
+
+Requirements: **JDK 17 or 21**, Android Studio Ladybug+ (AGP 8.7.2, Gradle 8.11.1,
+compileSdk 35). In Android Studio: Settings > Build Tools > Gradle > Gradle JDK = 17 or 21.
+
+Common causes of a failed sync and their fix:
+
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| `Could not read script .../cordova.variables.gradle` | project opened from a ZIP, or `cap sync` never ran | unzip properly, then `npx cap sync android` |
+| `[AXEN] node_modules not found` | opened `android/` without installing deps | `npm install` at the project root |
+| `[AXEN] android/capacitor-cordova-android-plugins is missing` | sync not run | `npx cap sync android` |
+| `Unsupported class file major version` | wrong JDK | set Gradle JDK to 17 or 21 |
+| SDK location not found | missing `local.properties` | copy the example file and set `sdk.dir` |
 
 ---
 
