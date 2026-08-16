@@ -12,13 +12,16 @@
     "format": "prettier --write .",
     "android:keystore": "node scripts/android-keystore.mjs",
     "android:sync": "cap sync android",
-    "android:open": "cap open android",
+    "android:open": "npm run android:sync && cap open android",
     "android:run": "cap run android",
-    "android:clean": "cd android && ./gradlew clean",
+    "android:clean": "cd android && ./gradlew clean --no-daemon",
     "android:apk": "npm run android:sync && cd android && ./gradlew assembleRelease",
     "android:aab": "npm run android:sync && cd android && ./gradlew bundleRelease",
     "android:release": "npm run android:apk && npm run android:aab",
-    "android:verify": "cd android && ./gradlew signingReport"
+    "android:verify": "cd android && ./gradlew signingReport",
+    "android:add": "cap add android",
+    "android:doctor": "cap doctor android",
+    "android:prepare": "npm install && cap sync android"
   },
   "dependencies": {
     "@capacitor/android": "^7",
