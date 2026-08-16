@@ -1,5 +1,31 @@
+// AXEN Habit & Discipline — Gradle settings.
+//
+// The `capacitor-cordova-android-plugins` module and `node_modules` are generated
+// by `npx cap sync android`. If they are missing, Gradle would otherwise fail with
+// a cryptic "Could not read script ... cordova.variables.gradle" error, so we fail
+// fast with a readable message instead.
+
+def cordovaPluginsDir = new File(rootDir, 'capacitor-cordova-android-plugins')
+def nodeModulesDir = new File(rootDir, '../node_modules')
+
+if (!nodeModulesDir.exists()) {
+    throw new GradleException(
+        "\n\n[AXEN] node_modules not found.\n" +
+        "Run these from the PROJECT ROOT (the folder that contains package.json), then re-sync:\n" +
+        "  npm install\n  npx cap sync android\n"
+    )
+}
+
+if (!cordovaPluginsDir.exists()) {
+    throw new GradleException(
+        "\n\n[AXEN] android/capacitor-cordova-android-plugins is missing.\n" +
+        "This folder is generated. Run from the PROJECT ROOT, then re-sync in Android Studio:\n" +
+        "  npx cap sync android\n"
+    )
+}
+
 include ':app'
 include ':capacitor-cordova-android-plugins'
-project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins/')
+project(':capacitor-cordova-android-plugins').projectDir = cordovaPluginsDir
 
 apply from: 'capacitor.settings.gradle'
