@@ -105,26 +105,50 @@ keyPassword=<your key password>
 
 ---
 
-## 3. Build
+## 3. Build the Play-ready AAB
+
+```bash
+npm run android:keystore     # one time (see section 1–2)
+npm run android:aab          # sync + clean + bundleRelease
+npm run android:aab:verify   # confirms the bundle exists and is signed
+```
+
+**The generated bundle is here:**
+
+```
+<project root>/android/app/build/outputs/bundle/release/app-release.aab
+```
+
+That is the exact file you upload in **Play Console → Release → Production →
+Create new release**.
 
 | Command                  | Output                                                        |
 | ------------------------ | ------------------------------------------------------------- |
 | `npm run android:apk`    | `android/app/build/outputs/apk/release/app-release.apk`        |
 | `npm run android:aab`    | `android/app/build/outputs/bundle/release/app-release.aab`     |
-| `npm run android:release`| both of the above                                              |
+| `npm run android:aab:verify` | verifies signature + prints the .aab path                 |
+| `npm run android:release`| APK + AAB + verification                                       |
 | `npm run android:sync`   | copy web shell + plugins into the native project               |
 | `npm run android:open`   | open the project in Android Studio                             |
 | `npm run android:run`    | build + install on a connected device/emulator                 |
 | `npm run android:clean`  | `gradlew clean`                                                |
 | `npm run android:verify` | print the Gradle signing report                                |
 
-**Upload the `.aab` to Google Play.** The `.apk` is for sideloading and testing.
+If signing is not configured, the release build now **fails fast** with a clear
+message instead of quietly producing an unsigned artifact that Play would
+reject. (`-PallowUnsignedRelease` bypasses this for local smoke tests only.)
 
-Typical release run:
+Release identity, already verified:
 
-```bash
-npm run android:release
-```
+| Field | Value |
+| --- | --- |
+| applicationId | `app.lovable.disciplinewontoday` |
+| app label | AXEN Habit & Discipline |
+| compileSdk / targetSdk | 35 |
+| minSdk | 23 |
+| default versionCode / versionName | `1` / `1.0.0` |
+
+
 
 ### Setting the version
 
