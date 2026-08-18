@@ -13,6 +13,7 @@ import { CropModal } from "@/components/CropModal";
 import { THEMES, MILESTONES, THEME_PHOTO, THEME_VIDEO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
 import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
 import axenLogo from "@/assets/axen-logo.png";
+import habitLogo from "@/assets/habit-discipline-logo.png";
 
 import { useMeditation } from "@/hooks/useMeditation";
 import { cardStyle, titleStyle } from "@/tabs/styles";
@@ -525,11 +526,9 @@ function App() {
             <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 20px ${G}` }} />
           </div>
           <div style={{ position: "absolute", width: 340, height: 340, borderRadius: "50%", border: `1px solid ${G2}33`, animation: "orbit 14s linear infinite reverse" }} />
-          <div style={{ fontSize: 42, fontWeight: 900, color: "#fff", letterSpacing: 6, textAlign: "center", lineHeight: 1.2, animation: "glow 2.5s ease-in-out infinite", zIndex: 3 }}>
-            DISCIPLINE<br />WON TODAY
-          </div>
+          <img src={axenLogo} alt="AXEN" style={{ width: "min(58vw, 260px)", height: "auto", zIndex: 3, filter: `drop-shadow(0 0 22px ${G})`, animation: "glow 2.5s ease-in-out infinite" }} />
           <div style={{ width: 120, height: 2, background: `linear-gradient(90deg,transparent,${G},transparent)`, margin: "22px auto", zIndex: 3 }} />
-          <div style={{ fontSize: 11, letterSpacing: 5, color: G, zIndex: 3, animation: "pulse 2s ease-in-out infinite" }}>STAY HARD · EVERY DAY</div>
+          <img src={habitLogo} alt="Habit & Discipline" style={{ width: "min(46vw, 210px)", height: "auto", zIndex: 3, opacity: 0.95, filter: `drop-shadow(0 0 14px ${G}aa)`, animation: "pulse 2s ease-in-out infinite" }} />
           <div style={{ marginTop: 40, fontSize: 9, letterSpacing: 3, color: "#555", zIndex: 3 }}>[ INITIALIZING SYSTEM ]</div>
         </div>
       </div>
