@@ -22,9 +22,22 @@ def storePasswordValue = signingValue("storePassword", "DWT_KEYSTORE_PASSWORD")
 def keyAliasValue = signingValue("keyAlias", "DWT_KEY_ALIAS")
 def keyPasswordValue = signingValue("keyPassword", "DWT_KEY_PASSWORD")
 
+def keystoreFileResolved = storeFilePath != null ? rootProject.file(storeFilePath) : null
 def hasReleaseSigning = storeFilePath != null && storePasswordValue != null &&
         keyAliasValue != null && keyPasswordValue != null &&
-        rootProject.file(storeFilePath).exists()
+        keystoreFileResolved != null && keystoreFileResolved.exists()
+
+// Version: override per release with
+//   ./gradlew bundleRelease -PdwtVersionCode=2 -PdwtVersionName=1.0.1
+// or with the AXEN_VERSION_CODE / AXEN_VERSION_NAME env vars (CI).
+def resolvedVersionCode = (project.findProperty("dwtVersionCode")
+        ?: System.getenv("AXEN_VERSION_CODE") ?: "1").toString().toInteger()
+def resolvedVersionName = (project.findProperty("dwtVersionName")
+        ?: System.getenv("AXEN_VERSION_NAME") ?: "1.0.0").toString()
+
+// Play requires a signed AAB. Fail loudly instead of silently shipping an
+// unsigned artifact, unless the build explicitly opts out.
+def allowUnsignedRelease = project.hasProperty("allowUnsignedRelease")
 
 android {
     namespace "app.lovable.disciplinewontoday"
@@ -33,8 +46,8 @@ android {
         applicationId "app.lovable.disciplinewontoday"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode project.hasProperty("dwtVersionCode") ? dwtVersionCode.toInteger() : 1
-        versionName project.hasProperty("dwtVersionName") ? dwtVersionName : "1.0.0"
+        versionCode resolvedVersionCode
+        versionName resolvedVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -45,7 +58,7 @@ android {
     signingConfigs {
         if (hasReleaseSigning) {
             release {
-                storeFile rootProject.file(storeFilePath)
+                storeFile keystoreFileResolved
                 storePassword storePasswordValue
                 keyAlias keyAliasValue
                 keyPassword keyPasswordValue
@@ -58,15 +71,45 @@ android {
         release {
             if (hasReleaseSigning) {
                 signingConfig signingConfigs.release
-            } else {
-                logger.warn("[DWT] No release signing config found — producing an UNSIGNED release build. See ANDROID_BUILD.md")
             }
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    bundle {
+        language { enableSplit = true }
+        density { enableSplit = true }
+        abi { enableSplit = true }
+    }
+    lint {
+        checkReleaseBuilds false
+    }
 }
+
+// Guard: any release assemble/bundle task must be signed.
+gradle.taskGraph.whenReady { graph ->
+    def releaseTask = graph.allTasks.find {
+        it.project == project && it.name ==~ /(?i).*(assemble|bundle)Release.*/
+    }
+    if (releaseTask != null && !hasReleaseSigning) {
+        if (allowUnsignedRelease) {
+            logger.warn("[AXEN] No release signing config — producing an UNSIGNED release build.")
+        } else {
+            throw new GradleException(
+                "\n\n[AXEN] Release signing is not configured — Google Play will reject an unsigned .aab.\n" +
+                "Fix it from the PROJECT ROOT:\n" +
+                "  DWT_KEYSTORE_PASSWORD='your-password' DWT_KEY_PASSWORD='your-password' npm run android:keystore\n" +
+                "That creates android/dwt-release.jks + android/keystore.properties.\n" +
+                "Then re-run: npm run android:aab\n" +
+                "(Use -PallowUnsignedRelease only for local smoke tests.)\n"
+            )
+        }
+    } else if (releaseTask != null) {
+        logger.lifecycle("[AXEN] Release signing OK — versionCode=${resolvedVersionCode}, versionName=${resolvedVersionName}")
+    }
+}
+
 
 
 repositories {
