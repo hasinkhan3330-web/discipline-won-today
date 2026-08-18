@@ -160,25 +160,7 @@ function AuthPage() {
             throw new Error("Too many attempts. Wait a minute and try again.");
           }
           if (m.includes("invalid login") || m.includes("invalid credentials")) {
-            const { error: createErr } = await supabase.auth.signUp({
-              email: parsed.data.email,
-              password: parsed.data.password,
-              options: { emailRedirectTo: `${window.location.origin}/auth/verified` },
-            });
-            if (!createErr) {
-              const { data: sessionData } = await supabase.auth.getSession();
-              if (sessionData.session) {
-                goNext();
-                return;
-              }
-              setMsg({ kind: "ok", text: "Account created. Check your inbox once, then sign in here." });
-              setMode("signin");
-              return;
-            }
-            if (/registered|exists|already/i.test(createErr.message)) {
-              throw new Error("This email already has an account. Use the correct password, tap FORGOT PASSWORD, or continue with Google.");
-            }
-            throw new Error(createErr.message || "Could not create account. Try Google sign-in.");
+            throw new Error("Wrong email or password. Check your password, tap FORGOT PASSWORD, continue with Google, or switch to CREATE ACCOUNT if you're new.");
           }
           throw new Error(error.message);
         }

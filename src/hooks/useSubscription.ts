@@ -7,6 +7,7 @@ export type SubscriptionRow = {
   current_period_end: string | null;
   cancel_at_period_end: boolean;
   short_url: string | null;
+  provider: string | null;
 };
 
 function rowActive(s: SubscriptionRow): boolean {
@@ -27,7 +28,7 @@ export function useSubscription(userId: string | null) {
     // Google Play entitlement rows live here — prefer any active one.
     const { data } = await supabase
       .from("subscriptions")
-      .select("status, price_id, current_period_end, cancel_at_period_end, short_url")
+      .select("status, price_id, current_period_end, cancel_at_period_end, short_url, provider")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(20);
