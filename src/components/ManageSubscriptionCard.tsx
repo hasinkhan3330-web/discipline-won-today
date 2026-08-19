@@ -69,7 +69,7 @@ export function ManageSubscriptionCard() {
   const planLabel = planLabelFor(sub?.price_id);
 
   const statusLine = isPastDue
-    ? { color: R, text: "⚠ PAYMENT FAILED — Google Play is retrying your payment." }
+    ? { color: R, text: isPlay ? "⚠ PAYMENT FAILED — Google Play is retrying your payment." : "⚠ PAYMENT FAILED — please renew to keep AXEN PRO." }
     : isCanceled && endStr
       ? { color: "#ffb84d", text: `◌ CANCELED — access ends ${endStr}` }
       : isTrial && endStr
