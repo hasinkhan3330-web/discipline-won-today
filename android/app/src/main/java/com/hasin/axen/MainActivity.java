@@ -1,4 +1,4 @@
-package app.lovable.disciplinewontoday;
+package com.hasin.axen;
 
 import com.getcapacitor.BridgeActivity;
 

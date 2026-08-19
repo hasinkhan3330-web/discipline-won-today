@@ -142,7 +142,7 @@ Release identity, already verified:
 
 | Field | Value |
 | --- | --- |
-| applicationId | `app.lovable.disciplinewontoday` |
+| applicationId | `com.hasin.axen` |
 | app label | AXEN Habit & Discipline |
 | compileSdk / targetSdk | 35 |
 | minSdk | 23 |
@@ -194,7 +194,7 @@ doesn't exist.
 The app uses `@revenuecat/purchases-capacitor` for in-app subscriptions. For
 purchases to work on a real build:
 
-1. The `applicationId` must match the Play Console app: `app.lovable.disciplinewontoday`
+1. The `applicationId` must match the Play Console app: `com.hasin.axen`
 2. Upload a signed AAB to at least the **internal testing** track once — billing
    does not work on unsigned/debug builds.
 3. Create the Monthly and Yearly subscription products in Play Console and map
