@@ -89,12 +89,14 @@ export function ManageSubscriptionCard() {
         {statusLine.text}
       </div>
       <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
-        Billed by Google Play. Upgrade, downgrade or cancel anytime in Play Store → Subscriptions.
+        {isPlay
+          ? "Billed by Google Play. Upgrade, downgrade or cancel anytime in Play Store → Subscriptions."
+          : "Billed on the web via Razorpay (₹99/month · ₹999/year). Your plan does not auto-renew through Google Play — renew or change it here, or email support to cancel."}
       </div>
 
       <a
         href={manageUrl}
-        target="_blank"
+        target={isPlay || manageUrl.startsWith("http") ? "_blank" : undefined}
         rel="noopener noreferrer"
         style={{
           display: "block", marginTop: 12, padding: "12px 16px", textAlign: "center",
@@ -103,7 +105,9 @@ export function ManageSubscriptionCard() {
           fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
           textDecoration: "none", borderRadius: 2, boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
         }}
-      >{isPastDue ? "⚠ FIX PAYMENT IN GOOGLE PLAY →" : "⚙ MANAGE IN GOOGLE PLAY →"}</a>
+      >{isPlay
+        ? (isPastDue ? "⚠ FIX PAYMENT IN GOOGLE PLAY →" : "⚙ MANAGE IN GOOGLE PLAY →")
+        : (isPastDue ? "⚠ RENEW YOUR PLAN →" : "⚙ VIEW PLANS & BILLING →")}</a>
 
       <button
         onClick={doRestore}
