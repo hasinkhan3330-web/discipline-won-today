@@ -38,7 +38,9 @@ export function ManageSubscriptionCard() {
   const { sub, reload } = useSubscription(uid);
 
   const isYearly = !!sub?.price_id?.includes("yearly");
-  const manageUrl = playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly);
+  // Web checkout writes provider "razorpay"; Play Billing writes "play"/"revenuecat".
+  const isPlay = (sub?.provider ?? "play").toLowerCase().includes("play") || (sub?.provider ?? "").toLowerCase().includes("revenuecat");
+  const manageUrl = isPlay ? playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly) : (sub?.short_url ?? "/pricing");
 
   const endDate = sub?.current_period_end ? new Date(sub.current_period_end) : null;
   const endStr = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
@@ -67,7 +69,7 @@ export function ManageSubscriptionCard() {
   const planLabel = planLabelFor(sub?.price_id);
 
   const statusLine = isPastDue
-    ? { color: R, text: "⚠ PAYMENT FAILED — Google Play is retrying your payment." }
+    ? { color: R, text: isPlay ? "⚠ PAYMENT FAILED — Google Play is retrying your payment." : "⚠ PAYMENT FAILED — please renew to keep AXEN PRO." }
     : isCanceled && endStr
       ? { color: "#ffb84d", text: `◌ CANCELED — access ends ${endStr}` }
       : isTrial && endStr
@@ -87,12 +89,14 @@ export function ManageSubscriptionCard() {
         {statusLine.text}
       </div>
       <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
-        Billed by Google Play. Upgrade, downgrade or cancel anytime in Play Store → Subscriptions.
+        {isPlay
+          ? "Billed by Google Play. Upgrade, downgrade or cancel anytime in Play Store → Subscriptions."
+          : "Billed on the web via Razorpay (₹99/month · ₹999/year). Your plan does not auto-renew through Google Play — renew or change it here, or email support to cancel."}
       </div>
 
       <a
         href={manageUrl}
-        target="_blank"
+        target={isPlay || manageUrl.startsWith("http") ? "_blank" : undefined}
         rel="noopener noreferrer"
         style={{
           display: "block", marginTop: 12, padding: "12px 16px", textAlign: "center",
@@ -101,7 +105,9 @@ export function ManageSubscriptionCard() {
           fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
           textDecoration: "none", borderRadius: 2, boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
         }}
-      >{isPastDue ? "⚠ FIX PAYMENT IN GOOGLE PLAY →" : "⚙ MANAGE IN GOOGLE PLAY →"}</a>
+      >{isPlay
+        ? (isPastDue ? "⚠ FIX PAYMENT IN GOOGLE PLAY →" : "⚙ MANAGE IN GOOGLE PLAY →")
+        : (isPastDue ? "⚠ RENEW YOUR PLAN →" : "⚙ VIEW PLANS & BILLING →")}</a>
 
       <button
         onClick={doRestore}
