@@ -13,7 +13,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const serverUrl = process.env.CAP_SERVER_URL ?? "https://discipline-won-today.lovable.app";
 
 const config: CapacitorConfig = {
-  appId: "app.lovable.disciplinewontoday",
+  appId: "com.hasin.axen",
   appName: "AXEN Habit & Discipline",
   webDir: "android-shell",
   server: {

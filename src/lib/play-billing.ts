@@ -117,7 +117,7 @@ export function isUserCancelled(error: unknown): boolean {
 
 /** Deep link to the Play Store subscription management screen. */
 export function playManageUrl(productId?: string | null): string {
-  const pkg = "app.lovable.disciplinewontoday";
+  const pkg = "com.hasin.axen";
   return productId
     ? `https://play.google.com/store/account/subscriptions?sku=${encodeURIComponent(productId)}&package=${pkg}`
     : `https://play.google.com/store/account/subscriptions?package=${pkg}`;

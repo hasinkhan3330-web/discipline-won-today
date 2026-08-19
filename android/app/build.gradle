@@ -40,10 +40,10 @@ def resolvedVersionName = (project.findProperty("dwtVersionName")
 def allowUnsignedRelease = project.hasProperty("allowUnsignedRelease")
 
 android {
-    namespace "app.lovable.disciplinewontoday"
+    namespace "com.hasin.axen"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "app.lovable.disciplinewontoday"
+        applicationId "com.hasin.axen"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode resolvedVersionCode
