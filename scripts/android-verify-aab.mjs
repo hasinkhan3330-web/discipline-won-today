@@ -12,7 +12,7 @@ const EXPECTED_PACKAGE = process.argv.includes("--package")
   ? process.argv[process.argv.indexOf("--package") + 1]
   : "com.hasin.axen";
 const BUNDLETOOL_VERSION = "1.18.1";
-const BUNDLETOOL_SHA256 = "e2c9a4b9ca7d693e6c9b6b48f88cba5b6780e112c950306bcd6fd62a9eabda92";
+const BUNDLETOOL_SHA256 = "675786493983787ffa11550bdb7c0715679a44e1643f3ff980a529e9c822595c";
 
 const die = (msg) => {
   console.error(`\n[aab] ${msg}\n`);
