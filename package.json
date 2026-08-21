@@ -16,13 +16,13 @@
     "android:run": "cap run android",
     "android:clean": "cd android && ./gradlew clean --no-daemon",
     "android:apk": "npm run android:sync && cd android && ./gradlew assembleRelease",
-    "android:aab": "npm run android:sync && cd android && ./gradlew clean bundleRelease",
-    "android:release": "npm run android:apk && npm run android:aab && npm run android:aab:verify",
+    "android:aab": "npm run android:sync && (cd android && ./gradlew clean bundleRelease) && npm run android:aab:verify",
+    "android:release": "npm run android:apk && npm run android:aab",
     "android:verify": "cd android && ./gradlew signingReport",
     "android:add": "cap add android",
     "android:doctor": "cap doctor android",
     "android:prepare": "npm install && cap sync android",
-    "android:aab:verify": "node scripts/android-verify-aab.mjs"
+    "android:aab:verify": "node scripts/android-verify-aab.mjs --package com.hasin.axen"
   },
   "dependencies": {
     "@capacitor/android": "^7",

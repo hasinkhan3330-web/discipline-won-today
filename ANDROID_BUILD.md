@@ -109,8 +109,8 @@ keyPassword=<your key password>
 
 ```bash
 npm run android:keystore     # one time (see section 1–2)
-npm run android:aab          # sync + clean + bundleRelease
-npm run android:aab:verify   # confirms the bundle exists and is signed
+npm run android:aab          # build + mandatory package/version/certificate verification
+npm run android:aab:verify   # rerun the same strict pre-upload checks
 ```
 
 **The generated bundle is here:**
@@ -146,7 +146,7 @@ Release identity, already verified:
 | app label | AXEN Habit & Discipline |
 | compileSdk / targetSdk | 35 |
 | minSdk | 23 |
-| default versionCode / versionName | `1` / `1.0.0` |
+| default versionCode / versionName | `3` / `1.0.2` |
 
 
 
@@ -164,6 +164,15 @@ Or, via the npm script:
 ```bash
 npm run android:sync && cd android && ./gradlew bundleRelease -PdwtVersionCode=2 -PdwtVersionName=1.0.1
 ```
+
+`npm run android:aab` now fails before upload unless all three release identities pass:
+
+- manifest package is exactly `com.hasin.axen`
+- `versionCode` is present (and matches `AXEN_VERSION_CODE` when supplied)
+- the AAB signing certificate matches `android/keystore.properties`
+
+Never upload an AAB copied from an older project or build. Upload only the exact
+path printed after `[aab] PASS`.
 
 ---
 

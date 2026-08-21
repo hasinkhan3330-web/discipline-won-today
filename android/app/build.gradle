@@ -31,9 +31,9 @@ def hasReleaseSigning = storeFilePath != null && storePasswordValue != null &&
 //   ./gradlew bundleRelease -PdwtVersionCode=2 -PdwtVersionName=1.0.1
 // or with the AXEN_VERSION_CODE / AXEN_VERSION_NAME env vars (CI).
 def resolvedVersionCode = (project.findProperty("dwtVersionCode")
-        ?: System.getenv("AXEN_VERSION_CODE") ?: "1").toString().toInteger()
+        ?: System.getenv("AXEN_VERSION_CODE") ?: "3").toString().toInteger()
 def resolvedVersionName = (project.findProperty("dwtVersionName")
-        ?: System.getenv("AXEN_VERSION_NAME") ?: "1.0.0").toString()
+        ?: System.getenv("AXEN_VERSION_NAME") ?: "1.0.2").toString()
 
 // Play requires a signed AAB. Fail loudly instead of silently shipping an
 // unsigned artifact, unless the build explicitly opts out.
