@@ -98,10 +98,10 @@ keyPassword=<your key password>
 
 | Variable                 | Meaning                                |
 | ------------------------ | -------------------------------------- |
-| `DWT_KEYSTORE_FILE`      | path to the `.jks`, relative to `android/` |
-| `DWT_KEYSTORE_PASSWORD`  | keystore password                      |
-| `DWT_KEY_ALIAS`          | key alias (`dwt`)                      |
-| `DWT_KEY_PASSWORD`       | key password                           |
+| `AXEN_KEYSTORE_FILE`      | path to the `.jks`, relative to `android/` |
+| `AXEN_KEYSTORE_PASSWORD`  | keystore password                      |
+| `AXEN_KEY_ALIAS`          | key alias (`dwt`)                      |
+| `AXEN_KEY_PASSWORD`       | key password                           |
 
 ---
 
@@ -156,13 +156,13 @@ Play rejects an upload whose `versionCode` was already used. Bump it per release
 
 ```bash
 cd android
-./gradlew bundleRelease -PdwtVersionCode=2 -PdwtVersionName=1.0.1
+./gradlew bundleRelease -PaxenVersionCode=2 -PaxenVersionName=1.0.1
 ```
 
 Or, via the npm script:
 
 ```bash
-npm run android:sync && cd android && ./gradlew bundleRelease -PdwtVersionCode=2 -PdwtVersionName=1.0.1
+npm run android:sync && cd android && ./gradlew bundleRelease -PaxenVersionCode=2 -PaxenVersionName=1.0.1
 ```
 
 `npm run android:aab` scans **every** `.aab` under `android/app/build/outputs`
