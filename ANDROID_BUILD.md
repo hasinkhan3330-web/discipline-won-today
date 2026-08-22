@@ -165,11 +165,15 @@ Or, via the npm script:
 npm run android:sync && cd android && ./gradlew bundleRelease -PdwtVersionCode=2 -PdwtVersionName=1.0.1
 ```
 
-`npm run android:aab` now fails before upload unless all three release identities pass:
+`npm run android:aab` scans **every** `.aab` under `android/app/build/outputs`
+(all variants, flavors and split configurations) and fails before upload unless
+each one passes:
 
 - manifest package is exactly `com.hasin.axen`
 - `versionCode` is present (and matches `AXEN_VERSION_CODE` when supplied)
+- the bundle is cryptographically signed
 - the AAB signing certificate matches `android/keystore.properties`
+- all produced bundles share the same package ID, versionCode and signing certificate
 
 Never upload an AAB copied from an older project or build. Upload only the exact
 path printed after `[aab] PASS`.
