@@ -5,7 +5,7 @@ apply plugin: 'com.android.application'
 // Credentials are read from android/keystore.properties (git-ignored) first,
 // then from environment variables. If neither is present, `assembleRelease`
 // falls back to an unsigned build so CI/dev machines don't break.
-//   DWT_KEYSTORE_FILE / DWT_KEYSTORE_PASSWORD / DWT_KEY_ALIAS / DWT_KEY_PASSWORD
+//   AXEN_KEYSTORE_FILE / AXEN_KEYSTORE_PASSWORD / AXEN_KEY_ALIAS / AXEN_KEY_PASSWORD (DWT_* still honoured)
 // ---------------------------------------------------------------------------
 def keystorePropsFile = rootProject.file("keystore.properties")
 def keystoreProps = new Properties()
@@ -14,13 +14,15 @@ if (keystorePropsFile.exists()) {
 }
 
 def signingValue = { String propKey, String envKey ->
-    return keystoreProps.getProperty(propKey) ?: System.getenv(envKey)
+    // AXEN_* is the current naming; DWT_* stays supported for existing setups.
+    def legacyKey = envKey.replaceFirst(/^AXEN_/, "DWT_")
+    return keystoreProps.getProperty(propKey) ?: System.getenv(envKey) ?: System.getenv(legacyKey)
 }
 
-def storeFilePath = signingValue("storeFile", "DWT_KEYSTORE_FILE")
-def storePasswordValue = signingValue("storePassword", "DWT_KEYSTORE_PASSWORD")
-def keyAliasValue = signingValue("keyAlias", "DWT_KEY_ALIAS")
-def keyPasswordValue = signingValue("keyPassword", "DWT_KEY_PASSWORD")
+def storeFilePath = signingValue("storeFile", "AXEN_KEYSTORE_FILE")
+def storePasswordValue = signingValue("storePassword", "AXEN_KEYSTORE_PASSWORD")
+def keyAliasValue = signingValue("keyAlias", "AXEN_KEY_ALIAS")
+def keyPasswordValue = signingValue("keyPassword", "AXEN_KEY_PASSWORD")
 
 def keystoreFileResolved = storeFilePath != null ? rootProject.file(storeFilePath) : null
 def hasReleaseSigning = storeFilePath != null && storePasswordValue != null &&
@@ -28,11 +30,13 @@ def hasReleaseSigning = storeFilePath != null && storePasswordValue != null &&
         keystoreFileResolved != null && keystoreFileResolved.exists()
 
 // Version: override per release with
-//   ./gradlew bundleRelease -PdwtVersionCode=2 -PdwtVersionName=1.0.1
+//   ./gradlew bundleRelease -PaxenVersionCode=4 -PaxenVersionName=1.0.3
 // or with the AXEN_VERSION_CODE / AXEN_VERSION_NAME env vars (CI).
-def resolvedVersionCode = (project.findProperty("dwtVersionCode")
+def resolvedVersionCode = (project.findProperty("axenVersionCode")
+        ?: project.findProperty("dwtVersionCode")
         ?: System.getenv("AXEN_VERSION_CODE") ?: "3").toString().toInteger()
-def resolvedVersionName = (project.findProperty("dwtVersionName")
+def resolvedVersionName = (project.findProperty("axenVersionName")
+        ?: project.findProperty("dwtVersionName")
         ?: System.getenv("AXEN_VERSION_NAME") ?: "1.0.2").toString()
 
 // Play requires a signed AAB. Fail loudly instead of silently shipping an
@@ -99,8 +103,8 @@ gradle.taskGraph.whenReady { graph ->
             throw new GradleException(
                 "\n\n[AXEN] Release signing is not configured — Google Play will reject an unsigned .aab.\n" +
                 "Fix it from the PROJECT ROOT:\n" +
-                "  DWT_KEYSTORE_PASSWORD='your-password' DWT_KEY_PASSWORD='your-password' npm run android:keystore\n" +
-                "That creates android/dwt-release.jks + android/keystore.properties.\n" +
+                "  AXEN_KEYSTORE_PASSWORD='your-password' AXEN_KEY_PASSWORD='your-password' npm run android:keystore\n" +
+                "That creates android/axen-release.jks + android/keystore.properties.\n" +
                 "Then re-run: npm run android:aab\n" +
                 "(Use -PallowUnsignedRelease only for local smoke tests.)\n"
             )

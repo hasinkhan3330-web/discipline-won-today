@@ -4,14 +4,14 @@
  * android/keystore.properties from environment variables.
  *
  * Required env vars:
- *   DWT_KEYSTORE_PASSWORD  keystore password (min 6 chars)
- *   DWT_KEY_PASSWORD       key password (defaults to DWT_KEYSTORE_PASSWORD)
+ *   AXEN_KEYSTORE_PASSWORD keystore password (min 6 chars)
+ *   AXEN_KEY_PASSWORD      key password (defaults to AXEN_KEYSTORE_PASSWORD)
  * Optional env vars:
- *   DWT_KEYSTORE_FILE      file name relative to android/ (default dwt-release.jks)
- *   DWT_KEY_ALIAS          key alias (default dwt)
- *   DWT_KEY_DNAME          X.500 distinguished name
- *   DWT_KEY_VALIDITY       validity in days (default 10000)
- *   DWT_FORCE=1            overwrite an existing keystore
+ *   AXEN_KEYSTORE_FILE     file name relative to android/ (default dwt-release.jks)
+ *   AXEN_KEY_ALIAS         key alias (default dwt)
+ *   AXEN_KEY_DNAME         X.500 distinguished name
+ *   AXEN_KEY_VALIDITY      validity in days (default 10000)
+ *   AXEN_FORCE=1           overwrite an existing keystore
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, writeFileSync, rmSync, mkdirSync } from "node:fs";
@@ -28,20 +28,20 @@ if (!existsSync(ANDROID_DIR)) {
   mkdirSync(ANDROID_DIR, { recursive: true });
 }
 
-const storeFile = process.env.DWT_KEYSTORE_FILE || "dwt-release.jks";
-const storePassword = process.env.DWT_KEYSTORE_PASSWORD;
-const keyAlias = process.env.DWT_KEY_ALIAS || "dwt";
-const keyPassword = process.env.DWT_KEY_PASSWORD || storePassword;
-const validity = process.env.DWT_KEY_VALIDITY || "10000";
+const storeFile = (process.env.AXEN_KEYSTORE_FILE || process.env.DWT_KEYSTORE_FILE) || "dwt-release.jks";
+const storePassword = (process.env.AXEN_KEYSTORE_PASSWORD || process.env.DWT_KEYSTORE_PASSWORD);
+const keyAlias = (process.env.AXEN_KEY_ALIAS || process.env.DWT_KEY_ALIAS) || "dwt";
+const keyPassword = (process.env.AXEN_KEY_PASSWORD || process.env.DWT_KEY_PASSWORD) || storePassword;
+const validity = (process.env.AXEN_KEY_VALIDITY || process.env.DWT_KEY_VALIDITY) || "10000";
 const dname =
-  process.env.DWT_KEY_DNAME ||
+  (process.env.AXEN_KEY_DNAME || process.env.DWT_KEY_DNAME) ||
   "CN=Discipline Won Today, OU=Mobile, O=Discipline Won Today, L=Unknown, ST=Unknown, C=IN";
 
 if (!storePassword) {
   fail(
-    "DWT_KEYSTORE_PASSWORD is not set.\n" +
+    "AXEN_KEYSTORE_PASSWORD is not set.\n" +
       "Example:\n" +
-      "  DWT_KEYSTORE_PASSWORD='super-secret' DWT_KEY_PASSWORD='super-secret' npm run android:keystore",
+      "  AXEN_KEYSTORE_PASSWORD='super-secret' AXEN_KEY_PASSWORD='super-secret' npm run android:keystore",
   );
 }
 if (storePassword.length < 6 || keyPassword.length < 6) {
@@ -49,16 +49,16 @@ if (storePassword.length < 6 || keyPassword.length < 6) {
 }
 
 const keystorePath = path.join(ANDROID_DIR, storeFile);
-const force = process.env.DWT_FORCE === "1" || process.env.DWT_FORCE === "true";
+const force = (process.env.AXEN_FORCE || process.env.DWT_FORCE) === "1" || (process.env.AXEN_FORCE || process.env.DWT_FORCE) === "true";
 
 if (existsSync(keystorePath)) {
   if (!force) {
     console.log(
       `[keystore] ${path.relative(process.cwd(), keystorePath)} already exists — keeping it.\n` +
-        "[keystore] Set DWT_FORCE=1 to regenerate (this permanently breaks Play updates signed with the old key).",
+        "[keystore] Set AXEN_FORCE=1 to regenerate (this permanently breaks Play updates signed with the old key).",
     );
   } else {
-    console.log("[keystore] DWT_FORCE set — removing existing keystore.");
+    console.log("[keystore] AXEN_FORCE set — removing existing keystore.");
     rmSync(keystorePath);
   }
 }
