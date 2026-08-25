@@ -238,3 +238,19 @@ CAP_SERVER_URL=https://id-preview--<id>.lovable.app npm run android:apk
 
 Publish your latest web changes **before** cutting a release build — the app
 picks them up automatically, no new APK required for web-only updates.
+
+## Pre-build config gate
+
+`npm run android:config:verify` (also run automatically by `npm run android:apk`
+and `npm run android:aab`) fails the build unless the package ID is exactly
+`com.hasin.axen` in every place that shapes the bundle:
+
+- `capacitor.config.ts` -> `appId`
+- `android/app/build.gradle` -> `namespace` + `applicationId`
+- `android/app/src/main/res/values/strings.xml` -> `package_name`, `custom_url_scheme`
+- `android/app/src/main/java/com/hasin/axen/MainActivity.java` package + path
+- `src/lib/play-billing.ts`
+- the pinned `--package` argument of `android:aab:verify`
+
+It also warns if the WebView shell loses `androidScheme: 'https'`,
+`allowMixedContent: false`, or the `INTERNET` permission.
