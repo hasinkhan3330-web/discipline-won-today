@@ -7,8 +7,8 @@
  *   AXEN_KEYSTORE_PASSWORD keystore password (min 6 chars)
  *   AXEN_KEY_PASSWORD      key password (defaults to AXEN_KEYSTORE_PASSWORD)
  * Optional env vars:
- *   AXEN_KEYSTORE_FILE     file name relative to android/ (default dwt-release.jks)
- *   AXEN_KEY_ALIAS         key alias (default dwt)
+ *   AXEN_KEYSTORE_FILE     file name relative to android/ (default axen-release.jks)
+ *   AXEN_KEY_ALIAS         key alias (default axen)
  *   AXEN_KEY_DNAME         X.500 distinguished name
  *   AXEN_KEY_VALIDITY      validity in days (default 10000)
  *   AXEN_FORCE=1           overwrite an existing keystore
@@ -28,9 +28,9 @@ if (!existsSync(ANDROID_DIR)) {
   mkdirSync(ANDROID_DIR, { recursive: true });
 }
 
-const storeFile = (process.env.AXEN_KEYSTORE_FILE || process.env.DWT_KEYSTORE_FILE) || "dwt-release.jks";
+const storeFile = (process.env.AXEN_KEYSTORE_FILE || process.env.DWT_KEYSTORE_FILE) || "axen-release.jks";
 const storePassword = (process.env.AXEN_KEYSTORE_PASSWORD || process.env.DWT_KEYSTORE_PASSWORD);
-const keyAlias = (process.env.AXEN_KEY_ALIAS || process.env.DWT_KEY_ALIAS) || "dwt";
+const keyAlias = (process.env.AXEN_KEY_ALIAS || process.env.DWT_KEY_ALIAS) || "axen";
 const keyPassword = (process.env.AXEN_KEY_PASSWORD || process.env.DWT_KEY_PASSWORD) || storePassword;
 const validity = (process.env.AXEN_KEY_VALIDITY || process.env.DWT_KEY_VALIDITY) || "10000";
 const dname =
