@@ -27,6 +27,16 @@ function SuccessPage() {
   useEffect(() => {
     let cancelled = false;
     let tries = 0;
+
+    // Stripe returns here with ?session_id=... — verify it server-side and record the order.
+    const sessionId = new URLSearchParams(window.location.search).get("session_id");
+    const confirmStripe = async () => {
+      if (!sessionId || !isStripeConfigured()) return;
+      try {
+        await confirmStripeCheckout({ data: { sessionId, environment: getStripeEnvironment() } });
+      } catch { /* the polling below still picks up webhook-recorded state */ }
+    };
+
     const check = async () => {
       const { data: u } = await supabase.auth.getUser();
       if (!u.user) return;
