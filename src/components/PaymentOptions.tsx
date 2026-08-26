@@ -14,7 +14,7 @@ export function PaymentOptions({ cycle, email }: { cycle: Cycle; email?: string 
   const stripeReady = isStripeConfigured();
   const [method, setMethod] = useState<Method>("razorpay");
 
-  const options: { id: Method; title: string; sub: string; price: string }[] = ([
+  const allOptions: { id: Method; title: string; sub: string; price: string }[] = [
     {
       id: "razorpay",
       title: "RAZORPAY",
@@ -27,7 +27,8 @@ export function PaymentOptions({ cycle, email }: { cycle: Cycle; email?: string 
       sub: "International credit / debit cards",
       price: STRIPE_DISPLAY[cycle],
     },
-  ].filter((o) => o.id !== "stripe" || stripeReady);
+  ];
+  const options = allOptions.filter((o) => o.id !== "stripe" || stripeReady);
 
   return (
     <div style={{ marginTop: 24 }}>
