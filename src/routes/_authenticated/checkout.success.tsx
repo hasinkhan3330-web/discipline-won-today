@@ -58,7 +58,7 @@ function SuccessPage() {
       if (tries < 20) setTimeout(check, 1500);
       else setReady(true);
     };
-    check();
+    confirmStripe().then(check);
     return () => { cancelled = true; };
   }, [navigate]);
 
