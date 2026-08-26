@@ -24,6 +24,17 @@ export const AMOUNT_PAISE: Record<Cycle, number> = {
   yearly: 99900,
 };
 
+/** Stripe (international cards) lookup keys + USD display prices. */
+export const STRIPE_PRICE: Record<Cycle, string> = {
+  monthly: "axen_pro_monthly_usd",
+  yearly: "axen_pro_yearly_usd",
+};
+
+export const STRIPE_DISPLAY: Record<Cycle, string> = {
+  monthly: "$2.99 / month",
+  yearly: "$29.99 / year",
+};
+
 
 export function planLabelFor(priceId?: string | null): string {
   if (!priceId) return "AXEN PRO";
