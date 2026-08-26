@@ -14,7 +14,7 @@ export function PaymentOptions({ cycle, email }: { cycle: Cycle; email?: string 
   const stripeReady = isStripeConfigured();
   const [method, setMethod] = useState<Method>("razorpay");
 
-  const options: { id: Method; title: string; sub: string; price: string }[] = [
+  const options: { id: Method; title: string; sub: string; price: string }[] = ([
     {
       id: "razorpay",
       title: "RAZORPAY",
