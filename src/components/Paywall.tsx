@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PlayBillingButton } from "@/components/PlayBillingButton";
-import { RazorpayPayButton } from "@/components/RazorpayPayButton";
+import { PaymentOptions } from "@/components/PaymentOptions";
 
 import { isNativeBillingAvailable } from "@/lib/play-billing";
 import { PRICING, type Cycle } from "@/lib/pricing";
@@ -80,14 +80,14 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
         {native ? (
           <PlayBillingButton userId={userId} cycle={cycle} />
         ) : (
-          <RazorpayPayButton cycle={cycle} email={email} />
+          <PaymentOptions cycle={cycle} email={email} />
         )}
 
 
         <p style={{ marginTop: 12, fontSize: 10, color: "#666", letterSpacing: 1, textAlign: "center" }}>
           {native
             ? "Billed securely through Google Play. Manage or cancel anytime in Play Store → Subscriptions."
-            : "Billed securely through Razorpay (UPI, cards, netbanking). Inside the Android app, Google Play Billing is used."}
+            : "Billed securely through Razorpay (UPI, cards, netbanking) or Stripe (international cards). Inside the Android app, Google Play Billing is used."}
         </p>
 
 
