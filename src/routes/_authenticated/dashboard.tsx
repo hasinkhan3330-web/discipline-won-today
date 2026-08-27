@@ -46,9 +46,9 @@ const RINGTONES = [
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "AXEN Habit & Discipline" },
+      { title: "Dashboard — AXEN Habit & Discipline" },
       { name: "description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, legendary quotes, streaks." },
-      { property: "og:title", content: "AXEN Habit & Discipline" },
+      { property: "og:title", content: "Dashboard — AXEN Habit & Discipline" },
       { property: "og:description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, legendary quotes, streaks." },
     ],
   }),

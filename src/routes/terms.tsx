@@ -3,9 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms & Conditions — AXEN by NEXT AI" },
+      { title: "Terms & Conditions — AXEN Habit & Discipline" },
       { name: "description", content: "Terms and conditions for using the AXEN application, operated by NEXT AI." },
-      { property: "og:title", content: "Terms & Conditions — AXEN" },
+      { property: "og:title", content: "Terms & Conditions — AXEN Habit & Discipline" },
       { property: "og:description", content: "The agreement between you and NEXT AI when using AXEN." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

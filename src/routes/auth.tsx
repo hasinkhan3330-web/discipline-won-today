@@ -10,9 +10,9 @@ export const Route = createFileRoute("/auth")({
 
   head: () => ({
     meta: [
-      { title: "Sign in — AXEN" },
+      { title: "Sign in — AXEN Habit & Discipline" },
       { name: "description", content: "Sign in or create an account to start tracking discipline on AXEN." },
-      { property: "og:title", content: "Sign in — AXEN" },
+      { property: "og:title", content: "Sign in — AXEN Habit & Discipline" },
       { property: "og:description", content: "Sign in or create an account to start tracking discipline on AXEN." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
