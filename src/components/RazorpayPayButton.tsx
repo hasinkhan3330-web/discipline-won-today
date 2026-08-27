@@ -48,7 +48,7 @@ export function RazorpayPayButton({
           amount: order.amount,
           currency: order.currency,
           order_id: order.orderId,
-          name: "AXEN - Habit & Discipline",
+          name: "AXEN Habit & Discipline",
           description: `AXEN PRO · ${cycle.toUpperCase()} — ${PRICING[cycle].display}`,
           prefill: email ? { email } : undefined,
           theme: { color: G },

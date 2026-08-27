@@ -17,7 +17,7 @@ export const Route = createFileRoute("/refund")({
 function Refund() {
   return <LegalShell title="REFUND POLICY">
     <p><b>Last updated:</b> July 25, 2026</p>
-    <p>NEXT AI ("we", "us"), operator of the AXEN - Habit & Discipline ("AXEN") application, offers a fair refund policy for all subscribers.</p>
+    <p>NEXT AI ("we", "us"), operator of the AXEN Habit & Discipline ("AXEN") application, offers a fair refund policy for all subscribers.</p>
 
     <h2>1. 30-Day Money-Back Guarantee</h2>
     <p>We offer a <b>30-day money-back guarantee</b>. If you are not satisfied with your AXEN subscription, you may request a full refund within 30 days of your order date.</p>

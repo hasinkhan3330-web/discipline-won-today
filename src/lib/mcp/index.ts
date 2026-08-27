@@ -9,7 +9,7 @@ const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID ?? "project-ref-unse
 
 export default defineMcp({
   name: "axen-mcp",
-  title: "AXEN - Habit & Discipline",
+  title: "AXEN Habit & Discipline",
   version: "0.1.0",
   instructions:
     "Tools for the signed-in AXEN user: read discipline stats, tasks, alarms, and recent completions, and mark a task complete for today.",
