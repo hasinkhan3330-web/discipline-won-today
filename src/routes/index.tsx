@@ -75,10 +75,10 @@ function Intro({ done }: { done: boolean }) {
           alt="AXEN Habit & Discipline"
           style={{ position: "relative", width: "100%", maxWidth: 220, display: "block", margin: "0 auto", animation: "axen-boot-in 1400ms cubic-bezier(0.16,1,0.3,1) both, axen-glow 2.6s ease-in-out 1400ms infinite" }}
         />
-        <div style={{ position: "relative", marginTop: 18, fontFamily: "monospace", fontSize: 11, letterSpacing: 7, color: "#fff", textShadow: `0 0 18px ${G}`, animation: "axen-float-up 800ms ease 900ms both, axen-flicker 2.2s linear 1700ms infinite" }}>
+        <div className="axen-display" style={{ position: "relative", marginTop: 18, fontSize: 15, fontWeight: 800, letterSpacing: 9, color: "#fff", textShadow: `0 0 18px ${G}, 0 0 46px ${G}66`, animation: "axen-float-up 800ms ease 900ms both, axen-flicker 2.2s linear 1700ms infinite" }}>
           A X E N
         </div>
-        <div style={{ position: "relative", marginTop: 8, fontFamily: "monospace", fontSize: 9, letterSpacing: 4, color: G, animation: "axen-float-up 800ms ease 1400ms both" }}>
+        <div className="axen-display" style={{ position: "relative", marginTop: 8, fontSize: 9, fontWeight: 700, letterSpacing: 5, color: G, animation: "axen-float-up 800ms ease 1400ms both" }}>
           HABIT &amp; DISCIPLINE
         </div>
         <div style={{ position: "relative", marginTop: 26, height: 2, background: "#0e1a26", overflow: "hidden", borderRadius: 2 }}>
@@ -183,7 +183,7 @@ function Landing() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative", background: "#000", color: "#e8e8e8", fontFamily: "monospace", overflow: "hidden" }}>
+    <div className="axen-page" style={{ minHeight: "100vh", position: "relative", background: "#000", color: "#e8e8e8", overflow: "hidden" }}>
       {!introGone && <Intro done={!intro} />}
 
       {/* ambient futuristic backdrop */}
@@ -195,8 +195,8 @@ function Landing() {
         <div style={{ position: "relative", textAlign: "center", animation: "axen-float-up 700ms ease both" }}>
           <div style={{ position: "absolute", left: "50%", top: "50%", width: 240, height: 240, marginLeft: -120, marginTop: -120, borderRadius: "50%", border: `1px solid ${G}22`, borderTopColor: `${G}88`, animation: "axen-orbit 16s linear infinite" }} />
           <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ position: "relative", width: "100%", maxWidth: 190, margin: "0 auto", display: "block", animation: "axen-glow 3.4s ease-in-out infinite" }} />
-          <h1 style={{ position: "relative", marginTop: 12, fontSize: 13, fontWeight: 900, letterSpacing: 6, color: "#fff", textShadow: `0 0 22px ${G}` }}>AXEN HABIT &amp; DISCIPLINE</h1>
-          <p style={{ position: "relative", marginTop: 6, letterSpacing: 4, fontSize: 9, color: G }}>ACCESS TERMINAL · 3 DAYS FREE</p>
+          <h1 className="axen-display" style={{ position: "relative", marginTop: 12, fontSize: 14, fontWeight: 900, letterSpacing: 6, color: "#fff", textShadow: `0 0 22px ${G}, 0 0 60px ${G}55` }}>AXEN HABIT &amp; DISCIPLINE</h1>
+          <p className="axen-display" style={{ position: "relative", marginTop: 6, letterSpacing: 5, fontSize: 9, fontWeight: 700, color: G, textShadow: `0 0 14px ${G}88` }}>ACCESS TERMINAL · 3 DAYS FREE</p>
         </div>
 
         {authed ? (
