@@ -526,7 +526,7 @@ function App() {
             <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 20px ${G}` }} />
           </div>
           <div style={{ position: "absolute", width: 340, height: 340, borderRadius: "50%", border: `1px solid ${G2}33`, animation: "orbit 14s linear infinite reverse" }} />
-          <img src={axenLogo} alt="AXEN" style={{ width: "min(58vw, 260px)", height: "auto", zIndex: 3, filter: `drop-shadow(0 0 22px ${G})`, animation: "glow 2.5s ease-in-out infinite" }} />
+          <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ width: "min(58vw, 260px)", height: "auto", zIndex: 3, filter: `drop-shadow(0 0 22px ${G})`, animation: "glow 2.5s ease-in-out infinite" }} />
           <div style={{ width: 120, height: 2, background: `linear-gradient(90deg,transparent,${G},transparent)`, margin: "22px auto", zIndex: 3 }} />
           <img src={habitLogo} alt="Habit & Discipline" style={{ width: "min(46vw, 210px)", height: "auto", zIndex: 3, opacity: 0.95, filter: `drop-shadow(0 0 14px ${G}aa)`, animation: "pulse 2s ease-in-out infinite" }} />
           <div style={{ marginTop: 40, fontSize: 9, letterSpacing: 3, color: "#555", zIndex: 3 }}>[ INITIALIZING SYSTEM ]</div>
@@ -613,7 +613,7 @@ function App() {
         <div style={{ padding: "14px 16px", background: "rgba(10,10,25,0.7)", backdropFilter: "blur(20px)", borderBottom: `1px solid ${G}55`, display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 99, boxShadow: `0 2px 20px ${G}22` }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 10px ${G}`, animation: "pulse 1.5s infinite" }} />
-            <img src={axenLogo} alt="AXEN" style={{ height: 24, width: "auto", filter: `drop-shadow(0 0 8px ${G})` }} />
+            <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 24, width: "auto", filter: `drop-shadow(0 0 8px ${G})` }} />
           </div>
           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
             {(Object.keys(THEMES) as ThemeKey[]).filter(k => streak >= THEMES[k].unlock).map(k => {
@@ -706,7 +706,7 @@ function App() {
 
           {/* LEGAL LINKS */}
           <div style={{ marginTop: 32, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${G}22` }}>
-            <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginBottom: 10 }}>◈ AXEN · A PRODUCT OF NEXT AI</div>
+            <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginBottom: 10 }}>◈ AXEN HABIT & DISCIPLINE · A PRODUCT OF NEXT AI</div>
             <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
               <Link to="/privacy" style={{ color: "#888", textDecoration: "none", fontSize: 10, letterSpacing: 1.5 }}>PRIVACY</Link>
               <Link to="/terms" style={{ color: "#888", textDecoration: "none", fontSize: 10, letterSpacing: 1.5 }}>TERMS</Link>
