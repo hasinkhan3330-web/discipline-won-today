@@ -56,7 +56,7 @@ function ResetPage() {
       if (error) throw error;
       setDone(true);
       await supabase.auth.signOut();
-      setTimeout(() => navigate({ to: "/auth", replace: true }), 2500);
+      setTimeout(() => navigate({ to: "/", replace: true }), 2500);
     } catch (e2) {
       setErr(e2 instanceof Error ? e2.message : "Could not update password.");
     } finally {

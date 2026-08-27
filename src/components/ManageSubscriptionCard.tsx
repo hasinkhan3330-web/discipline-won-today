@@ -40,7 +40,7 @@ export function ManageSubscriptionCard() {
   const isYearly = !!sub?.price_id?.includes("yearly");
   // Web checkout writes provider "razorpay"; Play Billing writes "play"/"revenuecat".
   const isPlay = (sub?.provider ?? "play").toLowerCase().includes("play") || (sub?.provider ?? "").toLowerCase().includes("revenuecat");
-  const manageUrl = isPlay ? playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly) : (sub?.short_url ?? "/pricing");
+  const manageUrl = isPlay ? playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly) : (sub?.short_url ?? "/");
 
   const endDate = sub?.current_period_end ? new Date(sub.current_period_end) : null;
   const endStr = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
