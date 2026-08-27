@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
-      { title: "Pricing — AXEN by NEXT AI" },
+      { title: "Pricing — AXEN Habit & Discipline" },
       { name: "description", content: "Simple pricing for AXEN. 3-day free trial. Monthly and yearly plans available worldwide." },
       { property: "og:title", content: "AXEN Pricing — 3-Day Free Trial" },
       { property: "og:description", content: "Start your discipline journey with a 3-day free trial. Cancel anytime." },

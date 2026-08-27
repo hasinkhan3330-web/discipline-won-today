@@ -3,9 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/refund")({
   head: () => ({
     meta: [
-      { title: "Refund Policy — AXEN by NEXT AI" },
+      { title: "Refund Policy — AXEN Habit & Discipline" },
       { name: "description", content: "30-day money-back guarantee on AXEN subscriptions. How to request a refund." },
-      { property: "og:title", content: "Refund Policy — AXEN" },
+      { property: "og:title", content: "Refund Policy — AXEN Habit & Discipline" },
       { property: "og:description", content: "30-day money-back guarantee on all AXEN plans." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/refund")({
 function Refund() {
   return <LegalShell title="REFUND POLICY">
     <p><b>Last updated:</b> July 25, 2026</p>
-    <p>NEXT AI ("we", "us"), operator of the AXEN - Habit & Discipline ("AXEN") application, offers a fair refund policy for all subscribers.</p>
+    <p>NEXT AI ("we", "us"), operator of the AXEN Habit & Discipline ("AXEN") application, offers a fair refund policy for all subscribers.</p>
 
     <h2>1. 30-Day Money-Back Guarantee</h2>
     <p>We offer a <b>30-day money-back guarantee</b>. If you are not satisfied with your AXEN subscription, you may request a full refund within 30 days of your order date.</p>

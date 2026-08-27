@@ -76,7 +76,7 @@ function Splash() {
       <div style={{ position: "relative", width: "100%", maxWidth: 460, padding: 24, textAlign: "center" }}>
         <img
           src={axenLogo}
-          alt="AXEN"
+          alt="AXEN Habit & Discipline"
           style={{ width: "100%", maxWidth: 300, display: "block", margin: "0 auto", animation: "axen-enter 1200ms cubic-bezier(0.16,1,0.3,1) both, axen-glow 3s ease-in-out 1200ms infinite" }}
         />
         <img

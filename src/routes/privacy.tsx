@@ -3,9 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Privacy Notice — AXEN by NEXT AI" },
+      { title: "Privacy Notice — AXEN Habit & Discipline" },
       { name: "description", content: "How NEXT AI collects, uses, and protects your personal data in the AXEN application." },
-      { property: "og:title", content: "Privacy Notice — AXEN" },
+      { property: "og:title", content: "Privacy Notice — AXEN Habit & Discipline" },
       { property: "og:description", content: "NEXT AI's privacy practices for the AXEN app." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/privacy")({
 function Privacy() {
   return <LegalShell title="PRIVACY NOTICE">
     <p><b>Last updated:</b> July 25, 2026</p>
-    <p>This Privacy Notice explains how <b>NEXT AI</b> ("we", "us", "our"), the operator of the AXEN - Habit & Discipline ("AXEN") application, collects, uses, and shares your personal data. NEXT AI is the data controller for the personal data described here.</p>
+    <p>This Privacy Notice explains how <b>NEXT AI</b> ("we", "us", "our"), the operator of the AXEN Habit & Discipline ("AXEN") application, collects, uses, and shares your personal data. NEXT AI is the data controller for the personal data described here.</p>
 
     <h2>1. Who We Are</h2>
     <p>NEXT AI is a technology company. AXEN is one of our products — a discipline and habit-tracking application. If you have questions about this notice, contact us at <b>support@next-ai.app</b>.</p>

@@ -3,9 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms & Conditions — AXEN by NEXT AI" },
+      { title: "Terms & Conditions — AXEN Habit & Discipline" },
       { name: "description", content: "Terms and conditions for using the AXEN application, operated by NEXT AI." },
-      { property: "og:title", content: "Terms & Conditions — AXEN" },
+      { property: "og:title", content: "Terms & Conditions — AXEN Habit & Discipline" },
       { property: "og:description", content: "The agreement between you and NEXT AI when using AXEN." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -17,7 +17,7 @@ export const Route = createFileRoute("/terms")({
 function Terms() {
   return <LegalShell title="TERMS & CONDITIONS">
     <p><b>Last updated:</b> July 25, 2026</p>
-    <p>These Terms & Conditions ("Terms") govern your use of the AXEN - Habit & Discipline ("AXEN") application, operated by <b>NEXT AI</b> ("we", "us", "our"). By creating an account or continuing to use AXEN, you agree to these Terms.</p>
+    <p>These Terms & Conditions ("Terms") govern your use of the AXEN Habit & Discipline ("AXEN") application, operated by <b>NEXT AI</b> ("we", "us", "our"). By creating an account or continuing to use AXEN, you agree to these Terms.</p>
 
     <h2>1. Who You Are Contracting With</h2>
     <p>You are entering into an agreement with NEXT AI, the operator of AXEN. You confirm you are of legal age in your jurisdiction, or, if using AXEN on behalf of an organization, that you have authority to bind it.</p>
