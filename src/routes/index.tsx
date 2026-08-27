@@ -210,16 +210,17 @@ function Landing() {
                     key={c}
                     type="button"
                     onClick={() => setCycle(c)}
+                    className="axen-btn"
                     style={{
                       textAlign: "left", padding: 16, cursor: "pointer",
                       background: active ? `linear-gradient(135deg, ${G}22, ${G2}22)` : "rgba(8,12,26,0.72)",
                       border: `1px solid ${active ? G : "#22303f"}`, borderRadius: 4,
-                      color: "#fff", fontFamily: "monospace",
+                      color: "#fff", fontFamily: "inherit",
                       boxShadow: active ? `0 0 26px ${G}44` : "none",
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ letterSpacing: 3, fontWeight: 900, fontSize: 12 }}>{p.title}</div>
+                      <div className="axen-display" style={{ letterSpacing: 3, fontWeight: 800, fontSize: 12 }}>{p.title}</div>
                       {p.save && <div style={{ background: G, color: "#000", fontSize: 9, fontWeight: 900, padding: "2px 8px", letterSpacing: 2, borderRadius: 2 }}>{p.save}</div>}
                     </div>
                     <div style={{ marginTop: 8, fontSize: 24, fontWeight: 900, color: G }}>
@@ -236,7 +237,8 @@ function Landing() {
 
             <button
               onClick={() => navigate({ to: "/dashboard" })}
-              style={{ marginTop: 16, width: "100%", background: "transparent", border: `1px solid ${G}44`, color: G, fontFamily: "monospace", fontSize: 11, letterSpacing: 3, padding: "13px 16px", borderRadius: 2, cursor: "pointer" }}
+              className="axen-btn"
+              style={{ marginTop: 16, width: "100%", background: "transparent", border: `1px solid ${G}44`, color: G, fontSize: 11, fontWeight: 700, letterSpacing: 3, padding: "13px 16px", borderRadius: 2, cursor: "pointer" }}
             >
               ENTER DASHBOARD →
             </button>
