@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { PaymentOptions } from "@/components/PaymentOptions";
-import { STRIPE_DISPLAY, type Cycle } from "@/lib/pricing";
+import { PlatformCheckout } from "@/components/PlatformCheckout";
+import { INTL_DISPLAY, type Cycle } from "@/lib/pricing";
 import axenLogo from "@/assets/axen-logo.png";
 
 export const Route = createFileRoute("/")({
@@ -38,14 +38,14 @@ const PLAN_COPY: Record<Cycle, { title: string; price: string; per: string; note
     price: "₹99",
     per: "/month",
     note: "Billed ₹99/mo after your 3-day free trial",
-    intl: STRIPE_DISPLAY.monthly,
+    intl: INTL_DISPLAY.monthly,
   },
   yearly: {
     title: "YEARLY",
     price: "₹83",
     per: "/month",
     note: "₹999/yr total · Billed ₹999/yr after your 3-day free trial",
-    intl: STRIPE_DISPLAY.yearly,
+    intl: INTL_DISPLAY.yearly,
     save: "SAVE 16%",
   },
 };
@@ -104,6 +104,7 @@ function Landing() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [msg, setMsg] = useState<{ kind: "err" | "ok"; text: string } | null>(null);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
@@ -113,12 +114,15 @@ function Landing() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setAuthed(true);
-        setSessionEmail(data.session.user.email ?? null);
-      }
-    });
+    const apply = (session: { user: { id: string; email?: string | null } } | null) => {
+      if (!session) return;
+      setAuthed(true);
+      setSessionEmail(session.user.email ?? null);
+      setSessionUserId(session.user.id);
+    };
+    supabase.auth.getSession().then(({ data }) => apply(data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => apply(session));
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   const signInWithGoogle = async () => {
@@ -233,7 +237,7 @@ function Landing() {
               })}
             </div>
 
-            <PaymentOptions cycle={cycle} email={sessionEmail} />
+            <PlatformCheckout cycle={cycle} email={sessionEmail} userId={sessionUserId} />
 
             <button
               onClick={() => navigate({ to: "/dashboard" })}
@@ -309,7 +313,7 @@ function Landing() {
 
         <p style={{ position: "relative", marginTop: 22, fontSize: 9, color: "#46586a", letterSpacing: 1, textAlign: "center", lineHeight: 1.9 }}>
           ₹99/month · ₹999/year · International $2.99/mo · $29.99/yr
-          <br />Razorpay (UPI · cards · netbanking) for INR · Stripe for international cards.
+          <br />Razorpay (UPI · cards · netbanking · international cards) on web · Google Play / App Store billing in the apps.
         </p>
       </div>
     </div>

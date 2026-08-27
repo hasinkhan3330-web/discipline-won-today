@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { PlayBillingButton } from "@/components/PlayBillingButton";
-import { PaymentOptions } from "@/components/PaymentOptions";
+import { PlatformCheckout } from "@/components/PlatformCheckout";
 
 import { isNativeBillingAvailable } from "@/lib/play-billing";
 import { PRICING, type Cycle } from "@/lib/pricing";
@@ -38,7 +37,7 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
           <p style={{ marginTop: 14, fontSize: 12, color: "#aaa", letterSpacing: 1 }}>
             Start with <span style={{ color: G, fontWeight: 900 }}>3 DAYS FREE</span>. Cancel anytime before you're charged.
           </p>
-          <p style={{ marginTop: 6, fontSize: 9, color: "#666", letterSpacing: 2 }}>◈ SECURED BY GOOGLE PLAY BILLING</p>
+          <p style={{ marginTop: 6, fontSize: 9, color: "#666", letterSpacing: 2 }}>◈ SECURE CHECKOUT</p>
         </div>
 
         <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -77,17 +76,13 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
           ))}
         </ul>
 
-        {native ? (
-          <PlayBillingButton userId={userId} cycle={cycle} />
-        ) : (
-          <PaymentOptions cycle={cycle} email={email} />
-        )}
+        <PlatformCheckout userId={userId} cycle={cycle} email={email} />
 
 
         <p style={{ marginTop: 12, fontSize: 10, color: "#666", letterSpacing: 1, textAlign: "center" }}>
           {native
             ? "Billed securely through Google Play. Manage or cancel anytime in Play Store → Subscriptions."
-            : "Billed securely through Razorpay (UPI, cards, netbanking) or Stripe (international cards). Inside the Android app, Google Play Billing is used."}
+            : "Billed securely through Razorpay — UPI, Indian cards, netbanking and international cards. Inside the mobile apps, store billing is used."}
         </p>
 
 
