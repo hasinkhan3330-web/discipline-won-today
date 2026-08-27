@@ -260,3 +260,63 @@
   from { opacity: 0; transform: scaleX(0.1); }
   to { opacity: 1; transform: scaleX(1); }
 }
+
+/* ===== AXEN intro splash + futuristic auth ===== */
+@keyframes axen-boot-in {
+  0% { opacity: 0; transform: scale(0.7); filter: blur(24px); }
+  45% { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+@keyframes axen-boot-out {
+  from { opacity: 1; }
+  to { opacity: 0; visibility: hidden; }
+}
+@keyframes axen-scan {
+  0% { transform: translateY(-120%); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(1200%); opacity: 0; }
+}
+@keyframes axen-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes axen-bar {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+@keyframes axen-flicker {
+  0%, 100% { opacity: 1; }
+  42% { opacity: 0.55; }
+  47% { opacity: 1; }
+}
+@keyframes axen-float-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes axen-grid-move {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 60px 60px, 60px 60px; }
+}
+@keyframes axen-sweep {
+  0% { transform: translateX(-140%); }
+  100% { transform: translateX(140%); }
+}
+.axen-field {
+  width: 100%;
+  padding: 14px 14px 14px 16px;
+  background: rgba(6, 10, 24, 0.72);
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  color: #eaf7ff;
+  font-family: monospace;
+  font-size: 13px;
+  letter-spacing: 2px;
+  border-radius: 3px;
+  outline: none;
+  transition: border-color .25s, box-shadow .25s, background .25s;
+}
+.axen-field::placeholder { color: #4d6478; letter-spacing: 3px; }
+.axen-field:focus {
+  border-color: rgba(0, 212, 255, 0.9);
+  box-shadow: 0 0 0 1px rgba(0,212,255,0.35), 0 0 26px rgba(0,212,255,0.28) inset;
+  background: rgba(8, 16, 36, 0.9);
+}
