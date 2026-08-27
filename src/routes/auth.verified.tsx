@@ -28,7 +28,7 @@ function VerifiedPage() {
 
   useEffect(() => {
     if (count <= 0) {
-      navigate({ to: "/auth", replace: true });
+      navigate({ to: "/", replace: true });
       return;
     }
     const t = setTimeout(() => setCount(c => c - 1), 1000);
@@ -55,7 +55,7 @@ function VerifiedPage() {
         </p>
 
         <button
-          onClick={() => navigate({ to: "/auth", replace: true })}
+          onClick={() => navigate({ to: "/", replace: true })}
           style={{ marginTop: 28, width: "100%", padding: "14px 20px", background: G, color: "#000", fontWeight: 900, letterSpacing: 3, fontSize: 12, border: "none", cursor: "pointer", borderRadius: 2, boxShadow: `0 0 20px ${G}66`, fontFamily: "monospace" }}
         >
           GO TO SIGN IN
