@@ -73,7 +73,7 @@ function ForgotPage() {
             <p style={{ marginTop: 12, fontSize: 13, lineHeight: 1.6, color: "#c8c8d8" }}>
               A reset link was sent to <span style={{ color: G }}>{email}</span>. Open it to set a new password. Also check spam.
             </p>
-            <button onClick={() => navigate({ to: "/auth", replace: true })}
+            <button onClick={() => navigate({ to: "/", replace: true })}
               style={{ marginTop: 24, width: "100%", padding: "14px 20px", background: G, color: "#000", fontWeight: 900, letterSpacing: 3, fontSize: 12, border: "none", cursor: "pointer", borderRadius: 2, boxShadow: `0 0 20px ${G}66`, fontFamily: "monospace" }}>
               BACK TO SIGN IN
             </button>
@@ -96,7 +96,7 @@ function ForgotPage() {
                 {loading ? "SENDING..." : "SEND RESET LINK"}
               </button>
             </form>
-            <button onClick={() => navigate({ to: "/auth", replace: true })}
+            <button onClick={() => navigate({ to: "/", replace: true })}
               style={{ marginTop: 20, width: "100%", background: "transparent", border: "none", color: "#888", fontFamily: "monospace", fontSize: 11, letterSpacing: 2, cursor: "pointer" }}>
               ← BACK TO SIGN IN
             </button>
