@@ -104,6 +104,7 @@ function Landing() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [msg, setMsg] = useState<{ kind: "err" | "ok"; text: string } | null>(null);
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [sessionUserId, setSessionUserId] = useState<string | null>(null);
   const [authed, setAuthed] = useState(false);
 
   useEffect(() => {
@@ -113,12 +114,15 @@ function Landing() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        setAuthed(true);
-        setSessionEmail(data.session.user.email ?? null);
-      }
-    });
+    const apply = (session: { user: { id: string; email?: string | null } } | null) => {
+      if (!session) return;
+      setAuthed(true);
+      setSessionEmail(session.user.email ?? null);
+      setSessionUserId(session.user.id);
+    };
+    supabase.auth.getSession().then(({ data }) => apply(data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => apply(session));
+    return () => sub.subscription.unsubscribe();
   }, []);
 
   const signInWithGoogle = async () => {
