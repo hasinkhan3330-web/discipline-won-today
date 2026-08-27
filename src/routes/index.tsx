@@ -258,7 +258,8 @@ function Landing() {
               type="button"
               onClick={signInWithGoogle}
               disabled={googleLoading}
-              style={{ position: "relative", width: "100%", padding: "15px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "#fff", color: "#1f1f1f", border: "none", borderRadius: 3, fontFamily: "monospace", fontWeight: 900, letterSpacing: 2, fontSize: 12, cursor: googleLoading ? "wait" : "pointer", boxShadow: `0 0 24px ${G}33` }}
+              className="axen-btn axen-btn-google"
+              style={{ width: "100%", padding: "15px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "#fff", color: "#1f1f1f", border: "none", borderRadius: 3, fontWeight: 800, letterSpacing: 2, fontSize: 11, cursor: googleLoading ? "wait" : "pointer", boxShadow: `0 0 24px ${G}33` }}
             >
               <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                 <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />
@@ -286,17 +287,18 @@ function Landing() {
               <button
                 type="submit"
                 disabled={loading}
-                style={{ position: "relative", padding: "15px 20px", background: loading ? "#16202c" : `linear-gradient(90deg, ${G}, ${G2})`, color: loading ? "#6f8296" : "#04070f", fontWeight: 900, letterSpacing: 3, fontSize: 12, border: "none", cursor: loading ? "wait" : "pointer", borderRadius: 3, fontFamily: "monospace", boxShadow: loading ? "none" : `0 0 28px ${G}55` }}
+                className="axen-btn axen-btn-primary"
+                style={{ padding: "15px 20px", background: loading ? "#16202c" : `linear-gradient(90deg, ${G}, ${G2})`, color: loading ? "#6f8296" : "#04070f", fontWeight: 800, letterSpacing: 3, fontSize: 11, border: "none", cursor: loading ? "wait" : "pointer", borderRadius: 3, boxShadow: loading ? "none" : `0 0 28px ${G}55` }}
               >
                 {loading ? "AUTHENTICATING…" : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
               </button>
             </form>
 
             <div style={{ position: "relative", display: "flex", justifyContent: "space-between", marginTop: 14 }}>
-              <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(null); }} style={{ background: "transparent", border: "none", color: "#7c8ea0", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, cursor: "pointer" }}>
+              <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(null); }} className="axen-link" style={{ background: "transparent", border: "none", color: "#7c8ea0", fontFamily: "inherit", fontWeight: 600, fontSize: 11, letterSpacing: 2, cursor: "pointer" }}>
                 {mode === "signin" ? "NEW? CREATE ACCOUNT" : "← BACK TO SIGN IN"}
               </button>
-              <button onClick={() => navigate({ to: "/auth/forgot" })} style={{ background: "transparent", border: "none", color: G, fontFamily: "monospace", fontSize: 10, letterSpacing: 2, cursor: "pointer" }}>
+              <button onClick={() => navigate({ to: "/auth/forgot" })} className="axen-link" style={{ background: "transparent", border: "none", color: G, fontFamily: "inherit", fontWeight: 600, fontSize: 11, letterSpacing: 2, cursor: "pointer" }}>
                 FORGOT PASSWORD?
               </button>
             </div>
