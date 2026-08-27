@@ -301,22 +301,81 @@
   0% { transform: translateX(-140%); }
   100% { transform: translateX(140%); }
 }
+/* ===== AXEN futuristic typography + interactive fields/buttons ===== */
+.axen-page {
+  font-family: "Rajdhani", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.axen-display {
+  font-family: "Orbitron", "Rajdhani", ui-monospace, sans-serif;
+}
+
+@keyframes axen-shine {
+  0% { transform: translateX(-160%) skewX(-18deg); }
+  60%, 100% { transform: translateX(260%) skewX(-18deg); }
+}
+@keyframes axen-caret {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(0,212,255,0.35), 0 0 26px rgba(0,212,255,0.28) inset; }
+  50% { box-shadow: 0 0 0 1px rgba(0,212,255,0.6), 0 0 34px rgba(0,212,255,0.42) inset; }
+}
+
 .axen-field {
+  position: relative;
   width: 100%;
   padding: 14px 14px 14px 16px;
   background: rgba(6, 10, 24, 0.72);
   border: 1px solid rgba(0, 212, 255, 0.28);
-  color: #eaf7ff;
-  font-family: monospace;
-  font-size: 13px;
-  letter-spacing: 2px;
   border-radius: 3px;
+  color: #eaf7ff;
+  font-family: "Rajdhani", ui-monospace, monospace;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  caret-color: #00d4ff;
   outline: none;
-  transition: border-color .25s, box-shadow .25s, background .25s;
+  transition: border-color .3s ease, box-shadow .3s ease, background .3s ease, transform .2s ease;
 }
-.axen-field::placeholder { color: #4d6478; letter-spacing: 3px; }
+.axen-field::placeholder {
+  color: #4d6478;
+  font-family: "Orbitron", monospace;
+  font-size: 10px;
+  letter-spacing: 4px;
+  transition: color .3s ease;
+}
+.axen-field:hover {
+  border-color: rgba(0, 212, 255, 0.55);
+  background: rgba(8, 14, 30, 0.85);
+}
 .axen-field:focus {
-  border-color: rgba(0, 212, 255, 0.9);
-  box-shadow: 0 0 0 1px rgba(0,212,255,0.35), 0 0 26px rgba(0,212,255,0.28) inset;
-  background: rgba(8, 16, 36, 0.9);
+  border-color: rgba(0, 212, 255, 0.95);
+  background: rgba(8, 16, 36, 0.92);
+  transform: translateY(-1px);
+  animation: axen-caret 2.4s ease-in-out infinite;
 }
+.axen-field:focus::placeholder { color: #6f93ad; }
+
+.axen-btn {
+  position: relative;
+  overflow: hidden;
+  font-family: "Orbitron", monospace;
+  transition: transform .18s ease, box-shadow .3s ease, filter .3s ease;
+}
+.axen-btn::after {
+  content: "";
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: 0;
+  width: 36%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+  transform: translateX(-160%) skewX(-18deg);
+  pointer-events: none;
+}
+.axen-btn:hover::after { animation: axen-shine 0.9s ease forwards; }
+.axen-btn:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
+.axen-btn:active:not(:disabled) { transform: translateY(1px) scale(0.99); }
+.axen-btn-primary:hover:not(:disabled) { box-shadow: 0 0 40px rgba(0,212,255,0.75), 0 0 80px rgba(168,85,247,0.3); }
+.axen-btn-google:hover:not(:disabled) { box-shadow: 0 0 34px rgba(0,212,255,0.45); }
+.axen-link {
+  transition: color .25s ease, text-shadow .25s ease;
+}
+.axen-link:hover { color: #00d4ff !important; text-shadow: 0 0 12px rgba(0,212,255,0.7); }

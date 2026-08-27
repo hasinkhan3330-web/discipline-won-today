@@ -75,10 +75,10 @@ function Intro({ done }: { done: boolean }) {
           alt="AXEN Habit & Discipline"
           style={{ position: "relative", width: "100%", maxWidth: 220, display: "block", margin: "0 auto", animation: "axen-boot-in 1400ms cubic-bezier(0.16,1,0.3,1) both, axen-glow 2.6s ease-in-out 1400ms infinite" }}
         />
-        <div style={{ position: "relative", marginTop: 18, fontFamily: "monospace", fontSize: 11, letterSpacing: 7, color: "#fff", textShadow: `0 0 18px ${G}`, animation: "axen-float-up 800ms ease 900ms both, axen-flicker 2.2s linear 1700ms infinite" }}>
+        <div className="axen-display" style={{ position: "relative", marginTop: 18, fontSize: 15, fontWeight: 800, letterSpacing: 9, color: "#fff", textShadow: `0 0 18px ${G}, 0 0 46px ${G}66`, animation: "axen-float-up 800ms ease 900ms both, axen-flicker 2.2s linear 1700ms infinite" }}>
           A X E N
         </div>
-        <div style={{ position: "relative", marginTop: 8, fontFamily: "monospace", fontSize: 9, letterSpacing: 4, color: G, animation: "axen-float-up 800ms ease 1400ms both" }}>
+        <div className="axen-display" style={{ position: "relative", marginTop: 8, fontSize: 9, fontWeight: 700, letterSpacing: 5, color: G, animation: "axen-float-up 800ms ease 1400ms both" }}>
           HABIT &amp; DISCIPLINE
         </div>
         <div style={{ position: "relative", marginTop: 26, height: 2, background: "#0e1a26", overflow: "hidden", borderRadius: 2 }}>
@@ -183,7 +183,7 @@ function Landing() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative", background: "#000", color: "#e8e8e8", fontFamily: "monospace", overflow: "hidden" }}>
+    <div className="axen-page" style={{ minHeight: "100vh", position: "relative", background: "#000", color: "#e8e8e8", overflow: "hidden" }}>
       {!introGone && <Intro done={!intro} />}
 
       {/* ambient futuristic backdrop */}
@@ -195,8 +195,8 @@ function Landing() {
         <div style={{ position: "relative", textAlign: "center", animation: "axen-float-up 700ms ease both" }}>
           <div style={{ position: "absolute", left: "50%", top: "50%", width: 240, height: 240, marginLeft: -120, marginTop: -120, borderRadius: "50%", border: `1px solid ${G}22`, borderTopColor: `${G}88`, animation: "axen-orbit 16s linear infinite" }} />
           <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ position: "relative", width: "100%", maxWidth: 190, margin: "0 auto", display: "block", animation: "axen-glow 3.4s ease-in-out infinite" }} />
-          <h1 style={{ position: "relative", marginTop: 12, fontSize: 13, fontWeight: 900, letterSpacing: 6, color: "#fff", textShadow: `0 0 22px ${G}` }}>AXEN HABIT &amp; DISCIPLINE</h1>
-          <p style={{ position: "relative", marginTop: 6, letterSpacing: 4, fontSize: 9, color: G }}>ACCESS TERMINAL · 3 DAYS FREE</p>
+          <h1 className="axen-display" style={{ position: "relative", marginTop: 12, fontSize: 14, fontWeight: 900, letterSpacing: 6, color: "#fff", textShadow: `0 0 22px ${G}, 0 0 60px ${G}55` }}>AXEN HABIT &amp; DISCIPLINE</h1>
+          <p className="axen-display" style={{ position: "relative", marginTop: 6, letterSpacing: 5, fontSize: 9, fontWeight: 700, color: G, textShadow: `0 0 14px ${G}88` }}>ACCESS TERMINAL · 3 DAYS FREE</p>
         </div>
 
         {authed ? (
@@ -210,16 +210,17 @@ function Landing() {
                     key={c}
                     type="button"
                     onClick={() => setCycle(c)}
+                    className="axen-btn"
                     style={{
                       textAlign: "left", padding: 16, cursor: "pointer",
                       background: active ? `linear-gradient(135deg, ${G}22, ${G2}22)` : "rgba(8,12,26,0.72)",
                       border: `1px solid ${active ? G : "#22303f"}`, borderRadius: 4,
-                      color: "#fff", fontFamily: "monospace",
+                      color: "#fff", fontFamily: "inherit",
                       boxShadow: active ? `0 0 26px ${G}44` : "none",
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ letterSpacing: 3, fontWeight: 900, fontSize: 12 }}>{p.title}</div>
+                      <div className="axen-display" style={{ letterSpacing: 3, fontWeight: 800, fontSize: 12 }}>{p.title}</div>
                       {p.save && <div style={{ background: G, color: "#000", fontSize: 9, fontWeight: 900, padding: "2px 8px", letterSpacing: 2, borderRadius: 2 }}>{p.save}</div>}
                     </div>
                     <div style={{ marginTop: 8, fontSize: 24, fontWeight: 900, color: G }}>
@@ -236,7 +237,8 @@ function Landing() {
 
             <button
               onClick={() => navigate({ to: "/dashboard" })}
-              style={{ marginTop: 16, width: "100%", background: "transparent", border: `1px solid ${G}44`, color: G, fontFamily: "monospace", fontSize: 11, letterSpacing: 3, padding: "13px 16px", borderRadius: 2, cursor: "pointer" }}
+              className="axen-btn"
+              style={{ marginTop: 16, width: "100%", background: "transparent", border: `1px solid ${G}44`, color: G, fontSize: 11, fontWeight: 700, letterSpacing: 3, padding: "13px 16px", borderRadius: 2, cursor: "pointer" }}
             >
               ENTER DASHBOARD →
             </button>
@@ -258,7 +260,8 @@ function Landing() {
               type="button"
               onClick={signInWithGoogle}
               disabled={googleLoading}
-              style={{ position: "relative", width: "100%", padding: "15px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "#fff", color: "#1f1f1f", border: "none", borderRadius: 3, fontFamily: "monospace", fontWeight: 900, letterSpacing: 2, fontSize: 12, cursor: googleLoading ? "wait" : "pointer", boxShadow: `0 0 24px ${G}33` }}
+              className="axen-btn axen-btn-google"
+              style={{ width: "100%", padding: "15px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "#fff", color: "#1f1f1f", border: "none", borderRadius: 3, fontWeight: 800, letterSpacing: 2, fontSize: 11, cursor: googleLoading ? "wait" : "pointer", boxShadow: `0 0 24px ${G}33` }}
             >
               <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                 <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />
@@ -286,17 +289,18 @@ function Landing() {
               <button
                 type="submit"
                 disabled={loading}
-                style={{ position: "relative", padding: "15px 20px", background: loading ? "#16202c" : `linear-gradient(90deg, ${G}, ${G2})`, color: loading ? "#6f8296" : "#04070f", fontWeight: 900, letterSpacing: 3, fontSize: 12, border: "none", cursor: loading ? "wait" : "pointer", borderRadius: 3, fontFamily: "monospace", boxShadow: loading ? "none" : `0 0 28px ${G}55` }}
+                className="axen-btn axen-btn-primary"
+                style={{ padding: "15px 20px", background: loading ? "#16202c" : `linear-gradient(90deg, ${G}, ${G2})`, color: loading ? "#6f8296" : "#04070f", fontWeight: 800, letterSpacing: 3, fontSize: 11, border: "none", cursor: loading ? "wait" : "pointer", borderRadius: 3, boxShadow: loading ? "none" : `0 0 28px ${G}55` }}
               >
                 {loading ? "AUTHENTICATING…" : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
               </button>
             </form>
 
             <div style={{ position: "relative", display: "flex", justifyContent: "space-between", marginTop: 14 }}>
-              <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(null); }} style={{ background: "transparent", border: "none", color: "#7c8ea0", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, cursor: "pointer" }}>
+              <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(null); }} className="axen-link" style={{ background: "transparent", border: "none", color: "#7c8ea0", fontFamily: "inherit", fontWeight: 600, fontSize: 11, letterSpacing: 2, cursor: "pointer" }}>
                 {mode === "signin" ? "NEW? CREATE ACCOUNT" : "← BACK TO SIGN IN"}
               </button>
-              <button onClick={() => navigate({ to: "/auth/forgot" })} style={{ background: "transparent", border: "none", color: G, fontFamily: "monospace", fontSize: 10, letterSpacing: 2, cursor: "pointer" }}>
+              <button onClick={() => navigate({ to: "/auth/forgot" })} className="axen-link" style={{ background: "transparent", border: "none", color: G, fontFamily: "inherit", fontWeight: 600, fontSize: 11, letterSpacing: 2, cursor: "pointer" }}>
                 FORGOT PASSWORD?
               </button>
             </div>
