@@ -313,7 +313,7 @@ function Landing() {
 
         <p style={{ position: "relative", marginTop: 22, fontSize: 9, color: "#46586a", letterSpacing: 1, textAlign: "center", lineHeight: 1.9 }}>
           ₹99/month · ₹999/year · International $2.99/mo · $29.99/yr
-          <br />Razorpay (UPI · cards · netbanking) for INR · Stripe for international cards.
+          <br />Razorpay (UPI · cards · netbanking · international cards) on web · Google Play / App Store billing in the apps.
         </p>
       </div>
     </div>
