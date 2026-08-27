@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
-import { PaymentOptions } from "@/components/PaymentOptions";
-import { STRIPE_DISPLAY, type Cycle } from "@/lib/pricing";
+import { PlatformCheckout } from "@/components/PlatformCheckout";
+import { INTL_DISPLAY, type Cycle } from "@/lib/pricing";
 import axenLogo from "@/assets/axen-logo.png";
 
 export const Route = createFileRoute("/")({
@@ -38,14 +38,14 @@ const PLAN_COPY: Record<Cycle, { title: string; price: string; per: string; note
     price: "₹99",
     per: "/month",
     note: "Billed ₹99/mo after your 3-day free trial",
-    intl: STRIPE_DISPLAY.monthly,
+    intl: INTL_DISPLAY.monthly,
   },
   yearly: {
     title: "YEARLY",
     price: "₹83",
     per: "/month",
     note: "₹999/yr total · Billed ₹999/yr after your 3-day free trial",
-    intl: STRIPE_DISPLAY.yearly,
+    intl: INTL_DISPLAY.yearly,
     save: "SAVE 16%",
   },
 };
@@ -233,7 +233,7 @@ function Landing() {
               })}
             </div>
 
-            <PaymentOptions cycle={cycle} email={sessionEmail} />
+            <PlatformCheckout cycle={cycle} email={sessionEmail} userId={sessionUserId} />
 
             <button
               onClick={() => navigate({ to: "/dashboard" })}
