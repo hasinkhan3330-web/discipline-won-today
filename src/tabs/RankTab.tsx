@@ -1,55 +1,95 @@
-import { cardStyle, titleStyle } from "./styles";
+import { AX, cardStyle, titleStyle } from "./styles";
+import { Coins, Trophy, Flame, Target } from "lucide-react";
 
-type BoardEntry = { n: string; c: number; s: number; img: string; you?: boolean };
+export const TIERS = [
+  { min: 0,     name: "Initiate",          tag: "The path begins" },
+  { min: 500,   name: "Seed",              tag: "Roots taking hold" },
+  { min: 1000,  name: "Warrior",           tag: "Forged in fire" },
+  { min: 2000,  name: "Monk",              tag: "Mind over noise" },
+  { min: 21000, name: "Discipline master", tag: "Legend unlocked" },
+];
 
-export function RankTab({ G, board, fallbackAvatar }: {
-  G: string;
-  board: BoardEntry[];
-  fallbackAvatar: (n: string) => string;
+export function tierFor(coins: number) {
+  let idx = 0;
+  for (let i = 0; i < TIERS.length; i++) if (coins >= TIERS[i].min) idx = i;
+  const cur = TIERS[idx];
+  const next = TIERS[idx + 1];
+  const pct = next ? Math.min(100, Math.round(((coins - cur.min) / (next.min - cur.min)) * 100)) : 100;
+  return { idx, cur, next, pct };
+}
+
+export function RankTab({ coins, streak, bestStreak = 0 }: {
+  coins: number;
+  streak: number;
+  bestStreak?: number;
 }) {
-  const CARD = cardStyle(G);
-  const podium = board.slice(0, 3);
-  const rest = board.slice(3);
+  const CARD = cardStyle();
+  const { idx, cur, next, pct } = tierFor(coins);
+
   return (
-    <div style={{ ...CARD, padding: 12 }}>
-      <div style={{ ...titleStyle, marginBottom: 8 }}><span style={{ color: G }}>▸</span> GLOBAL <span style={{ color: G }}>LEADERBOARD</span></div>
-      {board.length === 0 && <div style={{ fontSize: 10, color: "#666", textAlign: "center", padding: 16, letterSpacing: 2 }}>LOADING…</div>}
-
-      {podium.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6, marginBottom: 10 }}>
-          {podium.map((u, i) => (
-            <div key={i} style={{
-              textAlign: "center", padding: "10px 4px", borderRadius: 2,
-              background: u.you ? `linear-gradient(180deg, ${G}22, transparent)` : "rgba(0,0,0,0.35)",
-              border: `1px solid ${u.you ? G + "66" : G + "22"}`,
-            }}>
-              <div style={{ fontSize: 14 }}>{["🥇", "🥈", "🥉"][i]}</div>
-              <img src={u.img} onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(u.n); }}
-                style={{ width: 40, height: 40, borderRadius: "50%", border: `1px solid ${G}66`, objectFit: "cover", margin: "4px auto", display: "block", boxShadow: `0 0 12px ${G}44` }} />
-              <div style={{ fontSize: 9, fontWeight: 800, color: "#e8e8e8", letterSpacing: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{u.you ? "YOU" : u.n}</div>
-              <div style={{ fontSize: 10, fontWeight: 900, color: G, textShadow: `0 0 8px ${G}66` }}>{u.c}</div>
-              <div style={{ fontSize: 7.5, color: "#666", letterSpacing: 1 }}>{u.s}d STREAK</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {rest.map((u, i) => (
-        <div key={i} style={{
-          display: "flex", alignItems: "center", gap: 8, padding: "7px 8px",
-          background: u.you ? `linear-gradient(90deg, ${G}22, transparent)` : "rgba(0,0,0,0.3)",
-          border: `1px solid ${u.you ? G + "66" : "#222"}`, borderLeft: `3px solid ${u.you ? G : "#333"}`,
-          marginBottom: 4, borderRadius: 2,
-        }}>
-          <div style={{ fontSize: 11, fontWeight: 800, color: "#555", width: 18, textAlign: "center" }}>{i + 4}</div>
-          <img src={u.img} onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(u.n); }} style={{ width: 26, height: 26, borderRadius: "50%", border: `1px solid ${G}44`, objectFit: "cover" }} />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#e8e8e8", letterSpacing: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{u.you ? "YOU" : u.n}</div>
-            <div style={{ fontSize: 8, color: "#666", letterSpacing: 1 }}>{u.s} DAY STREAK</div>
+    <>
+      <div style={CARD}>
+        <div style={titleStyle}>Your tier</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+            background: "#1D1D28", border: `1px solid ${AX.border}`,
+            display: "flex", alignItems: "center", justifyContent: "center", color: AX.accent,
+          }}>
+            <Trophy size={24} strokeWidth={1.8} />
           </div>
-          <div style={{ fontSize: 12, fontWeight: 800, color: G, textShadow: `0 0 8px ${G}66` }}>{u.c}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 20, fontWeight: 600, color: AX.text }}>{cur.name}</div>
+            <div style={{ fontSize: 13, color: AX.muted, marginTop: 2 }}>{cur.tag}</div>
+          </div>
         </div>
-      ))}
-    </div>
+
+        <div style={{ height: 6, background: "#1D1D28", borderRadius: 6, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${pct}%`, background: AX.accent, transition: "width .5s ease" }} />
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10, fontSize: 12, color: AX.muted }}>
+          <span>{coins} coins</span>
+          <span>{next ? `${next.min - coins} to ${next.name}` : "Maximum tier reached"}</span>
+        </div>
+      </div>
+
+      <div style={{ ...CARD, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+        {[
+          { Ico: Coins, v: coins, l: "Coins" },
+          { Ico: Flame, v: `${streak}d`, l: "Streak" },
+          { Ico: Target, v: `${bestStreak}d`, l: "Best" },
+        ].map(s => (
+          <div key={s.l} style={{ background: "#181820", border: `1px solid ${AX.border}`, borderRadius: 14, padding: "14px 10px", textAlign: "center" }}>
+            <s.Ico size={18} strokeWidth={1.8} color={AX.accent} />
+            <div style={{ fontSize: 18, fontWeight: 600, color: AX.text, marginTop: 6 }}>{s.v}</div>
+            <div style={{ fontSize: 12, color: AX.muted, marginTop: 2 }}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={CARD}>
+        <div style={titleStyle}>All tiers</div>
+        {TIERS.map((t, i) => {
+          const reached = i <= idx;
+          return (
+            <div key={t.name} style={{
+              display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
+              background: "#181820", border: `1px solid ${i === idx ? AX.accent : AX.border}`,
+              borderRadius: 14, marginBottom: 10,
+            }}>
+              <div style={{
+                width: 8, height: 8, borderRadius: 8, flexShrink: 0,
+                background: reached ? AX.accent : AX.border,
+              }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 15, fontWeight: 500, color: reached ? AX.text : AX.muted }}>{t.name}</div>
+                <div style={{ fontSize: 12, color: AX.muted, marginTop: 2 }}>{t.tag}</div>
+              </div>
+              <div style={{ fontSize: 13, color: AX.muted }}>{t.min}</div>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }

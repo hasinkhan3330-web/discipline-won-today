@@ -1,7 +1,7 @@
-import { cardStyle, titleStyle } from "./styles";
+import { AX, cardStyle, titleStyle } from "./styles";
+import { Play, Pause, RotateCcw } from "lucide-react";
 
-export function ZenTab({ G, G2, med }: {
-  G: string; G2: string;
+export function ZenTab({ med }: {
   med: {
     medMin: number; medLeft: number; medRun: boolean;
     setMedRun: React.Dispatch<React.SetStateAction<boolean>>;
@@ -12,111 +12,97 @@ export function ZenTab({ G, G2, med }: {
     fmtT: (s: number) => string;
   };
 }) {
-  const CARD = cardStyle(G);
-  const TITLE = titleStyle;
+  const CARD = cardStyle();
   const { medMin, medLeft, medRun, setMedRun, medSessions, medTotal, medPhase, medPhaseLabel, pickMed, fmtT } = med;
+  const scale = !medRun ? 0.8 : medPhase === "inhale" ? 1 : medPhase === "exhale" ? 0.7 : 0.95;
 
   return (
     <>
-      <div style={{ ...CARD, textAlign: "center", padding: "18px 14px 22px", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse at center, ${G}18, transparent 65%)`, pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 2 }}>
-          <div style={{ fontSize: 10, letterSpacing: 5, color: G, marginBottom: 4 }}>◈ COSMIC STILLNESS ◈</div>
-          <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: 3, textShadow: `0 0 14px ${G}` }}>ZEN PROTOCOL</div>
-          <div style={{ fontSize: 10, color: "#888", letterSpacing: 2, marginTop: 4, marginBottom: 6 }}>BREATHE · RESET · RETURN STRONGER</div>
-        </div>
+      <div style={{ padding: "4px 2px 16px" }}>
+        <div style={{ fontSize: 24, fontWeight: 600, color: AX.text }}>Zen</div>
+        <div style={{ fontSize: 14, color: AX.muted, marginTop: 2 }}>Breathe, reset, return stronger.</div>
       </div>
 
       <div style={CARD}>
-        <div style={TITLE}><span style={{ color: G }}>▸</span> SESSION <span style={{ color: G }}>LENGTH</span></div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
+        <div style={titleStyle}>Session length</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
           {[5, 10, 15, 20].map(m => {
             const active = medMin === m;
             return (
               <button key={m} onClick={() => pickMed(m)} disabled={medRun} style={{
                 padding: "14px 4px", cursor: medRun ? "not-allowed" : "pointer",
-                background: active ? `linear-gradient(135deg, ${G}33, ${G2}22)` : "rgba(0,0,0,0.35)",
-                border: `1px solid ${active ? G : "#2a2a3a"}`,
-                borderLeft: `3px solid ${active ? G : "#2a2a3a"}`,
-                color: active ? "#fff" : "#aaa", fontFamily: "monospace",
-                boxShadow: active ? `0 0 14px ${G}55` : "none",
-                opacity: medRun && !active ? 0.4 : 1,
+                background: active ? AX.accent : "#181820",
+                border: `1px solid ${active ? AX.accent : AX.border}`,
+                borderRadius: 14,
+                color: active ? "#FFFFFF" : AX.text,
+                fontFamily: AX.font,
+                opacity: medRun && !active ? 0.5 : 1,
               }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: active ? G : "#ccc", textShadow: active ? `0 0 10px ${G}` : "none" }}>{m}</div>
-                <div style={{ fontSize: 8, letterSpacing: 2, marginTop: 2 }}>MIN</div>
+                <div style={{ fontSize: 18, fontWeight: 600 }}>{m}</div>
+                <div style={{ fontSize: 12, marginTop: 2, color: active ? "#FFFFFF" : AX.muted }}>min</div>
               </button>
             );
           })}
         </div>
       </div>
 
-      <div style={{ ...CARD, padding: "30px 14px 26px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at 50% 40%, ${G}22, transparent 60%)`, pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 2, height: 260, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ position: "absolute", width: 240, height: 240, borderRadius: "50%", border: `1px dashed ${G}44`, animation: "ringSpin 20s linear infinite" }} />
-          <div style={{ position: "absolute", width: 200, height: 200, borderRadius: "50%", border: `1px solid ${G2}33`, animation: "ringSpin 30s linear infinite reverse" }} />
+      <div style={{ ...CARD, textAlign: "center", padding: "28px 18px" }}>
+        <div style={{ height: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{
-            width: 160, height: 160, borderRadius: "50%",
-            background: `radial-gradient(circle at 35% 35%, ${G}, ${G2} 60%, #0a0a25 100%)`,
-            animation: medRun
-              ? (medPhase === "inhale" ? "breatheIn 4s ease-in-out forwards"
-                : medPhase === "exhale" ? "breatheOut 4s ease-in-out forwards"
-                : "breatheHold 4s ease-in-out forwards")
-              : "none",
-            transform: medRun ? undefined : "scale(0.75)",
-            boxShadow: `0 0 80px ${G}, 0 0 160px ${G2}66`,
+            width: 180, height: 180, borderRadius: "50%",
+            border: `1.5px solid ${AX.accent}`,
+            background: "#181820",
+            transform: `scale(${scale})`,
+            transition: "transform 3.6s ease-in-out",
             display: "flex", alignItems: "center", justifyContent: "center",
-            transition: medRun ? undefined : "transform 0.4s ease",
           }}>
-            <div style={{ fontSize: 12, fontWeight: 900, letterSpacing: 4, color: "#fff", textShadow: "0 0 10px #000" }}>
-              {medRun ? medPhaseLabel : "READY"}
+            <div style={{ fontSize: 15, fontWeight: 500, color: AX.text }}>
+              {medRun ? medPhaseLabel.charAt(0) + medPhaseLabel.slice(1).toLowerCase() : "Ready"}
             </div>
           </div>
         </div>
 
-        <div style={{ fontSize: 44, fontWeight: 900, color: "#fff", letterSpacing: 4, marginTop: 6, textShadow: `0 0 18px ${G}`, fontVariantNumeric: "tabular-nums" }}>
+        <div style={{ fontSize: 40, fontWeight: 600, color: AX.text, marginTop: 12, fontVariantNumeric: "tabular-nums" }}>
           {fmtT(medLeft)}
         </div>
-        <div style={{ fontSize: 10, letterSpacing: 3, color: G, marginBottom: 14 }}>
-          {medRun ? "◉ IN SESSION" : "○ PAUSED"}
+        <div style={{ fontSize: 13, color: AX.muted, marginBottom: 20 }}>
+          {medRun ? "In session" : "Paused"}
         </div>
 
-        <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
           <button onClick={() => setMedRun(r => !r)} style={{
-            padding: "12px 28px", cursor: "pointer",
-            background: `linear-gradient(135deg, ${G}, ${G2})`,
-            border: "none", color: "#000", fontFamily: "monospace",
-            fontSize: 12, fontWeight: 900, letterSpacing: 3,
-            boxShadow: `0 0 20px ${G}88`,
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "12px 24px", cursor: "pointer", borderRadius: 12,
+            background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF",
+            fontFamily: AX.font, fontSize: 14, fontWeight: 600,
           }}>
-            {medRun ? "❚❚ PAUSE" : "▶ BEGIN"}
+            {medRun ? <Pause size={16} strokeWidth={2} /> : <Play size={16} strokeWidth={2} />}
+            {medRun ? "Pause" : "Begin"}
           </button>
-          <button onClick={() => { setMedRun(false); med.pickMed(medMin); }} style={{
-            padding: "12px 20px", cursor: "pointer",
-            background: "transparent", border: `1px solid ${G}66`,
-            color: G, fontFamily: "monospace",
-            fontSize: 12, fontWeight: 700, letterSpacing: 3,
+          <button onClick={() => { setMedRun(false); pickMed(medMin); }} style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "12px 20px", cursor: "pointer", borderRadius: 12,
+            background: "transparent", border: `1px solid ${AX.border}`, color: AX.text,
+            fontFamily: AX.font, fontSize: 14, fontWeight: 500,
           }}>
-            ↻ RESET
+            <RotateCcw size={16} strokeWidth={2} /> Reset
           </button>
         </div>
       </div>
 
       <div style={CARD}>
-        <div style={TITLE}><span style={{ color: G }}>▸</span> STILLNESS <span style={{ color: G }}>LEDGER</span></div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-          {[{ v: medSessions, l: "SESSIONS" }, { v: `${medTotal}m`, l: "TOTAL" }, { v: `+${medMin * 2}`, l: "NEXT REWARD" }].map((s, i) => (
-            <div key={i} style={{ background: `linear-gradient(135deg, ${G}15, transparent)`, border: `1px solid ${G}33`, padding: "12px 8px", textAlign: "center" }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: G, textShadow: `0 0 10px ${G}77` }}>{s.v}</div>
-              <div style={{ fontSize: 8, letterSpacing: 2, color: "#888", marginTop: 4 }}>{s.l}</div>
+        <div style={titleStyle}>Stillness ledger</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+          {[
+            { v: medSessions, l: "Sessions" },
+            { v: `${medTotal}m`, l: "Total today" },
+            { v: `+${medMin * 2}`, l: "Next reward" },
+          ].map(s => (
+            <div key={s.l} style={{ background: "#181820", border: `1px solid ${AX.border}`, borderRadius: 14, padding: "14px 8px", textAlign: "center" }}>
+              <div style={{ fontSize: 18, fontWeight: 600, color: AX.text }}>{s.v}</div>
+              <div style={{ fontSize: 12, color: AX.muted, marginTop: 3 }}>{s.l}</div>
             </div>
           ))}
-        </div>
-        <div style={{ marginTop: 12, padding: 12, background: "rgba(0,0,0,0.35)", border: `1px solid ${G}22`, borderLeft: `2px solid ${G}` }}>
-          <div style={{ fontSize: 10, letterSpacing: 2, color: G, marginBottom: 4 }}>◈ THE STILL MIND</div>
-          <div style={{ fontSize: 12, color: "#ddd", lineHeight: 1.5, fontStyle: "italic" }}>
-            "The quieter you become, the more you can hear. In the storm of the world, silence is your superpower."
-          </div>
         </div>
       </div>
     </>
