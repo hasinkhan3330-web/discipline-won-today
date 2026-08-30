@@ -78,7 +78,11 @@ function App() {
 
   const [coins, setCoins] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [shields, setShields] = useState(0);
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  const [referredBy, setReferredBy] = useState<string | null>(null);
   const [streakLoaded, setStreakLoaded] = useState(false);
+
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [board, setBoard] = useState<{ n: string; c: number; s: number; img: string; you?: boolean }[]>([]);
