@@ -637,7 +637,7 @@ function App() {
             {tab === "home" && <HomeTab name={myName} coins={coins} streak={streak} tasks={tasks} tick={tick} onFocusComplete={onFocusComplete} />}
             {tab === "rank" && (
               <BlurLock G={G} G2={G2} active={premiumLocked} note="Rank is hidden after your free 3 days. Subscribe to keep climbing." onUnlock={() => setShowPaywall(true)}>
-                <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} />
+                <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} board={board} fallbackAvatar={fallbackAvatar} />
               </BlurLock>
             )}
             {tab === "zen" && (
@@ -649,8 +649,6 @@ function App() {
               <StatsTab
                 weekly={weekly}
                 life={life ? { ...life, medMinutes: med.medLifetime } : undefined}
-                board={board}
-                fallbackAvatar={fallbackAvatar}
               />
             )}
             {tab === "profile" && (

@@ -11,9 +11,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "AXEN Habit & Discipline — Sign In & Start Free Trial" },
-      { name: "description", content: "Enter AXEN Habit & Discipline. Sign in with Google or email, then unlock PRO — ₹99/month or ₹999/year, international $2.99/mo or $29.99/yr, 3-day free trial." },
+      { name: "description", content: "Enter AXEN Habit & Discipline. Sign in with Google or email, then unlock PRO — ₹99/month or ₹999/year, charged in INR worldwide, 3-day free trial." },
       { property: "og:title", content: "AXEN Habit & Discipline — Sign In & Start Free Trial" },
-      { property: "og:description", content: "Sign in to AXEN and unlock PRO. ₹99/mo or ₹999/yr · $2.99/mo or $29.99/yr. 3-day free trial." },
+      { property: "og:description", content: "Sign in to AXEN and unlock PRO. ₹99/mo or ₹999/yr, charged in INR. 3-day free trial." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "AXEN Habit & Discipline — Sign In & Start Free Trial" },
@@ -231,7 +231,7 @@ function Landing() {
                       {p.price}<span style={{ fontSize: 12, color: "#6f8296" }}>{p.per}</span>
                     </div>
                     <div style={{ marginTop: 4, fontSize: 10, color: "#7c8ea0", letterSpacing: 1 }}>{p.note}</div>
-                    <div style={{ marginTop: 4, fontSize: 10, color: "#556879", letterSpacing: 1 }}>International: {p.intl}</div>
+                    <div style={{ marginTop: 4, fontSize: 10, color: "#556879", letterSpacing: 1 }}>International cards: {p.intl}</div>
                   </button>
                 );
               })}
@@ -312,7 +312,7 @@ function Landing() {
         )}
 
         <p style={{ position: "relative", marginTop: 22, fontSize: 9, color: "#46586a", letterSpacing: 1, textAlign: "center", lineHeight: 1.9 }}>
-          ₹99/month · ₹999/year · International $2.99/mo · $29.99/yr
+          ₹99/month · ₹999/year · all payments charged in INR
           <br />Razorpay (UPI · cards · netbanking · international cards) on web · Google Play / App Store billing in the apps.
         </p>
       </div>

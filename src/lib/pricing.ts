@@ -24,10 +24,13 @@ export const AMOUNT_PAISE: Record<Cycle, number> = {
   yearly: 99900,
 };
 
-/** International (USD) display prices. */
+/**
+ * International cards are accepted, but every web charge is made in INR by
+ * Razorpay. Never advertise a USD amount we do not actually charge.
+ */
 export const INTL_DISPLAY: Record<Cycle, string> = {
-  monthly: "$2.99 / month",
-  yearly: "$29.99 / year",
+  monthly: "₹99 / month (charged in INR)",
+  yearly: "₹999 / year (charged in INR)",
 };
 
 

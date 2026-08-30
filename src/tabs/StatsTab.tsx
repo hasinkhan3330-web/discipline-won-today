@@ -10,8 +10,6 @@ export type LifeStats = {
   taskTotal?: number;
 };
 
-type BoardEntry = { n: string; c: number; s: number; img: string; you?: boolean };
-
 export const zoneColor = (pct: number) => (pct >= 100 ? AX.success : pct >= 50 ? AX.flame : AX.danger);
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -76,11 +74,9 @@ function Metric({ label, value, sub }: { label: string; value: string; sub?: str
   );
 }
 
-export function StatsTab({ weekly, life, board = [], fallbackAvatar }: {
+export function StatsTab({ weekly, life }: {
   weekly: number[];
   life?: LifeStats;
-  board?: BoardEntry[];
-  fallbackAvatar: (n: string) => string;
 }) {
   const CARD = cardStyle();
   const total = Math.max(1, life?.taskTotal || 1);
@@ -96,7 +92,6 @@ export function StatsTab({ weekly, life, board = [], fallbackAvatar }: {
       <Segmented active={tab} onChange={setTab} tabs={[
         { id: "progress", label: "Progress" },
         { id: "calendar", label: "Calendar" },
-        { id: "board", label: "Leaderboard" },
       ]} />
 
       {tab === "progress" && (
@@ -170,33 +165,6 @@ export function StatsTab({ weekly, life, board = [], fallbackAvatar }: {
         </>
       )}
 
-      {tab === "board" && (
-        <div style={CARD}>
-          <div style={titleStyle}>Global leaderboard</div>
-          {board.length === 0 && <div style={{ fontSize: 13, color: AX.muted }}>Loading…</div>}
-          {board.map((u, i) => (
-            <div key={i} style={{
-              display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-              background: "#181820",
-              border: `1px solid ${u.you ? AX.accent : AX.border}`,
-              borderRadius: 14, marginBottom: 10,
-            }}>
-              <div style={{ width: 20, fontSize: 13, color: AX.muted, textAlign: "center" }}>{i + 1}</div>
-              <img
-                src={u.img}
-                alt={u.n}
-                onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(u.n); }}
-                style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", border: `1px solid ${AX.border}` }}
-              />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: AX.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{u.you ? "You" : u.n}</div>
-                <div style={{ fontSize: 12, color: AX.muted, marginTop: 2 }}>{u.s} day streak</div>
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: AX.accent }}>{u.c}</div>
-            </div>
-          ))}
-        </div>
-      )}
     </>
   );
 }

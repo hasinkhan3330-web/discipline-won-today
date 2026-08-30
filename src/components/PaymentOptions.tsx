@@ -27,6 +27,7 @@ export function PaymentOptions({ cycle, email }: { cycle: Cycle; email?: string 
       title: "INTERNATIONAL CARDS",
       sub: "Visa · Mastercard · Amex — worldwide",
       price: INTL_DISPLAY[cycle],
+
     },
   ];
 
@@ -64,7 +65,8 @@ export function PaymentOptions({ cycle, email }: { cycle: Cycle; email?: string 
 
       {method === "international" && (
         <p style={{ marginTop: 8, fontSize: 9, color: "#666", letterSpacing: 1, textAlign: "center" }}>
-          International cards are accepted and settled in INR at the live exchange rate.
+          International cards are accepted. The charge is made in INR ({PRICING[cycle].display}); your bank
+          converts it to your local currency at its own rate.
         </p>
       )}
     </div>
