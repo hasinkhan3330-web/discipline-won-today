@@ -680,7 +680,14 @@ function App() {
           )}
 
           <>
-            {tab === "home" && <HomeTab name={myName} coins={coins} streak={streak} tasks={tasks} tick={tick} onFocusComplete={onFocusComplete} />}
+            {tab === "home" && (
+              <HomeTab
+                name={myName} coins={coins} streak={streak} shields={shields}
+                tasks={tasks} tick={tick} onFocusComplete={onFocusComplete}
+                onBuyShield={buyShield}
+                reminderTasks={tasks.map(t => ({ uuid: (t as any)._uuid as string, name: t.name, done: t.done }))}
+              />
+            )}
             {tab === "rank" && (
               <BlurLock G={G} G2={G2} active={premiumLocked} note="Rank is hidden after your free 3 days. Subscribe to keep climbing." onUnlock={() => setShowPaywall(true)}>
                 <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} board={board} fallbackAvatar={fallbackAvatar} />
