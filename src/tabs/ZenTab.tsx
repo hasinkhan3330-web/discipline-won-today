@@ -25,7 +25,7 @@ export function ZenTab({ med }: {
 
       <div style={CARD}>
         <div style={titleStyle}>Session length</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 10 }}>
           {[5, 10, 15, 20].map(m => {
             const active = medMin === m;
             return (
@@ -47,9 +47,9 @@ export function ZenTab({ med }: {
       </div>
 
       <div style={{ ...CARD, textAlign: "center", padding: "28px 18px" }}>
-        <div style={{ height: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ height: "clamp(160px, 54vw, 200px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{
-            width: 180, height: 180, borderRadius: "50%",
+            width: "clamp(144px, 48vw, 180px)", aspectRatio: "1 / 1", borderRadius: "50%",
             border: `1.5px solid ${AX.accent}`,
             background: "#181820",
             transform: `scale(${scale})`,
@@ -62,14 +62,14 @@ export function ZenTab({ med }: {
           </div>
         </div>
 
-        <div style={{ fontSize: 40, fontWeight: 600, color: AX.text, marginTop: 12, fontVariantNumeric: "tabular-nums" }}>
+        <div style={{ fontSize: "clamp(30px, 9vw, 40px)", fontWeight: 600, color: AX.text, marginTop: 12, fontVariantNumeric: "tabular-nums" }}>
           {fmtT(medLeft)}
         </div>
         <div style={{ fontSize: 13, color: AX.muted, marginBottom: 20 }}>
           {medRun ? "In session" : "Paused"}
         </div>
 
-        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
           <button onClick={() => setMedRun(r => !r)} style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             padding: "12px 24px", cursor: "pointer", borderRadius: 12,
@@ -92,7 +92,7 @@ export function ZenTab({ med }: {
 
       <div style={CARD}>
         <div style={titleStyle}>Stillness ledger</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
           {[
             { v: medSessions, l: "Sessions" },
             { v: `${medTotal}m`, l: "Total today" },

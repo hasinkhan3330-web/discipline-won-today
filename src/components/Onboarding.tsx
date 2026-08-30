@@ -24,7 +24,8 @@ export function Onboarding({ onFinish }: { onFinish: () => void }) {
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 500, background: AX.bg,
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 22,
+      display: "flex", alignItems: "center", justifyContent: "center", overflowY: "auto",
+      padding: "calc(22px + env(safe-area-inset-top,0px)) 22px calc(22px + env(safe-area-inset-bottom,0px))",
       fontFamily: AX.font,
     }}>
       <div style={{ width: "100%", maxWidth: 380 }}>

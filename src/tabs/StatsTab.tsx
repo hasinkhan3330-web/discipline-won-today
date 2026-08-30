@@ -47,7 +47,7 @@ function Calendar() {
   return (
     <div>
       <div style={{ ...titleStyle }}>{MONTHS[m]} {y}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 5 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0,1fr))", gap: 5 }}>
         {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
           <div key={i} style={{ textAlign: "center", fontSize: 12, color: AX.muted }}>{d}</div>
         ))}
@@ -102,7 +102,7 @@ export function StatsTab({ weekly, life }: {
           {life && (
             <div style={CARD}>
               <div style={titleStyle}>All time</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 10 }}>
                 <Metric label="Best streak" value={`${life.bestStreak}`} sub="days" />
                 <Metric label="Lifetime" value={`${life.lifetimeCoins}`} sub="coins" />
                 <Metric label="Meditation" value={`${life.medMinutes}m`} sub="stillness" />
@@ -143,7 +143,7 @@ export function StatsTab({ weekly, life }: {
           {life && (
             <div style={CARD}>
               <div style={titleStyle}>Last 30 days</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: 5 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(10, minmax(0,1fr))", gap: 5 }}>
                 {life.heat.map(h => {
                   const pct = Math.min(100, Math.round((h.count / total) * 100));
                   const c = zoneColor(pct);

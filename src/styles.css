@@ -387,3 +387,23 @@
 @keyframes axq-draw {
   to { stroke-dashoffset: 0; }
 }
+
+/* ===== Responsive audit (additive only — no visual redesign) ===== */
+html, body { max-width: 100%; overflow-x: clip; }
+#root { max-width: 100%; overflow-x: clip; }
+img, svg, video, canvas { max-width: 100%; }
+input, textarea, select { max-width: 100%; }
+
+/* App shell: full dynamic viewport height so the mobile keyboard cannot
+   push the CTA out of reach, and never wider than the screen. */
+.ax-shell { min-height: 100vh; }
+@supports (min-height: 100dvh) { .ax-shell { min-height: 100dvh; } }
+
+/* Safe areas (Android gesture bar / iOS home indicator + status bar) */
+.ax-safe-top { padding-top: env(safe-area-inset-top, 0px); }
+.ax-safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.ax-content-pad { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+
+/* Long usernames / habit names / big numbers must never widen a row */
+.ax-ellipsis { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ax-wrap { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }

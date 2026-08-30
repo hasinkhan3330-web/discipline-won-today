@@ -199,7 +199,7 @@ function Landing() {
   };
 
   return (
-    <div className="axen-page" style={{ minHeight: "100vh", position: "relative", background: "#000", color: "#e8e8e8", overflow: "hidden" }}>
+    <div className="axen-page ax-shell" style={{ position: "relative", background: "#000", color: "#e8e8e8", overflowX: "clip" }}>
       {!introGone && <Intro done={!intro} onGone={() => setIntroGone(true)} />}
       {introGone && !authed && !quizDone && <PreSignupQuiz onFinish={finishQuiz} />}
 
@@ -209,12 +209,12 @@ function Landing() {
 
       {/* The page mark only mounts after the boot logo is fully gone, so the two
           logos can never overlap and ghost each other during the fade. */}
-      <div style={{ position: "relative", maxWidth: 430, margin: "0 auto", padding: "44px 20px 56px", visibility: introGone ? "visible" : "hidden" }}>
+      <div style={{ position: "relative", width: "100%", maxWidth: 430, margin: "0 auto", padding: "44px 20px calc(56px + env(safe-area-inset-bottom, 0px))", visibility: introGone ? "visible" : "hidden" }}>
         {/* Header mark */}
         <div style={{ position: "relative", textAlign: "center", animation: "axen-float-up 700ms ease both" }}>
           <div style={{ position: "absolute", left: "50%", top: "50%", width: 240, height: 240, marginLeft: -120, marginTop: -120, borderRadius: "50%", border: `1px solid ${G}22`, borderTopColor: `${G}88`, animation: "axen-orbit 16s linear infinite" }} />
           <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ position: "relative", width: "100%", maxWidth: 190, margin: "0 auto", display: "block", animation: "axen-glow 3.4s ease-in-out infinite" }} />
-          <h1 className="axen-display" style={{ position: "relative", marginTop: 12, fontSize: 14, fontWeight: 900, letterSpacing: 6, color: "#fff", textShadow: `0 0 22px ${G}, 0 0 60px ${G}55` }}>AXEN HABIT &amp; DISCIPLINE</h1>
+          <h1 className="axen-display ax-wrap" style={{ position: "relative", marginTop: 12, fontSize: "clamp(11px, 3.4vw, 14px)", fontWeight: 900, letterSpacing: "clamp(3px, 1.4vw, 6px)", color: "#fff", textShadow: `0 0 22px ${G}, 0 0 60px ${G}55` }}>AXEN HABIT &amp; DISCIPLINE</h1>
           <p className="axen-display" style={{ position: "relative", marginTop: 6, letterSpacing: 5, fontSize: 9, fontWeight: 700, color: G, textShadow: `0 0 14px ${G}88` }}>ACCESS TERMINAL · 3 DAYS FREE</p>
         </div>
 
@@ -315,7 +315,7 @@ function Landing() {
               </button>
             </form>
 
-            <div style={{ position: "relative", display: "flex", justifyContent: "space-between", marginTop: 14 }}>
+            <div style={{ position: "relative", display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
               <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(null); }} className="axen-link" style={{ background: "transparent", border: "none", color: "#7c8ea0", fontFamily: "inherit", fontWeight: 600, fontSize: 11, letterSpacing: 2, cursor: "pointer" }}>
                 {mode === "signin" ? "NEW? CREATE ACCOUNT" : "← BACK TO SIGN IN"}
               </button>

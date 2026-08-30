@@ -152,7 +152,7 @@ export function DeepFocus({ G, G2, onComplete }: {
         <div style={{ fontSize: 8.5, color: "#888", letterSpacing: 1.2, lineHeight: 1.5, marginBottom: 10 }}>
           LOCK YOUR APPS. STACK UNLIMITED SESSIONS. CLIMB THE LEADERBOARD.
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 6 }}>
           {FOCUS_TIERS.map(t => (
             <button key={t.id} onClick={() => { setTier(t); setPhase("setup"); }} style={{
               padding: "10px 6px", cursor: "pointer", textAlign: "center", borderRadius: 2,
@@ -179,7 +179,7 @@ export function DeepFocus({ G, G2, onComplete }: {
   /* ---------------- SETUP: app locking modal ---------------- */
   if (phase === "setup" && tier) {
     return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(3,3,10,0.9)", backdropFilter: "blur(8px)", overflowY: "auto", padding: 16 }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(3,3,10,0.9)", backdropFilter: "blur(8px)", overflowY: "auto", padding: "calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))" }}>
         <div style={{ maxWidth: 400, margin: "0 auto", background: "rgba(10,10,25,0.95)", border: `1px solid ${G}`, boxShadow: `0 0 40px ${G}55`, padding: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
             <div style={{ fontSize: 13, fontWeight: 900, letterSpacing: 3, color: "#fff" }}>LOCK SETUP</div>
@@ -276,7 +276,7 @@ export function DeepFocus({ G, G2, onComplete }: {
     const R = 74, C = 2 * Math.PI * R;
     const track = TRACKS[trackIdx]!;
     return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "radial-gradient(circle at 50% 35%, #0a0a1e 0%, #03030a 70%)", overflowY: "auto", padding: "24px 16px", fontFamily: "monospace" }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "radial-gradient(circle at 50% 35%, #0a0a1e 0%, #03030a 70%)", overflowY: "auto", padding: "calc(24px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px))", fontFamily: "monospace" }}>
         <div style={{ maxWidth: 400, margin: "0 auto", textAlign: "center" }}>
           <div style={{ fontSize: 10, letterSpacing: 4, color: G, animation: "pulse 2s infinite" }}>
             ◉ {lockMode === "strict" ? "STRICT APP LOCK ENFORCED" : "FLEXIBLE FOCUS ACTIVE"}
@@ -394,7 +394,7 @@ export function DeepFocus({ G, G2, onComplete }: {
   /* ---------------- DONE: summary ---------------- */
   if (phase === "done" && result) {
     return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(3,3,10,0.92)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "monospace", overflow: "hidden" }}>
+      <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(3,3,10,0.92)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "monospace", overflowY: "auto", overflowX: "clip" }}>
         {Array.from({ length: 24 }, (_, i) => (
           <div key={i} style={{
             position: "absolute", top: 0, left: `${(i * 41) % 100}%`, width: 4, height: 12,

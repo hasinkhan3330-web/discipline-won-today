@@ -93,9 +93,9 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onFocus
         .ax-task:active { background: #191922; }
       `}</style>
 
-      <div style={{ padding: "4px 2px 16px" }}>
+      <div style={{ padding: "4px 2px 16px", minWidth: 0 }}>
         <div style={{ fontSize: 14, color: AX.muted }}>{greeting()},</div>
-        <div style={{ fontSize: 24, fontWeight: 600, color: AX.text, marginTop: 2 }}>{name}</div>
+        <div className="ax-wrap" style={{ fontSize: "clamp(20px, 6vw, 24px)", fontWeight: 600, color: AX.text, marginTop: 2 }}>{name}</div>
       </div>
 
       <div style={{ ...CARD, display: "flex", alignItems: "center", gap: 16 }}>
@@ -107,12 +107,12 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onFocus
           <Flame size={24} strokeWidth={1.8} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 28, fontWeight: 600, color: AX.text, lineHeight: 1.1 }}>
+          <div className="ax-wrap" style={{ fontSize: "clamp(22px, 7vw, 28px)", fontWeight: 600, color: AX.text, lineHeight: 1.1 }}>
             {streakShown} <span style={{ fontSize: 15, color: AX.muted, fontWeight: 500 }}>day streak</span>
           </div>
-          <div style={{ fontSize: 13, color: AX.muted, marginTop: 4 }}>{coins} coins earned</div>
+          <div className="ax-wrap" style={{ fontSize: 13, color: AX.muted, marginTop: 4 }}>{coins} coins earned</div>
         </div>
-        <div style={{ textAlign: "right" }}>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
           <div style={{ fontSize: 18, fontWeight: 600, color: pct === 100 ? AX.success : AX.text }}>{pct}%</div>
           <div style={{ fontSize: 12, color: AX.muted }}>{done}/{tasks.length} today</div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4, marginTop: 6, fontSize: 12, color: shields > 0 ? AX.success : AX.muted }}>
