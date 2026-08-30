@@ -51,10 +51,11 @@ const PLAN_COPY: Record<Cycle, { title: string; price: string; per: string; note
 };
 
 /** 5-second cinematic AXEN boot sequence. */
-function Intro({ done }: { done: boolean }) {
+function Intro({ done, onGone }: { done: boolean; onGone: () => void }) {
   return (
     <div
       aria-hidden={done}
+      onAnimationEnd={(e) => { if (done && e.animationName === "axen-boot-out") onGone(); }}
       style={{
         position: "fixed", inset: 0, zIndex: 60, background: "#000",
         display: "flex", alignItems: "center", justifyContent: "center",
