@@ -676,20 +676,20 @@ function App() {
       )}
 
 
-      <div style={{ position: "relative", zIndex: 2, maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <div className="ax-shell" style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column" }}>
         {/* TOPBAR */}
-        <div style={{ padding: "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 99 }}>
-          <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto" }} />
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div className="ax-safe-top" style={{ padding: "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 99 }}>
+          <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto", flexShrink: 0 }} />
+          <div style={{ display: "flex", gap: 8, alignItems: "center", minWidth: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
             {gateReady && !hasActiveSubscription && (
-              <button onClick={() => setShowPaywall(true)} style={{ background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF", padding: "7px 14px", fontSize: 13, fontWeight: 600, fontFamily: AX.font, cursor: "pointer", borderRadius: 12 }}>Go Pro</button>
+              <button onClick={() => setShowPaywall(true)} style={{ background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF", padding: "7px 14px", fontSize: 13, fontWeight: 600, fontFamily: AX.font, cursor: "pointer", borderRadius: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Go Pro</button>
             )}
-            <div style={{ background: "#181820", border: `1px solid ${AX.border}`, padding: "7px 12px", fontSize: 13, fontWeight: 600, color: AX.text, borderRadius: 12 }}>{coins} coins</div>
+            <div className="ax-ellipsis" style={{ background: "#181820", border: `1px solid ${AX.border}`, padding: "7px 12px", fontSize: 13, fontWeight: 600, color: AX.text, borderRadius: 12, maxWidth: "45vw" }}>{coins} coins</div>
           </div>
         </div>
 
         {/* CONTENT */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "14px 12px 90px" }} key={tab}>
+        <div className="ax-content-pad" style={{ flex: 1, minWidth: 0, padding: "14px 12px" }} key={tab}>
 
           {gateReady && trialActive && !hasActiveSubscription && (
             <div style={{ ...CARD, fontSize: 13, color: AX.muted, lineHeight: 1.5 }}>
@@ -759,8 +759,8 @@ function App() {
         </div>
 
         {/* BOTTOM NAV */}
-        <div style={{
-          position: "fixed", bottom: 0, left: 0, right: 0, maxWidth: 430, margin: "0 auto",
+        <div className="ax-safe-bottom" style={{
+          position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", maxWidth: 430, margin: "0 auto",
           background: AX.bg, borderTop: `1px solid ${AX.border}`, display: "flex", zIndex: 99,
         }}>
           {TABS.map(n => {
@@ -769,13 +769,13 @@ function App() {
             const Ico = locked ? Lock : n.Icon;
             return (
               <button key={n.id} className="ax-nav" onClick={() => setTab(n.id)} style={{
-                flex: 1, padding: "10px 2px 12px", background: "transparent", border: "none", cursor: "pointer",
+                flex: "1 1 0", minWidth: 0, padding: "10px 2px 12px", background: "transparent", border: "none", cursor: "pointer",
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
                 color: active ? AX.accent : AX.muted, fontFamily: AX.font,
                 transition: "color .15s ease",
               }}>
                 <Ico size={20} strokeWidth={active ? 2.2 : 1.8} />
-                <span style={{ fontSize: 11, fontWeight: active ? 600 : 500 }}>{n.label}</span>
+                <span className="ax-ellipsis" style={{ fontSize: 11, fontWeight: active ? 600 : 500, maxWidth: "100%" }}>{n.label}</span>
               </button>
             );
           })}
@@ -792,10 +792,10 @@ function App() {
         <div onClick={() => proof.mode === "result" && setProof(null)} style={{
           position: "fixed", inset: 0, zIndex: 999, background: "rgba(0,0,0,0.85)",
           backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center",
-          padding: 16, animation: "fadeUp 0.25s ease-out",
+          padding: 16, overflowY: "auto", animation: "fadeUp 0.25s ease-out",
         }}>
           <div onClick={e => e.stopPropagation()} style={{
-            width: "100%", maxWidth: 380, background: "rgba(10,10,25,0.95)",
+            width: "100%", maxWidth: 380, maxHeight: "88dvh", overflowY: "auto", background: "rgba(10,10,25,0.95)",
             border: `1px solid ${G}77`, borderLeft: `3px solid ${G}`,
             padding: 20, boxShadow: `0 10px 60px ${G}55, inset 0 1px 0 ${G}33`,
             fontFamily: AX.font,

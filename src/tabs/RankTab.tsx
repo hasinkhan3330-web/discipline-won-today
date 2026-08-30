@@ -59,7 +59,7 @@ export function RankTab({ coins, streak, bestStreak = 0, board = [], fallbackAva
         </div>
       </div>
 
-      <div style={{ ...CARD, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+      <div style={{ ...CARD, display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
         {[
           { Ico: Coins, v: coins, l: "Coins" },
           { Ico: Flame, v: `${streak}d`, l: "Streak" },

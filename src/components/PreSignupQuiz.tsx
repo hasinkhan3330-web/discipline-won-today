@@ -81,13 +81,13 @@ function StageScreen({ stage, onNext, last }: { stage: typeof STAGES[number]; on
   return (
     <div key={stage.day} style={{ width: "100%", maxWidth: 400, textAlign: "center", animation: "fadeUp .45s ease" }}>
       <div style={{
-        fontSize: 76, fontWeight: 800, lineHeight: 1, color: "#FFFFFF",
+        fontSize: "clamp(48px, 17vw, 76px)", fontWeight: 800, lineHeight: 1, color: "#FFFFFF",
         textShadow: `0 0 24px ${G1}, 0 0 70px ${G2}88`, letterSpacing: -2,
       }}>
         DAY {stage.day}
       </div>
       <div style={{
-        marginTop: 12, fontSize: 15, fontWeight: 700, letterSpacing: 4, color: G1,
+        marginTop: 12, fontSize: "clamp(12px, 3.6vw, 15px)", fontWeight: 700, letterSpacing: "clamp(2px, 1vw, 4px)", color: G1,
         textShadow: `0 0 18px ${G1}aa`,
       }}>
         {stage.label}
@@ -190,7 +190,7 @@ export function PreSignupQuiz({ onFinish }: { onFinish: (a: QuizAnswers) => void
 
   const Q = ({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) => (
     <div style={{ width: "100%", maxWidth: 400, animation: "fadeUp .3s ease" }}>
-      <div style={{ fontSize: 24, fontWeight: 600, color: AX.text, lineHeight: 1.3 }}>{title}</div>
+      <div className="ax-wrap" style={{ fontSize: "clamp(20px, 6vw, 24px)", fontWeight: 600, color: AX.text, lineHeight: 1.3 }}>{title}</div>
       {sub && <div style={{ fontSize: 13, color: AX.muted, marginTop: 8 }}>{sub}</div>}
       {children}
     </div>
@@ -210,12 +210,12 @@ export function PreSignupQuiz({ onFinish }: { onFinish: (a: QuizAnswers) => void
   );
   else if (step === 2) body = (
     <Q title="How many habits do you want to start with?" sub="Fewer habits, done daily, beat a long list.">
-      <div style={{ display: "flex", gap: 10, marginTop: 22 }}>
+      <div style={{ display: "flex", gap: 10, marginTop: 22, flexWrap: "wrap" }}>
         {COUNTS.map(n => {
           const on = a.habit_count === n;
           return (
             <button key={n} onClick={() => { haptic("tap"); pick({ habit_count: n }); }} style={{
-              flex: 1, minHeight: 62, borderRadius: 14, cursor: "pointer",
+              flex: "1 1 60px", minWidth: 0, minHeight: 62, borderRadius: 14, cursor: "pointer",
               background: on ? AX.accent : "#14141C",
               border: `1px solid ${on ? AX.accent : AX.border}`,
               color: on ? "#FFFFFF" : AX.text, fontFamily: AX.font, fontSize: 20, fontWeight: 600,
@@ -248,7 +248,7 @@ export function PreSignupQuiz({ onFinish }: { onFinish: (a: QuizAnswers) => void
       <div style={{ width: "100%", maxWidth: 400, animation: "fadeUp .4s ease" }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 13, letterSpacing: 4, fontWeight: 700, color: G1, textShadow: `0 0 16px ${G1}aa` }}>YOUR PLAN IS READY</div>
-          <div style={{ fontSize: 26, fontWeight: 600, color: AX.text, marginTop: 10, lineHeight: 1.3 }}>
+          <div className="ax-wrap" style={{ fontSize: "clamp(21px, 6.4vw, 26px)", fontWeight: 600, color: AX.text, marginTop: 10, lineHeight: 1.3 }}>
             {a.habit_count} {a.habit_count === 1 ? "habit" : "habits"} for {GOAL_LABEL[a.goal] || "building discipline"}
           </div>
         </div>
@@ -280,7 +280,8 @@ export function PreSignupQuiz({ onFinish }: { onFinish: (a: QuizAnswers) => void
   return (
     <div style={{
       position: "fixed", inset: 0, zIndex: 400, background: AX.bg, overflowY: "auto",
-      display: "flex", alignItems: "center", justifyContent: "center", padding: "26px 20px 34px",
+      display: "flex", alignItems: "center", justifyContent: "center", overflowX: "clip",
+      padding: "calc(26px + env(safe-area-inset-top,0px)) 20px calc(34px + env(safe-area-inset-bottom,0px))",
       fontFamily: AX.font,
     }}>
       <div style={{ position: "absolute", inset: 0, pointerEvents: "none", backgroundImage: `radial-gradient(circle at 20% 8%, ${G1}22, transparent 55%), radial-gradient(circle at 84% 92%, ${G2}1e, transparent 55%)` }} />

@@ -72,9 +72,10 @@ export function FocusMusicPanel({ onClose }: { onClose: () => void }) {
       display: "flex", alignItems: "flex-end", justifyContent: "center",
     }}>
       <div onClick={e => e.stopPropagation()} style={{
-        width: "100%", maxWidth: 440, maxHeight: "88vh", overflowY: "auto",
+        width: "100%", maxWidth: 440, maxHeight: "85dvh", overflowY: "auto",
         background: AX.surface, border: `1px solid ${AX.border}`,
-        borderRadius: `${AX.radius}px ${AX.radius}px 0 0`, padding: 18,
+        borderRadius: `${AX.radius}px ${AX.radius}px 0 0`,
+        padding: "18px 18px calc(18px + env(safe-area-inset-bottom, 0px))",
         fontFamily: AX.font,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
@@ -86,7 +87,7 @@ export function FocusMusicPanel({ onClose }: { onClose: () => void }) {
         </div>
 
         <div style={{ fontSize: 13, color: AX.muted, marginBottom: 8 }}>Timer</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 18 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 8, marginBottom: 18 }}>
           {DURATIONS.map(d => {
             const active = minutes === d.m;
             return (

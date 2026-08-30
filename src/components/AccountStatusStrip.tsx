@@ -52,7 +52,7 @@ export function AccountStatusStrip() {
         <div style={{
           width: "100%", background: "#3a0f0f", color: "#ffb3b3",
           padding: "8px 12px", textAlign: "center",
-          fontFamily: "monospace", fontSize: 11, letterSpacing: 2, fontWeight: 800,
+          fontFamily: "monospace", fontSize: "clamp(9px, 2.8vw, 11px)", letterSpacing: "clamp(1px, 0.4vw, 2px)", fontWeight: 800, overflowWrap: "anywhere",
           borderBottom: "1px solid #ff4d4d55",
         }}>
           ⚠ PAYMENT FAILED — we're retrying.
@@ -63,7 +63,7 @@ export function AccountStatusStrip() {
         <div style={{
           width: "100%", background: "#3a2a08", color: "#ffd88a",
           padding: "7px 12px", textAlign: "center",
-          fontFamily: "monospace", fontSize: 11, letterSpacing: 2, fontWeight: 800,
+          fontFamily: "monospace", fontSize: "clamp(9px, 2.8vw, 11px)", letterSpacing: "clamp(1px, 0.4vw, 2px)", fontWeight: 800, overflowWrap: "anywhere",
           borderBottom: "1px solid #ffb84d55",
         }}>
           ◌ SUBSCRIPTION ENDS {cancelInfo.endDate.toUpperCase()}

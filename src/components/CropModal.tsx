@@ -56,10 +56,10 @@ export function CropModal({ src, accent, accent2, busy, onCancel, onConfirm }: {
   return (
     <div style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)",
-      zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+      zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, overflowY: "auto",
     }}>
       <div style={{
-        width: "100%", maxWidth: 360, background: "#0a0a19",
+        width: "100%", maxWidth: 360, maxHeight: "88dvh", overflowY: "auto", background: "#0a0a19",
         border: `1px solid ${accent}`, borderLeft: `4px solid ${accent}`,
         boxShadow: `0 0 40px ${accent}66`, padding: 18, fontFamily: "monospace",
       }}>
