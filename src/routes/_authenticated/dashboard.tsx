@@ -628,7 +628,7 @@ function App() {
 
           {showPaywall && myId && (
             <div style={{ position: "fixed", inset: 0, zIndex: 200, overflowY: "auto", background: "#000" }}>
-              <button onClick={() => setShowPaywall(false)} style={{ position: "fixed", top: 12, right: 12, zIndex: 201, background: "rgba(0,0,0,0.6)", border: `1px solid ${G}66`, color: G, fontFamily: "monospace", fontSize: 11, letterSpacing: 2, padding: "6px 10px", cursor: "pointer" }}>✕ CLOSE</button>
+              <button onClick={() => setShowPaywall(false)} style={{ position: "fixed", top: 12, right: 12, zIndex: 201, background: "rgba(0,0,0,0.6)", border: `1px solid ${G}66`, color: G, fontFamily: AX.font, fontSize: 11, letterSpacing: 2, padding: "6px 10px", cursor: "pointer" }}>✕ CLOSE</button>
               <Paywall userId={myId} email={myEmail} />
             </div>
           )}
@@ -668,65 +668,43 @@ function App() {
 
 
           {/* LEGAL LINKS */}
-          <div style={{ marginTop: 32, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${G}22` }}>
-            <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginBottom: 10 }}>◈ AXEN HABIT & DISCIPLINE · A PRODUCT OF NEXT AI</div>
-            <div style={{ display: "flex", justifyContent: "center", gap: 16, flexWrap: "wrap" }}>
-              <Link to="/privacy" style={{ color: "#888", textDecoration: "none", fontSize: 10, letterSpacing: 1.5 }}>PRIVACY</Link>
-              <Link to="/terms" style={{ color: "#888", textDecoration: "none", fontSize: 10, letterSpacing: 1.5 }}>TERMS</Link>
-              <Link to="/refund" style={{ color: "#888", textDecoration: "none", fontSize: 10, letterSpacing: 1.5 }}>REFUND</Link>
+          <div style={{ marginTop: 28, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${AX.border}` }}>
+            <div style={{ fontSize: 12, color: AX.muted, marginBottom: 10 }}>AXEN Habit &amp; Discipline · a product of Next AI</div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 18, flexWrap: "wrap" }}>
+              <Link to="/privacy" style={{ color: AX.muted, textDecoration: "none", fontSize: 12 }}>Privacy</Link>
+              <Link to="/terms" style={{ color: AX.muted, textDecoration: "none", fontSize: 12 }}>Terms</Link>
+              <Link to="/refund" style={{ color: AX.muted, textDecoration: "none", fontSize: 12 }}>Refund</Link>
             </div>
-            <div style={{ marginTop: 10, fontSize: 9, color: "#444", letterSpacing: 1 }}>Subscriptions billed securely by Google Play</div>
           </div>
         </div>
 
         {/* BOTTOM NAV */}
-        <div className="bottom-nav-shell" style={{
+        <div style={{
           position: "fixed", bottom: 0, left: 0, right: 0, maxWidth: 430, margin: "0 auto",
-          background: "rgba(10,10,25,0.85)", backdropFilter: "blur(20px)",
-          borderTop: `1px solid ${G}55`, display: "flex", zIndex: 99,
-          boxShadow: `0 -4px 20px ${G}22`,
+          background: AX.bg, borderTop: `1px solid ${AX.border}`, display: "flex", zIndex: 99,
         }}>
           {TABS.map(n => {
             const active = tab === n.id;
             const locked = gateReady && premiumTabs.includes(n.id) && !premiumUnlocked;
             const Ico = locked ? Lock : n.Icon;
             return (
-              <button key={n.id} className={`bottom-nav-tab ${active ? "bottom-nav-tab--active" : ""} ${locked ? "bottom-nav-tab--locked" : ""}`} onClick={() => setTab(n.id)} style={{
-                flex: 1, padding: "9px 2px 10px", background: "transparent", border: "none", cursor: "pointer",
+              <button key={n.id} className="ax-nav" onClick={() => setTab(n.id)} style={{
+                flex: 1, padding: "10px 2px 12px", background: "transparent", border: "none", cursor: "pointer",
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
-                color: active ? G : "#5a5a6e", position: "relative", transition: "color .25s ease, transform .12s ease",
+                color: active ? AX.accent : AX.muted, fontFamily: AX.font,
+                transition: "color .15s ease",
               }}>
-                {active && <div className="bottom-nav-tab__bar" style={{ position: "absolute", top: 0, left: "24%", right: "24%", height: 2, background: `linear-gradient(90deg, transparent, ${G}, transparent)`, boxShadow: `0 0 10px ${G}` }} />}
-                <span className="bottom-nav-tab__halo" style={{
-                  width: 38, height: 32, borderRadius: 999, display: "inline-flex", alignItems: "center", justifyContent: "center",
-                  background: active ? `linear-gradient(135deg, ${G}2e, ${G2}22)` : "transparent",
-                  border: `1px solid ${active ? `${G}66` : "transparent"}`,
-                  boxShadow: active ? `0 0 16px ${G}44, inset 0 1px 0 ${G}33` : "none",
-                  filter: active ? `drop-shadow(0 0 6px ${G}aa)` : "none",
-                  transition: "all .25s ease",
-                }}>
-                  <Ico className="bottom-nav-tab__icon" size={active ? 21 : 19} strokeWidth={active ? 2.4 : 1.9} />
-                </span>
-                <span className="bottom-nav-tab__label" style={{ fontSize: 8.5, letterSpacing: 1.6, textTransform: "uppercase", fontWeight: 900, opacity: active ? 1 : 0.75 }}>{n.label}</span>
+                <Ico size={20} strokeWidth={active ? 2.2 : 1.8} />
+                <span style={{ fontSize: 11, fontWeight: active ? 600 : 500 }}>{n.label}</span>
               </button>
             );
           })}
           <style>{`
-            .bottom-nav-shell { animation: nav-pulse 4s ease-in-out infinite; }
-            .bottom-nav-tab { user-select: none; -webkit-tap-highlight-color: transparent; }
-            .bottom-nav-tab:hover { color: ${G} !important; transform: translateY(-2px); }
-            .bottom-nav-tab:hover .bottom-nav-tab__halo { background: linear-gradient(135deg, ${G}22, transparent); border-color: ${G}55; box-shadow: 0 0 16px ${G}55; }
-            .bottom-nav-tab:hover .bottom-nav-tab__icon { transform: scale(1.14); filter: drop-shadow(0 0 6px ${G}aa); animation: icon-float 1.6s ease-in-out infinite; }
-            .bottom-nav-tab:hover .bottom-nav-tab__label { opacity: 1; text-shadow: 0 0 8px ${G}66; }
-            .bottom-nav-tab:active { transform: scale(0.92); transition: transform .08s ease; }
-            .bottom-nav-tab:active .bottom-nav-tab__halo { animation: press-burst .35s ease-out; }
-            .bottom-nav-tab--active:hover .bottom-nav-tab__halo { background: linear-gradient(135deg, ${G}44, ${G2}22); border-color: ${G}88; box-shadow: 0 0 22px ${G}66, inset 0 1px 0 ${G}55; }
-            .bottom-nav-tab--active:hover .bottom-nav-tab__icon { animation: glow-breathe 1.4s ease-in-out infinite; }
-            .bottom-nav-tab--active .bottom-nav-tab__bar { animation: shimmer-sweep 1.8s linear infinite; }
-            .bottom-nav-tab--locked .bottom-nav-tab__icon { opacity: .75; }
-            .bottom-nav-tab--locked:hover .bottom-nav-tab__icon { opacity: 1; transform: scale(1.1); }
+            .ax-nav { -webkit-tap-highlight-color: transparent; }
+            .ax-nav:active { transform: scale(0.96); }
           `}</style>
         </div>
+
       </div>
 
       {/* 4AM PROOF-OF-WAKEUP MODAL */}
@@ -740,7 +718,7 @@ function App() {
             width: "100%", maxWidth: 380, background: "rgba(10,10,25,0.95)",
             border: `1px solid ${G}77`, borderLeft: `3px solid ${G}`,
             padding: 20, boxShadow: `0 10px 60px ${G}55, inset 0 1px 0 ${G}33`,
-            fontFamily: "monospace",
+            fontFamily: AX.font,
           }}>
             <div style={{ fontSize: 10, letterSpacing: 4, color: G, marginBottom: 6 }}>
               ▸ {proof.mode === "time" ? "WAKE PROTOCOL" : `${proof.wakeTime || "04:00"} PROTOCOL`}
@@ -762,7 +740,7 @@ function App() {
                     <button key={w.time} onClick={() => setProof({ mode: "choose", wakePts: w.pts, wakeTime: w.time, wakeLine: w.line })} style={{
                       textAlign: "left", padding: "12px 12px", background: `linear-gradient(135deg, ${G}22, transparent)`,
                       border: `1px solid ${G}66`, borderLeft: `3px solid ${G}`, color: "#fff", cursor: "pointer",
-                      fontFamily: "monospace",
+                      fontFamily: AX.font,
                     }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                         <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: 2, textShadow: `0 0 10px ${G}` }}>{w.time}</span>
@@ -786,7 +764,7 @@ function App() {
                         background: active ? `linear-gradient(135deg, ${G}44, ${G2}22)` : "rgba(0,0,0,0.4)",
                         border: `1px solid ${active ? G : "#333"}`,
                         color: active ? "#fff" : "#aaa", cursor: "pointer",
-                        fontFamily: "monospace", fontSize: 10, letterSpacing: 2, fontWeight: 700,
+                        fontFamily: AX.font, fontSize: 10, letterSpacing: 2, fontWeight: 700,
                         display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6,
                       }}>
                         <span>{active ? "◉" : "○"} {r.name}</span>
@@ -799,7 +777,7 @@ function App() {
                 <button onClick={() => setProof(null)} style={{
                   marginTop: 4, width: "100%", padding: 8, background: "transparent",
                   border: "1px solid #333", color: "#666", cursor: "pointer",
-                  fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
+                  fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
                 }}>CANCEL</button>
               </>
             )}
@@ -812,7 +790,7 @@ function App() {
                     <button key={s} onClick={() => startProof(s)} style={{
                       padding: "16px 8px", background: `linear-gradient(135deg, ${G}22, transparent)`,
                       border: `1px solid ${G}66`, color: "#fff", cursor: "pointer",
-                      fontFamily: "monospace", fontSize: 13, fontWeight: 700, letterSpacing: 2,
+                      fontFamily: AX.font, fontSize: 13, fontWeight: 700, letterSpacing: 2,
                     }}>
                       <div style={{ fontSize: 26, marginBottom: 6 }}>{s === "math" ? "🧮" : "⚛️"}</div>
                       {s.toUpperCase()}
@@ -822,7 +800,7 @@ function App() {
                 <button onClick={() => setProof({ mode: "time" })} style={{
                   marginTop: 14, width: "100%", padding: 8, background: "transparent",
                   border: "1px solid #333", color: "#888", cursor: "pointer",
-                  fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
+                  fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
                 }}>← BACK</button>
               </>
             )}
@@ -856,7 +834,7 @@ function App() {
                   placeholder="Your answer"
                   style={{
                     width: "100%", padding: "12px 14px", background: "rgba(0,0,0,0.6)",
-                    border: `1px solid ${G}66`, color: "#fff", fontFamily: "monospace",
+                    border: `1px solid ${G}66`, color: "#fff", fontFamily: AX.font,
                     fontSize: 18, letterSpacing: 2, textAlign: "center", outline: "none",
                     boxSizing: "border-box", marginBottom: 12,
                   }}
@@ -864,13 +842,13 @@ function App() {
                 <button onClick={submitProof} disabled={!proof.input} style={{
                   width: "100%", padding: 12, background: proof.input ? `linear-gradient(90deg, ${G}, ${G2})` : "#222",
                   border: "none", color: proof.input ? "#000" : "#555", cursor: proof.input ? "pointer" : "not-allowed",
-                  fontFamily: "monospace", fontSize: 12, fontWeight: 900, letterSpacing: 3,
+                  fontFamily: AX.font, fontSize: 12, fontWeight: 900, letterSpacing: 3,
                   boxShadow: proof.input ? `0 0 20px ${G}66` : "none",
                 }}>SUBMIT PROOF</button>
                 <button onClick={() => { stopAlarm(); setProof(null); }} style={{
                   marginTop: 8, width: "100%", padding: 6, background: "transparent",
                   border: "none", color: "#555", cursor: "pointer",
-                  fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
+                  fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
                 }}>CANCEL</button>
               </>
             )}
@@ -920,7 +898,7 @@ function App() {
                 <button onClick={() => setProof(null)} style={{
                   width: "100%", padding: 10, background: `linear-gradient(90deg, ${G}, ${G2})`,
                   border: "none", color: "#000", cursor: "pointer",
-                  fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
+                  fontFamily: AX.font, fontSize: 11, fontWeight: 900, letterSpacing: 3,
                 }}>CONTINUE</button>
               </div>
 
