@@ -713,6 +713,8 @@ function App() {
                 todayDone={tasks.filter(t => t.done).length}
                 todayTotal={tasks.length}
                 onSignOut={handleSignOut}
+                referredBy={referredBy}
+                onCoins={setCoins}
               />
             )}
           </>
