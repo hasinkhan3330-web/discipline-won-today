@@ -326,6 +326,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          acquisition_source: string | null
           avatar_url: string | null
           bio: string | null
           coins: number
@@ -336,6 +337,10 @@ export type Database = {
           last_penalty_date: string | null
           longest_streak: number
           onboarded: boolean
+          onboarding_answered_at: string | null
+          onboarding_blocker: string | null
+          onboarding_goal: string | null
+          onboarding_habit_count: number | null
           referral_code: string | null
           referred_by: string | null
           shields: number
@@ -344,6 +349,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          acquisition_source?: string | null
           avatar_url?: string | null
           bio?: string | null
           coins?: number
@@ -354,6 +360,10 @@ export type Database = {
           last_penalty_date?: string | null
           longest_streak?: number
           onboarded?: boolean
+          onboarding_answered_at?: string | null
+          onboarding_blocker?: string | null
+          onboarding_goal?: string | null
+          onboarding_habit_count?: number | null
           referral_code?: string | null
           referred_by?: string | null
           shields?: number
@@ -362,6 +372,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          acquisition_source?: string | null
           avatar_url?: string | null
           bio?: string | null
           coins?: number
@@ -372,6 +383,10 @@ export type Database = {
           last_penalty_date?: string | null
           longest_streak?: number
           onboarded?: boolean
+          onboarding_answered_at?: string | null
+          onboarding_blocker?: string | null
+          onboarding_goal?: string | null
+          onboarding_habit_count?: number | null
           referral_code?: string | null
           referred_by?: string | null
           shields?: number
