@@ -115,6 +115,9 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onFocus
         <div style={{ textAlign: "right" }}>
           <div style={{ fontSize: 18, fontWeight: 600, color: pct === 100 ? AX.success : AX.text }}>{pct}%</div>
           <div style={{ fontSize: 12, color: AX.muted }}>{done}/{tasks.length} today</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4, marginTop: 6, fontSize: 12, color: shields > 0 ? AX.success : AX.muted }}>
+            <Shield size={13} strokeWidth={1.9} />{shields}
+          </div>
         </div>
       </div>
 
@@ -126,7 +129,10 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onFocus
         </div>
 
         {tasks.length === 0 && (
-          <div style={{ fontSize: 13, color: AX.muted, padding: "10px 0" }}>Loading your habits…</div>
+          <EmptyState
+            title="No habits loaded yet"
+            line="Your five starter habits appear here as soon as your profile finishes syncing."
+          />
         )}
 
         {tasks.map(t => {
