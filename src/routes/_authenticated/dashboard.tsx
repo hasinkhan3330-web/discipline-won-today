@@ -502,6 +502,8 @@ function App() {
     const row = Array.isArray(data) ? data[0] : data;
     const newCoins = row?.coins ?? null;
     if (typeof newCoins === "number") setCoins(newCoins);
+    setLife(prev => prev ? { ...prev, lifetimeCoins: prev.lifetimeCoins + tier.reward } : prev);
+
     toast.success(`+${tier.reward} coins · focus session logged`);
     supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
       if (!leaders) return;
