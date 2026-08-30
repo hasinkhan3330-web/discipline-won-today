@@ -628,7 +628,7 @@ function App() {
 
           {showPaywall && myId && (
             <div style={{ position: "fixed", inset: 0, zIndex: 200, overflowY: "auto", background: "#000" }}>
-              <button onClick={() => setShowPaywall(false)} style={{ position: "fixed", top: 12, right: 12, zIndex: 201, background: "rgba(0,0,0,0.6)", border: `1px solid ${G}66`, color: G, fontFamily: "monospace", fontSize: 11, letterSpacing: 2, padding: "6px 10px", cursor: "pointer" }}>✕ CLOSE</button>
+              <button onClick={() => setShowPaywall(false)} style={{ position: "fixed", top: 12, right: 12, zIndex: 201, background: "rgba(0,0,0,0.6)", border: `1px solid ${G}66`, color: G, fontFamily: AX.font, fontSize: 11, letterSpacing: 2, padding: "6px 10px", cursor: "pointer" }}>✕ CLOSE</button>
               <Paywall userId={myId} email={myEmail} />
             </div>
           )}
@@ -718,7 +718,7 @@ function App() {
             width: "100%", maxWidth: 380, background: "rgba(10,10,25,0.95)",
             border: `1px solid ${G}77`, borderLeft: `3px solid ${G}`,
             padding: 20, boxShadow: `0 10px 60px ${G}55, inset 0 1px 0 ${G}33`,
-            fontFamily: "monospace",
+            fontFamily: AX.font,
           }}>
             <div style={{ fontSize: 10, letterSpacing: 4, color: G, marginBottom: 6 }}>
               ▸ {proof.mode === "time" ? "WAKE PROTOCOL" : `${proof.wakeTime || "04:00"} PROTOCOL`}
@@ -740,7 +740,7 @@ function App() {
                     <button key={w.time} onClick={() => setProof({ mode: "choose", wakePts: w.pts, wakeTime: w.time, wakeLine: w.line })} style={{
                       textAlign: "left", padding: "12px 12px", background: `linear-gradient(135deg, ${G}22, transparent)`,
                       border: `1px solid ${G}66`, borderLeft: `3px solid ${G}`, color: "#fff", cursor: "pointer",
-                      fontFamily: "monospace",
+                      fontFamily: AX.font,
                     }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
                         <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: 2, textShadow: `0 0 10px ${G}` }}>{w.time}</span>
@@ -764,7 +764,7 @@ function App() {
                         background: active ? `linear-gradient(135deg, ${G}44, ${G2}22)` : "rgba(0,0,0,0.4)",
                         border: `1px solid ${active ? G : "#333"}`,
                         color: active ? "#fff" : "#aaa", cursor: "pointer",
-                        fontFamily: "monospace", fontSize: 10, letterSpacing: 2, fontWeight: 700,
+                        fontFamily: AX.font, fontSize: 10, letterSpacing: 2, fontWeight: 700,
                         display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6,
                       }}>
                         <span>{active ? "◉" : "○"} {r.name}</span>
@@ -777,7 +777,7 @@ function App() {
                 <button onClick={() => setProof(null)} style={{
                   marginTop: 4, width: "100%", padding: 8, background: "transparent",
                   border: "1px solid #333", color: "#666", cursor: "pointer",
-                  fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
+                  fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
                 }}>CANCEL</button>
               </>
             )}
@@ -790,7 +790,7 @@ function App() {
                     <button key={s} onClick={() => startProof(s)} style={{
                       padding: "16px 8px", background: `linear-gradient(135deg, ${G}22, transparent)`,
                       border: `1px solid ${G}66`, color: "#fff", cursor: "pointer",
-                      fontFamily: "monospace", fontSize: 13, fontWeight: 700, letterSpacing: 2,
+                      fontFamily: AX.font, fontSize: 13, fontWeight: 700, letterSpacing: 2,
                     }}>
                       <div style={{ fontSize: 26, marginBottom: 6 }}>{s === "math" ? "🧮" : "⚛️"}</div>
                       {s.toUpperCase()}
@@ -800,7 +800,7 @@ function App() {
                 <button onClick={() => setProof({ mode: "time" })} style={{
                   marginTop: 14, width: "100%", padding: 8, background: "transparent",
                   border: "1px solid #333", color: "#888", cursor: "pointer",
-                  fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
+                  fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
                 }}>← BACK</button>
               </>
             )}
@@ -834,7 +834,7 @@ function App() {
                   placeholder="Your answer"
                   style={{
                     width: "100%", padding: "12px 14px", background: "rgba(0,0,0,0.6)",
-                    border: `1px solid ${G}66`, color: "#fff", fontFamily: "monospace",
+                    border: `1px solid ${G}66`, color: "#fff", fontFamily: AX.font,
                     fontSize: 18, letterSpacing: 2, textAlign: "center", outline: "none",
                     boxSizing: "border-box", marginBottom: 12,
                   }}
@@ -842,13 +842,13 @@ function App() {
                 <button onClick={submitProof} disabled={!proof.input} style={{
                   width: "100%", padding: 12, background: proof.input ? `linear-gradient(90deg, ${G}, ${G2})` : "#222",
                   border: "none", color: proof.input ? "#000" : "#555", cursor: proof.input ? "pointer" : "not-allowed",
-                  fontFamily: "monospace", fontSize: 12, fontWeight: 900, letterSpacing: 3,
+                  fontFamily: AX.font, fontSize: 12, fontWeight: 900, letterSpacing: 3,
                   boxShadow: proof.input ? `0 0 20px ${G}66` : "none",
                 }}>SUBMIT PROOF</button>
                 <button onClick={() => { stopAlarm(); setProof(null); }} style={{
                   marginTop: 8, width: "100%", padding: 6, background: "transparent",
                   border: "none", color: "#555", cursor: "pointer",
-                  fontFamily: "monospace", fontSize: 10, letterSpacing: 2,
+                  fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
                 }}>CANCEL</button>
               </>
             )}
@@ -898,7 +898,7 @@ function App() {
                 <button onClick={() => setProof(null)} style={{
                   width: "100%", padding: 10, background: `linear-gradient(90deg, ${G}, ${G2})`,
                   border: "none", color: "#000", cursor: "pointer",
-                  fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
+                  fontFamily: AX.font, fontSize: 11, fontWeight: 900, letterSpacing: 3,
                 }}>CONTINUE</button>
               </div>
 
