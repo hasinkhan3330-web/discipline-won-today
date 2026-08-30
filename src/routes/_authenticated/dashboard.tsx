@@ -2,13 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getEntitlement } from "@/utils/premium.functions";
-import { User, Swords, Crown, Quote, Flower2, BarChart3, Lock } from "lucide-react";
+import { User, Swords, Crown, Flower2, BarChart3, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
 import { BlurLock } from "@/components/BlurLock";
-import { SpaceWallpaper } from "@/components/SpaceWallpaper";
 import { CropModal } from "@/components/CropModal";
 import { THEMES, MILESTONES, THEME_PHOTO, THEME_VIDEO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
 import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
@@ -16,10 +15,9 @@ import axenLogo from "@/assets/axen-logo.png";
 import habitLogo from "@/assets/habit-discipline-logo.png";
 
 import { useMeditation } from "@/hooks/useMeditation";
-import { cardStyle, titleStyle } from "@/tabs/styles";
+import { AX, cardStyle, titleStyle } from "@/tabs/styles";
 import { HomeTab } from "@/tabs/HomeTab";
 import { RankTab } from "@/tabs/RankTab";
-import { QuotesTab } from "@/tabs/QuotesTab";
 import { ZenTab } from "@/tabs/ZenTab";
 import { StatsTab } from "@/tabs/StatsTab";
 import { ProfileTab } from "@/tabs/ProfileTab";
@@ -339,8 +337,8 @@ function App() {
   }, []);
 
   const theme = THEMES[themeKey];
-  const G = theme.accent;
-  const G2 = theme.accent2;
+  const G = AX.accent;
+  const G2 = AX.accent;
   // wallpaper is bound to the selected theme — changing theme changes wallpaper too
   const wallLevel = theme.wall;
   const wallPhoto = THEME_PHOTO[themeKey];
@@ -492,7 +490,7 @@ function App() {
   const premiumUnlocked = serverEntitled === null
     ? (hasActiveSubscription || trialActive)
     : serverEntitled;
-  const premiumTabs = ["rank", "quotes", "zen"];
+  const premiumTabs = ["rank", "zen"];
   const gateReady = trialReady && !!myId && !subLoading && serverEntitled !== null;
   const premiumLocked = gateReady && premiumTabs.includes(tab) && !premiumUnlocked;
   const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
@@ -518,9 +516,8 @@ function App() {
 
   if (screen === "splash") {
     return (
-      <div style={{ width: "100%", height: "100vh", background: "#000", position: "relative", overflow: "hidden", fontFamily: "monospace" }}>
+      <div style={{ width: "100%", height: "100vh", background: AX.bg, position: "relative", overflow: "hidden", fontFamily: AX.font }}>
         <style>{keyframes}</style>
-        <SpaceWallpaper accent={G} level={wallLevel} photo={wallPhoto} video={wallVideo} />
         <div style={{ position: "relative", zIndex: 2, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", border: `1px solid ${G}44`, animation: "orbit 8s linear infinite" }}>
             <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 20px ${G}` }} />
@@ -541,16 +538,14 @@ function App() {
   const TABS = [
     { id: "home", Icon: Swords, label: "Home" },
     { id: "rank", Icon: Crown, label: "Rank" },
-    { id: "quotes", Icon: Quote, label: "Quotes" },
     { id: "zen", Icon: Flower2, label: "Zen" },
     { id: "stats", Icon: BarChart3, label: "Stats" },
     { id: "profile", Icon: User, label: "You" },
   ];
 
   return (
-    <div style={{ width: "100%", minHeight: "100vh", color: "#e8e8e8", fontFamily: "monospace", position: "relative", overflow: "hidden" }}>
+    <div style={{ width: "100%", minHeight: "100vh", color: AX.text, background: AX.bg, fontFamily: AX.font, position: "relative" }}>
       <style>{keyframes}</style>
-      <SpaceWallpaper accent={G} level={wallLevel} photo={wallPhoto} video={wallVideo} />
 
       {celebration && (
         <div onClick={() => setCelebration(null)} style={{
@@ -610,58 +605,26 @@ function App() {
 
       <div style={{ position: "relative", zIndex: 2, maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         {/* TOPBAR */}
-        <div style={{ padding: "14px 16px", background: "rgba(10,10,25,0.7)", backdropFilter: "blur(20px)", borderBottom: `1px solid ${G}55`, display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 99, boxShadow: `0 2px 20px ${G}22` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 10px ${G}`, animation: "pulse 1.5s infinite" }} />
-            <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 24, width: "auto", filter: `drop-shadow(0 0 8px ${G})` }} />
-          </div>
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {(Object.keys(THEMES) as ThemeKey[]).filter(k => streak >= THEMES[k].unlock).map(k => {
-              const isPro = PRO_THEMES.includes(k);
-              const proLocked = isPro && gateReady && !premiumUnlocked;
-              return (
-                <button
-                  key={k}
-                  onClick={() => (proLocked ? setShowPaywall(true) : setThemeKey(k))}
-                  title={isPro ? `${THEMES[k].name} · PRO` : THEMES[k].name}
-                  style={{
-                    position: "relative",
-                    width: 18, height: 18, borderRadius: "50%",
-                    background: THEME_PHOTO[k]
-                      ? `url(${THEME_PHOTO[k]}) center/cover`
-                      : `linear-gradient(135deg, ${THEMES[k].accent}, ${THEMES[k].accent2})`,
-                    border: themeKey === k ? `2px solid #fff` : isPro ? `1px solid #ffcc33` : `1px solid #333`,
-                    cursor: "pointer", padding: 0,
-                    opacity: proLocked ? 0.55 : 1,
-                    boxShadow: themeKey === k ? `0 0 10px ${THEMES[k].accent}` : isPro ? `0 0 8px #ffcc3388` : "none",
-                  }}
-                >
-                  {isPro && (
-                    <span style={{ position: "absolute", top: -7, right: -5, fontSize: 8, lineHeight: 1, filter: "drop-shadow(0 0 4px #ffcc33)" }}>
-                      {proLocked ? "🔒" : "👑"}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-
+        <div style={{ padding: "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 99 }}>
+          <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto" }} />
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {gateReady && !hasActiveSubscription && (
-              <button onClick={() => setShowPaywall(true)} title="Go PRO" style={{ background: `linear-gradient(135deg, ${G}, ${G2})`, border: "none", color: "#000", padding: "5px 9px", fontSize: 10, fontWeight: 900, letterSpacing: 2, fontFamily: "monospace", cursor: "pointer", borderRadius: 2, boxShadow: `0 0 14px ${G}66` }}>GO PRO</button>
+              <button onClick={() => setShowPaywall(true)} style={{ background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF", padding: "7px 14px", fontSize: 13, fontWeight: 600, fontFamily: AX.font, cursor: "pointer", borderRadius: 12 }}>Go Pro</button>
             )}
-            <div style={{ background: `linear-gradient(135deg,${G}22,${G2}22)`, border: `1px solid ${G}66`, padding: "5px 10px", fontSize: 13, fontWeight: 700, color: G, marginLeft: 4, borderRadius: 2 }}>🪙 {coins}</div>
-
-            <button onClick={handleSignOut} title="Sign out" style={{ background: "transparent", border: `1px solid ${G}55`, color: "#aaa", padding: "5px 8px", fontSize: 10, letterSpacing: 2, fontFamily: "monospace", cursor: "pointer", borderRadius: 2 }}>EXIT</button>
+            <div style={{ background: "#181820", border: `1px solid ${AX.border}`, padding: "7px 12px", fontSize: 13, fontWeight: 600, color: AX.text, borderRadius: 12 }}>{coins} coins</div>
           </div>
         </div>
 
         {/* CONTENT */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "14px 12px 90px", animation: "fadeUp 0.4s ease-out" }} key={tab}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "14px 12px 90px" }} key={tab}>
 
           {gateReady && trialActive && !hasActiveSubscription && (
-            <div style={{ ...CARD, borderLeft: `3px solid ${G}`, fontSize: 11, color: "#ddd", letterSpacing: 1.5, lineHeight: 1.5 }}>
-              <span style={{ color: G, fontWeight: 900 }}>◉ FREE ACCESS ACTIVE</span> · {trialDaysLeft} DAY{trialDaysLeft === 1 ? "" : "S"} LEFT. Home, Stats and You stay open; Rank, Quotes and Zen become PRO after trial.
+            <div style={{ ...CARD, fontSize: 13, color: AX.muted, lineHeight: 1.5 }}>
+              <span style={{ color: AX.text, fontWeight: 600 }}>Free access active</span> · {trialDaysLeft} day{trialDaysLeft === 1 ? "" : "s"} left. Home, Stats and You stay open; Rank and Zen become Pro after the trial.
             </div>
           )}
+
+
 
           {showPaywall && myId && (
             <div style={{ position: "fixed", inset: 0, zIndex: 200, overflowY: "auto", background: "#000" }}>
@@ -671,38 +634,38 @@ function App() {
           )}
 
           <>
-            {tab === "home" && <HomeTab G={G} G2={G2} coins={coins} streak={streak} tasks={tasks} tick={tick} onFocusComplete={onFocusComplete} />}
+            {tab === "home" && <HomeTab name={myName} coins={coins} streak={streak} tasks={tasks} tick={tick} onFocusComplete={onFocusComplete} />}
             {tab === "rank" && (
-              <BlurLock G={G} G2={G2} active={premiumLocked} note="Leaderboard is hidden after your free 3 days. Subscribe to see who is ranked where." onUnlock={() => setShowPaywall(true)}>
-                <RankTab G={G} board={board} fallbackAvatar={fallbackAvatar} />
-              </BlurLock>
-            )}
-            {tab === "quotes" && (
-              <BlurLock G={G} G2={G2} active={premiumLocked} blur={false} note="Today's legend is visible — the quote stays blurred until you subscribe." onUnlock={() => setShowPaywall(true)}>
-                <QuotesTab G={G} />
+              <BlurLock G={G} G2={G2} active={premiumLocked} note="Rank is hidden after your free 3 days. Subscribe to keep climbing." onUnlock={() => setShowPaywall(true)}>
+                <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} />
               </BlurLock>
             )}
             {tab === "zen" && (
-              <BlurLock G={G} G2={G2} active={premiumLocked} note="Zen Protocol is frozen after your free 3 days. Subscribe to breathe again." onUnlock={() => setShowPaywall(true)}>
-                <ZenTab G={G} G2={G2} med={med} />
+              <BlurLock G={G} G2={G2} active={premiumLocked} note="Zen is frozen after your free 3 days. Subscribe to breathe again." onUnlock={() => setShowPaywall(true)}>
+                <ZenTab med={med} />
               </BlurLock>
             )}
-            {tab === "stats" && <StatsTab G={G} G2={G2} weekly={weekly} life={life ? { ...life, medMinutes: med.medLifetime } : undefined} />}
+            {tab === "stats" && (
+              <StatsTab
+                weekly={weekly}
+                life={life ? { ...life, medMinutes: med.medLifetime } : undefined}
+                board={board}
+                fallbackAvatar={fallbackAvatar}
+              />
+            )}
             {tab === "profile" && (
               <ProfileTab
-                G={G} G2={G2}
                 coins={coins} streak={streak}
                 myName={myName} myAvatar={myAvatar} uploading={uploading}
-                themeKey={themeKey} setThemeKey={setThemeKey}
-                board={board}
                 openCropper={openCropper}
                 fallbackAvatar={fallbackAvatar}
                 todayDone={tasks.filter(t => t.done).length}
                 todayTotal={tasks.length}
+                onSignOut={handleSignOut}
               />
-
             )}
           </>
+
 
           {/* LEGAL LINKS */}
           <div style={{ marginTop: 32, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${G}22` }}>
