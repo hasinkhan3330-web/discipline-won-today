@@ -1,4 +1,6 @@
 import { AX, cardStyle, titleStyle } from "./styles";
+import { FriendsPanel } from "@/components/FriendsPanel";
+import { EmptyState } from "@/components/EmptyState";
 import { Coins, Trophy, Flame, Target } from "lucide-react";
 
 export const TIERS = [
@@ -95,9 +97,16 @@ export function RankTab({ coins, streak, bestStreak = 0, board = [], fallbackAva
         })}
       </div>
 
+      <FriendsPanel myStreak={streak} myCoins={coins} fallbackAvatar={fallbackAvatar} />
+
       <div style={CARD}>
         <div style={titleStyle}>Global leaderboard</div>
-        {board.length === 0 && <div style={{ fontSize: 13, color: AX.muted }}>Loading…</div>}
+        {board.length === 0 && (
+          <EmptyState
+            title="Nobody ranked yet"
+            line="Complete a habit today and you'll appear on the board within seconds."
+          />
+        )}
         {board.map((u, i) => (
           <div key={i} style={{
             display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",

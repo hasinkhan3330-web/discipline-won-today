@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AX, cardStyle, titleStyle, buttonStyle } from "./styles";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
 import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
+import { ReferralCard } from "@/components/ReferralCard";
 import { Camera, LogOut, AlarmClock, Check } from "lucide-react";
 
 const VICTORIES = [
@@ -46,6 +47,8 @@ export function ProfileTab({
   openCropper, fallbackAvatar,
   todayDone = 0, todayTotal = 0,
   onSignOut,
+  referredBy = null,
+  onCoins,
 }: {
   coins: number; streak: number;
   myName: string; myAvatar: string; uploading: boolean;
@@ -53,6 +56,8 @@ export function ProfileTab({
   fallbackAvatar: (n: string) => string;
   todayDone?: number; todayTotal?: number;
   onSignOut?: () => void;
+  referredBy?: string | null;
+  onCoins?: (coins: number) => void;
 }) {
   const CARD = cardStyle();
   const [tab, setTab] = useState("profile");
@@ -156,6 +161,7 @@ export function ProfileTab({
 
       {tab === "account" && (
         <>
+          <ReferralCard referredBy={referredBy ?? null} onCoins={onCoins} />
           <ManageSubscriptionCard />
           <SubscriptionTimeline />
           {onSignOut && (

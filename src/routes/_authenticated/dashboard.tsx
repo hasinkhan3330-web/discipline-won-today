@@ -9,6 +9,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
 import { BlurLock } from "@/components/BlurLock";
 import { CropModal } from "@/components/CropModal";
+import { Onboarding } from "@/components/Onboarding";
 import { THEMES, MILESTONES, THEME_PHOTO, THEME_VIDEO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
 import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
 import axenLogo from "@/assets/axen-logo.png";
@@ -78,7 +79,11 @@ function App() {
 
   const [coins, setCoins] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [shields, setShields] = useState(0);
+  const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  const [referredBy, setReferredBy] = useState<string | null>(null);
   const [streakLoaded, setStreakLoaded] = useState(false);
+
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [board, setBoard] = useState<{ n: string; c: number; s: number; img: string; you?: boolean }[]>([]);
@@ -128,6 +133,16 @@ function App() {
       setTrialReady(true);
     }
 
+    // A held shield covers a fully missed day before the penalty runs.
+    // The server ledger makes this idempotent across refreshes and races.
+    try {
+      const { data: sh } = await (supabase.rpc as any)("use_streak_shield");
+      const shRow = Array.isArray(sh) ? sh[0] : sh;
+      if (shRow?.applied) {
+        toast.success("Shield used", { description: "You missed a day — your streak survived." });
+      }
+    } catch {}
+
     try {
       const { data: pen } = await (supabase.rpc as any)("apply_daily_penalty");
       const row = Array.isArray(pen) ? pen[0] : pen;
@@ -140,7 +155,7 @@ function App() {
     const sevenAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
 
     const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
-      supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url").eq("id", uid).maybeSingle(),
+      supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url, shields, onboarded, referred_by").eq("id", uid).maybeSingle(),
 
       supabase.from("tasks").select("id, icon, name, pts, sort_order").eq("user_id", uid).eq("is_active", true).order("sort_order"),
       supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
@@ -153,6 +168,11 @@ function App() {
       setStreak(prof.streak ?? 0);
       setMyName(prof.display_name || "YOU");
       setMyAvatar(prof.avatar_url || "");
+      setShields((prof as any).shields ?? 0);
+      setOnboarded(!!(prof as any).onboarded);
+      setReferredBy((prof as any).referred_by ?? null);
+    } else {
+      setOnboarded(true);
     }
     setStreakLoaded(true);
 
@@ -223,7 +243,34 @@ function App() {
   };
 
 
-  useEffect(() => { refreshAll(); }, []);
+  // Single boot fetch — guarded so React's double-mount (and fast remounts)
+  // never fire the whole dashboard query set twice.
+  const booted = useRef(false);
+  useEffect(() => {
+    if (booted.current) return;
+    booted.current = true;
+    refreshAll();
+  }, []);
+
+  const buyShield = async () => {
+    const { data, error } = await (supabase.rpc as any)("buy_streak_shield");
+    if (error) {
+      toast.error("Could not buy a shield", { description: error.message });
+      return;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) {
+      setCoins(row.coins ?? coins);
+      setShields(row.shields ?? shields);
+      toast.success("Shield acquired", { description: "One missed day will not break your streak." });
+    }
+  };
+
+  const finishOnboarding = async () => {
+    setOnboarded(true);
+    if (!myId) return;
+    await supabase.from("profiles").update({ onboarded: true } as any).eq("id", myId);
+  };
 
   // ---- streak milestones: auto-evolve theme + wallpaper, celebrate once; revert on break ----
   useEffect(() => {
@@ -547,6 +594,8 @@ function App() {
     <div style={{ width: "100%", minHeight: "100vh", color: AX.text, background: AX.bg, fontFamily: AX.font, position: "relative" }}>
       <style>{keyframes}</style>
 
+      {onboarded === false && <Onboarding onFinish={finishOnboarding} />}
+
       {celebration && (
         <div onClick={() => setCelebration(null)} style={{
           position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center",
@@ -634,7 +683,14 @@ function App() {
           )}
 
           <>
-            {tab === "home" && <HomeTab name={myName} coins={coins} streak={streak} tasks={tasks} tick={tick} onFocusComplete={onFocusComplete} />}
+            {tab === "home" && (
+              <HomeTab
+                name={myName} coins={coins} streak={streak} shields={shields}
+                tasks={tasks} tick={tick} onFocusComplete={onFocusComplete}
+                onBuyShield={buyShield}
+                reminderTasks={tasks.map(t => ({ uuid: (t as any)._uuid as string, name: t.name, done: t.done }))}
+              />
+            )}
             {tab === "rank" && (
               <BlurLock G={G} G2={G2} active={premiumLocked} note="Rank is hidden after your free 3 days. Subscribe to keep climbing." onUnlock={() => setShowPaywall(true)}>
                 <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} board={board} fallbackAvatar={fallbackAvatar} />
@@ -660,6 +716,8 @@ function App() {
                 todayDone={tasks.filter(t => t.done).length}
                 todayTotal={tasks.length}
                 onSignOut={handleSignOut}
+                referredBy={referredBy}
+                onCoins={setCoins}
               />
             )}
           </>

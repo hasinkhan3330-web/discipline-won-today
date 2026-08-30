@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { AX, cardStyle, titleStyle } from "./styles";
 import { DeepFocus, type FocusTier } from "@/components/DeepFocus";
+import { haptic } from "@/lib/haptics";
+import { ShieldCard } from "@/components/ShieldCard";
+import { RemindersCard, type ReminderTask } from "@/components/RemindersCard";
+import { EmptyState } from "@/components/EmptyState";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
-  Flame, Footprints, PenLine, Circle, Check, type LucideIcon,
+  Flame, Footprints, PenLine, Circle, Check, Shield, type LucideIcon,
 } from "lucide-react";
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
@@ -55,25 +59,29 @@ function greeting() {
   return "Good evening";
 }
 
-export function HomeTab({ name, coins, streak, tasks, tick, onFocusComplete }: {
+export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onFocusComplete, onBuyShield, reminderTasks = [] }: {
   name: string;
-  coins: number; streak: number;
+  coins: number; streak: number; shields?: number;
   tasks: Task[];
   tick: (id: number) => void;
   onFocusComplete: (tier: FocusTier, lockMode: "strict" | "flex", apps: string[]) => Promise<number | null>;
+  onBuyShield?: () => Promise<void>;
+  reminderTasks?: ReminderTask[];
 }) {
   const CARD = cardStyle();
   const done = tasks.filter(t => t.done).length;
   const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
   const streakShown = useCountUp(streak);
   const [popped, setPopped] = useState<number | null>(null);
+  const pending = useRef<Set<number>>(new Set());
 
   const handleTick = (t: Task) => {
-    if (!t.done) {
-      setPopped(t.id);
-      setTimeout(() => setPopped(p => (p === t.id ? null : p)), 200);
-    }
-    tick(t.id);
+    if (t.done || pending.current.has(t.id)) return; // guard rapid double taps
+    pending.current.add(t.id);
+    haptic("success");
+    setPopped(t.id);
+    setTimeout(() => setPopped(p => (p === t.id ? null : p)), 200);
+    Promise.resolve(tick(t.id)).finally(() => { pending.current.delete(t.id); });
   };
 
   return (
@@ -107,6 +115,9 @@ export function HomeTab({ name, coins, streak, tasks, tick, onFocusComplete }: {
         <div style={{ textAlign: "right" }}>
           <div style={{ fontSize: 18, fontWeight: 600, color: pct === 100 ? AX.success : AX.text }}>{pct}%</div>
           <div style={{ fontSize: 12, color: AX.muted }}>{done}/{tasks.length} today</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4, marginTop: 6, fontSize: 12, color: shields > 0 ? AX.success : AX.muted }}>
+            <Shield size={13} strokeWidth={1.9} />{shields}
+          </div>
         </div>
       </div>
 
@@ -118,7 +129,10 @@ export function HomeTab({ name, coins, streak, tasks, tick, onFocusComplete }: {
         </div>
 
         {tasks.length === 0 && (
-          <div style={{ fontSize: 13, color: AX.muted, padding: "10px 0" }}>Loading your habits…</div>
+          <EmptyState
+            title="No habits loaded yet"
+            line="Your five starter habits appear here as soon as your profile finishes syncing."
+          />
         )}
 
         {tasks.map(t => {
@@ -153,6 +167,10 @@ export function HomeTab({ name, coins, streak, tasks, tick, onFocusComplete }: {
           );
         })}
       </div>
+
+      {onBuyShield && <ShieldCard shields={shields} coins={coins} onBuy={onBuyShield} />}
+
+      {reminderTasks.length > 0 && <RemindersCard tasks={reminderTasks} />}
 
       <DeepFocus G={AX.accent} G2={AX.accent} onComplete={onFocusComplete} />
     </>

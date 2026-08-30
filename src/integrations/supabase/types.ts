@@ -211,6 +211,74 @@ export type Database = {
         }
         Relationships: []
       }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      habit_reminders: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          remind_at: string
+          task_id: string
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          remind_at?: string
+          task_id: string
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          remind_at?: string
+          task_id?: string
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_reminders_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_events: {
         Row: {
           amount: number | null
@@ -267,6 +335,10 @@ export type Database = {
           last_activity_date: string | null
           last_penalty_date: string | null
           longest_streak: number
+          onboarded: boolean
+          referral_code: string | null
+          referred_by: string | null
+          shields: number
           streak: number
           updated_at: string
           username: string | null
@@ -281,6 +353,10 @@ export type Database = {
           last_activity_date?: string | null
           last_penalty_date?: string | null
           longest_streak?: number
+          onboarded?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
+          shields?: number
           streak?: number
           updated_at?: string
           username?: string | null
@@ -295,9 +371,34 @@ export type Database = {
           last_activity_date?: string | null
           last_penalty_date?: string | null
           longest_streak?: number
+          onboarded?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
+          shields?: number
           streak?: number
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      streak_shield_uses: {
+        Row: {
+          created_at: string
+          id: string
+          used_for: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          used_for: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          used_for?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -467,6 +568,13 @@ export type Database = {
           penalized: boolean
         }[]
       }
+      buy_streak_shield: {
+        Args: never
+        Returns: {
+          coins: number
+          shields: number
+        }[]
+      }
       complete_alarm: {
         Args: { _alarm_id: string; _reward?: number }
         Returns: {
@@ -498,9 +606,55 @@ export type Database = {
           trial_started_at: string
         }[]
       }
+      get_or_create_referral_code: { Args: never; Returns: string }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
+      }
+      list_friends: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          coins: number
+          direction: string
+          display_name: string
+          friend_id: string
+          friendship_id: string
+          longest_streak: number
+          status: string
+          streak: number
+          username: string
+        }[]
+      }
+      redeem_referral_code: {
+        Args: { _code: string }
+        Returns: {
+          applied: boolean
+          coins: number
+          reason: string
+        }[]
+      }
+      respond_friend_request: {
+        Args: { _accept: boolean; _request_id: string }
+        Returns: {
+          ok: boolean
+          reason: string
+        }[]
+      }
+      send_friend_request: {
+        Args: { _username: string }
+        Returns: {
+          ok: boolean
+          reason: string
+        }[]
+      }
+      use_streak_shield: {
+        Args: never
+        Returns: {
+          applied: boolean
+          reason: string
+          shields: number
+        }[]
       }
     }
     Enums: {
