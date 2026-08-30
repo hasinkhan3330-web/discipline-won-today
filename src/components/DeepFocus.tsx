@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { ChevronRight } from "lucide-react";
 import { cardStyle, titleStyle } from "@/tabs/styles";
+import { FocusMusicPanel } from "@/components/FocusMusicPanel";
 
 export type FocusTier = { id: "f49" | "f120" | "f229"; label: string; sub: string; minutes: number; reward: number };
 
@@ -68,6 +70,7 @@ export function DeepFocus({ G, G2, onComplete }: {
   const [result, setResult] = useState<{ awarded: number; coins: number | null; minutes: number } | null>(null);
   const [penalty, setPenalty] = useState(0);
   const [showAudio, setShowAudio] = useState(true);
+  const [showMusic, setShowMusic] = useState(false);
   const [trackIdx, setTrackIdx] = useState(0);
   const [loop, setLoop] = useState(true);
   const [vol, setVol] = useState(0.7);
