@@ -2,13 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getEntitlement } from "@/utils/premium.functions";
-import { User, Swords, Crown, Quote, Flower2, BarChart3, Lock } from "lucide-react";
+import { User, Swords, Crown, Flower2, BarChart3, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
 import { BlurLock } from "@/components/BlurLock";
-import { SpaceWallpaper } from "@/components/SpaceWallpaper";
 import { CropModal } from "@/components/CropModal";
 import { THEMES, MILESTONES, THEME_PHOTO, THEME_VIDEO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
 import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
@@ -16,10 +15,9 @@ import axenLogo from "@/assets/axen-logo.png";
 import habitLogo from "@/assets/habit-discipline-logo.png";
 
 import { useMeditation } from "@/hooks/useMeditation";
-import { cardStyle, titleStyle } from "@/tabs/styles";
+import { AX, cardStyle, titleStyle } from "@/tabs/styles";
 import { HomeTab } from "@/tabs/HomeTab";
 import { RankTab } from "@/tabs/RankTab";
-import { QuotesTab } from "@/tabs/QuotesTab";
 import { ZenTab } from "@/tabs/ZenTab";
 import { StatsTab } from "@/tabs/StatsTab";
 import { ProfileTab } from "@/tabs/ProfileTab";
@@ -339,8 +337,8 @@ function App() {
   }, []);
 
   const theme = THEMES[themeKey];
-  const G = theme.accent;
-  const G2 = theme.accent2;
+  const G = AX.accent;
+  const G2 = AX.accent;
   // wallpaper is bound to the selected theme — changing theme changes wallpaper too
   const wallLevel = theme.wall;
   const wallPhoto = THEME_PHOTO[themeKey];
@@ -492,7 +490,7 @@ function App() {
   const premiumUnlocked = serverEntitled === null
     ? (hasActiveSubscription || trialActive)
     : serverEntitled;
-  const premiumTabs = ["rank", "quotes", "zen"];
+  const premiumTabs = ["rank", "zen"];
   const gateReady = trialReady && !!myId && !subLoading && serverEntitled !== null;
   const premiumLocked = gateReady && premiumTabs.includes(tab) && !premiumUnlocked;
   const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
@@ -518,9 +516,8 @@ function App() {
 
   if (screen === "splash") {
     return (
-      <div style={{ width: "100%", height: "100vh", background: "#000", position: "relative", overflow: "hidden", fontFamily: "monospace" }}>
+      <div style={{ width: "100%", height: "100vh", background: AX.bg, position: "relative", overflow: "hidden", fontFamily: AX.font }}>
         <style>{keyframes}</style>
-        <SpaceWallpaper accent={G} level={wallLevel} photo={wallPhoto} video={wallVideo} />
         <div style={{ position: "relative", zIndex: 2, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
           <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", border: `1px solid ${G}44`, animation: "orbit 8s linear infinite" }}>
             <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 20px ${G}` }} />
@@ -541,16 +538,14 @@ function App() {
   const TABS = [
     { id: "home", Icon: Swords, label: "Home" },
     { id: "rank", Icon: Crown, label: "Rank" },
-    { id: "quotes", Icon: Quote, label: "Quotes" },
     { id: "zen", Icon: Flower2, label: "Zen" },
     { id: "stats", Icon: BarChart3, label: "Stats" },
     { id: "profile", Icon: User, label: "You" },
   ];
 
   return (
-    <div style={{ width: "100%", minHeight: "100vh", color: "#e8e8e8", fontFamily: "monospace", position: "relative", overflow: "hidden" }}>
+    <div style={{ width: "100%", minHeight: "100vh", color: AX.text, background: AX.bg, fontFamily: AX.font, position: "relative" }}>
       <style>{keyframes}</style>
-      <SpaceWallpaper accent={G} level={wallLevel} photo={wallPhoto} video={wallVideo} />
 
       {celebration && (
         <div onClick={() => setCelebration(null)} style={{
