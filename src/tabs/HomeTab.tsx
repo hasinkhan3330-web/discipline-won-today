@@ -94,7 +94,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onFocus
       `}</style>
 
       <div style={{ padding: "4px 2px 16px", minWidth: 0 }}>
-        <div style={{ fontSize: 14, color: AX.muted }}>{greeting()},</div>
+        <div className="ax-wrap" style={{ fontSize: 14, color: AX.muted }}>{greeting()},</div>
         <div className="ax-wrap" style={{ fontSize: "clamp(20px, 6vw, 24px)", fontWeight: 600, color: AX.text, marginTop: 2 }}>{name}</div>
       </div>
 
