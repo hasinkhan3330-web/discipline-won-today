@@ -189,13 +189,15 @@ function Landing() {
 
   return (
     <div className="axen-page" style={{ minHeight: "100vh", position: "relative", background: "#000", color: "#e8e8e8", overflow: "hidden" }}>
-      {!introGone && <Intro done={!intro} />}
+      {!introGone && <Intro done={!intro} onGone={() => setIntroGone(true)} />}
 
       {/* ambient futuristic backdrop */}
       <div style={{ position: "fixed", inset: 0, backgroundImage: `radial-gradient(circle at 18% 12%, ${G2}22, transparent 52%), radial-gradient(circle at 84% 88%, ${G}22, transparent 52%)` }} />
       <div style={{ position: "fixed", inset: 0, opacity: 0.14, backgroundImage: `linear-gradient(${G}22 1px, transparent 1px), linear-gradient(90deg, ${G}22 1px, transparent 1px)`, backgroundSize: "60px 60px", animation: "axen-grid-move 10s linear infinite", maskImage: "radial-gradient(circle at 50% 30%, #000 5%, transparent 70%)", WebkitMaskImage: "radial-gradient(circle at 50% 30%, #000 5%, transparent 70%)" }} />
 
-      <div style={{ position: "relative", maxWidth: 430, margin: "0 auto", padding: "44px 20px 56px" }}>
+      {/* The page mark only mounts after the boot logo is fully gone, so the two
+          logos can never overlap and ghost each other during the fade. */}
+      <div style={{ position: "relative", maxWidth: 430, margin: "0 auto", padding: "44px 20px 56px", visibility: introGone ? "visible" : "hidden" }}>
         {/* Header mark */}
         <div style={{ position: "relative", textAlign: "center", animation: "axen-float-up 700ms ease both" }}>
           <div style={{ position: "absolute", left: "50%", top: "50%", width: 240, height: 240, marginLeft: -120, marginTop: -120, borderRadius: "50%", border: `1px solid ${G}22`, borderTopColor: `${G}88`, animation: "axen-orbit 16s linear infinite" }} />
