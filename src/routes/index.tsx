@@ -4,6 +4,8 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { PlatformCheckout } from "@/components/PlatformCheckout";
+import { PreSignupQuiz, type QuizAnswers } from "@/components/PreSignupQuiz";
+import { saveQuizLocal, quizSeen, flushQuizToProfile } from "@/lib/quiz";
 import { INTL_DISPLAY, type Cycle } from "@/lib/pricing";
 import axenLogo from "@/assets/axen-logo.png";
 
