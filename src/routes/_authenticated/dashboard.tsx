@@ -455,6 +455,24 @@ function App() {
     const row = Array.isArray(data) ? data[0] : data;
     if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
     setTasks(p => p.map(t => (t as any)._uuid === uuid ? { ...t, done: true } : t));
+
+    // Keep the Stats/Rank derived numbers live instead of stale until the next reload.
+    const today = new Date().toISOString().slice(0, 10);
+    const awarded = Number(row?.awarded ?? 0);
+    setLife(prev => prev ? {
+      ...prev,
+      bestStreak: Math.max(prev.bestStreak, Number(row?.longest_streak ?? row?.streak ?? 0)),
+      lifetimeCoins: prev.lifetimeCoins + Math.max(0, awarded),
+      heat: prev.heat.map(h => h.date === today ? { ...h, count: h.count + 1 } : h),
+    } : prev);
+    setWeekly(prev => {
+      const total = tasks.length || 1;
+      const next = [...prev];
+      const doneToday = tasks.filter(t => (t as any).done || (t as any)._uuid === uuid).length;
+      next[next.length - 1] = Math.min(100, Math.round(doneToday / total * 100));
+      return next;
+    });
+
     supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
       if (!leaders) return;
       setBoard(leaders.map(l => ({
