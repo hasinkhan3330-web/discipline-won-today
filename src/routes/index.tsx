@@ -201,6 +201,7 @@ function Landing() {
   return (
     <div className="axen-page" style={{ minHeight: "100vh", position: "relative", background: "#000", color: "#e8e8e8", overflow: "hidden" }}>
       {!introGone && <Intro done={!intro} onGone={() => setIntroGone(true)} />}
+      {introGone && !authed && !quizDone && <PreSignupQuiz onFinish={finishQuiz} />}
 
       {/* ambient futuristic backdrop */}
       <div style={{ position: "fixed", inset: 0, backgroundImage: `radial-gradient(circle at 18% 12%, ${G2}22, transparent 52%), radial-gradient(circle at 84% 88%, ${G}22, transparent 52%)` }} />
