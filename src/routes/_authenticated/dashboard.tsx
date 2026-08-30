@@ -671,38 +671,38 @@ function App() {
           )}
 
           <>
-            {tab === "home" && <HomeTab G={G} G2={G2} coins={coins} streak={streak} tasks={tasks} tick={tick} onFocusComplete={onFocusComplete} />}
+            {tab === "home" && <HomeTab name={myName} coins={coins} streak={streak} tasks={tasks} tick={tick} onFocusComplete={onFocusComplete} />}
             {tab === "rank" && (
-              <BlurLock G={G} G2={G2} active={premiumLocked} note="Leaderboard is hidden after your free 3 days. Subscribe to see who is ranked where." onUnlock={() => setShowPaywall(true)}>
-                <RankTab G={G} board={board} fallbackAvatar={fallbackAvatar} />
-              </BlurLock>
-            )}
-            {tab === "quotes" && (
-              <BlurLock G={G} G2={G2} active={premiumLocked} blur={false} note="Today's legend is visible — the quote stays blurred until you subscribe." onUnlock={() => setShowPaywall(true)}>
-                <QuotesTab G={G} />
+              <BlurLock G={G} G2={G2} active={premiumLocked} note="Rank is hidden after your free 3 days. Subscribe to keep climbing." onUnlock={() => setShowPaywall(true)}>
+                <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} />
               </BlurLock>
             )}
             {tab === "zen" && (
-              <BlurLock G={G} G2={G2} active={premiumLocked} note="Zen Protocol is frozen after your free 3 days. Subscribe to breathe again." onUnlock={() => setShowPaywall(true)}>
-                <ZenTab G={G} G2={G2} med={med} />
+              <BlurLock G={G} G2={G2} active={premiumLocked} note="Zen is frozen after your free 3 days. Subscribe to breathe again." onUnlock={() => setShowPaywall(true)}>
+                <ZenTab med={med} />
               </BlurLock>
             )}
-            {tab === "stats" && <StatsTab G={G} G2={G2} weekly={weekly} life={life ? { ...life, medMinutes: med.medLifetime } : undefined} />}
+            {tab === "stats" && (
+              <StatsTab
+                weekly={weekly}
+                life={life ? { ...life, medMinutes: med.medLifetime } : undefined}
+                board={board}
+                fallbackAvatar={fallbackAvatar}
+              />
+            )}
             {tab === "profile" && (
               <ProfileTab
-                G={G} G2={G2}
                 coins={coins} streak={streak}
                 myName={myName} myAvatar={myAvatar} uploading={uploading}
-                themeKey={themeKey} setThemeKey={setThemeKey}
-                board={board}
                 openCropper={openCropper}
                 fallbackAvatar={fallbackAvatar}
                 todayDone={tasks.filter(t => t.done).length}
                 todayTotal={tasks.length}
+                onSignOut={handleSignOut}
               />
-
             )}
           </>
+
 
           {/* LEGAL LINKS */}
           <div style={{ marginTop: 32, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${G}22` }}>
