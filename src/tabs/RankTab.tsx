@@ -1,4 +1,6 @@
 import { AX, cardStyle, titleStyle } from "./styles";
+import { FriendsPanel } from "@/components/FriendsPanel";
+import { EmptyState } from "@/components/EmptyState";
 import { Coins, Trophy, Flame, Target } from "lucide-react";
 
 export const TIERS = [
