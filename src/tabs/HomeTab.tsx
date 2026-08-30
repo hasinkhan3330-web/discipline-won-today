@@ -55,25 +55,29 @@ function greeting() {
   return "Good evening";
 }
 
-export function HomeTab({ name, coins, streak, tasks, tick, onFocusComplete }: {
+export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onFocusComplete, onBuyShield, reminderTasks = [] }: {
   name: string;
-  coins: number; streak: number;
+  coins: number; streak: number; shields?: number;
   tasks: Task[];
   tick: (id: number) => void;
   onFocusComplete: (tier: FocusTier, lockMode: "strict" | "flex", apps: string[]) => Promise<number | null>;
+  onBuyShield?: () => Promise<void>;
+  reminderTasks?: ReminderTask[];
 }) {
   const CARD = cardStyle();
   const done = tasks.filter(t => t.done).length;
   const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
   const streakShown = useCountUp(streak);
   const [popped, setPopped] = useState<number | null>(null);
+  const pending = useRef<Set<number>>(new Set());
 
   const handleTick = (t: Task) => {
-    if (!t.done) {
-      setPopped(t.id);
-      setTimeout(() => setPopped(p => (p === t.id ? null : p)), 200);
-    }
-    tick(t.id);
+    if (t.done || pending.current.has(t.id)) return; // guard rapid double taps
+    pending.current.add(t.id);
+    haptic("success");
+    setPopped(t.id);
+    setTimeout(() => setPopped(p => (p === t.id ? null : p)), 200);
+    Promise.resolve(tick(t.id)).finally(() => { pending.current.delete(t.id); });
   };
 
   return (
