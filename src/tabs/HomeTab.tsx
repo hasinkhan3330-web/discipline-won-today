@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { AX, cardStyle, titleStyle } from "./styles";
 import { DeepFocus, type FocusTier } from "@/components/DeepFocus";
+import { haptic } from "@/lib/haptics";
+import { ShieldCard } from "@/components/ShieldCard";
+import { RemindersCard, type ReminderTask } from "@/components/RemindersCard";
+import { EmptyState } from "@/components/EmptyState";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
-  Flame, Footprints, PenLine, Circle, Check, type LucideIcon,
+  Flame, Footprints, PenLine, Circle, Check, Shield, type LucideIcon,
 } from "lucide-react";
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
