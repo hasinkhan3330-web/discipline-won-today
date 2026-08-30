@@ -605,58 +605,26 @@ function App() {
 
       <div style={{ position: "relative", zIndex: 2, maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", minHeight: "100vh" }}>
         {/* TOPBAR */}
-        <div style={{ padding: "14px 16px", background: "rgba(10,10,25,0.7)", backdropFilter: "blur(20px)", borderBottom: `1px solid ${G}55`, display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 99, boxShadow: `0 2px 20px ${G}22` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 10px ${G}`, animation: "pulse 1.5s infinite" }} />
-            <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 24, width: "auto", filter: `drop-shadow(0 0 8px ${G})` }} />
-          </div>
-          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-            {(Object.keys(THEMES) as ThemeKey[]).filter(k => streak >= THEMES[k].unlock).map(k => {
-              const isPro = PRO_THEMES.includes(k);
-              const proLocked = isPro && gateReady && !premiumUnlocked;
-              return (
-                <button
-                  key={k}
-                  onClick={() => (proLocked ? setShowPaywall(true) : setThemeKey(k))}
-                  title={isPro ? `${THEMES[k].name} · PRO` : THEMES[k].name}
-                  style={{
-                    position: "relative",
-                    width: 18, height: 18, borderRadius: "50%",
-                    background: THEME_PHOTO[k]
-                      ? `url(${THEME_PHOTO[k]}) center/cover`
-                      : `linear-gradient(135deg, ${THEMES[k].accent}, ${THEMES[k].accent2})`,
-                    border: themeKey === k ? `2px solid #fff` : isPro ? `1px solid #ffcc33` : `1px solid #333`,
-                    cursor: "pointer", padding: 0,
-                    opacity: proLocked ? 0.55 : 1,
-                    boxShadow: themeKey === k ? `0 0 10px ${THEMES[k].accent}` : isPro ? `0 0 8px #ffcc3388` : "none",
-                  }}
-                >
-                  {isPro && (
-                    <span style={{ position: "absolute", top: -7, right: -5, fontSize: 8, lineHeight: 1, filter: "drop-shadow(0 0 4px #ffcc33)" }}>
-                      {proLocked ? "🔒" : "👑"}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-
+        <div style={{ padding: "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", position: "sticky", top: 0, zIndex: 99 }}>
+          <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto" }} />
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {gateReady && !hasActiveSubscription && (
-              <button onClick={() => setShowPaywall(true)} title="Go PRO" style={{ background: `linear-gradient(135deg, ${G}, ${G2})`, border: "none", color: "#000", padding: "5px 9px", fontSize: 10, fontWeight: 900, letterSpacing: 2, fontFamily: "monospace", cursor: "pointer", borderRadius: 2, boxShadow: `0 0 14px ${G}66` }}>GO PRO</button>
+              <button onClick={() => setShowPaywall(true)} style={{ background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF", padding: "7px 14px", fontSize: 13, fontWeight: 600, fontFamily: AX.font, cursor: "pointer", borderRadius: 12 }}>Go Pro</button>
             )}
-            <div style={{ background: `linear-gradient(135deg,${G}22,${G2}22)`, border: `1px solid ${G}66`, padding: "5px 10px", fontSize: 13, fontWeight: 700, color: G, marginLeft: 4, borderRadius: 2 }}>🪙 {coins}</div>
-
-            <button onClick={handleSignOut} title="Sign out" style={{ background: "transparent", border: `1px solid ${G}55`, color: "#aaa", padding: "5px 8px", fontSize: 10, letterSpacing: 2, fontFamily: "monospace", cursor: "pointer", borderRadius: 2 }}>EXIT</button>
+            <div style={{ background: "#181820", border: `1px solid ${AX.border}`, padding: "7px 12px", fontSize: 13, fontWeight: 600, color: AX.text, borderRadius: 12 }}>{coins} coins</div>
           </div>
         </div>
 
         {/* CONTENT */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "14px 12px 90px", animation: "fadeUp 0.4s ease-out" }} key={tab}>
+        <div style={{ flex: 1, overflowY: "auto", padding: "14px 12px 90px" }} key={tab}>
 
           {gateReady && trialActive && !hasActiveSubscription && (
-            <div style={{ ...CARD, borderLeft: `3px solid ${G}`, fontSize: 11, color: "#ddd", letterSpacing: 1.5, lineHeight: 1.5 }}>
-              <span style={{ color: G, fontWeight: 900 }}>◉ FREE ACCESS ACTIVE</span> · {trialDaysLeft} DAY{trialDaysLeft === 1 ? "" : "S"} LEFT. Home, Stats and You stay open; Rank, Quotes and Zen become PRO after trial.
+            <div style={{ ...CARD, fontSize: 13, color: AX.muted, lineHeight: 1.5 }}>
+              <span style={{ color: AX.text, fontWeight: 600 }}>Free access active</span> · {trialDaysLeft} day{trialDaysLeft === 1 ? "" : "s"} left. Home, Stats and You stay open; Rank and Zen become Pro after the trial.
             </div>
           )}
+
+
 
           {showPaywall && myId && (
             <div style={{ position: "fixed", inset: 0, zIndex: 200, overflowY: "auto", background: "#000" }}>
