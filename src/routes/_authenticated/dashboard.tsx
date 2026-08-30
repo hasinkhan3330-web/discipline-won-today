@@ -154,6 +154,9 @@ function App() {
     const today = new Date().toISOString().slice(0, 10);
     const sevenAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
 
+    // Pre-signup quiz answers cached before the account existed — write them once.
+    await flushQuizToProfile(uid).catch(() => false);
+
     const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
       supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url, shields, onboarded, referred_by").eq("id", uid).maybeSingle(),
 
