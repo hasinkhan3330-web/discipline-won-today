@@ -132,6 +132,16 @@ function App() {
       setTrialReady(true);
     }
 
+    // A held shield covers a fully missed day before the penalty runs.
+    // The server ledger makes this idempotent across refreshes and races.
+    try {
+      const { data: sh } = await (supabase.rpc as any)("use_streak_shield");
+      const shRow = Array.isArray(sh) ? sh[0] : sh;
+      if (shRow?.applied) {
+        toast.success("Shield used", { description: "You missed a day — your streak survived." });
+      }
+    } catch {}
+
     try {
       const { data: pen } = await (supabase.rpc as any)("apply_daily_penalty");
       const row = Array.isArray(pen) ? pen[0] : pen;
@@ -144,7 +154,7 @@ function App() {
     const sevenAgo = new Date(Date.now() - 6 * 86400000).toISOString().slice(0, 10);
 
     const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
-      supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url").eq("id", uid).maybeSingle(),
+      supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url, shields, onboarded, referred_by").eq("id", uid).maybeSingle(),
 
       supabase.from("tasks").select("id, icon, name, pts, sort_order").eq("user_id", uid).eq("is_active", true).order("sort_order"),
       supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
@@ -157,6 +167,11 @@ function App() {
       setStreak(prof.streak ?? 0);
       setMyName(prof.display_name || "YOU");
       setMyAvatar(prof.avatar_url || "");
+      setShields((prof as any).shields ?? 0);
+      setOnboarded(!!(prof as any).onboarded);
+      setReferredBy((prof as any).referred_by ?? null);
+    } else {
+      setOnboarded(true);
     }
     setStreakLoaded(true);
 
