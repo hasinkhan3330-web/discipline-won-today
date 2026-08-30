@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { ChevronRight } from "lucide-react";
 import { cardStyle, titleStyle } from "@/tabs/styles";
+import { FocusMusicPanel } from "@/components/FocusMusicPanel";
 
 export type FocusTier = { id: "f49" | "f120" | "f229"; label: string; sub: string; minutes: number; reward: number };
 
@@ -68,6 +70,7 @@ export function DeepFocus({ G, G2, onComplete }: {
   const [result, setResult] = useState<{ awarded: number; coins: number | null; minutes: number } | null>(null);
   const [penalty, setPenalty] = useState(0);
   const [showAudio, setShowAudio] = useState(true);
+  const [showMusic, setShowMusic] = useState(false);
   const [trackIdx, setTrackIdx] = useState(0);
   const [loop, setLoop] = useState(true);
   const [vol, setVol] = useState(0.7);
@@ -135,7 +138,17 @@ export function DeepFocus({ G, G2, onComplete }: {
   if (phase === "idle") {
     return (
       <div style={{ ...CARD, padding: 12, marginBottom: 8 }}>
-        <div style={{ ...titleStyle, marginBottom: 6 }}><span style={{ color: G }}>▸</span> DEEP <span style={{ color: G }}>FOCUS SYSTEM</span></div>
+        <div style={{ ...titleStyle, marginBottom: 6 }}>
+          <span style={{ color: G }}>▸</span> DEEP <span style={{ color: G }}>FOCUS SYSTEM</span>
+          <button onClick={() => setShowMusic(true)} aria-label="Open focus music" style={{
+            marginLeft: "auto", display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: 26, height: 26, borderRadius: 8, cursor: "pointer",
+            background: "transparent", border: `1px solid ${G}44`, color: G, padding: 0,
+          }}>
+            <ChevronRight size={16} strokeWidth={2} />
+          </button>
+        </div>
+        {showMusic && <FocusMusicPanel onClose={() => setShowMusic(false)} />}
         <div style={{ fontSize: 8.5, color: "#888", letterSpacing: 1.2, lineHeight: 1.5, marginBottom: 10 }}>
           LOCK YOUR APPS. STACK UNLIMITED SESSIONS. CLIMB THE LEADERBOARD.
         </div>
