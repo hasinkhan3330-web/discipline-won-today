@@ -593,6 +593,8 @@ function App() {
     <div style={{ width: "100%", minHeight: "100vh", color: AX.text, background: AX.bg, fontFamily: AX.font, position: "relative" }}>
       <style>{keyframes}</style>
 
+      {onboarded === false && <Onboarding onFinish={finishOnboarding} />}
+
       {celebration && (
         <div onClick={() => setCelebration(null)} style={{
           position: "fixed", inset: 0, zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center",
