@@ -135,7 +135,17 @@ export function DeepFocus({ G, G2, onComplete }: {
   if (phase === "idle") {
     return (
       <div style={{ ...CARD, padding: 12, marginBottom: 8 }}>
-        <div style={{ ...titleStyle, marginBottom: 6 }}><span style={{ color: G }}>▸</span> DEEP <span style={{ color: G }}>FOCUS SYSTEM</span></div>
+        <div style={{ ...titleStyle, marginBottom: 6 }}>
+          <span style={{ color: G }}>▸</span> DEEP <span style={{ color: G }}>FOCUS SYSTEM</span>
+          <button onClick={() => setShowMusic(true)} aria-label="Open focus music" style={{
+            marginLeft: "auto", display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: 26, height: 26, borderRadius: 8, cursor: "pointer",
+            background: "transparent", border: `1px solid ${G}44`, color: G, padding: 0,
+          }}>
+            <ChevronRight size={16} strokeWidth={2} />
+          </button>
+        </div>
+        {showMusic && <FocusMusicPanel onClose={() => setShowMusic(false)} />}
         <div style={{ fontSize: 8.5, color: "#888", letterSpacing: 1.2, lineHeight: 1.5, marginBottom: 10 }}>
           LOCK YOUR APPS. STACK UNLIMITED SESSIONS. CLIMB THE LEADERBOARD.
         </div>
