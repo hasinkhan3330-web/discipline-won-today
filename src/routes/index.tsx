@@ -4,6 +4,8 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { PlatformCheckout } from "@/components/PlatformCheckout";
+import { PreSignupQuiz, type QuizAnswers } from "@/components/PreSignupQuiz";
+import { saveQuizLocal, quizSeen, flushQuizToProfile } from "@/lib/quiz";
 import { INTL_DISPLAY, type Cycle } from "@/lib/pricing";
 import axenLogo from "@/assets/axen-logo.png";
 
@@ -107,12 +109,19 @@ function Landing() {
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [sessionUserId, setSessionUserId] = useState<string | null>(null);
   const [authed, setAuthed] = useState(false);
+  const [quizDone, setQuizDone] = useState(true); // assume done until localStorage is read (SSR-safe)
 
   useEffect(() => {
     const t1 = setTimeout(() => setIntro(false), INTRO_MS);
     const t2 = setTimeout(() => setIntroGone(true), INTRO_MS + 750);
+    setQuizDone(quizSeen());
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
+
+  const finishQuiz = (a: QuizAnswers) => {
+    saveQuizLocal(a);
+    setQuizDone(true);
+  };
 
   useEffect(() => {
     const apply = (session: { user: { id: string; email?: string | null } } | null) => {
@@ -120,6 +129,8 @@ function Landing() {
       setAuthed(true);
       setSessionEmail(session.user.email ?? null);
       setSessionUserId(session.user.id);
+      setQuizDone(true);
+      void flushQuizToProfile(session.user.id);
     };
     supabase.auth.getSession().then(({ data }) => apply(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => apply(session));
@@ -190,6 +201,7 @@ function Landing() {
   return (
     <div className="axen-page" style={{ minHeight: "100vh", position: "relative", background: "#000", color: "#e8e8e8", overflow: "hidden" }}>
       {!introGone && <Intro done={!intro} onGone={() => setIntroGone(true)} />}
+      {introGone && !authed && !quizDone && <PreSignupQuiz onFinish={finishQuiz} />}
 
       {/* ambient futuristic backdrop */}
       <div style={{ position: "fixed", inset: 0, backgroundImage: `radial-gradient(circle at 18% 12%, ${G2}22, transparent 52%), radial-gradient(circle at 84% 88%, ${G}22, transparent 52%)` }} />
