@@ -96,6 +96,8 @@ export function StatsTab({ weekly, life }: {
 
       {tab === "progress" && (
         <>
+          <WeeklyInsight weekly={weekly} heat={life?.heat ?? []} taskTotal={life?.taskTotal ?? 0} />
+
           {life && (
             <div style={CARD}>
               <div style={titleStyle}>All time</div>
