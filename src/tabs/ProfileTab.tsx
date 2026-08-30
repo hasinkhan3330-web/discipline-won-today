@@ -156,6 +156,7 @@ export function ProfileTab({
 
       {tab === "account" && (
         <>
+          <ReferralCard referredBy={referredBy ?? null} onCoins={onCoins} />
           <ManageSubscriptionCard />
           <SubscriptionTimeline />
           {onSignOut && (
