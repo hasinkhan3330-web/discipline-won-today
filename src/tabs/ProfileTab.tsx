@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AX, cardStyle, titleStyle, buttonStyle } from "./styles";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
 import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
+import { ReferralCard } from "@/components/ReferralCard";
 import { Camera, LogOut, AlarmClock, Check } from "lucide-react";
 
 const VICTORIES = [
