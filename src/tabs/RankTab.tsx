@@ -18,10 +18,14 @@ export function tierFor(coins: number) {
   return { idx, cur, next, pct };
 }
 
-export function RankTab({ coins, streak, bestStreak = 0 }: {
+type BoardEntry = { n: string; c: number; s: number; img: string; you?: boolean };
+
+export function RankTab({ coins, streak, bestStreak = 0, board = [], fallbackAvatar }: {
   coins: number;
   streak: number;
   bestStreak?: number;
+  board?: BoardEntry[];
+  fallbackAvatar: (n: string) => string;
 }) {
   const CARD = cardStyle();
   const { idx, cur, next, pct } = tierFor(coins);
@@ -89,6 +93,32 @@ export function RankTab({ coins, streak, bestStreak = 0 }: {
             </div>
           );
         })}
+      </div>
+
+      <div style={CARD}>
+        <div style={titleStyle}>Global leaderboard</div>
+        {board.length === 0 && <div style={{ fontSize: 13, color: AX.muted }}>Loading…</div>}
+        {board.map((u, i) => (
+          <div key={i} style={{
+            display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
+            background: "#181820",
+            border: `1px solid ${u.you ? AX.accent : AX.border}`,
+            borderRadius: 14, marginBottom: 10,
+          }}>
+            <div style={{ width: 20, fontSize: 13, color: AX.muted, textAlign: "center" }}>{i + 1}</div>
+            <img
+              src={u.img}
+              alt={u.n}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(u.n); }}
+              style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", border: `1px solid ${AX.border}` }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 500, color: AX.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{u.you ? "You" : u.n}</div>
+              <div style={{ fontSize: 12, color: AX.muted, marginTop: 2 }}>{u.s} day streak</div>
+            </div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: AX.accent }}>{u.c}</div>
+          </div>
+        ))}
       </div>
     </>
   );
