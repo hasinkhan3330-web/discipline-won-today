@@ -242,7 +242,34 @@ function App() {
   };
 
 
-  useEffect(() => { refreshAll(); }, []);
+  // Single boot fetch — guarded so React's double-mount (and fast remounts)
+  // never fire the whole dashboard query set twice.
+  const booted = useRef(false);
+  useEffect(() => {
+    if (booted.current) return;
+    booted.current = true;
+    refreshAll();
+  }, []);
+
+  const buyShield = async () => {
+    const { data, error } = await (supabase.rpc as any)("buy_streak_shield");
+    if (error) {
+      toast.error("Could not buy a shield", { description: error.message });
+      return;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) {
+      setCoins(row.coins ?? coins);
+      setShields(row.shields ?? shields);
+      toast.success("Shield acquired", { description: "One missed day will not break your streak." });
+    }
+  };
+
+  const finishOnboarding = async () => {
+    setOnboarded(true);
+    if (!myId) return;
+    await supabase.from("profiles").update({ onboarded: true } as any).eq("id", myId);
+  };
 
   // ---- streak milestones: auto-evolve theme + wallpaper, celebrate once; revert on break ----
   useEffect(() => {
