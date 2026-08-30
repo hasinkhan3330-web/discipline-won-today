@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AX, cardStyle, titleStyle } from "./styles";
+import { WeeklyInsight } from "@/components/WeeklyInsight";
 
 export type LifeStats = {
   bestStreak: number;
