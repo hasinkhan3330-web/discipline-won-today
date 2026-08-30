@@ -168,6 +168,10 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onFocus
         })}
       </div>
 
+      {onBuyShield && <ShieldCard shields={shields} coins={coins} onBuy={onBuyShield} />}
+
+      {reminderTasks.length > 0 && <RemindersCard tasks={reminderTasks} />}
+
       <DeepFocus G={AX.accent} G2={AX.accent} onComplete={onFocusComplete} />
     </>
   );
