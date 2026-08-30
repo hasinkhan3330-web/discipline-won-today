@@ -13,9 +13,9 @@ const PATTERNS: Record<Pattern, number | number[]> = {
 export function haptic(kind: Pattern = "tap") {
   try {
     if (typeof navigator === "undefined") return;
-    const v = (navigator as Navigator & { vibrate?: (p: number | number[]) => boolean }).vibrate;
-    if (typeof v !== "function") return;
-    v.call(navigator, PATTERNS[kind]);
+    const nav = navigator as unknown as { vibrate?: (p: number | number[]) => boolean };
+    if (typeof nav.vibrate !== "function") return;
+    nav.vibrate(PATTERNS[kind]);
   } catch {
     /* unsupported — ignore */
   }
