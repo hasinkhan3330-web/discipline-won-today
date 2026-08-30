@@ -10,6 +10,7 @@ import { Paywall } from "@/components/Paywall";
 import { BlurLock } from "@/components/BlurLock";
 import { CropModal } from "@/components/CropModal";
 import { Onboarding } from "@/components/Onboarding";
+import { flushQuizToProfile } from "@/lib/quiz";
 import { THEMES, MILESTONES, THEME_PHOTO, THEME_VIDEO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
 import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
 import axenLogo from "@/assets/axen-logo.png";
