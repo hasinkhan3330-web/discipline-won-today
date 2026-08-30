@@ -109,12 +109,19 @@ function Landing() {
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [sessionUserId, setSessionUserId] = useState<string | null>(null);
   const [authed, setAuthed] = useState(false);
+  const [quizDone, setQuizDone] = useState(true); // assume done until localStorage is read (SSR-safe)
 
   useEffect(() => {
     const t1 = setTimeout(() => setIntro(false), INTRO_MS);
     const t2 = setTimeout(() => setIntroGone(true), INTRO_MS + 750);
+    setQuizDone(quizSeen());
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
+
+  const finishQuiz = (a: QuizAnswers) => {
+    saveQuizLocal(a);
+    setQuizDone(true);
+  };
 
   useEffect(() => {
     const apply = (session: { user: { id: string; email?: string | null } } | null) => {
@@ -122,6 +129,8 @@ function Landing() {
       setAuthed(true);
       setSessionEmail(session.user.email ?? null);
       setSessionUserId(session.user.id);
+      setQuizDone(true);
+      void flushQuizToProfile(session.user.id);
     };
     supabase.auth.getSession().then(({ data }) => apply(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => apply(session));
