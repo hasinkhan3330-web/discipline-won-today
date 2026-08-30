@@ -27,6 +27,7 @@ export function PaymentOptions({ cycle, email }: { cycle: Cycle; email?: string 
       title: "INTERNATIONAL CARDS",
       sub: "Visa · Mastercard · Amex — worldwide",
       price: INTL_DISPLAY[cycle],
+
     },
   ];
 
