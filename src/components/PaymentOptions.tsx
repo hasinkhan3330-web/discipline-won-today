@@ -1,34 +1,56 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RazorpayPayButton } from "@/components/RazorpayPayButton";
-import { PRICING, INTL_DISPLAY, type Cycle } from "@/lib/pricing";
+import { PayPalPayButton } from "@/components/PayPalPayButton";
+import { getWebPaymentMethods } from "@/lib/paypal.functions";
+import { PRICING, INTL_DISPLAY, USD_DISPLAY, type Cycle } from "@/lib/pricing";
 
 const G = "#00d4ff";
 const G2 = "#a855f7";
 
-type Method = "upi" | "international";
+type Method = "upi" | "cards" | "paypal";
 
 /**
- * Web-only checkout (desktop + mobile browser).
- * Razorpay handles both Indian methods (UPI / netbanking / RuPay) and
- * international Visa / Mastercard / Amex cards.
+ * Web-only checkout modal (desktop + mobile browser).
+ * Never rendered inside the Android / iOS shells — store billing is used there
+ * (Google Play & App Store policy).
  */
 export function PaymentOptions({ cycle, email }: { cycle: Cycle; email?: string | null }) {
   const [method, setMethod] = useState<Method>("upi");
+  const [paypalClientId, setPaypalClientId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    getWebPaymentMethods()
+      .then((m) => alive && setPaypalClientId(m.paypal ? m.paypalClientId : null))
+      .catch(() => alive && setPaypalClientId(null));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const options: { id: Method; title: string; sub: string; price: string }[] = [
     {
       id: "upi",
-      title: "INDIA · UPI / CARDS",
-      sub: "UPI · RuPay · Debit / Credit · Netbanking",
+      title: "UPI · INDIA",
+      sub: "GPay · PhonePe · Paytm · any UPI app",
       price: PRICING[cycle].display,
     },
     {
-      id: "international",
-      title: "INTERNATIONAL CARDS",
-      sub: "Visa · Mastercard · Amex — worldwide",
+      id: "cards",
+      title: "CARDS / NETBANKING",
+      sub: "Visa · Mastercard · Amex · RuPay — worldwide",
       price: INTL_DISPLAY[cycle],
-
     },
+    ...(paypalClientId
+      ? [
+          {
+            id: "paypal" as const,
+            title: "PAYPAL · INTERNATIONAL",
+            sub: "Pay in USD with your PayPal balance or card",
+            price: USD_DISPLAY[cycle],
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -61,9 +83,13 @@ export function PaymentOptions({ cycle, email }: { cycle: Cycle; email?: string 
         })}
       </div>
 
-      <RazorpayPayButton cycle={cycle} email={email} />
+      {method === "paypal" && paypalClientId ? (
+        <PayPalPayButton clientId={paypalClientId} cycle={cycle} />
+      ) : (
+        <RazorpayPayButton cycle={cycle} email={email} method={method === "upi" ? "upi" : "card"} />
+      )}
 
-      {method === "international" && (
+      {method === "cards" && (
         <p style={{ marginTop: 8, fontSize: 9, color: "#666", letterSpacing: 1, textAlign: "center" }}>
           International cards are accepted. The charge is made in INR ({PRICING[cycle].display}); your bank
           converts it to your local currency at its own rate.
