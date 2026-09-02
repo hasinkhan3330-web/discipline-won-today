@@ -52,7 +52,7 @@ export const createPayPalOrder = createServerFn({ method: "POST" })
   .inputValidator((input) => cycleSchema.parse(input))
   .handler(async ({ data, context }) => {
     const token = await accessToken();
-    if (!token) return { error: "PayPal is not configured yet." as const };
+    if (!token) return { error: "Payment system loading… Please try again shortly." as const };
 
     const { AMOUNT_USD, PRICING } = await import("@/lib/pricing");
     const res = await fetch(`${apiBase()}/v2/checkout/orders`, {
@@ -84,7 +84,7 @@ export const capturePayPalOrder = createServerFn({ method: "POST" })
   .inputValidator((input) => captureSchema.parse(input))
   .handler(async ({ data, context }) => {
     const token = await accessToken();
-    if (!token) return { active: false, error: "PayPal is not configured yet." };
+    if (!token) return { active: false, error: "Payment system loading… Please try again shortly." };
 
     const res = await fetch(`${apiBase()}/v2/checkout/orders/${encodeURIComponent(data.orderId)}/capture`, {
       method: "POST",
