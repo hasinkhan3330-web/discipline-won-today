@@ -101,6 +101,8 @@ function App() {
   const [trialReady, setTrialReady] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const { isActive: hasActiveSubscription, loading: subLoading } = useSubscription(myId);
+  // Invisible-trial access control: profiles.trial_ends_at / is_subscribed, realtime.
+  const access = useAccessControl(myId);
   // Authoritative entitlement, computed server-side from the bearer token.
   const checkEntitlement = useServerFn(getEntitlement);
   const [serverEntitled, setServerEntitled] = useState<boolean | null>(null);
