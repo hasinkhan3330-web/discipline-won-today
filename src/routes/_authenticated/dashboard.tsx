@@ -7,7 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
-import { BlurLock } from "@/components/BlurLock";
+import { PaywallGate } from "@/components/PaywallGate";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import { CropModal } from "@/components/CropModal";
 import { Onboarding } from "@/components/Onboarding";
 import { flushQuizToProfile } from "@/lib/quiz";
@@ -96,10 +97,10 @@ function App() {
   const [myName, setMyName] = useState<string>("YOU");
   const [myAvatar, setMyAvatar] = useState<string>("");
   const [uploading, setUploading] = useState(false);
-  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
-  const [trialReady, setTrialReady] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const { isActive: hasActiveSubscription, loading: subLoading } = useSubscription(myId);
+  // Invisible-trial access control: profiles.trial_ends_at / is_subscribed, realtime.
+  const access = useAccessControl(myId);
   // Authoritative entitlement, computed server-side from the bearer token.
   const checkEntitlement = useServerFn(getEntitlement);
   const [serverEntitled, setServerEntitled] = useState<boolean | null>(null);
@@ -124,15 +125,8 @@ function App() {
     setMyId(uid);
     setMyEmail(userData.user?.email ?? null);
 
-    try {
-      const { data: trialRows, error: trialError } = await supabase.rpc("ensure_app_trial");
-      if (!trialError) {
-        const trial = Array.isArray(trialRows) ? trialRows[0] : trialRows;
-        setTrialEndsAt(trial?.trial_ends_at ?? null);
-      }
-    } finally {
-      setTrialReady(true);
-    }
+    // Ensure the legacy trial record exists (idempotent, server-stamped).
+    try { await supabase.rpc("ensure_app_trial"); } catch {}
 
     // A held shield covers a fully missed day before the penalty runs.
     // The server ledger makes this idempotent across refreshes and races.
@@ -556,15 +550,14 @@ function App() {
     completeTaskRpc((t as any)._uuid);
   };
 
-  const trialActive = !!trialEndsAt && new Date(trialEndsAt) > new Date();
-  // Server verdict is authoritative; client state only avoids a loading flash.
+  // Invisible trial (Days 1–3): full access, zero counters, badges or prompts.
+  // Server verdict is authoritative when present; profiles row is the fallback.
   const premiumUnlocked = serverEntitled === null
-    ? (hasActiveSubscription || trialActive)
+    ? access.hasAccess
     : serverEntitled;
-  const premiumTabs = ["rank", "zen"];
-  const gateReady = trialReady && !!myId && !subLoading && serverEntitled !== null;
-  const premiumLocked = gateReady && premiumTabs.includes(tab) && !premiumUnlocked;
-  const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
+  const premiumTabs = ["rank", "zen"]; // Rank tab also hosts Accountability (friends)
+  const gateReady = access.ready && !!myId && !subLoading && serverEntitled !== null;
+  
 
   const keyframes = `
     @keyframes twinkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
@@ -681,7 +674,7 @@ function App() {
         <div className="ax-safe-top" style={{ padding: "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 99 }}>
           <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto", flexShrink: 0 }} />
           <div style={{ display: "flex", gap: 8, alignItems: "center", minWidth: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
-            {gateReady && !hasActiveSubscription && (
+            {gateReady && !premiumUnlocked && (
               <button onClick={() => setShowPaywall(true)} style={{ background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF", padding: "7px 14px", fontSize: 13, fontWeight: 600, fontFamily: AX.font, cursor: "pointer", borderRadius: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Go Pro</button>
             )}
             <div className="ax-ellipsis" style={{ background: "#181820", border: `1px solid ${AX.border}`, padding: "7px 12px", fontSize: 13, fontWeight: 600, color: AX.text, borderRadius: 12, maxWidth: "45vw" }}>{coins} coins</div>
@@ -691,11 +684,8 @@ function App() {
         {/* CONTENT */}
         <div className="ax-content-pad" style={{ flex: 1, minWidth: 0, padding: "14px 12px" }} key={tab}>
 
-          {gateReady && trialActive && !hasActiveSubscription && (
-            <div style={{ ...CARD, fontSize: 13, color: AX.muted, lineHeight: 1.5 }}>
-              <span style={{ color: AX.text, fontWeight: 600 }}>Free access active</span> · {trialDaysLeft} day{trialDaysLeft === 1 ? "" : "s"} left. Home, Stats and You stay open; Rank and Zen become Pro after the trial.
-            </div>
-          )}
+
+
 
 
 
@@ -716,14 +706,14 @@ function App() {
               />
             )}
             {tab === "rank" && (
-              <BlurLock G={G} G2={G2} active={premiumLocked} note="Rank is hidden after your free 3 days. Subscribe to keep climbing." onUnlock={() => setShowPaywall(true)}>
+              <PaywallGate hasAccess={!gateReady || premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
                 <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} board={board} fallbackAvatar={fallbackAvatar} />
-              </BlurLock>
+              </PaywallGate>
             )}
             {tab === "zen" && (
-              <BlurLock G={G} G2={G2} active={premiumLocked} note="Zen is frozen after your free 3 days. Subscribe to breathe again." onUnlock={() => setShowPaywall(true)}>
+              <PaywallGate hasAccess={!gateReady || premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
                 <ZenTab med={med} />
-              </BlurLock>
+              </PaywallGate>
             )}
             {tab === "stats" && (
               <StatsTab
