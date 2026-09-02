@@ -55,11 +55,16 @@ export function useAccessControl(userId: string | null): AccessState {
       timers.forEach(clearTimeout);
       timers = [1000, 2500, 4000, 6000, 9000, 13000].map(ms => setTimeout(load, ms));
     };
+    // Instant unlock: the checkout handler already verified the payment
+    // server-side, so lift the gate immediately and reconcile via polling.
+    const onActive = () => { setIsSubscribed(true); setReady(true); onRefresh(); };
+    window.addEventListener("subscription:active", onActive);
     window.addEventListener("subscription:refresh", onRefresh);
     window.addEventListener("focus", load);
 
     return () => {
       supabase.removeChannel(ch);
+      window.removeEventListener("subscription:active", onActive);
       window.removeEventListener("subscription:refresh", onRefresh);
       window.removeEventListener("focus", load);
       timers.forEach(clearTimeout);

@@ -23,7 +23,7 @@ export const createRazorpayOrder = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const keyId = process.env["RAZORPAY_KEY_ID"];
     const keySecret = process.env["RAZORPAY_KEY_SECRET"];
-    if (!keyId || !keySecret) return { error: "Payments are not configured yet." as const };
+    if (!keyId || !keySecret) return { error: "Payment system loading… Please try again shortly." as const };
 
     const { AMOUNT_PAISE, PRICING } = await import("@/lib/pricing");
     const amount = AMOUNT_PAISE[data.cycle];
@@ -69,7 +69,7 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const keyId = process.env["RAZORPAY_KEY_ID"];
     const keySecret = process.env["RAZORPAY_KEY_SECRET"];
-    if (!keyId || !keySecret) return { active: false, error: "Payments are not configured yet." };
+    if (!keyId || !keySecret) return { active: false, error: "Payment system loading… Please try again shortly." };
 
     const expected = await hmacHex(keySecret, `${data.razorpay_order_id}|${data.razorpay_payment_id}`);
     if (expected !== data.razorpay_signature) {
