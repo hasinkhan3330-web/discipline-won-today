@@ -58,7 +58,7 @@ export function PaywallGate({
           style={{
             width: "100%",
             maxWidth: 320,
-            background: AX.card,
+            background: AX.surface,
             border: `1px solid ${AX.border}`,
             borderRadius: 16,
             padding: "26px 22px",

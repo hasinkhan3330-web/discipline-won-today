@@ -67,7 +67,6 @@ export function useAccessControl(userId: string | null): AccessState {
   }, [userId, load]);
 
   const trialActive = !!trialEndsAt && new Date(trialEndsAt) > new Date();
-  const hasAccess = isSubscribed || trialActive || (ready && trialEndsAt === null && !isSubscribed ? false : isSubscribed || trialActive);
 
   return { hasAccess: isSubscribed || trialActive, isSubscribed, trialEndsAt, ready, reload: load };
 }
