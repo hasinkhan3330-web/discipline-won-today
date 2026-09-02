@@ -327,12 +327,14 @@ export type Database = {
       profiles: {
         Row: {
           acquisition_source: string | null
+          active_subscription_id: string | null
           avatar_url: string | null
           bio: string | null
           coins: number
           created_at: string
           display_name: string | null
           id: string
+          is_subscribed: boolean
           last_activity_date: string | null
           last_penalty_date: string | null
           longest_streak: number
@@ -345,17 +347,21 @@ export type Database = {
           referred_by: string | null
           shields: number
           streak: number
+          subscription_platform: string | null
+          trial_ends_at: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
           acquisition_source?: string | null
+          active_subscription_id?: string | null
           avatar_url?: string | null
           bio?: string | null
           coins?: number
           created_at?: string
           display_name?: string | null
           id: string
+          is_subscribed?: boolean
           last_activity_date?: string | null
           last_penalty_date?: string | null
           longest_streak?: number
@@ -368,17 +374,21 @@ export type Database = {
           referred_by?: string | null
           shields?: number
           streak?: number
+          subscription_platform?: string | null
+          trial_ends_at?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
           acquisition_source?: string | null
+          active_subscription_id?: string | null
           avatar_url?: string | null
           bio?: string | null
           coins?: number
           created_at?: string
           display_name?: string | null
           id?: string
+          is_subscribed?: boolean
           last_activity_date?: string | null
           last_penalty_date?: string | null
           longest_streak?: number
@@ -391,6 +401,8 @@ export type Database = {
           referred_by?: string | null
           shields?: number
           streak?: number
+          subscription_platform?: string | null
+          trial_ends_at?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -626,6 +638,7 @@ export type Database = {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
       }
+      has_premium_access: { Args: { _user_id?: string }; Returns: boolean }
       list_friends: {
         Args: never
         Returns: {
