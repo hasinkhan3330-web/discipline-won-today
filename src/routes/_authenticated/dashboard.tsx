@@ -683,7 +683,7 @@ function App() {
         <div className="ax-safe-top" style={{ padding: "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 99 }}>
           <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto", flexShrink: 0 }} />
           <div style={{ display: "flex", gap: 8, alignItems: "center", minWidth: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
-            {gateReady && !hasActiveSubscription && (
+            {gateReady && !premiumUnlocked && (
               <button onClick={() => setShowPaywall(true)} style={{ background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF", padding: "7px 14px", fontSize: 13, fontWeight: 600, fontFamily: AX.font, cursor: "pointer", borderRadius: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Go Pro</button>
             )}
             <div className="ax-ellipsis" style={{ background: "#181820", border: `1px solid ${AX.border}`, padding: "7px 12px", fontSize: 13, fontWeight: 600, color: AX.text, borderRadius: 12, maxWidth: "45vw" }}>{coins} coins</div>
@@ -693,11 +693,8 @@ function App() {
         {/* CONTENT */}
         <div className="ax-content-pad" style={{ flex: 1, minWidth: 0, padding: "14px 12px" }} key={tab}>
 
-          {gateReady && trialActive && !hasActiveSubscription && (
-            <div style={{ ...CARD, fontSize: 13, color: AX.muted, lineHeight: 1.5 }}>
-              <span style={{ color: AX.text, fontWeight: 600 }}>Free access active</span> · {trialDaysLeft} day{trialDaysLeft === 1 ? "" : "s"} left. Home, Stats and You stay open; Rank and Zen become Pro after the trial.
-            </div>
-          )}
+
+
 
 
 
@@ -718,14 +715,14 @@ function App() {
               />
             )}
             {tab === "rank" && (
-              <BlurLock G={G} G2={G2} active={premiumLocked} note="Rank is hidden after your free 3 days. Subscribe to keep climbing." onUnlock={() => setShowPaywall(true)}>
+              <PaywallGate hasAccess={!gateReady || premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
                 <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} board={board} fallbackAvatar={fallbackAvatar} />
-              </BlurLock>
+              </PaywallGate>
             )}
             {tab === "zen" && (
-              <BlurLock G={G} G2={G2} active={premiumLocked} note="Zen is frozen after your free 3 days. Subscribe to breathe again." onUnlock={() => setShowPaywall(true)}>
+              <PaywallGate hasAccess={!gateReady || premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
                 <ZenTab med={med} />
-              </BlurLock>
+              </PaywallGate>
             )}
             {tab === "stats" && (
               <StatsTab
