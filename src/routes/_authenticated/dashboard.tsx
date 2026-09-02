@@ -97,8 +97,6 @@ function App() {
   const [myName, setMyName] = useState<string>("YOU");
   const [myAvatar, setMyAvatar] = useState<string>("");
   const [uploading, setUploading] = useState(false);
-  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
-  const [trialReady, setTrialReady] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
   const { isActive: hasActiveSubscription, loading: subLoading } = useSubscription(myId);
   // Invisible-trial access control: profiles.trial_ends_at / is_subscribed, realtime.
@@ -566,7 +564,7 @@ function App() {
     : serverEntitled;
   const premiumTabs = ["rank", "zen"]; // Rank tab also hosts Accountability (friends)
   const gateReady = access.ready && !!myId && !subLoading && serverEntitled !== null;
-  const premiumLocked = gateReady && premiumTabs.includes(tab) && !premiumUnlocked;
+  
 
   const keyframes = `
     @keyframes twinkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
