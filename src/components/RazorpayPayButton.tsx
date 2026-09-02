@@ -27,10 +27,13 @@ function loadCheckout(): Promise<void> {
 export function RazorpayPayButton({
   cycle,
   email,
+  method,
   onSuccess,
 }: {
   cycle: Cycle;
   email?: string | null;
+  /** Preselected Razorpay method block: UPI or cards/netbanking. */
+  method?: "upi" | "card";
   onSuccess?: () => void;
 }) {
   const [busy, setBusy] = useState(false);
@@ -38,6 +41,11 @@ export function RazorpayPayButton({
   const pay = async () => {
     setBusy(true);
     try {
+      // Store-policy guard: web checkout must never open inside a native shell.
+      const { detectPlatform, isNativeStore } = await import("@/lib/platform");
+      if (isNativeStore(await detectPlatform())) {
+        throw new Error("In-app purchases are handled by the app store on this device.");
+      }
       await loadCheckout();
       const order = await createRazorpayOrder({ data: { cycle } });
       if ("error" in order) throw new Error(order.error);
@@ -52,6 +60,7 @@ export function RazorpayPayButton({
           description: `AXEN PRO · ${cycle.toUpperCase()} — ${PRICING[cycle].display}`,
           prefill: email ? { email } : undefined,
           theme: { color: G },
+          ...(method ? { config: { display: { blocks: {}, preferences: { show_default_blocks: true } } }, method: { upi: method === "upi", card: method === "card", netbanking: method === "card", wallet: method === "card" } } : {}),
           modal: {
             ondismiss: () => {
               toast.message("Checkout closed", { description: "You were not charged." });

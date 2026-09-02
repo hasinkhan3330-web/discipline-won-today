@@ -40,6 +40,18 @@ const ANDROID_API_KEY =
   REVENUECAT_ANDROID_PUBLIC_KEY ||
   undefined;
 
+/** RevenueCat iOS PUBLIC SDK key (starts with `appl_...`) for StoreKit billing. */
+const IOS_API_KEY = (import.meta.env['VITE_REVENUECAT_IOS_API_KEY'] as string | undefined) || undefined;
+
+async function storeApiKey(): Promise<string | undefined> {
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    return Capacitor.getPlatform() === "ios" ? (IOS_API_KEY ?? ANDROID_API_KEY) : ANDROID_API_KEY;
+  } catch {
+    return ANDROID_API_KEY;
+  }
+}
+
 let initialised: string | null = null;
 
 /** True only inside the native Android/iOS Capacitor shell. */
@@ -47,7 +59,7 @@ export async function isNativeBillingAvailable(): Promise<boolean> {
   if (typeof window === "undefined") return false;
   try {
     const { Capacitor } = await import("@capacitor/core");
-    return Capacitor.isNativePlatform() && !!ANDROID_API_KEY;
+    return Capacitor.isNativePlatform() && !!(await storeApiKey());
   } catch {
     return false;
   }
@@ -60,14 +72,14 @@ async function plugin() {
 
 /** Configure RevenueCat once, identified by the signed-in Supabase user id. */
 export async function initPlayBilling(appUserId: string): Promise<void> {
-  if (!(await isNativeBillingAvailable())) throw new Error("Google Play billing is only available in the Android app.");
+  if (!(await isNativeBillingAvailable())) throw new Error("In-app billing is only available inside the mobile app.");
   const { Purchases, LOG_LEVEL } = await plugin();
   if (initialised === appUserId) return;
   if (initialised) {
     await Purchases.logIn({ appUserID: appUserId });
   } else {
     await Purchases.setLogLevel({ level: LOG_LEVEL.ERROR });
-    await Purchases.configure({ apiKey: ANDROID_API_KEY!, appUserID: appUserId });
+    await Purchases.configure({ apiKey: (await storeApiKey())!, appUserID: appUserId });
   }
   initialised = appUserId;
 }

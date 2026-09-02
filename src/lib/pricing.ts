@@ -38,3 +38,14 @@ export function planLabelFor(priceId?: string | null): string {
   if (!priceId) return "AXEN PRO";
   return priceId.includes("yearly") ? "AXEN PRO · YEARLY" : "AXEN PRO · MONTHLY";
 }
+
+/** PayPal charges in USD (international web checkout). */
+export const AMOUNT_USD: Record<Cycle, string> = {
+  monthly: "2.99",
+  yearly: "29.99",
+};
+
+export const USD_DISPLAY: Record<Cycle, string> = {
+  monthly: "$2.99 / month",
+  yearly: "$29.99 / year",
+};
