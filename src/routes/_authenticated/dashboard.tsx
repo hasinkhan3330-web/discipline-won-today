@@ -559,15 +559,14 @@ function App() {
     completeTaskRpc((t as any)._uuid);
   };
 
-  const trialActive = !!trialEndsAt && new Date(trialEndsAt) > new Date();
-  // Server verdict is authoritative; client state only avoids a loading flash.
+  // Invisible trial (Days 1–3): full access, zero counters, badges or prompts.
+  // Server verdict is authoritative when present; profiles row is the fallback.
   const premiumUnlocked = serverEntitled === null
-    ? (hasActiveSubscription || trialActive)
+    ? access.hasAccess
     : serverEntitled;
-  const premiumTabs = ["rank", "zen"];
-  const gateReady = trialReady && !!myId && !subLoading && serverEntitled !== null;
+  const premiumTabs = ["rank", "zen"]; // Rank tab also hosts Accountability (friends)
+  const gateReady = access.ready && !!myId && !subLoading && serverEntitled !== null;
   const premiumLocked = gateReady && premiumTabs.includes(tab) && !premiumUnlocked;
-  const trialDaysLeft = trialEndsAt ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)) : 0;
 
   const keyframes = `
     @keyframes twinkle { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
