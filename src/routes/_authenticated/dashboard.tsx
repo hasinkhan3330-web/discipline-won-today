@@ -125,15 +125,8 @@ function App() {
     setMyId(uid);
     setMyEmail(userData.user?.email ?? null);
 
-    try {
-      const { data: trialRows, error: trialError } = await supabase.rpc("ensure_app_trial");
-      if (!trialError) {
-        const trial = Array.isArray(trialRows) ? trialRows[0] : trialRows;
-        setTrialEndsAt(trial?.trial_ends_at ?? null);
-      }
-    } finally {
-      setTrialReady(true);
-    }
+    // Ensure the legacy trial record exists (idempotent, server-stamped).
+    await supabase.rpc("ensure_app_trial").catch(() => null);
 
     // A held shield covers a fully missed day before the penalty runs.
     // The server ledger makes this idempotent across refreshes and races.
