@@ -126,7 +126,7 @@ function App() {
     setMyEmail(userData.user?.email ?? null);
 
     // Ensure the legacy trial record exists (idempotent, server-stamped).
-    await supabase.rpc("ensure_app_trial").catch(() => null);
+    try { await supabase.rpc("ensure_app_trial"); } catch {}
 
     // A held shield covers a fully missed day before the penalty runs.
     // The server ledger makes this idempotent across refreshes and races.
