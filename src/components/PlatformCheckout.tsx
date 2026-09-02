@@ -15,10 +15,12 @@ export function PlatformCheckout({
   userId,
   cycle,
   email,
+  onSuccess,
 }: {
   userId?: string | null;
   cycle: Cycle;
   email?: string | null;
+  onSuccess?: () => void;
 }) {
   const [platform, setPlatform] = useState<AppPlatform | null>(null);
 
@@ -48,6 +50,7 @@ export function PlatformCheckout({
             userId={userId}
             cycle={cycle}
             label={platform === "ios" ? "SUBSCRIBE WITH APP STORE" : "SUBSCRIBE WITH GOOGLE PLAY"}
+            onSuccess={onSuccess}
           />
         ) : (
           <div style={{ marginTop: 12, fontSize: 11, color: G, letterSpacing: 2 }}>SIGN IN TO CONTINUE</div>
@@ -59,5 +62,5 @@ export function PlatformCheckout({
     );
   }
 
-  return <PaymentOptions cycle={cycle} email={email} />;
+  return <PaymentOptions cycle={cycle} email={email} onSuccess={onSuccess} />;
 }

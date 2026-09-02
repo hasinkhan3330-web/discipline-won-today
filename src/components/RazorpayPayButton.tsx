@@ -77,6 +77,7 @@ export function RazorpayPayButton({
               toast.error("Payment not verified", { description: res.error ?? "Please contact support." });
             } else {
               toast.success("Payment successful", { description: "AXEN PRO unlocked." });
+              window.dispatchEvent(new Event("subscription:active"));
               window.dispatchEvent(new Event("subscription:refresh"));
               onSuccess?.();
             }

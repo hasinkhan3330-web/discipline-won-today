@@ -38,7 +38,12 @@ export function PayPalPayButton({
 
   useEffect(() => {
     let alive = true;
-    loadSdk(clientId)
+    // Store-policy guard: PayPal must never render inside a native shell.
+    (async () => {
+      const { detectPlatform, isNativeStore } = await import("@/lib/platform");
+      if (isNativeStore(await detectPlatform())) return;
+      if (!alive) return;
+      await loadSdk(clientId)
       .then(() => {
         if (!alive || !host.current) return;
         host.current.innerHTML = "";
@@ -57,6 +62,7 @@ export function PayPalPayButton({
                 return;
               }
               toast.success("Payment successful", { description: "AXEN PRO unlocked." });
+              window.dispatchEvent(new Event("subscription:active"));
               window.dispatchEvent(new Event("subscription:refresh"));
               onSuccess?.();
             },
@@ -66,7 +72,12 @@ export function PayPalPayButton({
           .render(host.current);
         setReady(true);
       })
-      .catch((e) => toast.error("Couldn't load PayPal", { description: e.message }));
+      .catch(() =>
+        toast.error("Couldn't load PayPal", {
+          description: "Payment system loading… Please try again shortly.",
+        }),
+      );
+    })();
     return () => {
       alive = false;
     };

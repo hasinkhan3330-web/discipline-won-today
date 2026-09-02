@@ -36,6 +36,7 @@ export function PlayBillingButton({
     toast.success(via === "restore" ? "Purchase restored" : "Payment successful", {
       description: "AXEN PRO unlocked.",
     });
+    window.dispatchEvent(new Event("subscription:active"));
     window.dispatchEvent(new Event("subscription:refresh"));
     onSuccess?.();
   };
