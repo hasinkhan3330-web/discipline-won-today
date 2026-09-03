@@ -113,6 +113,8 @@ function App() {
   const { isActive: hasActiveSubscription, loading: subLoading } = useSubscription(myId);
   // Invisible-trial access control: profiles.trial_ends_at / is_subscribed, realtime.
   const access = useAccessControl(myId);
+  // ONE centralized, server-clock entitlement verdict (trial + subscription).
+  const ent = useEntitlement(myId);
   // Authoritative entitlement, computed server-side from the bearer token.
   const checkEntitlement = useServerFn(getEntitlement);
   const [serverEntitled, setServerEntitled] = useState<boolean | null>(null);
@@ -127,6 +129,7 @@ function App() {
     window.addEventListener("subscription:refresh", run);
     return () => { cancelled = true; window.removeEventListener("focus", run); window.removeEventListener("subscription:refresh", run); };
   }, [myId, checkEntitlement, hasActiveSubscription]);
+
 
   const fallbackAvatar = (n: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=0a0a19&color=00ff88&size=200&bold=true`;
 
