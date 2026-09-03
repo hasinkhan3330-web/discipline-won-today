@@ -560,12 +560,28 @@ function App() {
   };
 
 
+  const verifyKindFor = (name: string): VerifyKind | null => {
+    if (/workout|gym|train|exercise/i.test(name)) return "gym";
+    if (/shower|bath|cold/i.test(name)) return "shower";
+    if (/focus|study|read/i.test(name)) return "focus";
+    return null;
+  };
+
   const tick = (id: number) => {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
     if (/wake/i.test(t.name)) { setProof({ mode: "time" }); return; }
-    if (/workout|gym|train|exercise/i.test(t.name)) { setWorkoutTaskId((t as any)._uuid as string); return; }
+    const kind = verifyKindFor(t.name);
+    if (kind) { setVerify({ uuid: (t as any)._uuid as string, kind, scan: false }); return; }
     completeTaskRpc((t as any)._uuid);
+  };
+
+  const scanTask = (id: number) => {
+    const t = tasks.find(x => x.id === id);
+    if (!t || t.done) return;
+    const kind = verifyKindFor(t.name);
+    if (!kind) return;
+    setVerify({ uuid: (t as any)._uuid as string, kind, scan: true });
   };
 
   // Invisible trial (Days 1–3): full access, zero counters, badges or prompts.
