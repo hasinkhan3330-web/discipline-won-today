@@ -25,7 +25,7 @@ import { ZenTab } from "@/tabs/ZenTab";
 import { StatsTab } from "@/tabs/StatsTab";
 import { ProfileTab } from "@/tabs/ProfileTab";
 
-import { startAlarm as startAlarmAudio, stopAlarm as stopAlarmAudio, previewTone } from "@/lib/alarm-audio";
+import { startAlarm as startAlarmAudio, stopAlarm as stopAlarmAudio, previewTone, isAlarmPlaying } from "@/lib/alarm-audio";
 
 import toneTechno from "@/assets/ringtones/techno_beat.mp3.asset.json";
 import toneMeduzza from "@/assets/ringtones/MEDUZZA.mp3.asset.json";
