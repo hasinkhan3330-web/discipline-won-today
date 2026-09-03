@@ -370,12 +370,16 @@ function App() {
     const saved = localStorage.getItem("dwt_ringtone");
     return saved && RINGTONES.some(r => r.id === saved) ? saved : "superloud";
   });
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const pickRingtone = (id: string) => {
     setRingtone(id);
     try { localStorage.setItem("dwt_ringtone", id); } catch { /* ignore */ }
+    if (previewId === id) { stopAlarmAudio(); setPreviewId(null); return; }
     const r = RINGTONES.find(x => x.id === id);
-    if (r) previewTone(r.url);
+    if (r) { previewTone(r.url); setPreviewId(id); }
   };
+  const stopPreview = () => { stopAlarmAudio(); setPreviewId(null); };
+
 
 
   useEffect(() => {
