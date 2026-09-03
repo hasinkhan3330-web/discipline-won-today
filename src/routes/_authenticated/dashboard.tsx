@@ -427,10 +427,11 @@ function App() {
 
   const startProof = (subject: "math" | "physics") => {
     const { q, a } = buildQuestion(subject);
+    setPreviewId(null);
     startAlarm();
     setProof(p => ({
       ...(p || {}), mode: "quiz", subject, question: q, answer: a, input: "",
-      startedAt: Date.now(), keyTimes: [], corrections: 0, firstKeyMs: undefined,
+      startedAt: Date.now(), keyTimes: [], corrections: 0, firstKeyMs: undefined, wrong: 0,
     }));
   };
 
