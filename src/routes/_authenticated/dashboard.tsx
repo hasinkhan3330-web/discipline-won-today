@@ -13,6 +13,8 @@ import { useAccessControl } from "@/hooks/useAccessControl";
 import { useEntitlement } from "@/hooks/useEntitlement";
 import { TrialStatusChip } from "@/components/TrialStatusChip";
 import { DevTrialSimulator } from "@/components/DevTrialSimulator";
+import { GateSkeleton } from "@/components/GateSkeleton";
+
 
 import { CropModal } from "@/components/CropModal";
 import { Onboarding } from "@/components/Onboarding";
