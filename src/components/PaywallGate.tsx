@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { Lock } from "lucide-react";
 import { AX } from "@/tabs/styles";
+import { PRICING } from "@/lib/pricing";
+
 
 /**
  * PaywallGate — wraps premium surfaces (Zen Mode, Rank, Accountability).
