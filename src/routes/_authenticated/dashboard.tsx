@@ -412,24 +412,14 @@ function App() {
     return ops[Math.floor(Math.random()*ops.length)]();
   };
 
-  // live alarm that rings while the wake challenge is on screen
-  const alarmRef = useRef<HTMLAudioElement | null>(null);
-  const stopAlarm = () => {
-    try { alarmRef.current?.pause(); } catch {}
-    alarmRef.current = null;
-  };
+  // live alarm: loops at 200% boosted volume until the user dismisses it
+  const stopAlarm = () => stopAlarmAudio();
   const startAlarm = () => {
-    try {
-      stopAlarm();
-      const r = RINGTONES.find(x => x.id === ringtone) || RINGTONES[0];
-      const a = new Audio(r.url);
-      a.loop = true;
-      a.volume = 1;
-      alarmRef.current = a;
-      a.play().catch(() => {});
-    } catch {}
+    const r = RINGTONES.find(x => x.id === ringtone) || RINGTONES[0];
+    startAlarmAudio(r.url);
   };
-  useEffect(() => () => stopAlarm(), []);
+  useEffect(() => () => stopAlarmAudio(), []);
+
 
   const startProof = (subject: "math" | "physics") => {
     const { q, a } = buildQuestion(subject);
