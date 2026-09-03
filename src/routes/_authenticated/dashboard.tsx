@@ -25,10 +25,16 @@ import { ZenTab } from "@/tabs/ZenTab";
 import { StatsTab } from "@/tabs/StatsTab";
 import { ProfileTab } from "@/tabs/ProfileTab";
 
-import alarmLoud from "@/assets/freesound_community-loud-emergency-alarm-54635.mp3.asset.json";
-import alarmReverb from "@/assets/freesound_community-emergency-alarm-with-reverb-29431.mp3.asset.json";
-import alarmRooster from "@/assets/mixkit-rooster-crowing-in-the-morning-2462.wav.asset.json";
-import alarmClassic from "@/assets/mixkit-classic-alarm-995.wav.asset.json";
+import { startAlarm as startAlarmAudio, stopAlarm as stopAlarmAudio, previewTone } from "@/lib/alarm-audio";
+
+import toneTechno from "@/assets/ringtones/techno_beat.mp3.asset.json";
+import toneMeduzza from "@/assets/ringtones/MEDUZZA.mp3.asset.json";
+import toneModern from "@/assets/ringtones/Modern_talking.mp3.asset.json";
+import toneOppenheimer from "@/assets/ringtones/Oppenheimer.mp3.asset.json";
+import toneClassic from "@/assets/ringtones/Classic.mp3.asset.json";
+import toneMorning from "@/assets/ringtones/good_morning.mp3.asset.json";
+import toneSuperLoud from "@/assets/ringtones/the_cutie_pie-super-loud-ahh-alarm-165805_1.mp3.asset.json";
+import toneScariest from "@/assets/ringtones/The_Scariest_Alarm_256k.mp3.asset.json";
 
 const WAKE_OPTIONS = [
   { time: "4AM", pts: 21, tag: "ELITE", line: "The world sleeps. You rise." },
@@ -38,11 +44,16 @@ const WAKE_OPTIONS = [
 ] as const;
 
 const RINGTONES = [
-  { id: "loud",    name: "SIREN",    url: alarmLoud.url },
-  { id: "reverb",  name: "REVERB",   url: alarmReverb.url },
-  { id: "rooster", name: "ROOSTER",  url: alarmRooster.url },
-  { id: "classic", name: "CLASSIC",  url: alarmClassic.url },
+  { id: "superloud",   name: "SUPER LOUD",     url: toneSuperLoud.url },
+  { id: "scariest",    name: "SCARIEST ALARM", url: toneScariest.url },
+  { id: "techno",      name: "TECHNO BEAT",    url: toneTechno.url },
+  { id: "meduzza",     name: "MEDUZZA",        url: toneMeduzza.url },
+  { id: "modern",      name: "MODERN TALKING", url: toneModern.url },
+  { id: "oppenheimer", name: "OPPENHEIMER",    url: toneOppenheimer.url },
+  { id: "classic",     name: "CLASSIC",        url: toneClassic.url },
+  { id: "morning",     name: "GOOD MORNING",   url: toneMorning.url },
 ];
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -355,26 +366,17 @@ function App() {
   }>(null);
 
   const [ringtone, setRingtone] = useState<string>(() => {
-    if (typeof window === "undefined") return "loud";
-    return localStorage.getItem("dwt_ringtone") || "loud";
+    if (typeof window === "undefined") return "superloud";
+    const saved = localStorage.getItem("dwt_ringtone");
+    return saved && RINGTONES.some(r => r.id === saved) ? saved : "superloud";
   });
-  const previewRef = useRef<HTMLAudioElement | null>(null);
-  const playPreview = (url: string) => {
-    try {
-      if (previewRef.current) { previewRef.current.pause(); previewRef.current.currentTime = 0; }
-      const a = new Audio(url);
-      a.volume = 0.6;
-      previewRef.current = a;
-      a.play().catch(() => {});
-      setTimeout(() => { try { a.pause(); } catch {} }, 2500);
-    } catch {}
-  };
   const pickRingtone = (id: string) => {
     setRingtone(id);
-    try { localStorage.setItem("dwt_ringtone", id); } catch {}
+    try { localStorage.setItem("dwt_ringtone", id); } catch { /* ignore */ }
     const r = RINGTONES.find(x => x.id === id);
-    if (r) playPreview(r.url);
+    if (r) previewTone(r.url);
   };
+
 
   useEffect(() => {
     const t = setTimeout(() => setScreen("app"), 2500);
@@ -410,24 +412,14 @@ function App() {
     return ops[Math.floor(Math.random()*ops.length)]();
   };
 
-  // live alarm that rings while the wake challenge is on screen
-  const alarmRef = useRef<HTMLAudioElement | null>(null);
-  const stopAlarm = () => {
-    try { alarmRef.current?.pause(); } catch {}
-    alarmRef.current = null;
-  };
+  // live alarm: loops at 200% boosted volume until the user dismisses it
+  const stopAlarm = () => stopAlarmAudio();
   const startAlarm = () => {
-    try {
-      stopAlarm();
-      const r = RINGTONES.find(x => x.id === ringtone) || RINGTONES[0];
-      const a = new Audio(r.url);
-      a.loop = true;
-      a.volume = 1;
-      alarmRef.current = a;
-      a.play().catch(() => {});
-    } catch {}
+    const r = RINGTONES.find(x => x.id === ringtone) || RINGTONES[0];
+    startAlarmAudio(r.url);
   };
-  useEffect(() => () => stopAlarm(), []);
+  useEffect(() => () => stopAlarmAudio(), []);
+
 
   const startProof = (subject: "math" | "physics") => {
     const { q, a } = buildQuestion(subject);
@@ -822,27 +814,39 @@ function App() {
                   ))}
                 </div>
 
-                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 12 }}>🚨</span> EMERGENCY RINGTONE
+                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 12 }}>🚨</span> EMERGENCY RINGTONE
+                  </span>
+                  <span style={{ fontSize: 8, color: G, letterSpacing: 1 }}>200% BOOST</span>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 14 }}>
+                <div style={{
+                  maxHeight: 190, overflowY: "auto", marginBottom: 14, display: "grid", gap: 6,
+                  padding: 6, background: "rgba(0,0,0,0.35)", border: "1px solid #23232E", borderRadius: 14,
+                  WebkitOverflowScrolling: "touch",
+                }}>
                   {RINGTONES.map(r => {
                     const active = ringtone === r.id;
                     return (
                       <button key={r.id} onClick={() => pickRingtone(r.id)} style={{
-                        padding: "10px 8px",
-                        background: active ? `linear-gradient(135deg, ${G}44, ${G2}22)` : "rgba(0,0,0,0.4)",
-                        border: `1px solid ${active ? G : "#333"}`,
+                        padding: "12px 12px", borderRadius: 12,
+                        background: active ? `linear-gradient(135deg, ${G}44, ${G2}22)` : "rgba(255,255,255,0.03)",
+                        border: `1px solid ${active ? G : "#2A2A36"}`,
                         color: active ? "#fff" : "#aaa", cursor: "pointer",
-                        fontFamily: AX.font, fontSize: 10, letterSpacing: 2, fontWeight: 700,
-                        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6,
+                        fontFamily: AX.font, fontSize: 11, letterSpacing: 2, fontWeight: 700,
+                        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+                        transition: "background .15s ease, border-color .15s ease",
                       }}>
-                        <span>{active ? "◉" : "○"} {r.name}</span>
-                        <span style={{ fontSize: 9, color: G }}>▶</span>
+                        <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                          <span style={{ color: active ? G : "#555" }}>{active ? "◉" : "○"}</span>
+                          <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</span>
+                        </span>
+                        <span style={{ fontSize: 10, color: G, flexShrink: 0 }}>▶</span>
                       </button>
                     );
                   })}
                 </div>
+
 
                 <button onClick={() => setProof(null)} style={{
                   marginTop: 4, width: "100%", padding: 8, background: "transparent",
