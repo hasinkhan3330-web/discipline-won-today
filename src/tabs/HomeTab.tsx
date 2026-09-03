@@ -59,11 +59,12 @@ function greeting() {
   return "Good evening";
 }
 
-export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onFocusComplete, onBuyShield, reminderTasks = [] }: {
+export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan, onFocusComplete, onBuyShield, reminderTasks = [] }: {
   name: string;
   coins: number; streak: number; shields?: number;
   tasks: Task[];
   tick: (id: number) => void;
+  onScan?: (id: number) => void;
   onFocusComplete: (tier: FocusTier, lockMode: "strict" | "flex", apps: string[]) => Promise<number | null>;
   onBuyShield?: () => Promise<void>;
   reminderTasks?: ReminderTask[];
