@@ -895,7 +895,7 @@ function App() {
                     </button>
                   ))}
                 </div>
-                <button onClick={() => setProof({ mode: "time" })} style={{
+                <button onClick={() => { stopPreview(); setProof({ mode: "time" }); }} style={{
                   marginTop: 14, width: "100%", padding: 8, background: "transparent",
                   border: "1px solid #333", color: "#888", cursor: "pointer",
                   fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
