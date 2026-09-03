@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
 import { PaywallGate } from "@/components/PaywallGate";
+import { WorkoutVerify } from "@/components/WorkoutVerify";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { CropModal } from "@/components/CropModal";
 import { Onboarding } from "@/components/Onboarding";
@@ -373,6 +374,7 @@ function App() {
     return saved && RINGTONES.some(r => r.id === saved) ? saved : "superloud";
   });
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [workoutTaskId, setWorkoutTaskId] = useState<string | null>(null);
   const pickRingtone = (id: string) => {
     setRingtone(id);
     try { localStorage.setItem("dwt_ringtone", id); } catch { /* ignore */ }
@@ -562,6 +564,7 @@ function App() {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
     if (/wake/i.test(t.name)) { setProof({ mode: "time" }); return; }
+    if (/workout|gym|train|exercise/i.test(t.name)) { setWorkoutTaskId((t as any)._uuid as string); return; }
     completeTaskRpc((t as any)._uuid);
   };
 
@@ -703,6 +706,13 @@ function App() {
 
 
 
+
+          {workoutTaskId && (
+            <WorkoutVerify
+              onClose={() => setWorkoutTaskId(null)}
+              onVerified={() => { const id = workoutTaskId; setWorkoutTaskId(null); if (id) completeTaskRpc(id); }}
+            />
+          )}
 
           {showPaywall && myId && (
             <div style={{ position: "fixed", inset: 0, zIndex: 200, overflowY: "auto", background: "#000" }}>
