@@ -7,7 +7,7 @@ import { RemindersCard, type ReminderTask } from "@/components/RemindersCard";
 import { EmptyState } from "@/components/EmptyState";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
-  Flame, Footprints, PenLine, Circle, Check, Shield, type LucideIcon,
+  Flame, Footprints, PenLine, Circle, Check, Shield, ScanLine, type LucideIcon,
 } from "lucide-react";
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
