@@ -592,12 +592,17 @@ function App() {
   };
 
   // Invisible trial (Days 1–3): full access, zero counters, badges or prompts.
-  // Server verdict is authoritative when present; profiles row is the fallback.
-  const premiumUnlocked = serverEntitled === null
-    ? access.hasAccess
-    : serverEntitled;
+  // useEntitlement() (DB clock: trial + subscription) is the single verdict;
+  // the legacy server fn / profiles row only act as a fallback while it loads.
+  const premiumUnlocked = !ent.isLoading
+    ? ent.isPremium
+    : serverEntitled === null
+      ? access.hasAccess
+      : serverEntitled;
   const premiumTabs = ["rank", "zen"]; // Rank tab also hosts Accountability (friends)
-  const gateReady = access.ready && !!myId && !subLoading && serverEntitled !== null;
+  // Resolve entitlement BEFORE gating renders — no unlocked↔locked flash.
+  const gateReady = !!myId && !ent.isLoading;
+
   
 
   const keyframes = `
