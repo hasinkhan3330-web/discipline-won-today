@@ -723,10 +723,12 @@ function App() {
 
 
 
-          {workoutTaskId && (
-            <WorkoutVerify
-              onClose={() => setWorkoutTaskId(null)}
-              onVerified={() => { const id = workoutTaskId; setWorkoutTaskId(null); if (id) completeTaskRpc(id); }}
+          {verify && (
+            <TaskVerify
+              kind={verify.kind}
+              startInScan={verify.scan}
+              onClose={() => setVerify(null)}
+              onVerified={() => { const id = verify.uuid; setVerify(null); completeTaskRpc(id); }}
             />
           )}
 
