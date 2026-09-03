@@ -94,7 +94,7 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           const providerId: string | undefined = sub?.id ?? payment?.order_id;
           if (providerId) {
             const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-            const patch: Record<string, unknown> = { status: mapped, updated_at: new Date().toISOString() };
+            const patch: { status: string; updated_at: string; current_period_end?: string } = { status: mapped, updated_at: new Date().toISOString() };
             if (sub?.current_end) patch["current_period_end"] = new Date(sub.current_end * 1000).toISOString();
             if (mapped === "expired") patch["current_period_end"] = new Date().toISOString();
             await supabaseAdmin
