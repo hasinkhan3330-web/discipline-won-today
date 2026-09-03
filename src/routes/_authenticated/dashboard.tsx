@@ -25,10 +25,16 @@ import { ZenTab } from "@/tabs/ZenTab";
 import { StatsTab } from "@/tabs/StatsTab";
 import { ProfileTab } from "@/tabs/ProfileTab";
 
-import alarmLoud from "@/assets/freesound_community-loud-emergency-alarm-54635.mp3.asset.json";
-import alarmReverb from "@/assets/freesound_community-emergency-alarm-with-reverb-29431.mp3.asset.json";
-import alarmRooster from "@/assets/mixkit-rooster-crowing-in-the-morning-2462.wav.asset.json";
-import alarmClassic from "@/assets/mixkit-classic-alarm-995.wav.asset.json";
+import { startAlarm as startAlarmAudio, stopAlarm as stopAlarmAudio, previewTone } from "@/lib/alarm-audio";
+
+import toneTechno from "@/assets/ringtones/techno_beat.mp3.asset.json";
+import toneMeduzza from "@/assets/ringtones/MEDUZZA.mp3.asset.json";
+import toneModern from "@/assets/ringtones/Modern_talking.mp3.asset.json";
+import toneOppenheimer from "@/assets/ringtones/Oppenheimer.mp3.asset.json";
+import toneClassic from "@/assets/ringtones/Classic.mp3.asset.json";
+import toneMorning from "@/assets/ringtones/good_morning.mp3.asset.json";
+import toneSuperLoud from "@/assets/ringtones/the_cutie_pie-super-loud-ahh-alarm-165805_1.mp3.asset.json";
+import toneScariest from "@/assets/ringtones/The_Scariest_Alarm_256k.mp3.asset.json";
 
 const WAKE_OPTIONS = [
   { time: "4AM", pts: 21, tag: "ELITE", line: "The world sleeps. You rise." },
@@ -38,11 +44,16 @@ const WAKE_OPTIONS = [
 ] as const;
 
 const RINGTONES = [
-  { id: "loud",    name: "SIREN",    url: alarmLoud.url },
-  { id: "reverb",  name: "REVERB",   url: alarmReverb.url },
-  { id: "rooster", name: "ROOSTER",  url: alarmRooster.url },
-  { id: "classic", name: "CLASSIC",  url: alarmClassic.url },
+  { id: "superloud",   name: "SUPER LOUD",     url: toneSuperLoud.url },
+  { id: "scariest",    name: "SCARIEST ALARM", url: toneScariest.url },
+  { id: "techno",      name: "TECHNO BEAT",    url: toneTechno.url },
+  { id: "meduzza",     name: "MEDUZZA",        url: toneMeduzza.url },
+  { id: "modern",      name: "MODERN TALKING", url: toneModern.url },
+  { id: "oppenheimer", name: "OPPENHEIMER",    url: toneOppenheimer.url },
+  { id: "classic",     name: "CLASSIC",        url: toneClassic.url },
+  { id: "morning",     name: "GOOD MORNING",   url: toneMorning.url },
 ];
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
