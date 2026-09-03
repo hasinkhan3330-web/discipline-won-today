@@ -517,12 +517,28 @@ function App() {
 
   const submitProof = () => {
     if (!proof || proof.mode !== "quiz") return;
-    stopAlarm();
     const now = Date.now();
+    const correct = Number(proof.input) === proof.answer;
+
+    // WRONG → the alarm keeps ringing. New question, no escape.
+    if (!correct) {
+      const next = buildQuestion(proof.subject ?? "math");
+      toast.error("Wrong answer — the alarm keeps ringing", { description: "Solve the new problem to silence it." });
+      if (!isAlarmPlaying()) startAlarm();
+      setProof({
+        ...proof,
+        question: next.q, answer: next.a, input: "",
+        wrong: (proof.wrong ?? 0) + 1,
+        corrections: (proof.corrections ?? 0) + 1,
+      });
+      return;
+    }
+
+    // CORRECT → only now is the alarm allowed to stop.
+    stopAlarm();
     const started = proof.startedAt ?? now;
     const times = proof.keyTimes ?? [];
     const gaps = times.slice(1).map((t, i) => t - times[i]);
-    const correct = Number(proof.input) === proof.answer;
     const verdict = analyzeWake({
       firstKeyMs: proof.firstKeyMs ?? now - started,
       totalMs: now - started,
