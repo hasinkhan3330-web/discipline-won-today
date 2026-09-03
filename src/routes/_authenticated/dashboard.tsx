@@ -943,11 +943,14 @@ function App() {
                   fontFamily: AX.font, fontSize: 12, fontWeight: 900, letterSpacing: 3,
                   boxShadow: proof.input ? `0 0 20px ${G}66` : "none",
                 }}>SUBMIT PROOF</button>
-                <button onClick={() => { stopAlarm(); setProof(null); }} style={{
-                  marginTop: 8, width: "100%", padding: 6, background: "transparent",
-                  border: "none", color: "#555", cursor: "pointer",
-                  fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
-                }}>CANCEL</button>
+                {!!proof.wrong && (
+                  <div style={{ marginTop: 10, fontSize: 10, color: "#ff4466", letterSpacing: 1.5, textAlign: "center" }}>
+                    {proof.wrong} WRONG {proof.wrong === 1 ? "ATTEMPT" : "ATTEMPTS"} · ALARM STILL RINGING
+                  </div>
+                )}
+                <div style={{ marginTop: 10, fontSize: 9, color: "#555", letterSpacing: 1.5, textAlign: "center", lineHeight: 1.6 }}>
+                  🔒 LOCKED — THE ALARM ONLY STOPS ON A CORRECT ANSWER
+                </div>
               </>
             )}
 
