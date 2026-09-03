@@ -814,27 +814,39 @@ function App() {
                   ))}
                 </div>
 
-                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 12 }}>🚨</span> EMERGENCY RINGTONE
+                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 12 }}>🚨</span> EMERGENCY RINGTONE
+                  </span>
+                  <span style={{ fontSize: 8, color: G, letterSpacing: 1 }}>200% BOOST</span>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 14 }}>
+                <div style={{
+                  maxHeight: 190, overflowY: "auto", marginBottom: 14, display: "grid", gap: 6,
+                  padding: 6, background: "rgba(0,0,0,0.35)", border: "1px solid #23232E", borderRadius: 14,
+                  WebkitOverflowScrolling: "touch",
+                }}>
                   {RINGTONES.map(r => {
                     const active = ringtone === r.id;
                     return (
                       <button key={r.id} onClick={() => pickRingtone(r.id)} style={{
-                        padding: "10px 8px",
-                        background: active ? `linear-gradient(135deg, ${G}44, ${G2}22)` : "rgba(0,0,0,0.4)",
-                        border: `1px solid ${active ? G : "#333"}`,
+                        padding: "12px 12px", borderRadius: 12,
+                        background: active ? `linear-gradient(135deg, ${G}44, ${G2}22)` : "rgba(255,255,255,0.03)",
+                        border: `1px solid ${active ? G : "#2A2A36"}`,
                         color: active ? "#fff" : "#aaa", cursor: "pointer",
-                        fontFamily: AX.font, fontSize: 10, letterSpacing: 2, fontWeight: 700,
-                        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6,
+                        fontFamily: AX.font, fontSize: 11, letterSpacing: 2, fontWeight: 700,
+                        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
+                        transition: "background .15s ease, border-color .15s ease",
                       }}>
-                        <span>{active ? "◉" : "○"} {r.name}</span>
-                        <span style={{ fontSize: 9, color: G }}>▶</span>
+                        <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                          <span style={{ color: active ? G : "#555" }}>{active ? "◉" : "○"}</span>
+                          <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</span>
+                        </span>
+                        <span style={{ fontSize: 10, color: G, flexShrink: 0 }}>▶</span>
                       </button>
                     );
                   })}
                 </div>
+
 
                 <button onClick={() => setProof(null)} style={{
                   marginTop: 4, width: "100%", padding: 8, background: "transparent",
