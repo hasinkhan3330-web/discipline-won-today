@@ -193,7 +193,7 @@ export function WorkoutVerify({ onVerified, onClose }: { onVerified: () => void;
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ width: "100%", maxWidth: 420, background: AX.card, border: `1px solid ${AX.border}`, borderRadius: 16, padding: 18, fontFamily: AX.font }}
+        style={{ width: "100%", maxWidth: 420, background: AX.surface, border: `1px solid ${AX.border}`, borderRadius: 16, padding: 18, fontFamily: AX.font }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
           <Dumbbell size={18} strokeWidth={1.8} color={AX.accent} />
