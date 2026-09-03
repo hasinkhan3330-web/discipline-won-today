@@ -743,7 +743,7 @@ function App() {
             {tab === "home" && (
               <HomeTab
                 name={myName} coins={coins} streak={streak} shields={shields}
-                tasks={tasks} tick={tick} onFocusComplete={onFocusComplete}
+                tasks={tasks} tick={tick} onScan={scanTask} onFocusComplete={onFocusComplete}
                 onBuyShield={buyShield}
                 reminderTasks={tasks.map(t => ({ uuid: (t as any)._uuid as string, name: t.name, done: t.done }))}
               />
