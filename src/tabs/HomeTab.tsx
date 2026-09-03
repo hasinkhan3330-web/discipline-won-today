@@ -138,6 +138,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
 
         {tasks.map(t => {
           const Ico = taskIcon(t.name);
+          const scannable = !t.done && !!onScan && /workout|gym|train|exercise|shower|bath|cold|focus|study|read/i.test(t.name);
           return (
             <div key={t.id} className="ax-task" onClick={() => handleTick(t)} style={{
               display: "flex", alignItems: "center", gap: 14, padding: "12px 14px",
@@ -157,6 +158,19 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
                 }}>{t.name}</div>
                 <div style={{ fontSize: 12, color: AX.muted, marginTop: 2 }}>+{t.pts} coins</div>
               </div>
+              {scannable && (
+                <button
+                  aria-label={`Scan to verify ${t.name}`}
+                  onClick={e => { e.stopPropagation(); haptic("tap"); onScan!(t.id); }}
+                  style={{
+                    width: 36, height: 36, flexShrink: 0, borderRadius: 10, cursor: "pointer",
+                    background: "#1D1D28", border: `1px solid ${AX.accent}`, color: AX.accent,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}
+                >
+                  <ScanLine size={18} strokeWidth={2} />
+                </button>
+              )}
               <div className={`ax-check ${popped === t.id ? "ax-check--pop" : ""}`} style={{
                 width: 26, height: 26, flexShrink: 0, borderRadius: 9,
                 border: `1.5px solid ${t.done ? AX.success : AX.border}`,
