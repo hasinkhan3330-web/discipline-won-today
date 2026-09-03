@@ -765,12 +765,12 @@ function App() {
               />
             )}
             {tab === "rank" && (!gateReady ? <GateSkeleton /> : (
-              <PaywallGate hasAccess={premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
+              <PaywallGate hasAccess={premiumUnlocked} featureName="Rank & Accountability" onUpgrade={() => setShowPaywall(true)}>
                 <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} board={board} fallbackAvatar={fallbackAvatar} />
               </PaywallGate>
             ))}
             {tab === "zen" && (!gateReady ? <GateSkeleton /> : (
-              <PaywallGate hasAccess={premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
+              <PaywallGate hasAccess={premiumUnlocked} featureName="Zen Mode" onUpgrade={() => setShowPaywall(true)}>
                 <ZenTab med={med} />
               </PaywallGate>
             ))}
