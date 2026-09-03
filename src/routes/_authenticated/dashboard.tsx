@@ -760,16 +760,17 @@ function App() {
                 reminderTasks={tasks.map(t => ({ uuid: (t as any)._uuid as string, name: t.name, done: t.done }))}
               />
             )}
-            {tab === "rank" && (
-              <PaywallGate hasAccess={!gateReady || premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
+            {tab === "rank" && (!gateReady ? <GateSkeleton /> : (
+              <PaywallGate hasAccess={premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
                 <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} board={board} fallbackAvatar={fallbackAvatar} />
               </PaywallGate>
-            )}
-            {tab === "zen" && (
-              <PaywallGate hasAccess={!gateReady || premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
+            ))}
+            {tab === "zen" && (!gateReady ? <GateSkeleton /> : (
+              <PaywallGate hasAccess={premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
                 <ZenTab med={med} />
               </PaywallGate>
-            )}
+            ))}
+
             {tab === "stats" && (
               <StatsTab
                 weekly={weekly}
