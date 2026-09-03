@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { Lock } from "lucide-react";
 import { AX } from "@/tabs/styles";
+import { PRICING } from "@/lib/pricing";
+
 
 /**
  * PaywallGate — wraps premium surfaces (Zen Mode, Rank, Accountability).
@@ -83,12 +85,20 @@ export function PaywallGate({
           </div>
 
           <div style={{ fontSize: 18, fontWeight: 700, color: AX.text, letterSpacing: 0.2 }}>
-            Unlock Full Access
+            {featureName ? `${featureName} is locked` : "Unlock Full Access"}
           </div>
           <div style={{ fontSize: 13, color: AX.muted, lineHeight: 1.6, marginTop: 8 }}>
-            Your trial period has ended. Upgrade your account to continue using
-            Zen Mode, Rank, and Accountability.
+            Your 3-day free access has ended. Zen Mode, Rank and Accountability
+            now need AXEN PRO — every other habit, coin and streak feature stays free.
           </div>
+          <div style={{ fontSize: 13, color: AX.text, lineHeight: 1.7, marginTop: 12, fontWeight: 600 }}>
+            {PRICING.monthly.display} · {PRICING.yearly.display}
+          </div>
+          <div style={{ fontSize: 11, color: AX.muted, lineHeight: 1.6, marginTop: 6 }}>
+            Renews automatically each period. Cancel anytime — access continues
+            until the end of the period you already paid for.
+          </div>
+
 
           <button
             onClick={onUpgrade}

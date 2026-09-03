@@ -44,8 +44,9 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
         const notes = payment?.notes ?? {};
         const userId: string | undefined = notes.user_id;
         const cycle: "monthly" | "yearly" = notes.cycle === "yearly" ? "yearly" : "monthly";
+        const type: string = event?.event ?? "";
 
-        if (event?.event === "payment.captured" && userId && payment?.order_id) {
+        if (type === "payment.captured" && userId && payment?.order_id) {
           const { PRICING } = await import("@/lib/pricing");
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const now = new Date();
@@ -72,7 +73,40 @@ export const Route = createFileRoute("/api/public/payments/webhook")({
           );
         }
 
+        // Lifecycle: failures, cancellations, pauses and expiries flow back into
+        // the same row so entitlement re-locks without any client involvement.
+        const LIFECYCLE: Record<string, string> = {
+          "payment.failed": "past_due",
+          "subscription.pending": "past_due",
+          "subscription.halted": "past_due",
+          "subscription.paused": "paused",
+          "subscription.resumed": "active",
+          "subscription.activated": "active",
+          "subscription.charged": "active",
+          "subscription.cancelled": "canceled",
+          "subscription.completed": "expired",
+          "subscription.expired": "expired",
+        };
+
+        const mapped = LIFECYCLE[type];
+        if (mapped) {
+          const sub = event?.payload?.subscription?.entity;
+          const providerId: string | undefined = sub?.id ?? payment?.order_id;
+          if (providerId) {
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            const patch: { status: string; updated_at: string; current_period_end?: string } = { status: mapped, updated_at: new Date().toISOString() };
+            if (sub?.current_end) patch["current_period_end"] = new Date(sub.current_end * 1000).toISOString();
+            if (mapped === "expired") patch["current_period_end"] = new Date().toISOString();
+            await supabaseAdmin
+              .from("subscriptions")
+              .update(patch)
+              .eq("provider", "razorpay")
+              .eq("provider_subscription_id", providerId);
+          }
+        }
+
         return new Response("ok");
+
       },
     },
   },

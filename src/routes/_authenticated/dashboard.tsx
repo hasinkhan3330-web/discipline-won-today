@@ -10,6 +10,12 @@ import { Paywall } from "@/components/Paywall";
 import { PaywallGate } from "@/components/PaywallGate";
 import { TaskVerify, type VerifyKind } from "@/components/TaskVerify";
 import { useAccessControl } from "@/hooks/useAccessControl";
+import { useEntitlement } from "@/hooks/useEntitlement";
+import { TrialStatusChip } from "@/components/TrialStatusChip";
+import { DevTrialSimulator } from "@/components/DevTrialSimulator";
+import { GateSkeleton } from "@/components/GateSkeleton";
+
+
 import { CropModal } from "@/components/CropModal";
 import { Onboarding } from "@/components/Onboarding";
 import { flushQuizToProfile } from "@/lib/quiz";
@@ -113,6 +119,8 @@ function App() {
   const { isActive: hasActiveSubscription, loading: subLoading } = useSubscription(myId);
   // Invisible-trial access control: profiles.trial_ends_at / is_subscribed, realtime.
   const access = useAccessControl(myId);
+  // ONE centralized, server-clock entitlement verdict (trial + subscription).
+  const ent = useEntitlement(myId);
   // Authoritative entitlement, computed server-side from the bearer token.
   const checkEntitlement = useServerFn(getEntitlement);
   const [serverEntitled, setServerEntitled] = useState<boolean | null>(null);
@@ -127,6 +135,7 @@ function App() {
     window.addEventListener("subscription:refresh", run);
     return () => { cancelled = true; window.removeEventListener("focus", run); window.removeEventListener("subscription:refresh", run); };
   }, [myId, checkEntitlement, hasActiveSubscription]);
+
 
   const fallbackAvatar = (n: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(n)}&background=0a0a19&color=00ff88&size=200&bold=true`;
 
@@ -585,12 +594,17 @@ function App() {
   };
 
   // Invisible trial (Days 1–3): full access, zero counters, badges or prompts.
-  // Server verdict is authoritative when present; profiles row is the fallback.
-  const premiumUnlocked = serverEntitled === null
-    ? access.hasAccess
-    : serverEntitled;
+  // useEntitlement() (DB clock: trial + subscription) is the single verdict;
+  // the legacy server fn / profiles row only act as a fallback while it loads.
+  const premiumUnlocked = !ent.isLoading
+    ? ent.isPremium
+    : serverEntitled === null
+      ? access.hasAccess
+      : serverEntitled;
   const premiumTabs = ["rank", "zen"]; // Rank tab also hosts Accountability (friends)
-  const gateReady = access.ready && !!myId && !subLoading && serverEntitled !== null;
+  // Resolve entitlement BEFORE gating renders — no unlocked↔locked flash.
+  const gateReady = !!myId && !ent.isLoading;
+
   
 
   const keyframes = `
@@ -708,11 +722,13 @@ function App() {
         <div className="ax-safe-top" style={{ padding: "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 99 }}>
           <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto", flexShrink: 0 }} />
           <div style={{ display: "flex", gap: 8, alignItems: "center", minWidth: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <TrialStatusChip ent={ent} onUpgrade={() => setShowPaywall(true)} />
             {gateReady && !premiumUnlocked && (
               <button onClick={() => setShowPaywall(true)} style={{ background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF", padding: "7px 14px", fontSize: 13, fontWeight: 600, fontFamily: AX.font, cursor: "pointer", borderRadius: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Go Pro</button>
             )}
             <div className="ax-ellipsis" style={{ background: "#181820", border: `1px solid ${AX.border}`, padding: "7px 12px", fontSize: 13, fontWeight: 600, color: AX.text, borderRadius: 12, maxWidth: "45vw" }}>{coins} coins</div>
           </div>
+
         </div>
 
         {/* CONTENT */}
@@ -748,16 +764,17 @@ function App() {
                 reminderTasks={tasks.map(t => ({ uuid: (t as any)._uuid as string, name: t.name, done: t.done }))}
               />
             )}
-            {tab === "rank" && (
-              <PaywallGate hasAccess={!gateReady || premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
+            {tab === "rank" && (!gateReady ? <GateSkeleton /> : (
+              <PaywallGate hasAccess={premiumUnlocked} featureName="Rank & Accountability" onUpgrade={() => setShowPaywall(true)}>
                 <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} board={board} fallbackAvatar={fallbackAvatar} />
               </PaywallGate>
-            )}
-            {tab === "zen" && (
-              <PaywallGate hasAccess={!gateReady || premiumUnlocked} onUpgrade={() => setShowPaywall(true)}>
+            ))}
+            {tab === "zen" && (!gateReady ? <GateSkeleton /> : (
+              <PaywallGate hasAccess={premiumUnlocked} featureName="Zen Mode" onUpgrade={() => setShowPaywall(true)}>
                 <ZenTab med={med} />
               </PaywallGate>
-            )}
+            ))}
+
             {tab === "stats" && (
               <StatsTab
                 weekly={weekly}
@@ -818,7 +835,10 @@ function App() {
           `}</style>
         </div>
 
+        <DevTrialSimulator />
+
       </div>
+
 
       {/* 4AM PROOF-OF-WAKEUP MODAL */}
       {proof && (

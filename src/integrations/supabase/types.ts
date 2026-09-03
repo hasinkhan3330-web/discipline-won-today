@@ -352,6 +352,7 @@ export type Database = {
           streak: number
           subscription_platform: string | null
           trial_ends_at: string | null
+          trial_started_at: string | null
           updated_at: string
           username: string | null
         }
@@ -382,6 +383,7 @@ export type Database = {
           streak?: number
           subscription_platform?: string | null
           trial_ends_at?: string | null
+          trial_started_at?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -412,6 +414,7 @@ export type Database = {
           streak?: number
           subscription_platform?: string | null
           trial_ends_at?: string | null
+          trial_started_at?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -638,6 +641,20 @@ export type Database = {
       ensure_app_trial: {
         Args: never
         Returns: {
+          trial_ends_at: string
+          trial_started_at: string
+        }[]
+      }
+      get_entitlement: {
+        Args: never
+        Returns: {
+          current_period_end: string
+          is_premium: boolean
+          plan: string
+          server_now: string
+          subscription_provider: string
+          subscription_status: string
+          trial_day: number
           trial_ends_at: string
           trial_started_at: string
         }[]
