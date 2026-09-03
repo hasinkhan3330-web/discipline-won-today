@@ -333,6 +333,9 @@ export type Database = {
           coins: number
           created_at: string
           display_name: string | null
+          gym_lat: number | null
+          gym_lng: number | null
+          gym_radius_m: number
           id: string
           is_subscribed: boolean
           last_activity_date: string | null
@@ -360,6 +363,9 @@ export type Database = {
           coins?: number
           created_at?: string
           display_name?: string | null
+          gym_lat?: number | null
+          gym_lng?: number | null
+          gym_radius_m?: number
           id: string
           is_subscribed?: boolean
           last_activity_date?: string | null
@@ -387,6 +393,9 @@ export type Database = {
           coins?: number
           created_at?: string
           display_name?: string | null
+          gym_lat?: number | null
+          gym_lng?: number | null
+          gym_radius_m?: number
           id?: string
           is_subscribed?: boolean
           last_activity_date?: string | null

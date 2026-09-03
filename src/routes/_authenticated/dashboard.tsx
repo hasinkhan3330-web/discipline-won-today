@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
 import { PaywallGate } from "@/components/PaywallGate";
-import { WorkoutVerify } from "@/components/WorkoutVerify";
+import { TaskVerify, type VerifyKind } from "@/components/TaskVerify";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { CropModal } from "@/components/CropModal";
 import { Onboarding } from "@/components/Onboarding";
@@ -374,7 +374,7 @@ function App() {
     return saved && RINGTONES.some(r => r.id === saved) ? saved : "superloud";
   });
   const [previewId, setPreviewId] = useState<string | null>(null);
-  const [workoutTaskId, setWorkoutTaskId] = useState<string | null>(null);
+  const [verify, setVerify] = useState<{ uuid: string; kind: VerifyKind; scan: boolean } | null>(null);
   const pickRingtone = (id: string) => {
     setRingtone(id);
     try { localStorage.setItem("dwt_ringtone", id); } catch { /* ignore */ }
@@ -560,12 +560,28 @@ function App() {
   };
 
 
+  const verifyKindFor = (name: string): VerifyKind | null => {
+    if (/workout|gym|train|exercise/i.test(name)) return "gym";
+    if (/shower|bath|cold/i.test(name)) return "shower";
+    if (/focus|study|read/i.test(name)) return "focus";
+    return null;
+  };
+
   const tick = (id: number) => {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
     if (/wake/i.test(t.name)) { setProof({ mode: "time" }); return; }
-    if (/workout|gym|train|exercise/i.test(t.name)) { setWorkoutTaskId((t as any)._uuid as string); return; }
+    const kind = verifyKindFor(t.name);
+    if (kind) { setVerify({ uuid: (t as any)._uuid as string, kind, scan: false }); return; }
     completeTaskRpc((t as any)._uuid);
+  };
+
+  const scanTask = (id: number) => {
+    const t = tasks.find(x => x.id === id);
+    if (!t || t.done) return;
+    const kind = verifyKindFor(t.name);
+    if (!kind) return;
+    setVerify({ uuid: (t as any)._uuid as string, kind, scan: true });
   };
 
   // Invisible trial (Days 1–3): full access, zero counters, badges or prompts.
@@ -707,10 +723,12 @@ function App() {
 
 
 
-          {workoutTaskId && (
-            <WorkoutVerify
-              onClose={() => setWorkoutTaskId(null)}
-              onVerified={() => { const id = workoutTaskId; setWorkoutTaskId(null); if (id) completeTaskRpc(id); }}
+          {verify && (
+            <TaskVerify
+              kind={verify.kind}
+              startInScan={verify.scan}
+              onClose={() => setVerify(null)}
+              onVerified={() => { const id = verify.uuid; setVerify(null); completeTaskRpc(id); }}
             />
           )}
 
@@ -725,7 +743,7 @@ function App() {
             {tab === "home" && (
               <HomeTab
                 name={myName} coins={coins} streak={streak} shields={shields}
-                tasks={tasks} tick={tick} onFocusComplete={onFocusComplete}
+                tasks={tasks} tick={tick} onScan={scanTask} onFocusComplete={onFocusComplete}
                 onBuyShield={buyShield}
                 reminderTasks={tasks.map(t => ({ uuid: (t as any)._uuid as string, name: t.name, done: t.done }))}
               />
