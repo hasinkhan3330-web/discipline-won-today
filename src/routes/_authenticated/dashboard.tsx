@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
 import { PaywallGate } from "@/components/PaywallGate";
-import { WorkoutVerify } from "@/components/WorkoutVerify";
+import { TaskVerify, type VerifyKind } from "@/components/TaskVerify";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { CropModal } from "@/components/CropModal";
 import { Onboarding } from "@/components/Onboarding";
