@@ -835,7 +835,10 @@ function App() {
           `}</style>
         </div>
 
+        <DevTrialSimulator />
+
       </div>
+
 
       {/* 4AM PROOF-OF-WAKEUP MODAL */}
       {proof && (
