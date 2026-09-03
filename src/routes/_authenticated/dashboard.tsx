@@ -363,6 +363,8 @@ function App() {
     keyTimes?: number[];
     corrections?: number;
     verdict?: WakeVerdict;
+    wrong?: number;
+
   }>(null);
 
   const [ringtone, setRingtone] = useState<string>(() => {
