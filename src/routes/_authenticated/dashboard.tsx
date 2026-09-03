@@ -10,6 +10,10 @@ import { Paywall } from "@/components/Paywall";
 import { PaywallGate } from "@/components/PaywallGate";
 import { TaskVerify, type VerifyKind } from "@/components/TaskVerify";
 import { useAccessControl } from "@/hooks/useAccessControl";
+import { useEntitlement } from "@/hooks/useEntitlement";
+import { TrialStatusChip } from "@/components/TrialStatusChip";
+import { DevTrialSimulator } from "@/components/DevTrialSimulator";
+
 import { CropModal } from "@/components/CropModal";
 import { Onboarding } from "@/components/Onboarding";
 import { flushQuizToProfile } from "@/lib/quiz";
