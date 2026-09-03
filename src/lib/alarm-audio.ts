@@ -70,8 +70,15 @@ export function stopAlarm() {
   el = null; src = null; gain = null;
 }
 
-/** Short boosted preview used when picking a ringtone. */
-export function previewTone(url: string, ms = 3000) {
+/** True while any alarm/preview is currently playing. */
+export function isAlarmPlaying() {
+  return !!el && !el.paused;
+}
+
+/**
+ * Ringtone preview: plays the FULL track and keeps looping until stopped.
+ * Never truncates after a couple of seconds.
+ */
+export function previewTone(url: string) {
   startAlarm(url, 1.6);
-  window.setTimeout(() => stopAlarm(), ms);
 }

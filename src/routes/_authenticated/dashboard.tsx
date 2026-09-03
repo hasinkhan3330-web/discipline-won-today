@@ -25,7 +25,7 @@ import { ZenTab } from "@/tabs/ZenTab";
 import { StatsTab } from "@/tabs/StatsTab";
 import { ProfileTab } from "@/tabs/ProfileTab";
 
-import { startAlarm as startAlarmAudio, stopAlarm as stopAlarmAudio, previewTone } from "@/lib/alarm-audio";
+import { startAlarm as startAlarmAudio, stopAlarm as stopAlarmAudio, previewTone, isAlarmPlaying } from "@/lib/alarm-audio";
 
 import toneTechno from "@/assets/ringtones/techno_beat.mp3.asset.json";
 import toneMeduzza from "@/assets/ringtones/MEDUZZA.mp3.asset.json";
@@ -363,6 +363,8 @@ function App() {
     keyTimes?: number[];
     corrections?: number;
     verdict?: WakeVerdict;
+    wrong?: number;
+
   }>(null);
 
   const [ringtone, setRingtone] = useState<string>(() => {
@@ -370,12 +372,16 @@ function App() {
     const saved = localStorage.getItem("dwt_ringtone");
     return saved && RINGTONES.some(r => r.id === saved) ? saved : "superloud";
   });
+  const [previewId, setPreviewId] = useState<string | null>(null);
   const pickRingtone = (id: string) => {
     setRingtone(id);
     try { localStorage.setItem("dwt_ringtone", id); } catch { /* ignore */ }
+    if (previewId === id) { stopAlarmAudio(); setPreviewId(null); return; }
     const r = RINGTONES.find(x => x.id === id);
-    if (r) previewTone(r.url);
+    if (r) { previewTone(r.url); setPreviewId(id); }
   };
+  const stopPreview = () => { stopAlarmAudio(); setPreviewId(null); };
+
 
 
   useEffect(() => {
@@ -423,10 +429,11 @@ function App() {
 
   const startProof = (subject: "math" | "physics") => {
     const { q, a } = buildQuestion(subject);
+    setPreviewId(null);
     startAlarm();
     setProof(p => ({
       ...(p || {}), mode: "quiz", subject, question: q, answer: a, input: "",
-      startedAt: Date.now(), keyTimes: [], corrections: 0, firstKeyMs: undefined,
+      startedAt: Date.now(), keyTimes: [], corrections: 0, firstKeyMs: undefined, wrong: 0,
     }));
   };
 
@@ -510,12 +517,28 @@ function App() {
 
   const submitProof = () => {
     if (!proof || proof.mode !== "quiz") return;
-    stopAlarm();
     const now = Date.now();
+    const correct = Number(proof.input) === proof.answer;
+
+    // WRONG → the alarm keeps ringing. New question, no escape.
+    if (!correct) {
+      const next = buildQuestion(proof.subject ?? "math");
+      toast.error("Wrong answer — the alarm keeps ringing", { description: "Solve the new problem to silence it." });
+      if (!isAlarmPlaying()) startAlarm();
+      setProof({
+        ...proof,
+        question: next.q, answer: next.a, input: "",
+        wrong: (proof.wrong ?? 0) + 1,
+        corrections: (proof.corrections ?? 0) + 1,
+      });
+      return;
+    }
+
+    // CORRECT → only now is the alarm allowed to stop.
+    stopAlarm();
     const started = proof.startedAt ?? now;
     const times = proof.keyTimes ?? [];
     const gaps = times.slice(1).map((t, i) => t - times[i]);
-    const correct = Number(proof.input) === proof.answer;
     const verdict = analyzeWake({
       firstKeyMs: proof.firstKeyMs ?? now - started,
       totalMs: now - started,
@@ -827,6 +850,7 @@ function App() {
                 }}>
                   {RINGTONES.map(r => {
                     const active = ringtone === r.id;
+                    const playing = previewId === r.id;
                     return (
                       <button key={r.id} onClick={() => pickRingtone(r.id)} style={{
                         padding: "12px 12px", borderRadius: 12,
@@ -841,14 +865,14 @@ function App() {
                           <span style={{ color: active ? G : "#555" }}>{active ? "◉" : "○"}</span>
                           <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</span>
                         </span>
-                        <span style={{ fontSize: 10, color: G, flexShrink: 0 }}>▶</span>
+                        <span style={{ fontSize: 10, color: G, flexShrink: 0 }}>{playing ? "■ STOP" : "▶"}</span>
                       </button>
                     );
                   })}
                 </div>
 
 
-                <button onClick={() => setProof(null)} style={{
+                <button onClick={() => { stopPreview(); setProof(null); }} style={{
                   marginTop: 4, width: "100%", padding: 8, background: "transparent",
                   border: "1px solid #333", color: "#666", cursor: "pointer",
                   fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
@@ -871,7 +895,7 @@ function App() {
                     </button>
                   ))}
                 </div>
-                <button onClick={() => setProof({ mode: "time" })} style={{
+                <button onClick={() => { stopPreview(); setProof({ mode: "time" }); }} style={{
                   marginTop: 14, width: "100%", padding: 8, background: "transparent",
                   border: "1px solid #333", color: "#888", cursor: "pointer",
                   fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
@@ -919,11 +943,14 @@ function App() {
                   fontFamily: AX.font, fontSize: 12, fontWeight: 900, letterSpacing: 3,
                   boxShadow: proof.input ? `0 0 20px ${G}66` : "none",
                 }}>SUBMIT PROOF</button>
-                <button onClick={() => { stopAlarm(); setProof(null); }} style={{
-                  marginTop: 8, width: "100%", padding: 6, background: "transparent",
-                  border: "none", color: "#555", cursor: "pointer",
-                  fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
-                }}>CANCEL</button>
+                {!!proof.wrong && (
+                  <div style={{ marginTop: 10, fontSize: 10, color: "#ff4466", letterSpacing: 1.5, textAlign: "center" }}>
+                    {proof.wrong} WRONG {proof.wrong === 1 ? "ATTEMPT" : "ATTEMPTS"} · ALARM STILL RINGING
+                  </div>
+                )}
+                <div style={{ marginTop: 10, fontSize: 9, color: "#555", letterSpacing: 1.5, textAlign: "center", lineHeight: 1.6 }}>
+                  🔒 LOCKED — THE ALARM ONLY STOPS ON A CORRECT ANSWER
+                </div>
               </>
             )}
 
