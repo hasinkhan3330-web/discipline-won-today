@@ -366,26 +366,17 @@ function App() {
   }>(null);
 
   const [ringtone, setRingtone] = useState<string>(() => {
-    if (typeof window === "undefined") return "loud";
-    return localStorage.getItem("dwt_ringtone") || "loud";
+    if (typeof window === "undefined") return "superloud";
+    const saved = localStorage.getItem("dwt_ringtone");
+    return saved && RINGTONES.some(r => r.id === saved) ? saved : "superloud";
   });
-  const previewRef = useRef<HTMLAudioElement | null>(null);
-  const playPreview = (url: string) => {
-    try {
-      if (previewRef.current) { previewRef.current.pause(); previewRef.current.currentTime = 0; }
-      const a = new Audio(url);
-      a.volume = 0.6;
-      previewRef.current = a;
-      a.play().catch(() => {});
-      setTimeout(() => { try { a.pause(); } catch {} }, 2500);
-    } catch {}
-  };
   const pickRingtone = (id: string) => {
     setRingtone(id);
-    try { localStorage.setItem("dwt_ringtone", id); } catch {}
+    try { localStorage.setItem("dwt_ringtone", id); } catch { /* ignore */ }
     const r = RINGTONES.find(x => x.id === id);
-    if (r) playPreview(r.url);
+    if (r) previewTone(r.url);
   };
+
 
   useEffect(() => {
     const t = setTimeout(() => setScreen("app"), 2500);
