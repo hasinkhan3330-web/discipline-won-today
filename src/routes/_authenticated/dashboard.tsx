@@ -850,6 +850,7 @@ function App() {
                 }}>
                   {RINGTONES.map(r => {
                     const active = ringtone === r.id;
+                    const playing = previewId === r.id;
                     return (
                       <button key={r.id} onClick={() => pickRingtone(r.id)} style={{
                         padding: "12px 12px", borderRadius: 12,
@@ -864,14 +865,14 @@ function App() {
                           <span style={{ color: active ? G : "#555" }}>{active ? "◉" : "○"}</span>
                           <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</span>
                         </span>
-                        <span style={{ fontSize: 10, color: G, flexShrink: 0 }}>▶</span>
+                        <span style={{ fontSize: 10, color: G, flexShrink: 0 }}>{playing ? "■ STOP" : "▶"}</span>
                       </button>
                     );
                   })}
                 </div>
 
 
-                <button onClick={() => setProof(null)} style={{
+                <button onClick={() => { stopPreview(); setProof(null); }} style={{
                   marginTop: 4, width: "100%", padding: 8, background: "transparent",
                   border: "1px solid #333", color: "#666", cursor: "pointer",
                   fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
