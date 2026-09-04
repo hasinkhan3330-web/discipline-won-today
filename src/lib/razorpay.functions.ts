@@ -138,3 +138,8 @@ export const verifyRazorpayPayment = createServerFn({ method: "POST" })
 
     return { active: true, expiresAt: end.toISOString() };
   });
+
+/** Web checkout availability — true only when Razorpay credentials are configured. */
+export const getRazorpayAvailability = createServerFn({ method: "GET" }).handler(async () => ({
+  razorpay: !!process.env["RAZORPAY_KEY_ID"] && !!process.env["RAZORPAY_KEY_SECRET"],
+}));

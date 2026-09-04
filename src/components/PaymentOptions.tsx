@@ -1,24 +1,21 @@
 import { useEffect, useState } from "react";
 import { RazorpayPayButton } from "@/components/RazorpayPayButton";
-import { PayPalPayButton } from "@/components/PayPalPayButton";
-import { getWebPaymentMethods } from "@/lib/paypal.functions";
-import { PRICING, INTL_DISPLAY, USD_DISPLAY, type Cycle } from "@/lib/pricing";
+import { getRazorpayAvailability } from "@/lib/razorpay.functions";
+import { PRICING, INTL_DISPLAY, type Cycle } from "@/lib/pricing";
 
 const G = "#00d4ff";
 const G2 = "#a855f7";
 
-type Method = "upi" | "cards" | "paypal";
-
-type Methods = { razorpay: boolean; paypal: boolean; paypalClientId: string | null };
+type Method = "upi" | "cards";
 
 /**
  * Web-only checkout modal (desktop + mobile browser).
  * Never rendered inside the Android / iOS shells — store billing is used there
  * (Google Play & App Store policy).
  *
- * Credential fallback: if the Cloud secrets for Razorpay / PayPal are missing
- * or temporarily unreadable, the modal shows a calm "Payment system loading…"
- * message instead of rendering a checkout button that would crash on tap.
+ * Razorpay is the only web payment provider. If its Cloud credentials are
+ * missing or temporarily unreadable, the modal shows a calm
+ * "Payment system loading…" message instead of a button that would fail on tap.
  */
 export function PaymentOptions({
   cycle,
@@ -30,26 +27,13 @@ export function PaymentOptions({
   onSuccess?: () => void;
 }) {
   const [method, setMethod] = useState<Method>("upi");
-  const [methods, setMethods] = useState<Methods | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [razorpayOn, setRazorpayOn] = useState<boolean | null>(null);
 
   useEffect(() => {
     let alive = true;
-    setFailed(false);
-    getWebPaymentMethods()
-      .then((m) => {
-        if (!alive) return;
-        setMethods({
-          razorpay: !!m.razorpay,
-          paypal: !!m.paypal,
-          paypalClientId: m.paypal ? m.paypalClientId : null,
-        });
-      })
-      .catch(() => {
-        if (!alive) return;
-        setMethods(null);
-        setFailed(true);
-      });
+    getRazorpayAvailability()
+      .then((m) => alive && setRazorpayOn(!!m.razorpay))
+      .catch(() => alive && setRazorpayOn(false));
     return () => {
       alive = false;
     };
@@ -74,46 +58,23 @@ export function PaymentOptions({
     </div>
   );
 
-  if (!methods && !failed) return notice("◌ PREPARING PAYMENT METHODS…");
-
-  const razorpayOn = !!methods?.razorpay;
-  const paypalClientId = methods?.paypalClientId ?? null;
-
-  // No provider credentials available right now — never crash, just reassure.
-  if (!razorpayOn && !paypalClientId) {
-    return notice("Payment system loading… Please try again shortly.");
-  }
+  if (razorpayOn === null) return notice("◌ PREPARING PAYMENT METHODS…");
+  if (!razorpayOn) return notice("Payment system loading… Please try again shortly.");
 
   const options: { id: Method; title: string; sub: string; price: string }[] = [
-    ...(razorpayOn
-      ? [
-          {
-            id: "upi" as const,
-            title: "UPI · INDIA",
-            sub: "GPay · PhonePe · Paytm · any UPI app",
-            price: PRICING[cycle].display,
-          },
-          {
-            id: "cards" as const,
-            title: "CARDS / NETBANKING",
-            sub: "Visa · Mastercard · Amex · RuPay — worldwide",
-            price: INTL_DISPLAY[cycle],
-          },
-        ]
-      : []),
-    ...(paypalClientId
-      ? [
-          {
-            id: "paypal" as const,
-            title: "PAYPAL · INTERNATIONAL",
-            sub: "Pay in USD with your PayPal balance or card",
-            price: USD_DISPLAY[cycle],
-          },
-        ]
-      : []),
+    {
+      id: "upi",
+      title: "UPI · INDIA",
+      sub: "GPay · PhonePe · Paytm · any UPI app",
+      price: PRICING[cycle].display,
+    },
+    {
+      id: "cards",
+      title: "CARDS / NETBANKING",
+      sub: "Visa · Mastercard · Amex · RuPay — worldwide",
+      price: INTL_DISPLAY[cycle],
+    },
   ];
-
-  const active = options.some((o) => o.id === method) ? method : options[0]!.id;
 
   return (
     <div style={{ marginTop: 24 }}>
@@ -121,7 +82,7 @@ export function PaymentOptions({
 
       <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
         {options.map((o) => {
-          const on = active === o.id;
+          const on = method === o.id;
           return (
             <button
               key={o.id}
@@ -145,18 +106,14 @@ export function PaymentOptions({
         })}
       </div>
 
-      {active === "paypal" && paypalClientId ? (
-        <PayPalPayButton clientId={paypalClientId} cycle={cycle} onSuccess={onSuccess} />
-      ) : (
-        <RazorpayPayButton
-          cycle={cycle}
-          email={email}
-          method={active === "upi" ? "upi" : "card"}
-          onSuccess={onSuccess}
-        />
-      )}
+      <RazorpayPayButton
+        cycle={cycle}
+        email={email}
+        method={method === "upi" ? "upi" : "card"}
+        onSuccess={onSuccess}
+      />
 
-      {active === "cards" && (
+      {method === "cards" && (
         <p style={{ marginTop: 8, fontSize: 9, color: "#666", letterSpacing: 1, textAlign: "center" }}>
           International cards are accepted. The charge is made in INR ({PRICING[cycle].display}); your bank
           converts it to your local currency at its own rate.
