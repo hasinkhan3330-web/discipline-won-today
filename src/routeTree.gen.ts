@@ -25,7 +25,6 @@ import { Route as AuthenticatedCheckoutSuccessRouteImport } from './routes/_auth
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
-import { Route as ApiPublicPaymentsPaypalWebhookRouteImport } from './routes/api/public/payments/paypal-webhook'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -111,12 +110,6 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicPaymentsPaypalWebhookRoute =
-  ApiPublicPaymentsPaypalWebhookRouteImport.update({
-    id: '/api/public/payments/paypal-webhook',
-    path: '/api/public/payments/paypal-webhook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -133,7 +126,6 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
-  '/api/public/payments/paypal-webhook': typeof ApiPublicPaymentsPaypalWebhookRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -151,7 +143,6 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
-  '/api/public/payments/paypal-webhook': typeof ApiPublicPaymentsPaypalWebhookRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -171,7 +162,6 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
-  '/api/public/payments/paypal-webhook': typeof ApiPublicPaymentsPaypalWebhookRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -191,7 +181,6 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/checkout/success'
-    | '/api/public/payments/paypal-webhook'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -209,7 +198,6 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/checkout/success'
-    | '/api/public/payments/paypal-webhook'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -228,7 +216,6 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/checkout/success'
-    | '/api/public/payments/paypal-webhook'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -246,7 +233,6 @@ export interface RootRouteChildren {
   AuthVerifiedRoute: typeof AuthVerifiedRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
-  ApiPublicPaymentsPaypalWebhookRoute: typeof ApiPublicPaymentsPaypalWebhookRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -364,13 +350,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/payments/paypal-webhook': {
-      id: '/api/public/payments/paypal-webhook'
-      path: '/api/public/payments/paypal-webhook'
-      fullPath: '/api/public/payments/paypal-webhook'
-      preLoaderRoute: typeof ApiPublicPaymentsPaypalWebhookRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -402,7 +381,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthVerifiedRoute: AuthVerifiedRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
-  ApiPublicPaymentsPaypalWebhookRoute: ApiPublicPaymentsPaypalWebhookRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
