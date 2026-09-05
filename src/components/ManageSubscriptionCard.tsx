@@ -38,8 +38,13 @@ export function ManageSubscriptionCard() {
   const { sub, reload } = useSubscription(uid);
 
   const isYearly = !!sub?.price_id?.includes("yearly");
-  // Web checkout writes provider "razorpay"; Play Billing writes "play"/"revenuecat".
-  const isPlay = (sub?.provider ?? "play").toLowerCase().includes("play") || (sub?.provider ?? "").toLowerCase().includes("revenuecat");
+  // Web checkout writes provider "razorpay"; store billing writes "play"/"revenuecat"/"appstore".
+  // Inside a native shell we ALWAYS show store wording — Play/App Store policy forbids
+  // surfacing any external payment provider or link in the app build.
+  const isPlay =
+    native ||
+    (sub?.provider ?? "play").toLowerCase().includes("play") ||
+    (sub?.provider ?? "").toLowerCase().includes("revenuecat");
   const manageUrl = isPlay ? playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly) : (sub?.short_url ?? "/");
 
   const endDate = sub?.current_period_end ? new Date(sub.current_period_end) : null;
