@@ -103,8 +103,8 @@ export function ManageSubscriptionCard() {
       </div>
       <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
         {isPlay
-          ? "Billed by Google Play. Upgrade, downgrade or cancel anytime in Play Store → Subscriptions."
-          : "Billed on the web via Razorpay (₹99/month · ₹999/year). Your plan does not auto-renew through Google Play — renew or change it here, or email support to cancel."}
+          ? `Billed by ${storeName}. Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`
+          : "Billed on the web (₹99/month · ₹999/year). Your plan does not auto-renew — renew or change it here, or email support to cancel."}
       </div>
 
       <a
@@ -119,7 +119,7 @@ export function ManageSubscriptionCard() {
           textDecoration: "none", borderRadius: 2, boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
         }}
       >{isPlay
-        ? (isPastDue ? "⚠ FIX PAYMENT IN GOOGLE PLAY →" : "⚙ MANAGE IN GOOGLE PLAY →")
+        ? (isPastDue ? `⚠ FIX PAYMENT IN ${storeName.toUpperCase()} →` : `⚙ MANAGE IN ${storeName.toUpperCase()} →`)
         : (isPastDue ? "⚠ RENEW YOUR PLAN →" : "⚙ VIEW PLANS & BILLING →")}</a>
 
       <button
