@@ -4,6 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { PlatformCheckout } from "@/components/PlatformCheckout";
+import { usePlatform } from "@/hooks/usePlatform";
 import { PreSignupQuiz, type QuizAnswers } from "@/components/PreSignupQuiz";
 import { saveQuizLocal, quizSeen, flushQuizToProfile } from "@/lib/quiz";
 import { INTL_DISPLAY, type Cycle } from "@/lib/pricing";
@@ -97,6 +98,7 @@ function Intro({ done, onGone }: { done: boolean; onGone: () => void }) {
 
 function Landing() {
   const navigate = useNavigate();
+  const { platform: billingPlatform } = usePlatform();
   const [intro, setIntro] = useState(true);
   const [introGone, setIntroGone] = useState(false);
   const [cycle, setCycle] = useState<Cycle>("yearly");
@@ -328,7 +330,17 @@ function Landing() {
 
         <p style={{ position: "relative", marginTop: 22, fontSize: 9, color: "#46586a", letterSpacing: 1, textAlign: "center", lineHeight: 1.9 }}>
           ₹99/month · ₹999/year · all payments charged in INR
-          <br />Razorpay (UPI · cards · netbanking · international cards) on web · Google Play / App Store billing in the apps.
+          {billingPlatform === "web" && (
+            <>
+              <br />Razorpay · UPI · cards · netbanking · international cards.
+            </>
+          )}
+          {billingPlatform === "android" && (
+            <><br />Billed securely through Google Play. Manage or cancel in Play Store → Subscriptions.</>
+          )}
+          {billingPlatform === "ios" && (
+            <><br />Billed securely through the App Store. Manage or cancel in Settings → Subscriptions.</>
+          )}
         </p>
       </div>
     </div>

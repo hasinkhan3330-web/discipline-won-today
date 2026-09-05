@@ -10,12 +10,14 @@ import {
   PLAY_PRODUCT_ID,
 } from "@/lib/play-billing";
 import { syncPlayEntitlement } from "@/utils/play-billing.functions";
+import { usePlatform } from "@/hooks/usePlatform";
 
 export function ManageSubscriptionCard() {
   const G = "#00d4ff";
   const R = "#ff4d4d";
   const [restoring, setRestoring] = useState(false);
   const [native, setNative] = useState(false);
+  const { platform: billingPlatform } = usePlatform();
   const [uid, setUid] = useState<string | null>(null);
   const mounted = useRef(true);
   useEffect(() => {
@@ -38,9 +40,20 @@ export function ManageSubscriptionCard() {
   const { sub, reload } = useSubscription(uid);
 
   const isYearly = !!sub?.price_id?.includes("yearly");
-  // Web checkout writes provider "razorpay"; Play Billing writes "play"/"revenuecat".
-  const isPlay = (sub?.provider ?? "play").toLowerCase().includes("play") || (sub?.provider ?? "").toLowerCase().includes("revenuecat");
-  const manageUrl = isPlay ? playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly) : (sub?.short_url ?? "/");
+  // Web checkout writes provider "razorpay"; store billing writes "play"/"revenuecat"/"appstore".
+  // Inside a native shell we ALWAYS show store wording — Play/App Store policy forbids
+  // surfacing any external payment provider or link in the app build.
+  const isPlay =
+    native ||
+    (sub?.provider ?? "play").toLowerCase().includes("play") ||
+    (sub?.provider ?? "").toLowerCase().includes("revenuecat");
+  const isApple = billingPlatform === "ios";
+  const storeName = isApple ? "the App Store" : "Google Play";
+  const manageUrl = isApple
+    ? "https://apps.apple.com/account/subscriptions"
+    : isPlay
+      ? playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly)
+      : (sub?.short_url ?? "/");
 
   const endDate = sub?.current_period_end ? new Date(sub.current_period_end) : null;
   const endStr = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
@@ -56,7 +69,7 @@ export function ManageSubscriptionCard() {
       const res = await syncPlayEntitlement({ data: {} } as never);
       if ("error" in res) throw new Error(res.error);
       if (res.active) toast.success("Purchase restored", { description: "AXEN PRO is unlocked." });
-      else toast.message("No active purchase found", { description: "Sign in with the Google account used for the purchase." });
+      else toast.message("No active purchase found", { description: "Sign in with the store account used for the purchase." });
       window.dispatchEvent(new Event("subscription:refresh"));
       setTimeout(() => { if (mounted.current) reload(); }, 1200);
     } catch (e) {
@@ -90,8 +103,8 @@ export function ManageSubscriptionCard() {
       </div>
       <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
         {isPlay
-          ? "Billed by Google Play. Upgrade, downgrade or cancel anytime in Play Store → Subscriptions."
-          : "Billed on the web via Razorpay (₹99/month · ₹999/year). Your plan does not auto-renew through Google Play — renew or change it here, or email support to cancel."}
+          ? `Billed by ${storeName}. Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`
+          : "Billed on the web (₹99/month · ₹999/year). Your plan does not auto-renew — renew or change it here, or email support to cancel."}
       </div>
 
       <a
@@ -106,7 +119,7 @@ export function ManageSubscriptionCard() {
           textDecoration: "none", borderRadius: 2, boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
         }}
       >{isPlay
-        ? (isPastDue ? "⚠ FIX PAYMENT IN GOOGLE PLAY →" : "⚙ MANAGE IN GOOGLE PLAY →")
+        ? (isPastDue ? `⚠ FIX PAYMENT IN ${storeName.toUpperCase()} →` : `⚙ MANAGE IN ${storeName.toUpperCase()} →`)
         : (isPastDue ? "⚠ RENEW YOUR PLAN →" : "⚙ VIEW PLANS & BILLING →")}</a>
 
       <button
