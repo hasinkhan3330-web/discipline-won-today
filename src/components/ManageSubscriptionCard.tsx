@@ -10,6 +10,7 @@ import {
   PLAY_PRODUCT_ID,
 } from "@/lib/play-billing";
 import { syncPlayEntitlement } from "@/utils/play-billing.functions";
+import { usePlatform } from "@/hooks/usePlatform";
 
 export function ManageSubscriptionCard() {
   const G = "#00d4ff";
