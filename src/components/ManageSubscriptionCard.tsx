@@ -16,6 +16,7 @@ export function ManageSubscriptionCard() {
   const R = "#ff4d4d";
   const [restoring, setRestoring] = useState(false);
   const [native, setNative] = useState(false);
+  const { platform: billingPlatform } = usePlatform();
   const [uid, setUid] = useState<string | null>(null);
   const mounted = useRef(true);
   useEffect(() => {
@@ -45,7 +46,13 @@ export function ManageSubscriptionCard() {
     native ||
     (sub?.provider ?? "play").toLowerCase().includes("play") ||
     (sub?.provider ?? "").toLowerCase().includes("revenuecat");
-  const manageUrl = isPlay ? playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly) : (sub?.short_url ?? "/");
+  const isApple = billingPlatform === "ios";
+  const storeName = isApple ? "the App Store" : "Google Play";
+  const manageUrl = isApple
+    ? "https://apps.apple.com/account/subscriptions"
+    : isPlay
+      ? playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly)
+      : (sub?.short_url ?? "/");
 
   const endDate = sub?.current_period_end ? new Date(sub.current_period_end) : null;
   const endStr = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
