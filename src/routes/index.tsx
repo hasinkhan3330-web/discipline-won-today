@@ -328,7 +328,17 @@ function Landing() {
 
         <p style={{ position: "relative", marginTop: 22, fontSize: 9, color: "#46586a", letterSpacing: 1, textAlign: "center", lineHeight: 1.9 }}>
           ₹99/month · ₹999/year · all payments charged in INR
-          <br />Razorpay (UPI · cards · netbanking · international cards) on web · Google Play / App Store billing in the apps.
+          {billingPlatform === "web" && (
+            <>
+              <br />Razorpay · UPI · cards · netbanking · international cards.
+            </>
+          )}
+          {billingPlatform === "android" && (
+            <><br />Billed securely through Google Play. Manage or cancel in Play Store → Subscriptions.</>
+          )}
+          {billingPlatform === "ios" && (
+            <><br />Billed securely through the App Store. Manage or cancel in Settings → Subscriptions.</>
+          )}
         </p>
       </div>
     </div>
