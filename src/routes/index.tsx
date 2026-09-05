@@ -97,6 +97,7 @@ function Intro({ done, onGone }: { done: boolean; onGone: () => void }) {
 
 function Landing() {
   const navigate = useNavigate();
+  const { platform: billingPlatform } = usePlatform();
   const [intro, setIntro] = useState(true);
   const [introGone, setIntroGone] = useState(false);
   const [cycle, setCycle] = useState<Cycle>("yearly");
