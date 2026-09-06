@@ -13,6 +13,8 @@ export type VerifiedEntitlement = {
   willRenew: boolean;
   store: string | null;
   originalAppUserId: string | null;
+  /** True while the store-native free trial (introductory offer) is running. */
+  isTrial: boolean;
 };
 
 function secretKey(): string {
@@ -40,7 +42,7 @@ export async function verifyEntitlement(appUserId: string): Promise<VerifiedEnti
   const sub = json?.subscriber;
   const ent = sub?.entitlements?.[ENTITLEMENT_ID];
   if (!ent) {
-    return { active: false, productId: null, expiresAt: null, willRenew: false, store: null, originalAppUserId: sub?.original_app_user_id ?? null };
+    return { active: false, productId: null, expiresAt: null, willRenew: false, store: null, originalAppUserId: sub?.original_app_user_id ?? null, isTrial: false };
   }
   const expiresAt: string | null = ent.expires_date ?? null;
   const active = !expiresAt || new Date(expiresAt) > new Date();
@@ -54,6 +56,7 @@ export async function verifyEntitlement(appUserId: string): Promise<VerifiedEnti
     willRenew: info ? !info.unsubscribe_detected_at : active,
     store: info?.store ?? "play_store",
     originalAppUserId: sub?.original_app_user_id ?? null,
+    isTrial: info?.period_type === "trial",
   };
 }
 

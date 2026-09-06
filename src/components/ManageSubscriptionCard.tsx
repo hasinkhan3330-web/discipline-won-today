@@ -40,24 +40,18 @@ export function ManageSubscriptionCard() {
   const { sub, reload } = useSubscription(uid);
 
   const isYearly = !!sub?.price_id?.includes("yearly");
-  // Web checkout writes provider "razorpay"; store billing writes "play"/"revenuecat"/"appstore".
-  // Inside a native shell we ALWAYS show store wording — Play/App Store policy forbids
-  // surfacing any external payment provider or link in the app build.
-  const isPlay =
-    native ||
-    (sub?.provider ?? "play").toLowerCase().includes("play") ||
-    (sub?.provider ?? "").toLowerCase().includes("revenuecat");
   const isApple = billingPlatform === "ios";
   const storeName = isApple ? "the App Store" : "Google Play";
   const manageUrl = isApple
     ? "https://apps.apple.com/account/subscriptions"
-    : isPlay
-      ? playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly)
-      : (sub?.short_url ?? "/");
+    : playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly);
 
   const endDate = sub?.current_period_end ? new Date(sub.current_period_end) : null;
   const endStr = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
   const isTrial = sub?.status === "trialing";
+  const trialDaysLeft = endDate
+    ? Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / 86400000))
+    : 0;
   const isCanceled = sub?.status === "canceled" || sub?.cancel_at_period_end;
   const isPastDue = sub?.status === "past_due";
 
@@ -82,11 +76,11 @@ export function ManageSubscriptionCard() {
   const planLabel = planLabelFor(sub?.price_id);
 
   const statusLine = isPastDue
-    ? { color: R, text: isPlay ? "⚠ PAYMENT FAILED — Google Play is retrying your payment." : "⚠ PAYMENT FAILED — please renew to keep AXEN PRO." }
+    ? { color: R, text: `⚠ PAYMENT FAILED — ${storeName} is retrying your payment.` }
     : isCanceled && endStr
       ? { color: "#ffb84d", text: `◌ CANCELED — access ends ${endStr}` }
       : isTrial && endStr
-        ? { color: G, text: `◉ FREE TRIAL — first charge on ${endStr}` }
+        ? { color: G, text: `◉ FREE TRIAL — ${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} left · first charge on ${endStr}` }
         : endStr
           ? { color: G, text: `◉ ACTIVE — renews on ${endStr}` }
           : { color: G, text: "◉ ACTIVE" };
@@ -102,14 +96,12 @@ export function ManageSubscriptionCard() {
         {statusLine.text}
       </div>
       <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
-        {isPlay
-          ? `Billed by ${storeName}. Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`
-          : "Billed on the web (₹99/month · ₹999/year). Your plan does not auto-renew — renew or change it here, or email support to cancel."}
+        {`Billed by ${storeName} (₹99/month · ₹999/year) after your 3-day free trial. Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`}
       </div>
 
       <a
         href={manageUrl}
-        target={isPlay || manageUrl.startsWith("http") ? "_blank" : undefined}
+        target="_blank"
         rel="noopener noreferrer"
         style={{
           display: "block", marginTop: 12, padding: "12px 16px", textAlign: "center",
@@ -118,9 +110,7 @@ export function ManageSubscriptionCard() {
           fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
           textDecoration: "none", borderRadius: 2, boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
         }}
-      >{isPlay
-        ? (isPastDue ? `⚠ FIX PAYMENT IN ${storeName.toUpperCase()} →` : `⚙ MANAGE IN ${storeName.toUpperCase()} →`)
-        : (isPastDue ? "⚠ RENEW YOUR PLAN →" : "⚙ VIEW PLANS & BILLING →")}</a>
+      >{isPastDue ? `⚠ FIX PAYMENT IN ${storeName.toUpperCase()} →` : `⚙ MANAGE IN ${storeName.toUpperCase()} →`}</a>
 
       <button
         onClick={doRestore}

@@ -3,7 +3,7 @@
  *
  * Store policy:
  *  - android / ios (native shell) -> RevenueCat in-app billing ONLY.
- *  - web (desktop or mobile browser) -> Razorpay ONLY (no third-party SDK in native).
+ *  - web (browser) -> no in-app checkout at all (purchases happen in the mobile app).
  */
 
 export type AppPlatform = "web" | "android" | "ios";
