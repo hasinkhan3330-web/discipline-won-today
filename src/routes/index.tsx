@@ -7,7 +7,7 @@ import { PlatformCheckout } from "@/components/PlatformCheckout";
 import { usePlatform } from "@/hooks/usePlatform";
 import { PreSignupQuiz, type QuizAnswers } from "@/components/PreSignupQuiz";
 import { saveQuizLocal, quizSeen, flushQuizToProfile } from "@/lib/quiz";
-import { INTL_DISPLAY, type Cycle } from "@/lib/pricing";
+import { type Cycle } from "@/lib/pricing";
 import axenLogo from "@/assets/axen-logo.png";
 
 export const Route = createFileRoute("/")({
@@ -35,20 +35,18 @@ const schema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters").max(72),
 });
 
-const PLAN_COPY: Record<Cycle, { title: string; price: string; per: string; note: string; intl: string; save?: string }> = {
+const PLAN_COPY: Record<Cycle, { title: string; price: string; per: string; note: string; save?: string }> = {
   monthly: {
     title: "MONTHLY",
     price: "₹99",
     per: "/month",
-    note: "Billed ₹99/mo after your 3-day free trial",
-    intl: INTL_DISPLAY.monthly,
+    note: "3 days free, then ₹99/mo via the app store",
   },
   yearly: {
     title: "YEARLY",
     price: "₹83",
     per: "/month",
-    note: "₹999/yr total · Billed ₹999/yr after your 3-day free trial",
-    intl: INTL_DISPLAY.yearly,
+    note: "3 days free, then ₹999/yr via the app store",
     save: "SAVE 16%",
   },
 };
@@ -248,7 +246,6 @@ function Landing() {
                       {p.price}<span style={{ fontSize: 12, color: "#6f8296" }}>{p.per}</span>
                     </div>
                     <div style={{ marginTop: 4, fontSize: 10, color: "#7c8ea0", letterSpacing: 1 }}>{p.note}</div>
-                    <div style={{ marginTop: 4, fontSize: 10, color: "#556879", letterSpacing: 1 }}>International cards: {p.intl}</div>
                   </button>
                 );
               })}
@@ -332,7 +329,7 @@ function Landing() {
           ₹99/month · ₹999/year · all payments charged in INR
           {billingPlatform === "web" && (
             <>
-              <br />Razorpay · UPI · cards · netbanking · international cards.
+              <br />Purchases are handled in the AXEN mobile app by Google Play or the App Store.
             </>
           )}
           {billingPlatform === "android" && (
