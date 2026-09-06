@@ -40,20 +40,15 @@ export function ManageSubscriptionCard() {
   const { sub, reload } = useSubscription(uid);
 
   const isYearly = !!sub?.price_id?.includes("yearly");
-  // Web checkout writes provider "razorpay"; store billing writes "play"/"revenuecat"/"appstore".
-  // Inside a native shell we ALWAYS show store wording — Play/App Store policy forbids
-  // surfacing any external payment provider or link in the app build.
-  const isPlay =
-    native ||
-    (sub?.provider ?? "play").toLowerCase().includes("play") ||
-    (sub?.provider ?? "").toLowerCase().includes("revenuecat");
+  // Store billing is the only payment path: Google Play / Apple App Store via RevenueCat.
+  const isPlay = true;
   const isApple = billingPlatform === "ios";
   const storeName = isApple ? "the App Store" : "Google Play";
   const manageUrl = isApple
     ? "https://apps.apple.com/account/subscriptions"
     : isPlay
       ? playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly)
-      : (sub?.short_url ?? "/");
+      : playManageUrl(isYearly ? PLAY_PRODUCT_ID.yearly : PLAY_PRODUCT_ID.monthly);
 
   const endDate = sub?.current_period_end ? new Date(sub.current_period_end) : null;
   const endStr = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
@@ -102,9 +97,7 @@ export function ManageSubscriptionCard() {
         {statusLine.text}
       </div>
       <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
-        {isPlay
-          ? `Billed by ${storeName}. Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`
-          : "Billed on the web (₹99/month · ₹999/year). Your plan does not auto-renew — renew or change it here, or email support to cancel."}
+        {`Billed by ${storeName} (₹99/month · ₹999/year) after your 3-day free trial. Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`}
       </div>
 
       <a
