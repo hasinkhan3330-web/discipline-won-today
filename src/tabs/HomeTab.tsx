@@ -69,7 +69,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
   onBuyShield?: () => Promise<void>;
   reminderTasks?: ReminderTask[];
 }) {
-  const CARD = cardStyle();
+  const CARD = { ...cardStyle(), padding: 12, marginBottom: 8, borderRadius: 14, borderColor: `${AX.cyan}2E`, boxShadow: `inset 0 1px 0 ${AX.cyan}10` };
   const done = tasks.filter(t => t.done).length;
   const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
   const streakShown = useCountUp(streak);
@@ -90,43 +90,43 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
       <style>{`
         .ax-check { transition: transform 150ms ease, background 150ms ease, border-color 150ms ease; }
         .ax-check--pop { transform: scale(1.25); }
-        .ax-task { transition: border-color .15s ease, background .15s ease; }
+        .ax-task { transition: border-color .15s ease, background .15s ease, transform .15s ease; }
         .ax-task:active { background: #191922; }
       `}</style>
 
-      <div style={{ padding: "4px 2px 16px", minWidth: 0 }}>
-        <div className="ax-wrap" style={{ fontSize: 14, color: AX.muted }}>{greeting()},</div>
-        <div className="ax-wrap" style={{ fontSize: "clamp(20px, 6vw, 24px)", fontWeight: 600, color: AX.text, marginTop: 2 }}>{name}</div>
+      <div style={{ padding: "0 2px 8px", minWidth: 0 }}>
+        <div className="ax-wrap" style={{ fontSize: 11, color: AX.muted }}>{greeting()},</div>
+        <div className="ax-wrap" style={{ fontSize: 19, fontWeight: 650, color: AX.text, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</div>
       </div>
 
-      <div style={{ ...CARD, display: "flex", alignItems: "center", gap: 16 }}>
+      <div style={{ ...CARD, display: "flex", alignItems: "center", gap: 11 }}>
         <div style={{
-          width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+           width: 42, height: 42, borderRadius: 12, flexShrink: 0,
           background: "#1D1D28", border: `1px solid ${AX.border}`,
           display: "flex", alignItems: "center", justifyContent: "center", color: AX.flame,
         }}>
-          <Flame size={24} strokeWidth={1.8} />
+           <Flame size={21} strokeWidth={1.8} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="ax-wrap" style={{ fontSize: "clamp(22px, 7vw, 28px)", fontWeight: 600, color: AX.text, lineHeight: 1.1 }}>
-            {streakShown} <span style={{ fontSize: 15, color: AX.muted, fontWeight: 500 }}>day streak</span>
+          <div className="ax-wrap" style={{ fontSize: 20, fontWeight: 650, color: AX.text, lineHeight: 1.1 }}>
+            {streakShown} <span style={{ fontSize: 12, color: AX.muted, fontWeight: 500 }}>day streak</span>
           </div>
-          <div className="ax-wrap" style={{ fontSize: 13, color: AX.muted, marginTop: 4 }}>{coins} coins earned</div>
+          <div className="ax-wrap" style={{ fontSize: 11, color: AX.muted, marginTop: 2 }}>{coins} coins earned</div>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div style={{ fontSize: 18, fontWeight: 600, color: pct === 100 ? AX.success : AX.text }}>{pct}%</div>
-          <div style={{ fontSize: 12, color: AX.muted }}>{done}/{tasks.length} today</div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 4, marginTop: 6, fontSize: 12, color: shields > 0 ? AX.success : AX.muted }}>
+          <div style={{ fontSize: 16, fontWeight: 600, color: pct === 100 ? AX.success : AX.text }}>{pct}%</div>
+          <div style={{ fontSize: 10, color: AX.muted }}>{done}/{tasks.length} today</div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 3, fontSize: 10, color: shields > 0 ? AX.success : AX.muted }}>
             <Shield size={13} strokeWidth={1.9} />{shields}
           </div>
         </div>
       </div>
 
       <div style={CARD}>
-        <div style={titleStyle}>Today's habits</div>
+        <div style={{ ...titleStyle, fontSize: 13, marginBottom: 8 }}>Today's habits</div>
 
-        <div style={{ height: 4, background: "#1D1D28", borderRadius: 4, overflow: "hidden", marginBottom: 16 }}>
-          <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? AX.success : AX.accent, transition: "width .4s ease" }} />
+        <div style={{ height: 3, background: "#1D1D28", borderRadius: 4, overflow: "hidden", marginBottom: 8 }}>
+          <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? AX.success : AX.cyan, boxShadow: `0 0 9px ${pct === 100 ? AX.success : AX.cyan}`, transition: "width .4s ease" }} />
         </div>
 
         {tasks.length === 0 && (
@@ -141,43 +141,43 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
           const scannable = !t.done && !!onScan && /workout|gym|train|exercise|shower|bath|cold|focus|study|read/i.test(t.name);
           return (
             <div key={t.id} className="ax-task" onClick={() => handleTick(t)} style={{
-              display: "flex", alignItems: "center", gap: 14, padding: "12px 14px",
+               display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", minHeight: 46,
               background: "#181820",
               border: `1px solid ${AX.border}`,
-              borderRadius: 14, marginBottom: 10, cursor: "pointer",
+               borderRadius: 11, marginBottom: 6, cursor: "pointer",
             }}>
               <span style={{ color: t.done ? AX.muted : AX.accent, display: "inline-flex", flexShrink: 0 }}>
-                <Ico size={20} strokeWidth={1.8} />
+                 <Ico size={17} strokeWidth={1.8} />
               </span>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
-                  fontSize: 15, fontWeight: 500,
+                   fontSize: 13, fontWeight: 550,
                   color: t.done ? AX.muted : AX.text,
                   textDecoration: t.done ? "line-through" : "none",
                   whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                 }}>{t.name}</div>
-                <div style={{ fontSize: 12, color: AX.muted, marginTop: 2 }}>+{t.pts} coins</div>
+                 <div style={{ fontSize: 10, color: AX.muted, marginTop: 1 }}>+{t.pts} coins</div>
               </div>
               {scannable && (
                 <button
                   aria-label={`Scan to verify ${t.name}`}
                   onClick={e => { e.stopPropagation(); haptic("tap"); onScan!(t.id); }}
                   style={{
-                    width: 36, height: 36, flexShrink: 0, borderRadius: 10, cursor: "pointer",
-                    background: "#1D1D28", border: `1px solid ${AX.accent}`, color: AX.accent,
+                     width: 32, height: 32, flexShrink: 0, borderRadius: 9, cursor: "pointer",
+                     background: "#1D1D28", border: `1px solid ${AX.cyan}`, color: AX.cyan,
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}
                 >
-                  <ScanLine size={18} strokeWidth={2} />
+                   <ScanLine size={16} strokeWidth={2} />
                 </button>
               )}
               <div className={`ax-check ${popped === t.id ? "ax-check--pop" : ""}`} style={{
-                width: 26, height: 26, flexShrink: 0, borderRadius: 9,
+                 width: 23, height: 23, flexShrink: 0, borderRadius: 8,
                 border: `1.5px solid ${t.done ? AX.success : AX.border}`,
                 background: t.done ? AX.success : "transparent",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 color: "#0A0A0F",
-              }}>{t.done && <Check size={16} strokeWidth={3} />}</div>
+               }}>{t.done && <Check size={14} strokeWidth={3} />}</div>
             </div>
           );
         })}
@@ -187,7 +187,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
 
       {reminderTasks.length > 0 && <RemindersCard tasks={reminderTasks} />}
 
-      <DeepFocus G={AX.accent} G2={AX.accent} onComplete={onFocusComplete} />
+      <DeepFocus G={AX.cyan} G2={AX.accent} onComplete={onFocusComplete} />
     </>
   );
 }

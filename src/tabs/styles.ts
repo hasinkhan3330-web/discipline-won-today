@@ -9,6 +9,7 @@ export const AX = {
   surface: "#14141C",
   border: "#23232E",
   accent: "#6C5CE7",
+  cyan: "#00D4FF",
   success: "#00E5A0",
   danger: "#FF3B5C",
   flame: "#FF6B35",

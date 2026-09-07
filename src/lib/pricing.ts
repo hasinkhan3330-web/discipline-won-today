@@ -16,9 +16,9 @@ export const PRICING: Record<Cycle, { priceKey: string; display: string; sub: st
   },
   yearly: {
     priceKey: "dwt_pro_yearly_play",
-    display: "₹999 / year",
-    sub: "Billed ₹999 yearly by the app store after your free trial",
-    save: "SAVE 16%",
+    display: "₹499 / year",
+    sub: "Billed ₹499 yearly by the app store after your free trial",
+    save: "SAVE 58%",
   },
 };
 

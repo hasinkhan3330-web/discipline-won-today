@@ -14,9 +14,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "AXEN Habit & Discipline — Sign In & Start Free Trial" },
-      { name: "description", content: "Enter AXEN Habit & Discipline. Sign in with Google or email, then unlock PRO — ₹99/month or ₹999/year, charged in INR worldwide, 3-day free trial." },
+      { name: "description", content: "Enter AXEN Habit & Discipline. Sign in with Google or email, then unlock PRO — ₹99/month or ₹499/year, with a 3-day free trial." },
       { property: "og:title", content: "AXEN Habit & Discipline — Sign In & Start Free Trial" },
-      { property: "og:description", content: "Sign in to AXEN and unlock PRO. ₹99/mo or ₹999/yr, charged in INR. 3-day free trial." },
+      { property: "og:description", content: "Sign in to AXEN and unlock PRO. ₹99/month or ₹499/year, with a 3-day free trial." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "AXEN Habit & Discipline — Sign In & Start Free Trial" },
@@ -44,10 +44,10 @@ const PLAN_COPY: Record<Cycle, { title: string; price: string; per: string; note
   },
   yearly: {
     title: "YEARLY",
-    price: "₹83",
-    per: "/month",
-    note: "3 days free, then ₹999/yr via the app store",
-    save: "SAVE 16%",
+    price: "₹499",
+    per: "/year",
+    note: "3 days free, then ₹499/year via the app store",
+    save: "SAVE 58%",
   },
 };
 
@@ -326,7 +326,7 @@ function Landing() {
         )}
 
         <p style={{ position: "relative", marginTop: 22, fontSize: 9, color: "#46586a", letterSpacing: 1, textAlign: "center", lineHeight: 1.9 }}>
-          ₹99/month · ₹999/year · all payments charged in INR
+          ₹99/month · ₹499/year · billed securely by the app store
           {billingPlatform === "web" && (
             <>
               <br />Purchases are handled in the AXEN mobile app by Google Play or the App Store.

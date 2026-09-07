@@ -3,7 +3,7 @@ import { AX, cardStyle, titleStyle } from "@/tabs/styles";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
-import { Bell, BellOff } from "lucide-react";
+import { Bell, BellOff, ChevronDown } from "lucide-react";
 
 export type ReminderTask = { uuid: string; name: string; done: boolean };
 type Row = { task_id: string; remind_at: string; enabled: boolean; timezone: string };
@@ -18,6 +18,7 @@ export function RemindersCard({ tasks }: { tasks: ReminderTask[] }) {
   const [rows, setRows] = useState<Record<string, Row>>({});
   const [loaded, setLoaded] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">("default");
+  const [open, setOpen] = useState(false);
   const timers = useRef<number[]>([]);
 
   useEffect(() => {
@@ -90,11 +91,20 @@ export function RemindersCard({ tasks }: { tasks: ReminderTask[] }) {
   };
 
   return (
-    <div style={CARD}>
-      <div style={titleStyle}>
+    <div style={{ ...CARD, padding: 0, marginBottom: 8, borderColor: `${AX.cyan}35`, boxShadow: `inset 0 1px 0 ${AX.cyan}12` }}>
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(value => !value)}
+        style={{ ...titleStyle, width: "100%", minHeight: 46, margin: 0, padding: "10px 12px", background: "transparent", border: 0, color: AX.text, cursor: "pointer", fontFamily: AX.font }}
+      >
         <Bell size={16} strokeWidth={1.8} color={AX.accent} />
-        Reminders
-      </div>
+        <span style={{ flex: 1, textAlign: "left" }}>Reminders</span>
+        <span style={{ color: AX.muted, fontSize: 12 }}>{Object.values(rows).filter(row => row.enabled).length} active</span>
+        <ChevronDown size={16} color={AX.cyan} style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .25s ease" }} />
+      </button>
+      <div className={`ax-collapse-grid ${open ? "ax-collapse-grid--open" : ""}`} aria-hidden={!open}>
+       <div><div style={{ padding: "0 12px 12px" }}>
 
       {!loaded && <div style={{ fontSize: 13, color: AX.muted }}>Loading reminders…</div>}
 
@@ -107,8 +117,8 @@ export function RemindersCard({ tasks }: { tasks: ReminderTask[] }) {
         const on = !!r?.enabled;
         return (
           <div key={t.uuid} style={{
-            display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
-            background: "#181820", border: `1px solid ${AX.border}`, borderRadius: 14, marginBottom: 8,
+             display: "flex", alignItems: "center", gap: 8, padding: "7px 9px",
+             background: "#181820", border: `1px solid ${AX.border}`, borderRadius: 11, marginBottom: 6,
           }}>
             <div style={{ flex: 1, minWidth: 0, fontSize: 14, color: on ? AX.text : AX.muted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {t.name}
@@ -119,7 +129,7 @@ export function RemindersCard({ tasks }: { tasks: ReminderTask[] }) {
               onChange={e => save(t.uuid, { remind_at: e.target.value })}
               aria-label={`Reminder time for ${t.name}`}
               style={{
-                minHeight: 40, padding: "6px 8px", borderRadius: 10, background: "#14141C",
+                 minHeight: 36, padding: "5px 7px", borderRadius: 9, background: "#14141C",
                 border: `1px solid ${AX.border}`, color: AX.text, fontFamily: AX.font, fontSize: 13,
               }}
             />
@@ -127,7 +137,7 @@ export function RemindersCard({ tasks }: { tasks: ReminderTask[] }) {
               onClick={() => save(t.uuid, { enabled: !on })}
               aria-label={on ? `Turn off reminder for ${t.name}` : `Turn on reminder for ${t.name}`}
               style={{
-                width: 44, height: 44, borderRadius: 12, cursor: "pointer", flexShrink: 0,
+                 width: 38, height: 38, borderRadius: 10, cursor: "pointer", flexShrink: 0,
                 background: "transparent", border: `1px solid ${on ? AX.accent : AX.border}`,
                 color: on ? AX.accent : AX.muted, display: "flex", alignItems: "center", justifyContent: "center",
                 transition: "border-color .15s ease, color .15s ease",
@@ -153,6 +163,8 @@ export function RemindersCard({ tasks }: { tasks: ReminderTask[] }) {
           Allow notifications
         </button>
       )}
+      </div></div>
+      </div>
     </div>
   );
 }
