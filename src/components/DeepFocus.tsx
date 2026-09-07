@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { cardStyle, titleStyle } from "@/tabs/styles";
 import { FocusMusicPanel } from "@/components/FocusMusicPanel";
 
@@ -71,6 +71,7 @@ export function DeepFocus({ G, G2, onComplete }: {
   const [penalty, setPenalty] = useState(0);
   const [showAudio, setShowAudio] = useState(true);
   const [showMusic, setShowMusic] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [trackIdx, setTrackIdx] = useState(0);
   const [loop, setLoop] = useState(true);
   const [vol, setVol] = useState(0.7);
@@ -137,9 +138,15 @@ export function DeepFocus({ G, G2, onComplete }: {
   /* ---------------- IDLE: tier picker ---------------- */
   if (phase === "idle") {
     return (
-      <div style={{ ...CARD, padding: 12, marginBottom: 8 }}>
-        <div style={{ ...titleStyle, marginBottom: 6 }}>
+      <div style={{ ...CARD, padding: 0, marginBottom: 8, borderColor: `${G}35`, boxShadow: `inset 0 1px 0 ${G}12` }}>
+        <button type="button" aria-expanded={expanded} onClick={() => setExpanded(value => !value)} style={{ ...titleStyle, width: "100%", minHeight: 46, margin: 0, padding: "10px 12px", background: "transparent", border: 0, color: "#e8e8e8", cursor: "pointer", fontFamily: "monospace" }}>
           <span style={{ color: G }}>▸</span> DEEP <span style={{ color: G }}>FOCUS SYSTEM</span>
+          <span style={{ marginLeft: "auto", color: "#888", fontSize: 9, letterSpacing: 1.2 }}>49M · 2H · 3H49M</span>
+          <ChevronDown size={16} color={G} style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .25s ease" }} />
+        </button>
+        <div className={`ax-collapse-grid ${expanded ? "ax-collapse-grid--open" : ""}`} aria-hidden={!expanded}>
+         <div><div style={{ padding: "0 12px 12px" }}>
+        <div style={{ ...titleStyle, marginBottom: 6 }}>
           <button onClick={() => setShowMusic(true)} aria-label="Open focus music" style={{
             marginLeft: "auto", display: "inline-flex", alignItems: "center", justifyContent: "center",
             width: 26, height: 26, borderRadius: 8, cursor: "pointer",
@@ -171,6 +178,8 @@ export function DeepFocus({ G, G2, onComplete }: {
           ))}
         </div>
         {penalty > 0 && <div style={{ fontSize: 8.5, color: "#ff5566", letterSpacing: 1.5, marginTop: 6 }}>◉ LAST SESSION ABANDONED · -{penalty} PTS</div>}
+        </div></div>
+        </div>
       </div>
 
     );

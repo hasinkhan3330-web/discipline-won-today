@@ -719,7 +719,7 @@ function App() {
 
       <div className="ax-shell" style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column" }}>
         {/* TOPBAR */}
-        <div className="ax-safe-top" style={{ padding: "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 99 }}>
+        <div className="ax-safe-top" style={{ padding: tab === "home" ? "9px 12px" : "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 99 }}>
           <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto", flexShrink: 0 }} />
           <div style={{ display: "flex", gap: 8, alignItems: "center", minWidth: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
             <TrialStatusChip ent={ent} onUpgrade={() => setShowPaywall(true)} />
@@ -732,7 +732,7 @@ function App() {
         </div>
 
         {/* CONTENT */}
-        <div className="ax-content-pad" style={{ flex: 1, minWidth: 0, padding: "14px 12px" }} key={tab}>
+        <div className="ax-content-pad" style={{ flex: 1, minWidth: 0, padding: tab === "home" ? "8px 10px" : "14px 12px", paddingBottom: tab === "home" ? 76 : undefined }} key={tab}>
 
 
 
@@ -798,7 +798,7 @@ function App() {
 
 
           {/* LEGAL LINKS */}
-          <div style={{ marginTop: 28, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${AX.border}` }}>
+          <div style={{ display: tab === "home" ? "none" : "block", marginTop: 28, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${AX.border}` }}>
             <div style={{ fontSize: 12, color: AX.muted, marginBottom: 10 }}>AXEN Habit &amp; Discipline · a product of Next AI</div>
             <div style={{ display: "flex", justifyContent: "center", gap: 18, flexWrap: "wrap" }}>
               <Link to="/privacy" style={{ color: AX.muted, textDecoration: "none", fontSize: 12 }}>Privacy</Link>

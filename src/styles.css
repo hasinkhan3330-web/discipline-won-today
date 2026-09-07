@@ -143,6 +143,30 @@
   }
 }
 
+.ax-collapse-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 260ms ease, opacity 200ms ease;
+}
+
+.ax-collapse-grid > div {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ax-collapse-grid--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ax-collapse-grid,
+  .ax-collapse-grid svg {
+    transition: none !important;
+  }
+}
+
 @keyframes moon-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }

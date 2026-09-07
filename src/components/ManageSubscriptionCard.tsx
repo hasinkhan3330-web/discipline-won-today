@@ -96,7 +96,7 @@ export function ManageSubscriptionCard() {
         {statusLine.text}
       </div>
       <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
-        {`Billed by ${storeName} (₹99/month · ₹999/year) after your 3-day free trial. Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`}
+        {`Billed by ${storeName} (₹99/month · ₹499/year) after your 3-day free trial. Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`}
       </div>
 
       <a
