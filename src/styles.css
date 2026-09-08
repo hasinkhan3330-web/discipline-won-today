@@ -431,3 +431,6 @@ input, textarea, select { max-width: 100%; }
 /* Long usernames / habit names / big numbers must never widen a row */
 .ax-ellipsis { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ax-wrap { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+
+@keyframes ax-spin { to { transform: rotate(360deg); } }
+.ax-spin { animation: ax-spin 1s linear infinite; }
