@@ -22,4 +22,4 @@
 - [x] Dashboard home: denser native-app layout, collapsible Streak shields / Reminders / Deep Focus.
 
 ## Requested next
-- [ ] Roboflow image detection: secure server-side call (TanStack server fn, key in secrets) + upload/results UI component.
+- [x] Roboflow photo detection wired into habit verification (server-side call, key in secrets). Pending: ROBOFLOW_API_KEY.
