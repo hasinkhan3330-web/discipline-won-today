@@ -5,7 +5,8 @@ import { haptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import { getCoords, distanceM, type Coords } from "@/lib/geo";
 import { CodeScanner } from "@/components/CodeScanner";
-import { Dumbbell, Droplets, BookOpen, Home, MapPin, QrCode, Timer, X, Check, type LucideIcon } from "lucide-react";
+import { PhotoProof } from "@/components/PhotoProof";
+import { Dumbbell, Droplets, BookOpen, Home, MapPin, QrCode, Timer, X, Check, Camera, type LucideIcon } from "lucide-react";
 
 export type VerifyKind = "gym" | "shower" | "focus";
 
@@ -37,7 +38,7 @@ const tile = (active: boolean): React.CSSProperties => ({
   fontFamily: AX.font, fontSize: 13, fontWeight: 600,
 });
 
-type Step = "pick" | "scan" | "timer";
+type Step = "pick" | "scan" | "timer" | "photo";
 
 /**
  * Unified anti-cheat verification sheet for Gym, Cold Shower and Deep Focus.
@@ -216,6 +217,7 @@ export function TaskVerify({ kind, startInScan = false, onVerified, onClose }: {
               </button>
             )}
             <button onClick={() => setStep("scan")} style={btn()}><QrCode size={16} />Scan gym tag instead</button>
+            <button onClick={() => setStep("photo")} style={btn()}><Camera size={16} />Send a photo instead</button>
           </div>
         )}
 
@@ -225,12 +227,21 @@ export function TaskVerify({ kind, startInScan = false, onVerified, onClose }: {
             <button onClick={() => { setLeft(HOME_TIMER_S); setStep("timer"); }} style={btn()}>
               <Timer size={16} />Use 15-minute timer proof
             </button>
+            <button onClick={() => setStep("photo")} style={btn()}><Camera size={16} />Send a photo instead</button>
           </div>
         )}
 
         {step === "pick" && kind !== "gym" && (
           <div style={{ display: "grid", gap: 10 }}>
             <button onClick={() => setStep("scan")} style={btn(true)}><QrCode size={16} />Open scanner</button>
+            <button onClick={() => setStep("photo")} style={btn()}><Camera size={16} />Send a photo instead</button>
+          </div>
+        )}
+
+        {step === "photo" && (
+          <div style={{ display: "grid", gap: 10 }}>
+            <PhotoProof onVerified={onVerified} />
+            <button onClick={() => setStep("pick")} style={btn()}>Back</button>
           </div>
         )}
 
