@@ -16,3 +16,10 @@
 
 ## Later — website checkout (separate web build, NOT this app)
 - [ ] User pasted Razorpay live key id + partial secret in chat. Treat as exposed: regenerate in Razorpay dashboard before reuse, then save via secure secret form. Webhook URL for web: .../api/public/payments/webhook (route deleted; re-add when building web checkout).
+
+## UI pass (in progress)
+- [x] Paywall/plan display: ₹99/month and ₹499/year only (₹83 card removed), SAVE badge on yearly.
+- [x] Dashboard home: denser native-app layout, collapsible Streak shields / Reminders / Deep Focus.
+
+## Requested next
+- [ ] Roboflow image detection: secure server-side call (TanStack server fn, key in secrets) + upload/results UI component.
