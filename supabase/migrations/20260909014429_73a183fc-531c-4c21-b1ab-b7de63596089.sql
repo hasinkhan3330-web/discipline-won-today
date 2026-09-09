@@ -1,0 +1,1 @@
+ALTER TABLE public.vision_verifications ALTER COLUMN user_id SET DEFAULT auth.uid();

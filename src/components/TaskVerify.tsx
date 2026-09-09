@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCoords, distanceM, type Coords } from "@/lib/geo";
 import { CodeScanner } from "@/components/CodeScanner";
 import { PhotoProof } from "@/components/PhotoProof";
-import { StudySetupVision } from "@/components/StudySetupVision";
+import { HabitVision, type VisionKind } from "@/components/HabitVision";
 import { ScanEye } from "lucide-react";
 import { Dumbbell, Droplets, BookOpen, Home, MapPin, QrCode, Timer, X, Check, Camera, type LucideIcon } from "lucide-react";
 
@@ -218,6 +218,7 @@ export function TaskVerify({ kind, startInScan = false, onVerified, onClose }: {
                 <Check size={16} />Verify I'm at the gym
               </button>
             )}
+            <button onClick={() => setStep("vision")} style={btn(true)}><ScanEye size={16} />Camera check my gym gear</button>
             <button onClick={() => setStep("scan")} style={btn()}><QrCode size={16} />Scan gym tag instead</button>
             <button onClick={() => setStep("photo")} style={btn()}><Camera size={16} />Send a photo instead</button>
           </div>
@@ -225,7 +226,8 @@ export function TaskVerify({ kind, startInScan = false, onVerified, onClose }: {
 
         {step === "pick" && kind === "gym" && mode === "home" && (
           <div style={{ display: "grid", gap: 10 }}>
-            <button onClick={() => setStep("scan")} style={btn(true)}><QrCode size={16} />Scan QR / barcode</button>
+            <button onClick={() => setStep("vision")} style={btn(true)}><ScanEye size={16} />Camera check my workout</button>
+            <button onClick={() => setStep("scan")} style={btn()}><QrCode size={16} />Scan QR / barcode</button>
             <button onClick={() => { setLeft(HOME_TIMER_S); setStep("timer"); }} style={btn()}>
               <Timer size={16} />Use 15-minute timer proof
             </button>

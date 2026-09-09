@@ -566,6 +566,33 @@ export type Database = {
         }
         Relationships: []
       }
+      vision_verifications: {
+        Row: {
+          created_at: string
+          detections: Json
+          id: string
+          kind: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          detections?: Json
+          id?: string
+          kind: string
+          source?: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          detections?: Json
+          id?: string
+          kind?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_profiles: {
