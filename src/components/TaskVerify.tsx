@@ -19,7 +19,7 @@ const FOCUS_TIMER_S = 25 * 60;
 const META: Record<VerifyKind, { title: string; Icon: LucideIcon; hint: string }> = {
   gym: { title: "Verify your workout", Icon: Dumbbell, hint: "Prove you showed up — gym GPS check or a gym-tag scan." },
   shower: { title: "Verify your cold shower", Icon: Droplets, hint: "Scan your bathroom QR / barcode to prove you physically moved there." },
-  focus: { title: "Verify deep focus", Icon: BookOpen, hint: "Scan your book, laptop screen or desk tag, then hold a strict focus timer." },
+  focus: { title: "Verify deep focus", Icon: BookOpen, hint: "Point the camera at your desk to verify your study setup, or scan a tag and hold a strict focus timer." },
 };
 
 const btn = (primary?: boolean): React.CSSProperties => ({
