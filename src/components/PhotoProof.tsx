@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { AX } from "@/tabs/styles";
 import { haptic } from "@/lib/haptics";
 import { detectHabitEvidence, type Detection } from "@/utils/roboflow.functions";
+import { matchesEvidence, VISION_CONFIG, logVision, type VisionKind } from "@/components/HabitVision";
 import { Camera, Loader2, Check } from "lucide-react";
 
 const fileToDataUrl = (file: File) =>
@@ -13,22 +14,27 @@ const fileToDataUrl = (file: File) =>
     r.readAsDataURL(file);
   });
 
+const MIN_CONFIDENCE = 0.4;
+
 /**
  * Photo evidence for a habit: the user picks/takes a picture, it is checked by
- * the image model on the server, and the labels found are shown back.
+ * the image model on the server, and only the matching evidence labels count.
  */
-export function PhotoProof({ onVerified }: { onVerified: () => void }) {
+export function PhotoProof({ visionKind, onVerified }: { visionKind: VisionKind; onVerified: () => void }) {
+  const cfg = VISION_CONFIG[visionKind];
   const detect = useServerFn(detectHabitEvidence);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [results, setResults] = useState<Detection[] | null>(null);
+  const [matched, setMatched] = useState<Detection[] | null>(null);
+  const [checked, setChecked] = useState(false);
 
   const pick = async (file?: File) => {
     if (!file) return;
     setError(null);
-    setResults(null);
+    setMatched(null);
+    setChecked(false);
     setBusy(true);
     try {
       const dataUrl = await fileToDataUrl(file);
@@ -38,8 +44,15 @@ export function PhotoProof({ onVerified }: { onVerified: () => void }) {
         setError(res.error);
         return;
       }
-      setResults(res.detections);
-      if (res.detections.length > 0) haptic("success");
+      const hits = res.detections.filter(
+        d => d.confidence >= MIN_CONFIDENCE && matchesEvidence([d.label], visionKind),
+      );
+      setMatched(hits);
+      setChecked(true);
+      if (hits.length > 0) {
+        logVision(visionKind, "photo", hits);
+        haptic("success");
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Photo check failed");
     } finally {
@@ -47,7 +60,7 @@ export function PhotoProof({ onVerified }: { onVerified: () => void }) {
     }
   };
 
-  const found = !!results && results.length > 0;
+  const found = !!matched && matched.length > 0;
 
   return (
     <div style={{ display: "grid", gap: 10 }}>
@@ -82,12 +95,12 @@ export function PhotoProof({ onVerified }: { onVerified: () => void }) {
         {busy ? "Checking your photo…" : preview ? "Take another photo" : "Take / upload a photo"}
       </button>
 
-      {results && (
-        <div style={{ background: "#181820", border: `1px solid ${AX.border}`, borderRadius: 12, padding: 12 }}>
+      {checked && (
+        <div style={{ background: "#181820", border: `1px solid ${found ? AX.success : AX.border}`, borderRadius: 12, padding: 12 }}>
           {found ? (
             <>
-              <div style={{ fontSize: 13, fontWeight: 600, color: AX.text, marginBottom: 8 }}>Found in your photo</div>
-              {results.slice(0, 5).map((d, i) => (
+              <div style={{ fontSize: 13, fontWeight: 600, color: AX.text, marginBottom: 8 }}>Evidence found in your photo</div>
+              {matched!.slice(0, 5).map((d, i) => (
                 <div key={`${d.label}-${i}`} style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 13, color: AX.muted, padding: "3px 0" }}>
                   <span style={{ color: AX.text }}>{d.label}</span>
                   <span>{Math.round(d.confidence * 100)}%</span>
@@ -96,7 +109,7 @@ export function PhotoProof({ onVerified }: { onVerified: () => void }) {
             </>
           ) : (
             <div style={{ fontSize: 13, color: AX.muted, lineHeight: 1.5 }}>
-              Nothing recognisable in that photo. Try again with a clearer shot.
+              That photo doesn't show the right evidence. {cfg.missing.charAt(0).toUpperCase() + cfg.missing.slice(1).replace(/^Nothing recognised yet — /, "")}
             </div>
           )}
         </div>
