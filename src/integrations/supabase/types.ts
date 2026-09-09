@@ -581,7 +581,7 @@ export type Database = {
           id?: string
           kind: string
           source?: string
-          user_id: string
+          user_id?: string
         }
         Update: {
           created_at?: string
