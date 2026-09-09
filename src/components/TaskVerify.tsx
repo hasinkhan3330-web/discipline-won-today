@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCoords, distanceM, type Coords } from "@/lib/geo";
 import { CodeScanner } from "@/components/CodeScanner";
 import { PhotoProof } from "@/components/PhotoProof";
+import { StudySetupVision } from "@/components/StudySetupVision";
+import { ScanEye } from "lucide-react";
 import { Dumbbell, Droplets, BookOpen, Home, MapPin, QrCode, Timer, X, Check, Camera, type LucideIcon } from "lucide-react";
 
 export type VerifyKind = "gym" | "shower" | "focus";
@@ -17,7 +19,7 @@ const FOCUS_TIMER_S = 25 * 60;
 const META: Record<VerifyKind, { title: string; Icon: LucideIcon; hint: string }> = {
   gym: { title: "Verify your workout", Icon: Dumbbell, hint: "Prove you showed up — gym GPS check or a gym-tag scan." },
   shower: { title: "Verify your cold shower", Icon: Droplets, hint: "Scan your bathroom QR / barcode to prove you physically moved there." },
-  focus: { title: "Verify deep focus", Icon: BookOpen, hint: "Scan your book, laptop screen or desk tag, then hold a strict focus timer." },
+  focus: { title: "Verify deep focus", Icon: BookOpen, hint: "Point the camera at your desk to verify your study setup, or scan a tag and hold a strict focus timer." },
 };
 
 const btn = (primary?: boolean): React.CSSProperties => ({
@@ -38,7 +40,7 @@ const tile = (active: boolean): React.CSSProperties => ({
   fontFamily: AX.font, fontSize: 13, fontWeight: 600,
 });
 
-type Step = "pick" | "scan" | "timer" | "photo";
+type Step = "pick" | "scan" | "timer" | "photo" | "vision";
 
 /**
  * Unified anti-cheat verification sheet for Gym, Cold Shower and Deep Focus.
@@ -233,8 +235,20 @@ export function TaskVerify({ kind, startInScan = false, onVerified, onClose }: {
 
         {step === "pick" && kind !== "gym" && (
           <div style={{ display: "grid", gap: 10 }}>
-            <button onClick={() => setStep("scan")} style={btn(true)}><QrCode size={16} />Open scanner</button>
+            {kind === "focus" && (
+              <button onClick={() => setStep("vision")} style={btn(true)}>
+                <ScanEye size={16} />Camera check my study setup
+              </button>
+            )}
+            <button onClick={() => setStep("scan")} style={btn(kind !== "focus")}><QrCode size={16} />Open scanner</button>
             <button onClick={() => setStep("photo")} style={btn()}><Camera size={16} />Send a photo instead</button>
+          </div>
+        )}
+
+        {step === "vision" && (
+          <div style={{ display: "grid", gap: 10 }}>
+            <StudySetupVision onVerified={onVerified} />
+            <button onClick={() => setStep("pick")} style={btn()}>Back</button>
           </div>
         )}
 
