@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCoords, distanceM, type Coords } from "@/lib/geo";
 import { CodeScanner } from "@/components/CodeScanner";
 import { PhotoProof } from "@/components/PhotoProof";
-import { StudySetupVision } from "@/components/StudySetupVision";
+import { HabitVision, type VisionKind } from "@/components/HabitVision";
 import { ScanEye } from "lucide-react";
 import { Dumbbell, Droplets, BookOpen, Home, MapPin, QrCode, Timer, X, Check, Camera, type LucideIcon } from "lucide-react";
 
