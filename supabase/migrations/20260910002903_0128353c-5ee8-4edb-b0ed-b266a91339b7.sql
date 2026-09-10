@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS habit_reminders_premium_gate ON public.habit_reminders;
