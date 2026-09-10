@@ -732,7 +732,18 @@ function App() {
         </div>
 
         {/* CONTENT */}
-        <div className="ax-content-pad" style={{ flex: 1, minWidth: 0, padding: tab === "home" ? "8px 10px" : "14px 12px", paddingBottom: tab === "home" ? 76 : undefined }} key={tab}>
+        <div
+          className="ax-content-pad"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            paddingTop: tab === "home" ? 8 : 14,
+            paddingLeft: tab === "home" ? 10 : 12,
+            paddingRight: tab === "home" ? 10 : 12,
+            paddingBottom: "calc(96px + env(safe-area-inset-bottom, 0px))",
+          }}
+          key={tab}
+        >
 
 
 

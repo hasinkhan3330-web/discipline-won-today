@@ -10,6 +10,11 @@ export function saveQuizLocal(a: QuizAnswers) {
   } catch { /* private mode — quiz just repeats before signup */ }
 }
 
+/** Returning users can skip the quiz; only the "seen" flag is stored. */
+export function skipQuizLocal() {
+  try { localStorage.setItem(QUIZ_DONE_KEY, "1"); } catch { /* private mode */ }
+}
+
 export function quizSeen(): boolean {
   try { return localStorage.getItem(QUIZ_DONE_KEY) === "1"; } catch { return false; }
 }

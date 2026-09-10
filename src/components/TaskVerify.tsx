@@ -15,6 +15,7 @@ export type VerifyKind = "gym" | "shower" | "focus";
 const MODE_KEY = "axen_workout_mode";
 const HOME_TIMER_S = 15 * 60;
 const FOCUS_TIMER_S = 25 * 60;
+const SHOWER_TIMER_S = 3 * 60;
 
 const META: Record<VerifyKind, { title: string; Icon: LucideIcon; hint: string }> = {
   gym: { title: "Verify your workout", Icon: Dumbbell, hint: "Prove you showed up — gym GPS check or a gym-tag scan." },
@@ -53,6 +54,7 @@ export function TaskVerify({ kind, startInScan = false, onVerified, onClose }: {
   onClose: () => void;
 }) {
   const { title, Icon, hint } = META[kind];
+  const visionKind: VisionKind = kind === "gym" ? "workout" : kind;
   const [mode, setMode] = useState<"gym" | "home" | null>(kind === "gym" ? null : "home");
   const [step, setStep] = useState<Step>(startInScan ? "scan" : "pick");
   const [gym, setGym] = useState<Coords | null>(null);
@@ -237,26 +239,30 @@ export function TaskVerify({ kind, startInScan = false, onVerified, onClose }: {
 
         {step === "pick" && kind !== "gym" && (
           <div style={{ display: "grid", gap: 10 }}>
-            {kind === "focus" && (
-              <button onClick={() => setStep("vision")} style={btn(true)}>
-                <ScanEye size={16} />Camera check my study setup
-              </button>
-            )}
-            <button onClick={() => setStep("scan")} style={btn(kind !== "focus")}><QrCode size={16} />Open scanner</button>
+            <button onClick={() => setStep("vision")} style={btn(true)}>
+              <ScanEye size={16} />{kind === "focus" ? "Camera check my study setup" : "Camera check my setup"}
+            </button>
+            <button onClick={() => setStep("scan")} style={btn()}><QrCode size={16} />Open scanner</button>
             <button onClick={() => setStep("photo")} style={btn()}><Camera size={16} />Send a photo instead</button>
+            <button
+              onClick={() => { setLeft(kind === "focus" ? FOCUS_TIMER_S : SHOWER_TIMER_S); setStep("timer"); }}
+              style={btn()}
+            >
+              <Timer size={16} />{kind === "focus" ? "No camera? use 25-minute timer" : "No camera? use 3-minute timer"}
+            </button>
           </div>
         )}
 
         {step === "vision" && (
           <div style={{ display: "grid", gap: 10 }}>
-            <StudySetupVision onVerified={onVerified} />
+            <HabitVision visionKind={visionKind} onVerified={onVerified} />
             <button onClick={() => setStep("pick")} style={btn()}>Back</button>
           </div>
         )}
 
         {step === "photo" && (
           <div style={{ display: "grid", gap: 10 }}>
-            <PhotoProof onVerified={onVerified} />
+            <PhotoProof visionKind={visionKind} onVerified={onVerified} />
             <button onClick={() => setStep("pick")} style={btn()}>Back</button>
           </div>
         )}

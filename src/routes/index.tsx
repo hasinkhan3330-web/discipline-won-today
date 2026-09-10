@@ -6,7 +6,7 @@ import { lovable } from "@/integrations/lovable";
 import { PlatformCheckout } from "@/components/PlatformCheckout";
 import { usePlatform } from "@/hooks/usePlatform";
 import { PreSignupQuiz, type QuizAnswers } from "@/components/PreSignupQuiz";
-import { saveQuizLocal, quizSeen, flushQuizToProfile } from "@/lib/quiz";
+import { saveQuizLocal, skipQuizLocal, quizSeen, flushQuizToProfile } from "@/lib/quiz";
 import { type Cycle } from "@/lib/pricing";
 import axenLogo from "@/assets/axen-logo.png";
 
@@ -201,7 +201,9 @@ function Landing() {
   return (
     <div className="axen-page ax-shell" style={{ position: "relative", background: "#000", color: "#e8e8e8", overflowX: "clip" }}>
       {!introGone && <Intro done={!intro} onGone={() => setIntroGone(true)} />}
-      {introGone && !authed && !quizDone && <PreSignupQuiz onFinish={finishQuiz} />}
+      {introGone && !authed && !quizDone && (
+        <PreSignupQuiz onFinish={finishQuiz} onSkip={() => { skipQuizLocal(); setQuizDone(true); }} />
+      )}
 
       {/* ambient futuristic backdrop */}
       <div style={{ position: "fixed", inset: 0, backgroundImage: `radial-gradient(circle at 18% 12%, ${G2}22, transparent 52%), radial-gradient(circle at 84% 88%, ${G}22, transparent 52%)` }} />
