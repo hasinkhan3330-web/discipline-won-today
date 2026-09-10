@@ -175,7 +175,7 @@ function Options({ items, value, onPick }: { items: { id: string; label: string;
   );
 }
 
-export function PreSignupQuiz({ onFinish }: { onFinish: (a: QuizAnswers) => void }) {
+export function PreSignupQuiz({ onFinish, onSkip }: { onFinish: (a: QuizAnswers) => void; onSkip?: () => void }) {
   const [step, setStep] = useState(0);
   const [a, setA] = useState<QuizAnswers>({ goal: "", blocker: "", habit_count: 0, source: "" });
 
@@ -298,6 +298,18 @@ export function PreSignupQuiz({ onFinish }: { onFinish: (a: QuizAnswers) => void
           ))}
         </div>
         {body}
+        {onSkip && (
+          <button
+            onClick={() => { haptic("tap"); onSkip(); }}
+            style={{
+              width: "100%", minHeight: 44, marginTop: 18, background: "transparent",
+              border: "none", color: AX.muted, fontFamily: AX.font, fontSize: 13, cursor: "pointer",
+              textDecoration: "underline", textUnderlineOffset: 4,
+            }}
+          >
+            I already have an account — sign in
+          </button>
+        )}
       </div>
     </div>
   );
