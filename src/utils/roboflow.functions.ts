@@ -25,23 +25,29 @@ export const detectHabitEvidence = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<DetectResult> => {
     const apiKey = process.env["ROBOFLOW_API_KEY"];
-    if (!apiKey) return { ok: false, error: "Photo checking is not configured yet." };
+    if (!apiKey) return { ok: false, error: "Photo checking is not configured yet (missing ROBOFLOW_API_KEY)." };
 
-    const model = process.env["ROBOFLOW_MODEL"] || "hasin-khan/habit-evidence/1";
+    // The private workspace project `habit-evidence` has no trained version yet,
+    // so it answers 405. `coco/9` is a hosted model that covers the evidence
+    // classes AXEN needs (book, laptop, sink, bench, sports ball…).
+    const model = process.env["ROBOFLOW_MODEL"] || "coco/9";
+    const url = `https://detect.roboflow.com/${model}?api_key=${encodeURIComponent(apiKey)}&confidence=30&overlap=30&format=json`;
 
     try {
-      const res = await fetch(
-        `https://detect.roboflow.com/${model}?api_key=${encodeURIComponent(apiKey)}&confidence=40&overlap=30&format=json`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: data.base64,
-        },
-      );
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: data.base64,
+      });
 
       if (!res.ok) {
-        console.error("[roboflow] status", res.status, (await res.text()).slice(0, 300));
-        return { ok: false, error: "The photo check service did not respond. Try again in a moment." };
+        const body = (await res.text()).slice(0, 300);
+        console.error("[roboflow] status", res.status, "model", model, body);
+        // Surface the real technical cause — never a blanket "did not respond".
+        return {
+          ok: false,
+          error: `Vision model "${model}" returned HTTP ${res.status}. ${body || "No response body."}`,
+        };
       }
 
       const json = (await res.json()) as { predictions?: { class?: string; confidence?: number }[] };
@@ -51,7 +57,8 @@ export const detectHabitEvidence = createServerFn({ method: "POST" })
 
       return { ok: true, detections, top: detections[0] ?? null };
     } catch (e) {
-      console.error("[roboflow] request failed", e);
-      return { ok: false, error: "Could not reach the photo check service." };
+      const detail = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+      console.error("[roboflow] request failed", detail);
+      return { ok: false, error: `Could not reach the vision service (${detail}).` };
     }
   });

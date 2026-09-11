@@ -14,23 +14,26 @@ export const VISION_CONFIG: Record<
   { classes: string[]; prompt: string; missing: string; timeout: string; verified: string }
 > = {
   focus: {
-    classes: ["book", "notebook", "laptop", "desk"],
+    classes: ["book", "notebook", "laptop", "desk", "keyboard", "mouse", "tv", "monitor", "dining table"],
     prompt: "Point at your desk — keep your book, notebook or laptop in view.",
     missing: "Nothing recognised yet — show your book, notebook, laptop or desk.",
     timeout: "Could not confirm a study setup. Move closer to your desk and try again.",
     verified: "Study setup verified",
   },
   shower: {
-    classes: ["shower", "bathroom", "bathtub", "faucet", "sink", "tap"],
+    classes: ["shower", "bathroom", "bathtub", "faucet", "sink", "tap", "toilet", "toothbrush", "hair drier"],
     prompt: "Point the camera at your bathroom — show the shower, tap or sink.",
     missing: "Nothing recognised yet — show your shower, tap, sink or bathroom.",
     timeout: "Could not confirm a shower setup. Move closer and try again.",
     verified: "Shower setup verified",
   },
   workout: {
-    classes: ["dumbbell", "barbell", "gym", "treadmill", "kettlebell", "weight", "bench", "machine", "equipment"],
-    prompt: "Point the camera at your equipment — dumbbell, barbell, bench or machine.",
-    missing: "Nothing recognised yet — show your dumbbell, barbell, bench or gym machine.",
+    classes: [
+      "dumbbell", "barbell", "gym", "treadmill", "kettlebell", "weight", "bench", "machine", "equipment",
+      "sports ball", "bicycle", "skateboard", "tennis racket", "frisbee",
+    ],
+    prompt: "Point the camera at your equipment — dumbbell, bench, ball or bike.",
+    missing: "Nothing recognised yet — show your dumbbell, bench, ball, bike or gym machine.",
     timeout: "Could not confirm workout equipment. Move closer and try again.",
     verified: "Workout setup verified",
   },
