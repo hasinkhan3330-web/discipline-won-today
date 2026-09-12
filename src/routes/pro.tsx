@@ -7,8 +7,8 @@ import axenLogo from "@/assets/axen-logo.png";
 
 export const Route = createFileRoute("/pro")({
   head: () => ({
+    title: "AXEN PRO — Unlock Full Access",
     meta: [
-      { title: "AXEN PRO — Unlock Full Access" },
       { name: "description", content: "Upgrade to AXEN PRO. ₹99/month or ₹499/year with a 3-day free trial. Unlock Accountability, Zen, Rank Scan, and AI Assistant." },
       { property: "og:title", content: "AXEN PRO — Unlock Full Access" },
       { property: "og:description", content: "Upgrade to AXEN PRO. 3-day free trial, cancel anytime." },
