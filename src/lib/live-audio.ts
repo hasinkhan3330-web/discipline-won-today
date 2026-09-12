@@ -43,8 +43,10 @@ export class PcmPlayer {
 
   private ensure(): AudioContext {
     if (!this.ctx || this.ctx.state === "closed") {
-      const AC = window.AudioContext || (window as any).webkitAudioContext;
-      this.ctx = new AC();
+      const AudioContextClass =
+        window.AudioContext ||
+        (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      this.ctx = new AudioContextClass();
     }
     if (this.ctx.state === "suspended") this.ctx.resume().catch(() => {});
     return this.ctx;
@@ -99,7 +101,11 @@ export class PcmPlayer {
 
   async close() {
     this.clear();
-    try { await this.ctx?.close(); } catch { /* ignore */ }
+    try {
+      await this.ctx?.close();
+    } catch {
+      /* ignore */
+    }
     this.ctx = null;
   }
 }
