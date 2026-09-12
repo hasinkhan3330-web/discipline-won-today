@@ -80,6 +80,7 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
   const streamRef = useRef<MediaStream | null>(null);
   const doneRef = useRef(false);
   const streakRef = useRef(0);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
