@@ -1,5 +1,7 @@
 import { AX, cardStyle, titleStyle } from "./styles";
 import { FriendsPanel } from "@/components/FriendsPanel";
+import { RankScan } from "@/components/RankScan";
+import { AccountabilityPanel } from "@/components/AccountabilityPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { Coins, Trophy, Flame, Target } from "lucide-react";
 
