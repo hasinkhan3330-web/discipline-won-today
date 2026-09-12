@@ -45,7 +45,6 @@ export class PcmPlayer {
     if (!this.ctx || this.ctx.state === "closed") {
       const AC = window.AudioContext || (window as any).webkitAudioContext;
       this.ctx = new AC();
-      this.next = 0;
     }
     if (this.ctx.state === "suspended") this.ctx.resume().catch(() => {});
     return this.ctx;
