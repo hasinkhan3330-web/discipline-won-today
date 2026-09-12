@@ -36,6 +36,8 @@ export function RankTab({ coins, streak, bestStreak = 0, board = [], fallbackAva
 
   return (
     <>
+      <RankScan />
+
       <div style={CARD}>
         <div style={titleStyle}>Your tier</div>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18 }}>
