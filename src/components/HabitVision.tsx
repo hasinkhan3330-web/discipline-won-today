@@ -53,12 +53,16 @@ export const logVision = (kind: string, source: "camera" | "photo", detections: 
 };
 
 /** How many consecutive checks must find one of the classes. */
-const REQUIRED_STREAK = 3;
-/** Gap between frame checks. */
-const CHECK_MS = 2500;
+const REQUIRED_STREAK = 2;
+/** A single very confident hit is enough — no waiting for a streak. */
+const INSTANT_CONFIDENCE = 0.62;
+/** Minimum gap between frame checks (checks are otherwise back-to-back). */
+const CHECK_MS = 250;
 /** Give up after this long without a confirmed setup. */
 const TIMEOUT_MS = 90_000;
-const MIN_CONFIDENCE = 0.4;
+/** If the API is this slow on average, accept the first plausible hit. */
+const SLOW_API_MS = 2200;
+const MIN_CONFIDENCE = 0.35;
 
 type Phase = "idle" | "starting" | "scanning" | "verified" | "error";
 
@@ -76,6 +80,7 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
   const streamRef = useRef<MediaStream | null>(null);
   const doneRef = useRef(false);
   const streakRef = useRef(0);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -94,14 +99,14 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
   const grabFrame = (): string | null => {
     const v = videoRef.current;
     if (!v || !v.videoWidth) return null;
-    const w = 640;
+    const w = 416;
     const h = Math.round((v.videoHeight / v.videoWidth) * w) || 480;
-    const canvas = document.createElement("canvas");
+    const canvas = canvasRef.current ?? (canvasRef.current = document.createElement("canvas"));
     canvas.width = w; canvas.height = h;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return null;
     ctx.drawImage(v, 0, 0, w, h);
-    return canvas.toDataURL("image/jpeg", 0.72);
+    return canvas.toDataURL("image/jpeg", 0.6);
   };
 
   const start = async () => {
@@ -146,6 +151,20 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
 
   const loop = async () => {
     const deadline = Date.now() + TIMEOUT_MS;
+    let calls = 0;
+    let totalMs = 0;
+    let transient = 0;
+
+    const succeed = (detections: Detection[]) => {
+      doneRef.current = true;
+      // Credit first, everything else after — no delay before the reward.
+      onVerified();
+      stopCamera();
+      setPhase("verified");
+      setStatus(cfg.verified + ".");
+      haptic("success");
+      logVision(visionKind, "camera", detections);
+    };
 
     while (!doneRef.current && streamRef.current) {
       if (Date.now() > deadline) {
@@ -157,23 +176,41 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
 
       const frame = grabFrame();
       if (frame) {
+        const t0 = Date.now();
         try {
           const res = await detect({ data: { imageBase64: frame } });
           if (doneRef.current) return;
+          calls += 1;
+          totalMs += Date.now() - t0;
 
           if (!res.ok) {
-            stopCamera();
-            setPhase("error");
-            setError(res.error);
-            return;
+            // One bad answer should not end the session — retry a couple of times.
+            transient += 1;
+            if (transient >= 3) {
+              stopCamera();
+              setPhase("error");
+              setError(res.error);
+              return;
+            }
+            await new Promise(r => setTimeout(r, CHECK_MS));
+            continue;
           }
+          transient = 0;
 
-          const labels = res.detections
-            .filter(d => d.confidence >= MIN_CONFIDENCE)
-            .map(d => d.label);
+          const strong = res.detections.filter(d => d.confidence >= MIN_CONFIDENCE);
+          const labels = strong.map(d => d.label);
           setSeen(labels.slice(0, 4));
 
-          if (matchesEvidence(labels, visionKind)) {
+          const hit = matchesEvidence(labels, visionKind);
+          const best = strong.find(d => matchesEvidence([d.label], visionKind));
+          const slow = calls >= 2 && totalMs / calls > SLOW_API_MS;
+
+          if (hit) {
+            // Instant pass on a confident hit, or when the API is running slow.
+            if ((best?.confidence ?? 0) >= INSTANT_CONFIDENCE || slow) {
+              succeed(res.detections);
+              return;
+            }
             streakRef.current += 1;
             setStreak(streakRef.current);
             setStatus(`Setup seen (${streakRef.current}/${REQUIRED_STREAK} checks)…`);
@@ -184,21 +221,18 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
           }
 
           if (streakRef.current >= REQUIRED_STREAK) {
-            doneRef.current = true;
-            stopCamera();
-            setPhase("verified");
-            setStatus(cfg.verified + ".");
-            haptic("success");
-            logVision(visionKind, "camera", res.detections);
-            onVerified();
+            succeed(res.detections);
             return;
           }
         } catch {
           if (doneRef.current) return;
-          stopCamera();
-          setPhase("error");
-          setError("The check could not be completed. Please try again.");
-          return;
+          transient += 1;
+          if (transient >= 3) {
+            stopCamera();
+            setPhase("error");
+            setError("The check could not be completed. Please try again.");
+            return;
+          }
         }
       }
 
