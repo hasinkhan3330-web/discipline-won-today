@@ -52,7 +52,7 @@ export class PcmPlayer {
     if (!samples.length) return;
     const ctx = this.ensure();
     const buffer = ctx.createBuffer(1, samples.length, this.rate);
-    buffer.copyToChannel(samples, 0);
+    buffer.getChannelData(0).set(samples);
     const src = ctx.createBufferSource();
     src.buffer = buffer;
     src.connect(ctx.destination);
