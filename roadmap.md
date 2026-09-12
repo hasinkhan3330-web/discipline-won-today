@@ -23,3 +23,4 @@
 
 ## Requested next
 - [x] Roboflow photo detection wired into habit verification (server-side call, key in secrets). Pending: ROBOFLOW_API_KEY.
+- [x] Redesign AI Coach as the selected full-screen tech-noir room while preserving live voice, text coaching, and app navigation.

@@ -1,32 +1,34 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { askCoach, type CoachMessage } from "@/utils/coach.functions";
-import { AX, cardStyle, titleStyle } from "@/tabs/styles";
 import { haptic } from "@/lib/haptics";
-import { Bot, Send, Sparkles } from "lucide-react";
+import { Bot, ChevronUp, Settings2 } from "lucide-react";
 import { VoiceCoach } from "@/components/VoiceCoach";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationScrollButton,
+} from "@/components/ai-elements/conversation";
+import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputFooter,
+  PromptInputSubmit,
+  PromptInputTextarea,
+} from "@/components/ai-elements/prompt-input";
+import coachOffice from "@/assets/ai-coach-office.jpg";
+import axenLogo from "@/assets/axen-logo.png";
 
-const STARTERS = [
-  "Why do I keep breaking my streak?",
-  "Plan my next 7 days.",
-  "Which habit should I fix first?",
-  "I feel like quitting today.",
-];
+const STARTERS = ["Plan my next 7 days", "Fix my weakest habit", "I feel like quitting"];
 
-/**
- * AI Assistant (PRO) — a coach that reads the user's real AXEN data
- * server-side (streak, coins, per-habit 30-day history) and answers with
- * concrete, personal instructions. No data leaves the server unprompted.
- */
+/** Full-screen Pro coaching room with real voice and text coaching. */
 export function AiCoach() {
   const ask = useServerFn(askCoach);
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const endRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, busy]);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const send = async (text: string) => {
     const q = text.trim();
@@ -34,6 +36,7 @@ export function AiCoach() {
     haptic("tap");
     setError(null);
     setInput("");
+    setChatOpen(true);
     const next: CoachMessage[] = [...messages, { role: "user", content: q }];
     setMessages(next);
     setBusy(true);
@@ -41,99 +44,122 @@ export function AiCoach() {
       const res = await ask({ data: { messages: next } });
       setMessages([...next, { role: "assistant", content: res.reply }]);
       haptic("success");
-    } catch (e: any) {
-      setError(e?.message || "The coach could not answer right now.");
+    } catch (cause) {
+      const message =
+        cause instanceof Error ? cause.message : "The coach could not answer right now.";
+      setError(message);
     } finally {
       setBusy(false);
     }
   };
 
-  const CARD = cardStyle();
-
   return (
-    <>
-      <div style={CARD}>
-        <div style={titleStyle}>
-          <Bot size={16} strokeWidth={1.8} color={AX.accent} />
-          AI Assistant
+    <section className="coach-stage" aria-label="AXEN AI Coach">
+      <img
+        src={coachOffice}
+        alt="AXEN virtual discipline coach in a futuristic office"
+        width={720}
+        height={1280}
+        className="coach-stage__portrait"
+      />
+      <div className="coach-stage__shade" />
+      <div className="coach-stage__rings" aria-hidden="true" />
+
+      <header className="coach-stage__header">
+        <div className="coach-stage__brand">
+          <img src={axenLogo} alt="AXEN" />
+          <span>Discipline builds freedom</span>
         </div>
-        <div style={{ fontSize: 13, color: AX.muted, lineHeight: 1.6 }}>
-          Your coach can see your streak, coins and every habit's 30-day record.
-          Ask anything about your discipline — the answers are about your data, not generic advice.
+        <div className="coach-stage__tools">
+          <div className="coach-stage__status">
+            <Bot size={13} /> AI Coach <i />
+          </div>
+          <button
+            type="button"
+            className="coach-stage__settings"
+            aria-label="Coach settings"
+            title="Coach settings"
+          >
+            <Settings2 size={17} />
+          </button>
         </div>
+      </header>
+
+      <div className="coach-stage__identity">
+        <span>AXEN Neural Mentor</span>
+        <h1>Your discipline coach</h1>
+        <p>Present. Focused. Ready when you are.</p>
       </div>
 
-      <VoiceCoach />
+      <div className="coach-stage__controls">
+        <VoiceCoach />
 
-      <div style={{ ...CARD, padding: 14 }}>
-        {messages.length === 0 && (
-          <div style={{ display: "grid", gap: 8, marginBottom: 4 }}>
-            {STARTERS.map(s => (
-              <button key={s} onClick={() => send(s)} disabled={busy} style={{
-                display: "flex", alignItems: "center", gap: 10, textAlign: "left",
-                minHeight: 46, padding: "10px 13px", borderRadius: 12,
-                cursor: busy ? "not-allowed" : "pointer",
-                background: "#181820", border: `1px solid ${AX.border}`, color: AX.text,
-                fontFamily: AX.font, fontSize: 13,
-              }}>
-                <Sparkles size={14} strokeWidth={1.8} color={AX.cyan} />
-                <span style={{ flex: 1, minWidth: 0 }}>{s}</span>
+        {!chatOpen && (
+          <div className="coach-stage__starters" aria-label="Suggested questions">
+            {STARTERS.map((starter) => (
+              <button key={starter} type="button" onClick={() => send(starter)} disabled={busy}>
+                {starter}
               </button>
             ))}
           </div>
         )}
 
-        {messages.map((m, i) => (
-          <div key={i} style={{
-            display: "flex",
-            justifyContent: m.role === "user" ? "flex-end" : "flex-start",
-            marginBottom: 10,
-          }}>
-            <div style={{
-              maxWidth: "86%", padding: "11px 13px", borderRadius: 14,
-              background: m.role === "user" ? AX.accent : "#181820",
-              border: `1px solid ${m.role === "user" ? AX.accent : AX.border}`,
-              color: m.role === "user" ? "#FFFFFF" : AX.text,
-              fontSize: 13, lineHeight: 1.6, whiteSpace: "pre-wrap", wordBreak: "break-word",
-            }}>{m.content}</div>
-          </div>
-        ))}
-
-        {busy && (
-          <div style={{ fontSize: 13, color: AX.muted, padding: "4px 2px" }}>Coach is thinking…</div>
-        )}
-        {error && (
-          <div style={{ fontSize: 13, color: AX.danger, padding: "4px 2px" }}>{error}</div>
-        )}
-        <div ref={endRef} />
-
-        <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") send(input); }}
-            placeholder="Ask your coach…"
-            style={{
-              flex: 1, minHeight: 46, padding: "10px 14px", borderRadius: 12,
-              background: "#181820", border: `1px solid ${AX.border}`, color: AX.text,
-              fontFamily: AX.font, fontSize: 14, outline: "none",
-            }}
-          />
+        <div className={`coach-chat ${chatOpen ? "coach-chat--open" : ""}`}>
           <button
-            onClick={() => send(input)}
-            disabled={busy || !input.trim()}
-            aria-label="Send"
-            style={{
-              width: 46, minHeight: 46, borderRadius: 12,
-              cursor: busy || !input.trim() ? "not-allowed" : "pointer",
-              background: busy || !input.trim() ? "#181820" : AX.accent,
-              border: `1px solid ${busy || !input.trim() ? AX.border : AX.accent}`,
-              color: busy || !input.trim() ? AX.muted : "#FFFFFF",
-              display: "flex", alignItems: "center", justifyContent: "center",
-            }}
-          ><Send size={17} strokeWidth={2} /></button>
+            type="button"
+            className="coach-chat__handle"
+            onClick={() => setChatOpen((open) => !open)}
+            aria-expanded={chatOpen}
+          >
+            <ChevronUp size={16} />
+            {chatOpen ? "Close text coach" : "Open text coach"}
+          </button>
+
+          {chatOpen && (
+            <div className="coach-chat__body">
+              <Conversation className="coach-chat__conversation">
+                <ConversationContent className="gap-4 px-3 py-3">
+                  {messages.length === 0 && (
+                    <p className="coach-chat__empty">
+                      Ask for a plan, a reset, or one direct action for today.
+                    </p>
+                  )}
+                  {messages.map((message, index) => (
+                    <Message key={`${message.role}-${index}`} from={message.role}>
+                      <MessageContent
+                        className={
+                          message.role === "user" ? "coach-chat__user" : "coach-chat__assistant"
+                        }
+                      >
+                        <MessageResponse>{message.content}</MessageResponse>
+                      </MessageContent>
+                    </Message>
+                  ))}
+                  {busy && <p className="coach-chat__thinking">Coach is thinking…</p>}
+                  {error && <p className="coach-chat__error">{error}</p>}
+                </ConversationContent>
+                <ConversationScrollButton />
+              </Conversation>
+
+              <PromptInput className="coach-chat__composer" onSubmit={({ text }) => send(text)}>
+                <PromptInputTextarea
+                  name="message"
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  placeholder="Message your coach…"
+                  className="min-h-12 max-h-24"
+                />
+                <PromptInputFooter className="justify-end">
+                  <PromptInputSubmit
+                    status={busy ? "submitted" : "ready"}
+                    disabled={busy || !input.trim()}
+                  />
+                </PromptInputFooter>
+              </PromptInput>
+            </div>
+          )}
         </div>
       </div>
-    </>
+    </section>
   );
 }
