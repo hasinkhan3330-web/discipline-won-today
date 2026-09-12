@@ -601,7 +601,7 @@ function App() {
     : serverEntitled === null
       ? access.hasAccess
       : serverEntitled;
-  const premiumTabs = ["rank", "zen"]; // Rank tab also hosts Accountability (friends)
+  const premiumTabs = ["rank", "zen", "coach"]; // Rank hosts Rank Scan + Accountability; Coach is the AI assistant
   // Resolve entitlement BEFORE gating renders — no unlocked↔locked flash.
   const gateReady = !!myId && !ent.isLoading;
 
