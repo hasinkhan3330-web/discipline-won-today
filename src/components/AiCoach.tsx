@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { askCoach, type CoachMessage } from "@/utils/coach.functions";
 import { haptic } from "@/lib/haptics";
-import { Bot, ChevronUp, Settings2 } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { VoiceCoach } from "@/components/VoiceCoach";
 import {
   Conversation,
@@ -17,7 +17,6 @@ import {
   PromptInputTextarea,
 } from "@/components/ai-elements/prompt-input";
 import coachOffice from "@/assets/ai-coach-office.jpg";
-import axenLogo from "@/assets/axen-logo.png";
 
 const STARTERS = ["Plan my next 7 days", "Fix my weakest habit", "I feel like quitting"];
 
@@ -63,33 +62,6 @@ export function AiCoach() {
         className="coach-stage__portrait"
       />
       <div className="coach-stage__shade" />
-      <div className="coach-stage__rings" aria-hidden="true" />
-
-      <header className="coach-stage__header">
-        <div className="coach-stage__brand">
-          <img src={axenLogo} alt="AXEN" />
-          <span>Discipline builds freedom</span>
-        </div>
-        <div className="coach-stage__tools">
-          <div className="coach-stage__status">
-            <Bot size={13} /> AI Coach <i />
-          </div>
-          <button
-            type="button"
-            className="coach-stage__settings"
-            aria-label="Coach settings"
-            title="Coach settings"
-          >
-            <Settings2 size={17} />
-          </button>
-        </div>
-      </header>
-
-      <div className="coach-stage__identity">
-        <span>AXEN Neural Mentor</span>
-        <h1>Your discipline coach</h1>
-        <p>Present. Focused. Ready when you are.</p>
-      </div>
 
       <div className="coach-stage__controls">
         <VoiceCoach />
