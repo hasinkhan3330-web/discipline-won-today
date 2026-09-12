@@ -56,8 +56,9 @@ export function VoiceCoach() {
     wsRef.current = null;
     if (socket?.readyState === WebSocket.OPEN) {
       try {
-        // A new activity signal cancels any model turn before the socket closes.
+        // A complete manual activity pulse cancels any model turn before close.
         socket.send(JSON.stringify({ realtimeInput: { activityStart: {} } }));
+        socket.send(JSON.stringify({ realtimeInput: { activityEnd: {} } }));
       } catch {
         /* socket closed between the readyState check and send */
       }
