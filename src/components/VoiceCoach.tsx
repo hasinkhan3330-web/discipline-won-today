@@ -83,6 +83,7 @@ export function VoiceCoach() {
     playerRef.current = null;
     activityRef.current = false;
     silenceStartedRef.current = null;
+    loudStartedRef.current = null;
     setSpeaking(false);
     setStatus(nextStatus);
   };
