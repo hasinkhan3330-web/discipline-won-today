@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getEntitlement } from "@/utils/premium.functions";
-import { User, Swords, Crown, Flower2, BarChart3, Lock } from "lucide-react";
+import { User, Swords, Crown, Flower2, BarChart3, Lock, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -14,6 +14,7 @@ import { useEntitlement } from "@/hooks/useEntitlement";
 import { TrialStatusChip } from "@/components/TrialStatusChip";
 import { DevTrialSimulator } from "@/components/DevTrialSimulator";
 import { GateSkeleton } from "@/components/GateSkeleton";
+import { AiCoach } from "@/components/AiCoach";
 
 
 import { CropModal } from "@/components/CropModal";
@@ -601,7 +602,7 @@ function App() {
     : serverEntitled === null
       ? access.hasAccess
       : serverEntitled;
-  const premiumTabs = ["rank", "zen"]; // Rank tab also hosts Accountability (friends)
+  const premiumTabs = ["rank", "zen", "coach"]; // Rank hosts Rank Scan + Accountability; Coach is the AI assistant
   // Resolve entitlement BEFORE gating renders — no unlocked↔locked flash.
   const gateReady = !!myId && !ent.isLoading;
 
@@ -651,6 +652,7 @@ function App() {
     { id: "home", Icon: Swords, label: "Home" },
     { id: "rank", Icon: Crown, label: "Rank" },
     { id: "zen", Icon: Flower2, label: "Zen" },
+    { id: "coach", Icon: Bot, label: "Coach" },
     { id: "stats", Icon: BarChart3, label: "Stats" },
     { id: "profile", Icon: User, label: "You" },
   ];
@@ -783,6 +785,11 @@ function App() {
             {tab === "zen" && (!gateReady ? <GateSkeleton /> : (
               <PaywallGate hasAccess={premiumUnlocked} featureName="Zen Mode" onUpgrade={() => setShowPaywall(true)}>
                 <ZenTab med={med} />
+              </PaywallGate>
+            ))}
+            {tab === "coach" && (!gateReady ? <GateSkeleton /> : (
+              <PaywallGate hasAccess={premiumUnlocked} featureName="AI Assistant" onUpgrade={() => setShowPaywall(true)}>
+                <AiCoach />
               </PaywallGate>
             ))}
 

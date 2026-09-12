@@ -1,5 +1,7 @@
 import { AX, cardStyle, titleStyle } from "./styles";
 import { FriendsPanel } from "@/components/FriendsPanel";
+import { RankScan } from "@/components/RankScan";
+import { AccountabilityPanel } from "@/components/AccountabilityPanel";
 import { EmptyState } from "@/components/EmptyState";
 import { Coins, Trophy, Flame, Target } from "lucide-react";
 
@@ -34,6 +36,8 @@ export function RankTab({ coins, streak, bestStreak = 0, board = [], fallbackAva
 
   return (
     <>
+      <RankScan />
+
       <div style={CARD}>
         <div style={titleStyle}>Your tier</div>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 18 }}>
@@ -96,6 +100,8 @@ export function RankTab({ coins, streak, bestStreak = 0, board = [], fallbackAva
           );
         })}
       </div>
+
+      <AccountabilityPanel fallbackAvatar={fallbackAvatar} />
 
       <FriendsPanel myStreak={streak} myCoins={coins} fallbackAvatar={fallbackAvatar} />
 
