@@ -31,13 +31,21 @@ export function base64ToFloat32(b64: string): Float32Array {
   return out;
 }
 
-/** Sequentially schedules 24 kHz PCM chunks so playback stays gapless. */
+/**
+ * Gapless 24 kHz PCM playback.
+ *
+ * Every incoming chunk is scheduled on an absolute timeline (`nextStart`) on a
+ * single AudioContext, so consecutive chunks butt up sample-exactly instead of
+ * waiting for an `onended` callback (which always leaves an audible gap and
+ * caused the "voice breaks 20 times in 5 seconds" stutter).
+ */
 export class PcmPlayer {
   private ctx: AudioContext | null = null;
-  private queue: Float32Array[] = [];
-  private queuedSamples = 0;
-  private current: AudioBufferSourceNode | null = null;
-  private generation = 0;
+  private gain: GainNode | null = null;
+  private sources = new Set<AudioBufferSourceNode>();
+  private nextStart = 0;
+  /** Jitter buffer: keep a small lead so network hiccups never underrun. */
+  private readonly lead = 0.18;
 
   constructor(private rate = 24000) {}
 
@@ -47,65 +55,67 @@ export class PcmPlayer {
         window.AudioContext ||
         (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       this.ctx = new AudioContextClass();
+      this.gain = this.ctx.createGain();
+      this.gain.connect(this.ctx.destination);
+      this.nextStart = 0;
     }
-    if (this.ctx.state === "suspended") this.ctx.resume().catch(() => {});
+    if (this.ctx.state === "suspended") void this.ctx.resume().catch(() => {});
     return this.ctx;
+  }
+
+  /** True while scheduled audio is still ahead of the playback clock. */
+  get isPlaying(): boolean {
+    return !!this.ctx && this.nextStart > this.ctx.currentTime + 0.02;
   }
 
   push(samples: Float32Array) {
     if (!samples.length) return;
-    // Bound queued speech to prevent a delayed network burst from speaking forever.
-    const maxQueuedSamples = this.rate * 8;
-    while (this.queuedSamples + samples.length > maxQueuedSamples && this.queue.length > 0) {
-      const dropped = this.queue.shift();
-      this.queuedSamples -= dropped?.length ?? 0;
-    }
-    if (samples.length > maxQueuedSamples) return;
-    this.queue.push(samples.slice());
-    this.queuedSamples += samples.length;
-    this.playNext(this.generation);
-  }
-
-  private playNext(generation: number) {
-    if (generation !== this.generation || this.current) return;
-    const samples = this.queue.shift();
-    if (!samples) return;
-    this.queuedSamples -= samples.length;
     const ctx = this.ensure();
+    const gain = this.gain;
+    if (!gain) return;
+
     const buffer = ctx.createBuffer(1, samples.length, this.rate);
     buffer.getChannelData(0).set(samples);
     const src = ctx.createBufferSource();
     src.buffer = buffer;
-    src.connect(ctx.destination);
-    this.current = src;
+    src.connect(gain);
+
+    const now = ctx.currentTime;
+    // Restart the timeline if we fell behind (silence gap), else continue exactly.
+    if (this.nextStart < now + 0.01) this.nextStart = now + this.lead;
+    src.start(this.nextStart);
+    this.nextStart += buffer.duration;
+
+    this.sources.add(src);
     src.onended = () => {
-      if (this.current === src) this.current = null;
-      this.playNext(generation);
+      this.sources.delete(src);
     };
-    src.start();
   }
 
-  /** Drop everything queued (used when the model is interrupted). */
+  /** Drop everything scheduled (used on interruption / stop). */
   clear() {
-    this.generation += 1;
-    this.queue = [];
-    this.queuedSamples = 0;
-    const current = this.current;
-    this.current = null;
-    try {
-      current?.stop();
-    } catch {
-      /* already stopped */
+    for (const src of this.sources) {
+      try {
+        src.onended = null;
+        src.stop();
+        src.disconnect();
+      } catch {
+        /* already stopped */
+      }
     }
+    this.sources.clear();
+    this.nextStart = this.ctx ? this.ctx.currentTime : 0;
   }
 
   async close() {
     this.clear();
     try {
+      this.gain?.disconnect();
       await this.ctx?.close();
     } catch {
       /* ignore */
     }
+    this.gain = null;
     this.ctx = null;
   }
 }
