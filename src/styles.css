@@ -183,8 +183,7 @@
   font-family: "Rajdhani", sans-serif;
 }
 .coach-stage__portrait,
-.coach-stage__shade,
-.coach-stage__rings {
+.coach-stage__shade {
   position: absolute;
   inset: 0;
 }
@@ -205,119 +204,6 @@
     oklch(0.07 0.035 255 / 0.5) 68%,
     oklch(0.05 0.03 255 / 0.96) 100%
   );
-}
-.coach-stage__rings {
-  z-index: -2;
-  inset: 18% -32% auto;
-  height: 62%;
-  border: 1px solid color-mix(in oklab, var(--coach-blue) 22%, transparent);
-  border-radius: 50%;
-  box-shadow:
-    inset 0 0 50px color-mix(in oklab, var(--coach-blue) 8%, transparent),
-    0 0 60px color-mix(in oklab, var(--coach-blue) 10%, transparent);
-  animation: coach-breathe 5s ease-in-out infinite;
-}
-.coach-stage__rings::before,
-.coach-stage__rings::after {
-  content: "";
-  position: absolute;
-  border-radius: inherit;
-  border: 1px solid color-mix(in oklab, var(--coach-blue) 16%, transparent);
-}
-.coach-stage__rings::before {
-  inset: 8%;
-}
-.coach-stage__rings::after {
-  inset: 18%;
-}
-.coach-stage__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  padding: calc(18px + env(safe-area-inset-top, 0px)) 16px 0;
-}
-.coach-stage__brand img {
-  display: block;
-  width: 92px;
-  height: auto;
-  filter: drop-shadow(0 0 10px color-mix(in oklab, var(--coach-blue) 55%, transparent));
-}
-.coach-stage__brand span {
-  display: block;
-  margin-top: 5px;
-  color: oklch(0.75 0.06 245);
-  font-family: "Orbitron", sans-serif;
-  font-size: 7px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-.coach-stage__tools {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.coach-stage__status {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 30px;
-  padding: 0 9px;
-  border: 1px solid color-mix(in oklab, var(--coach-blue) 38%, transparent);
-  border-radius: 999px;
-  background: oklch(0.08 0.04 255 / 0.58);
-  backdrop-filter: blur(14px);
-  color: oklch(0.91 0.05 235);
-  font-size: 10px;
-  font-weight: 700;
-}
-.coach-stage__status i {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: oklch(0.78 0.18 155);
-  box-shadow: 0 0 10px oklch(0.78 0.18 155);
-  animation: coach-status 1.8s ease-in-out infinite;
-}
-.coach-stage__settings {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid color-mix(in oklab, var(--coach-blue) 30%, transparent);
-  background: oklch(0.08 0.04 255 / 0.58);
-  color: oklch(0.9 0.04 235);
-  backdrop-filter: blur(14px);
-  cursor: pointer;
-}
-.coach-stage__identity {
-  position: absolute;
-  top: 16%;
-  left: 16px;
-  max-width: 210px;
-  text-shadow: 0 2px 18px oklch(0.05 0.03 255 / 0.9);
-}
-.coach-stage__identity span {
-  color: var(--coach-blue);
-  font-family: "Orbitron", sans-serif;
-  font-size: 8px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-.coach-stage__identity h1 {
-  margin: 5px 0 2px;
-  font-family: "Orbitron", sans-serif;
-  font-size: 18px;
-  line-height: 1.15;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-.coach-stage__identity p {
-  margin: 0;
-  color: oklch(0.79 0.04 245);
-  font-size: 11px;
 }
 .coach-stage__controls {
   position: absolute;
@@ -487,18 +373,6 @@
   border-color: color-mix(in oklab, var(--coach-blue) 28%, transparent);
   background: oklch(0.09 0.04 255 / 0.86);
 }
-@keyframes coach-breathe {
-  50% {
-    transform: scale(1.045);
-    opacity: 0.72;
-  }
-}
-@keyframes coach-status {
-  50% {
-    opacity: 0.45;
-    transform: scale(0.75);
-  }
-}
 @keyframes coach-wave {
   to {
     height: 22px;
@@ -510,8 +384,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .coach-stage__rings,
-  .coach-stage__status i,
   .voice-console__wave i {
     animation: none !important;
   }

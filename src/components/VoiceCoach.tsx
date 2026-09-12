@@ -30,10 +30,38 @@ export function VoiceCoach() {
   const micCtxRef = useRef<AudioContext | null>(null);
   const nodeRef = useRef<ScriptProcessorNode | null>(null);
   const playerRef = useRef<PcmPlayer | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const sessionRef = useRef(0);
+  const activityRef = useRef(false);
+  const silenceStartedRef = useRef<number | null>(null);
+
+  const sendActivity = (socket: WebSocket, active: boolean) => {
+    if (socket.readyState !== WebSocket.OPEN || activityRef.current === active) return;
+    socket.send(
+      JSON.stringify({ realtimeInput: active ? { activityStart: {} } : { activityEnd: {} } }),
+    );
+    activityRef.current = active;
+    silenceStartedRef.current = null;
+    if (active) {
+      playerRef.current?.clear();
+      setSpeaking(false);
+    }
+  };
 
   const release = (nextStatus: Status = "idle") => {
+    sessionRef.current += 1;
+    abortRef.current?.abort();
+    abortRef.current = null;
     const socket = wsRef.current;
     wsRef.current = null;
+    if (socket?.readyState === WebSocket.OPEN) {
+      try {
+        // A new activity signal cancels any model turn before the socket closes.
+        socket.send(JSON.stringify({ realtimeInput: { activityStart: {} } }));
+      } catch {
+        /* socket closed between the readyState check and send */
+      }
+    }
     try {
       socket?.close(1000);
     } catch {
@@ -51,6 +79,8 @@ export function VoiceCoach() {
     streamRef.current = null;
     playerRef.current?.close();
     playerRef.current = null;
+    activityRef.current = false;
+    silenceStartedRef.current = null;
     setSpeaking(false);
     setStatus(nextStatus);
   };
@@ -58,6 +88,10 @@ export function VoiceCoach() {
   useEffect(() => () => release(), []);
 
   const start = async () => {
+    release();
+    const session = sessionRef.current;
+    const controller = new AbortController();
+    abortRef.current = controller;
     setError(null);
     setStatus("connecting");
     haptic("tap");
@@ -65,8 +99,13 @@ export function VoiceCoach() {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
       });
+      if (controller.signal.aborted || session !== sessionRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
       streamRef.current = stream;
       const { apiKey, model } = await getSession({});
+      if (controller.signal.aborted || session !== sessionRef.current) return;
       const ws = new WebSocket(
         `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${encodeURIComponent(apiKey)}`,
       );
@@ -74,12 +113,17 @@ export function VoiceCoach() {
       playerRef.current = new PcmPlayer(24000);
 
       ws.onopen = () => {
+        if (controller.signal.aborted || session !== sessionRef.current) {
+          ws.close(1000);
+          return;
+        }
         ws.send(
           JSON.stringify({
             setup: {
               model,
               generationConfig: { responseModalities: ["AUDIO"] },
               systemInstruction: { parts: [{ text: SYSTEM }] },
+              realtimeInputConfig: { automaticActivityDetection: { disabled: true } },
             },
           }),
         );
@@ -90,11 +134,32 @@ export function VoiceCoach() {
         const context = new AudioContextClass({ sampleRate: 16000 });
         micCtxRef.current = context;
         const source = context.createMediaStreamSource(stream);
-        const processor = context.createScriptProcessor(4096, 1, 1);
+        const processor = context.createScriptProcessor(2048, 1, 1);
         nodeRef.current = processor;
         processor.onaudioprocess = (event) => {
-          if (ws.readyState !== WebSocket.OPEN) return;
-          const data = floatToPcm16Base64(event.inputBuffer.getChannelData(0));
+          if (
+            controller.signal.aborted ||
+            session !== sessionRef.current ||
+            ws.readyState !== WebSocket.OPEN
+          ) {
+            return;
+          }
+          const samples = event.inputBuffer.getChannelData(0);
+          let energy = 0;
+          for (let index = 0; index < samples.length; index += 1) {
+            const sample = samples[index] ?? 0;
+            energy += sample * sample;
+          }
+          const rms = Math.sqrt(energy / samples.length);
+          const now = performance.now();
+          if (rms >= 0.025) {
+            sendActivity(ws, true);
+          } else if (activityRef.current) {
+            silenceStartedRef.current ??= now;
+            if (now - silenceStartedRef.current >= 650) sendActivity(ws, false);
+          }
+          if (!activityRef.current) return;
+          const data = floatToPcm16Base64(samples);
           ws.send(
             JSON.stringify({
               realtimeInput: { mediaChunks: [{ mimeType: "audio/pcm;rate=16000", data }] },
@@ -108,6 +173,7 @@ export function VoiceCoach() {
       };
 
       ws.onmessage = async (event) => {
+        if (controller.signal.aborted || session !== sessionRef.current) return;
         const raw = typeof event.data === "string" ? event.data : await (event.data as Blob).text();
         let message: LiveMessage;
         try {
@@ -131,10 +197,12 @@ export function VoiceCoach() {
       };
 
       ws.onerror = () => {
+        if (controller.signal.aborted || session !== sessionRef.current) return;
         setError("The voice connection dropped. Check your network and try again.");
         release("error");
       };
       ws.onclose = (event) => {
+        if (controller.signal.aborted || session !== sessionRef.current) return;
         if (wsRef.current !== ws) return;
         if (event.code !== 1000) {
           setError(event.reason || "The voice session ended unexpectedly.");
@@ -144,6 +212,7 @@ export function VoiceCoach() {
         release();
       };
     } catch (cause) {
+      if (controller.signal.aborted || session !== sessionRef.current) return;
       const message =
         cause instanceof DOMException && cause.name === "NotAllowedError"
           ? "Microphone access was blocked. Allow the mic and try again."
