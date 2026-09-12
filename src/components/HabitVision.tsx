@@ -98,7 +98,7 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
   const grabFrame = (): string | null => {
     const v = videoRef.current;
     if (!v || !v.videoWidth) return null;
-    const w = 640;
+    const w = 416;
     const h = Math.round((v.videoHeight / v.videoWidth) * w) || 480;
     const canvas = document.createElement("canvas");
     canvas.width = w; canvas.height = h;
