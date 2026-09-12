@@ -14,6 +14,7 @@ import { useEntitlement } from "@/hooks/useEntitlement";
 import { TrialStatusChip } from "@/components/TrialStatusChip";
 import { DevTrialSimulator } from "@/components/DevTrialSimulator";
 import { GateSkeleton } from "@/components/GateSkeleton";
+import { AiCoach } from "@/components/AiCoach";
 
 
 import { CropModal } from "@/components/CropModal";
