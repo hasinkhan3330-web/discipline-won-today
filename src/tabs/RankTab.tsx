@@ -101,6 +101,8 @@ export function RankTab({ coins, streak, bestStreak = 0, board = [], fallbackAva
         })}
       </div>
 
+      <AccountabilityPanel fallbackAvatar={fallbackAvatar} />
+
       <FriendsPanel myStreak={streak} myCoins={coins} fallbackAvatar={fallbackAvatar} />
 
       <div style={CARD}>
