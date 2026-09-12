@@ -26,10 +26,6 @@ export const getLiveToken = createServerFn({ method: "POST" })
           uses: 1,
           expireTime: new Date(now + 30 * 60 * 1000).toISOString(),
           newSessionExpireTime: new Date(now + 2 * 60 * 1000).toISOString(),
-          liveConnectConstraints: {
-            model: LIVE_MODEL,
-            config: { responseModalities: ["AUDIO"] },
-          },
         }),
       },
     );
