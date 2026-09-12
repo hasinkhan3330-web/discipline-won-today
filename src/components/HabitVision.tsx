@@ -53,12 +53,16 @@ export const logVision = (kind: string, source: "camera" | "photo", detections: 
 };
 
 /** How many consecutive checks must find one of the classes. */
-const REQUIRED_STREAK = 3;
-/** Gap between frame checks. */
-const CHECK_MS = 2500;
+const REQUIRED_STREAK = 2;
+/** A single very confident hit is enough — no waiting for a streak. */
+const INSTANT_CONFIDENCE = 0.62;
+/** Minimum gap between frame checks (checks are otherwise back-to-back). */
+const CHECK_MS = 250;
 /** Give up after this long without a confirmed setup. */
 const TIMEOUT_MS = 90_000;
-const MIN_CONFIDENCE = 0.4;
+/** If the API is this slow on average, accept the first plausible hit. */
+const SLOW_API_MS = 2200;
+const MIN_CONFIDENCE = 0.35;
 
 type Phase = "idle" | "starting" | "scanning" | "verified" | "error";
 
