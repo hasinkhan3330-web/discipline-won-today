@@ -786,6 +786,11 @@ function App() {
                 <ZenTab med={med} />
               </PaywallGate>
             ))}
+            {tab === "coach" && (!gateReady ? <GateSkeleton /> : (
+              <PaywallGate hasAccess={premiumUnlocked} featureName="AI Assistant" onUpgrade={() => setShowPaywall(true)}>
+                <AiCoach />
+              </PaywallGate>
+            ))}
 
             {tab === "stats" && (
               <StatsTab
