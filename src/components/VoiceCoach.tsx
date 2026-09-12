@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getLiveToken } from "@/utils/voice.functions";
+import { getLiveSession } from "@/utils/voice.functions";
 import { PcmPlayer, base64ToFloat32, floatToPcm16Base64 } from "@/lib/live-audio";
 import { AX, cardStyle, titleStyle } from "@/tabs/styles";
 import { haptic } from "@/lib/haptics";
@@ -14,7 +14,7 @@ Keep every reply under 60 words and end with one concrete action for today.`;
 
 /** Real-time voice coach over the Gemini Live API (WebSocket, native audio). */
 export function VoiceCoach() {
-  const mintToken = useServerFn(getLiveToken);
+  const mintToken = useServerFn(getLiveSession);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
@@ -52,10 +52,10 @@ export function VoiceCoach() {
       });
       streamRef.current = stream;
 
-      const { token, model } = await mintToken({});
+      const { apiKey, model } = await mintToken({});
 
       const ws = new WebSocket(
-        `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${encodeURIComponent(token)}`,
+        `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${encodeURIComponent(apiKey)}`,
       );
       wsRef.current = ws;
       playerRef.current = new PcmPlayer(24000);
