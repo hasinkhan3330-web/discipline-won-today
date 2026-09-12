@@ -1,13 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-export const LIVE_MODEL = "models/gemini-2.5-flash-native-audio-preview";
+/**
+ * Live-audio model. The requested "gemini-2.5-flash-native-audio-preview" alias
+ * is not served by bidiGenerateContent; "-latest" is the current live alias.
+ */
+export const LIVE_MODEL = "models/gemini-2.5-flash-native-audio-latest";
 
 /**
- * Mints a short-lived ephemeral token for the Gemini Live API so the browser
- * can open the WebSocket directly WITHOUT ever seeing GEMINI_API_KEY.
+ * Returns the credentials the browser needs to open the Gemini Live socket.
+ *
+ * Google's ephemeral auth_tokens are rejected by the BidiGenerateContent
+ * socket for this key, so the raw key is handed out — but only to an
+ * authenticated AXEN PRO user, never bundled into client code, and only held
+ * in memory for the length of one voice session.
  */
-export const getLiveToken = createServerFn({ method: "POST" })
+export const getLiveSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const apiKey = process.env["GEMINI_API_KEY"];
@@ -16,25 +24,5 @@ export const getLiveToken = createServerFn({ method: "POST" })
     const { data: premium } = await context.supabase.rpc("has_premium_access", { _user_id: context.userId });
     if (!premium) throw new Error("Voice Coach is part of AXEN PRO.");
 
-    const now = Date.now();
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1alpha/auth_tokens?key=${encodeURIComponent(apiKey)}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uses: 1,
-          expireTime: new Date(now + 30 * 60 * 1000).toISOString(),
-          newSessionExpireTime: new Date(now + 2 * 60 * 1000).toISOString(),
-        }),
-      },
-    );
-
-    const body = await res.text();
-    if (!res.ok) {
-      throw new Error(`Voice session could not start (${res.status}): ${body.slice(0, 300)}`);
-    }
-    const json = JSON.parse(body) as { name?: string };
-    if (!json.name) throw new Error("Voice session token was empty.");
-    return { token: json.name, model: LIVE_MODEL };
+    return { apiKey, model: LIVE_MODEL };
   });
