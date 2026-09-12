@@ -651,6 +651,7 @@ function App() {
     { id: "home", Icon: Swords, label: "Home" },
     { id: "rank", Icon: Crown, label: "Rank" },
     { id: "zen", Icon: Flower2, label: "Zen" },
+    { id: "coach", Icon: Bot, label: "Coach" },
     { id: "stats", Icon: BarChart3, label: "Stats" },
     { id: "profile", Icon: User, label: "You" },
   ];
