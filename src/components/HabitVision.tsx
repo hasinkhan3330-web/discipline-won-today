@@ -100,12 +100,12 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
     if (!v || !v.videoWidth) return null;
     const w = 416;
     const h = Math.round((v.videoHeight / v.videoWidth) * w) || 480;
-    const canvas = document.createElement("canvas");
+    const canvas = canvasRef.current ?? (canvasRef.current = document.createElement("canvas"));
     canvas.width = w; canvas.height = h;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return null;
     ctx.drawImage(v, 0, 0, w, h);
-    return canvas.toDataURL("image/jpeg", 0.72);
+    return canvas.toDataURL("image/jpeg", 0.6);
   };
 
   const start = async () => {
