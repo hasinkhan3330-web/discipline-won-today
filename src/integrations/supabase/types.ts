@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      accountability_pacts: {
+        Row: {
+          created_at: string
+          daily_target: number
+          id: string
+          owner_id: string
+          partner_id: string
+          stake_coins: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          daily_target?: number
+          id?: string
+          owner_id: string
+          partner_id: string
+          stake_coins?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          daily_target?: number
+          id?: string
+          owner_id?: string
+          partner_id?: string
+          stake_coins?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       alarm_sessions: {
         Row: {
           alarm_id: string
@@ -275,6 +308,41 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pact_nudges: {
+        Row: {
+          created_at: string
+          from_user: string
+          id: string
+          message: string
+          pact_id: string
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          from_user: string
+          id?: string
+          message: string
+          pact_id: string
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          from_user?: string
+          id?: string
+          message?: string
+          pact_id?: string
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pact_nudges_pact_id_fkey"
+            columns: ["pact_id"]
+            isOneToOne: false
+            referencedRelation: "accountability_pacts"
             referencedColumns: ["id"]
           },
         ]
@@ -687,6 +755,26 @@ export type Database = {
         }[]
       }
       get_or_create_referral_code: { Args: never; Returns: string }
+      get_pact_status: {
+        Args: never
+        Returns: {
+          daily_target: number
+          last_nudge: string
+          last_nudge_at: string
+          me_done_today: number
+          me_streak: number
+          me_total_today: number
+          pact_id: string
+          partner_avatar: string
+          partner_done_today: number
+          partner_id: string
+          partner_name: string
+          partner_streak: number
+          partner_total_today: number
+          role: string
+          stake_coins: number
+        }[]
+      }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
@@ -705,6 +793,25 @@ export type Database = {
           status: string
           streak: number
           username: string
+        }[]
+      }
+      rank_scan: {
+        Args: never
+        Returns: {
+          active_habits: number
+          best_habit: string
+          best_habit_rate: number
+          coin_rank: number
+          coins: number
+          completions_30d: number
+          consistency_30d: number
+          longest_streak: number
+          percentile: number
+          streak: number
+          streak_rank: number
+          total_users: number
+          weakest_habit: string
+          weakest_habit_rate: number
         }[]
       }
       redeem_referral_code: {
