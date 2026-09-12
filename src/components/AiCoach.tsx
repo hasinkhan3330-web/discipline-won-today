@@ -4,6 +4,7 @@ import { askCoach, type CoachMessage } from "@/utils/coach.functions";
 import { AX, cardStyle, titleStyle } from "@/tabs/styles";
 import { haptic } from "@/lib/haptics";
 import { Bot, Send, Sparkles } from "lucide-react";
+import { VoiceCoach } from "@/components/VoiceCoach";
 
 const STARTERS = [
   "Why do I keep breaking my streak?",
@@ -61,6 +62,8 @@ export function AiCoach() {
           Ask anything about your discipline — the answers are about your data, not generic advice.
         </div>
       </div>
+
+      <VoiceCoach />
 
       <div style={{ ...CARD, padding: 14 }}>
         {messages.length === 0 && (
