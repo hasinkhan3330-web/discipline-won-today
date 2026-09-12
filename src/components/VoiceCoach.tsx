@@ -34,6 +34,7 @@ export function VoiceCoach() {
   const sessionRef = useRef(0);
   const activityRef = useRef(false);
   const silenceStartedRef = useRef<number | null>(null);
+  const loudStartedRef = useRef<number | null>(null);
 
   const sendActivity = (socket: WebSocket, active: boolean) => {
     if (socket.readyState !== WebSocket.OPEN || activityRef.current === active) return;
@@ -82,6 +83,7 @@ export function VoiceCoach() {
     playerRef.current = null;
     activityRef.current = false;
     silenceStartedRef.current = null;
+    loudStartedRef.current = null;
     setSpeaking(false);
     setStatus(nextStatus);
   };
@@ -153,11 +155,23 @@ export function VoiceCoach() {
           }
           const rms = Math.sqrt(energy / samples.length);
           const now = performance.now();
-          if (rms >= 0.025) {
-            sendActivity(ws, true);
-          } else if (activityRef.current) {
-            silenceStartedRef.current ??= now;
-            if (now - silenceStartedRef.current >= 650) sendActivity(ws, false);
+          // While the coach is speaking, require clearly louder speech so that
+          // speaker bleed / echo cannot chop the reply into fragments.
+          const coachSpeaking = playerRef.current?.isPlaying ?? false;
+          const openThreshold = coachSpeaking ? 0.09 : 0.03;
+          if (rms >= openThreshold) {
+            // Speech must be sustained (~200 ms) before we cut the coach off.
+            loudStartedRef.current ??= now;
+            if (activityRef.current || now - loudStartedRef.current >= 200) {
+              sendActivity(ws, true);
+            }
+            silenceStartedRef.current = null;
+          } else {
+            loudStartedRef.current = null;
+            if (activityRef.current) {
+              silenceStartedRef.current ??= now;
+              if (now - silenceStartedRef.current >= 700) sendActivity(ws, false);
+            }
           }
           if (!activityRef.current) return;
           const data = floatToPcm16Base64(samples);
@@ -168,7 +182,12 @@ export function VoiceCoach() {
           );
         };
         source.connect(processor);
-        processor.connect(context.destination);
+        // Silent sink: the processor needs a destination path, but the mic must
+        // never be routed back to the speakers.
+        const sink = context.createGain();
+        sink.gain.value = 0;
+        sink.connect(context.destination);
+        processor.connect(sink);
         setStatus("live");
         haptic("success");
       };
