@@ -26,8 +26,10 @@ export function useMeditation(
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tasksRef = useRef(tasks);
   const completeRef = useRef(completeTaskRpc);
+  const sessionRef = useRef(onSessionComplete);
   tasksRef.current = tasks;
   completeRef.current = completeTaskRpc;
+  sessionRef.current = onSessionComplete;
 
   const totalMs = medMin * 60_000;
   const getElapsedMs = useCallback(() => {
