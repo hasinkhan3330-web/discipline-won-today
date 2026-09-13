@@ -25,3 +25,4 @@
 - [x] Roboflow photo detection wired into habit verification (server-side call, key in secrets). Pending: ROBOFLOW_API_KEY.
 - [x] Redesign AI Coach as the selected full-screen tech-noir room while preserving live voice, text coaching, and app navigation.
 - [x] Remove coach-scene branding overlays and add immediate Gemini voice interruption with bounded audio playback.
+- [x] Upgrade Zen Mode with three uploaded meditation tracks, circular progress, waveform motion, looping, volume, and haptic playback controls.

@@ -1,5 +1,56 @@
-import { AX, cardStyle, titleStyle } from "./styles";
-import { Play, Pause, RotateCcw } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Infinity as InfinityIcon,
+  Pause,
+  Play,
+  RotateCcw,
+  Sparkles,
+  Volume2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
+import { haptic } from "@/lib/haptics";
+import manifestation from "@/assets/audio/deep-manifestation.mp3.asset.json";
+import stillness852 from "@/assets/audio/852hz-stillness.mp3.asset.json";
+import higherSelf from "@/assets/audio/higher-self-alpha.mp3.asset.json";
+
+const TRACKS = [
+  {
+    id: "manifestation",
+    title: "Deep Manifestation",
+    subtitle: "Align energy & intentions",
+    frequency: "Theta flow",
+    duration: 751.36,
+    src: manifestation.url,
+  },
+  {
+    id: "stillness-852",
+    title: "852 Hz Stillness",
+    subtitle: "Release thought loops",
+    frequency: "852 Hz",
+    duration: 1800.15,
+    src: stillness852.url,
+  },
+  {
+    id: "higher-self",
+    title: "Higher Self",
+    subtitle: "Alpha wave meditation",
+    frequency: "Alpha flow",
+    duration: 1219.6,
+    src: higherSelf.url,
+  },
+] as const;
+
+const WAVE_BARS = [12, 25, 18, 36, 28, 48, 34, 56, 42, 68, 52, 76, 61, 82, 56, 72, 44, 64, 38, 54, 31, 46, 26, 38, 20, 31, 16, 24];
+
+function formatAudioTime(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "00:00";
+  const minutes = Math.floor(seconds / 60);
+  return `${String(minutes).padStart(2, "0")}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+}
 
 export function ZenTab({ med }: {
   med: {
@@ -12,99 +63,194 @@ export function ZenTab({ med }: {
     fmtT: (s: number) => string;
   };
 }) {
-  const CARD = cardStyle();
-  const { medMin, medLeft, medRun, setMedRun, medSessions, medTotal, medPhase, medPhaseLabel, pickMed, fmtT } = med;
-  const scale = !medRun ? 0.8 : medPhase === "inhale" ? 1 : medPhase === "exhale" ? 0.7 : 0.95;
+  const { medMin, medLeft, medRun, setMedRun, medSessions, medTotal, medPhaseLabel, pickMed, fmtT } = med;
+  const [trackIndex, setTrackIndex] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const [duration, setDuration] = useState<number>(TRACKS[0].duration);
+  const [volume, setVolume] = useState(72);
+  const [loop, setLoop] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const track = TRACKS[trackIndex];
+  const progress = duration > 0 ? Math.min(1, elapsed / duration) : 0;
+  const ringRadius = 88;
+  const ringLength = 2 * Math.PI * ringRadius;
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = volume / 100;
+  }, [volume]);
+
+  useEffect(() => {
+    if (medRun) return;
+    audioRef.current?.pause();
+  }, [medRun]);
+
+  useEffect(() => () => audioRef.current?.pause(), []);
+
+  const togglePlayback = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    haptic("tap");
+    if (medRun) {
+      audio.pause();
+      setMedRun(false);
+      return;
+    }
+    try {
+      await audio.play();
+      setMedRun(true);
+    } catch {
+      setMedRun(false);
+    }
+  };
+
+  const resetSession = () => {
+    const audio = audioRef.current;
+    haptic("tap");
+    setMedRun(false);
+    pickMed(medMin);
+    if (audio) audio.currentTime = 0;
+    setElapsed(0);
+  };
+
+  const selectTrack = (index: number, autoPlay = medRun) => {
+    const nextIndex = (index + TRACKS.length) % TRACKS.length;
+    haptic("tap");
+    setTrackIndex(nextIndex);
+    setElapsed(0);
+    setDuration(TRACKS[nextIndex].duration);
+    requestAnimationFrame(() => {
+      const audio = audioRef.current;
+      if (audio && autoPlay) void audio.play().catch(() => setMedRun(false));
+    });
+  };
+
+  const seek = (value: number[]) => {
+    const audio = audioRef.current;
+    if (!audio || !duration) return;
+    const next = (value[0] / 100) * duration;
+    audio.currentTime = next;
+    setElapsed(next);
+  };
 
   return (
-    <>
-      <div style={{ padding: "4px 2px 16px" }}>
-        <div style={{ fontSize: 24, fontWeight: 600, color: AX.text }}>Zen</div>
-        <div style={{ fontSize: 14, color: AX.muted, marginTop: 2 }}>Breathe, reset, return stronger.</div>
-      </div>
-
-      <div style={CARD}>
-        <div style={titleStyle}>Session length</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 10 }}>
-          {[5, 10, 15, 20].map(m => {
-            const active = medMin === m;
-            return (
-              <button key={m} onClick={() => pickMed(m)} disabled={medRun} style={{
-                padding: "14px 4px", cursor: medRun ? "not-allowed" : "pointer",
-                background: active ? AX.accent : "#181820",
-                border: `1px solid ${active ? AX.accent : AX.border}`,
-                borderRadius: 14,
-                color: active ? "#FFFFFF" : AX.text,
-                fontFamily: AX.font,
-                opacity: medRun && !active ? 0.5 : 1,
-              }}>
-                <div style={{ fontSize: 18, fontWeight: 600 }}>{m}</div>
-                <div style={{ fontSize: 12, marginTop: 2, color: active ? "#FFFFFF" : AX.muted }}>min</div>
-              </button>
-            );
-          })}
+    <section className="zen-console" aria-label="Zen Mode meditation player">
+      <div className="zen-console__aura" aria-hidden="true" />
+      <header className="zen-console__header">
+        <div>
+          <span className="zen-console__eyebrow"><Sparkles size={12} /> Neural stillness protocol</span>
+          <h1>ZEN MODE</h1>
         </div>
+        <div className="zen-console__live"><i /> {medRun ? "ACTIVE" : "READY"}</div>
+      </header>
+
+      <div className="zen-session-pills" aria-label="Session length">
+        {[5, 10, 15, 20].map((minutes) => (
+          <Button
+            key={minutes}
+            type="button"
+            variant="ghost"
+            disabled={medRun}
+            aria-pressed={medMin === minutes}
+            className="zen-session-pill"
+            onClick={() => { haptic("tap"); pickMed(minutes); }}
+          >
+            {minutes}<small>MIN</small>
+          </Button>
+        ))}
       </div>
 
-      <div style={{ ...CARD, textAlign: "center", padding: "28px 18px" }}>
-        <div style={{ height: "clamp(160px, 54vw, 200px)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{
-            width: "clamp(144px, 48vw, 180px)", aspectRatio: "1 / 1", borderRadius: "50%",
-            border: `1.5px solid ${AX.accent}`,
-            background: "#181820",
-            transform: `scale(${scale})`,
-            transition: "transform 3.6s ease-in-out",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <div style={{ fontSize: 15, fontWeight: 500, color: AX.text }}>
-              {medRun ? medPhaseLabel.charAt(0) + medPhaseLabel.slice(1).toLowerCase() : "Ready"}
-            </div>
+      <div className="zen-player">
+        <div className="zen-player__grid" aria-hidden="true" />
+        <div className="zen-wave" aria-hidden="true">
+          {WAVE_BARS.map((height, index) => (
+            <i key={`${height}-${index}`} style={{ "--zen-wave-height": `${height}%`, "--zen-wave-delay": `${index * -38}ms` } as React.CSSProperties} />
+          ))}
+        </div>
+
+        <div className="zen-ring-wrap">
+          <svg className="zen-ring" viewBox="0 0 200 200" aria-hidden="true">
+            <circle className="zen-ring__track" cx="100" cy="100" r={ringRadius} />
+            <circle
+              className="zen-ring__progress"
+              cx="100"
+              cy="100"
+              r={ringRadius}
+              strokeDasharray={ringLength}
+              strokeDashoffset={ringLength * (1 - progress)}
+            />
+          </svg>
+          <div className={`zen-ring__core${medRun ? " zen-ring__core--active" : ""}`}>
+            <span>{medRun ? medPhaseLabel : "SESSION"}</span>
+            <strong>{fmtT(medLeft)}</strong>
+            <small>{medRun ? "BREATHE WITH THE PULSE" : `${medMin} MIN PROTOCOL`}</small>
           </div>
         </div>
 
-        <div style={{ fontSize: "clamp(30px, 9vw, 40px)", fontWeight: 600, color: AX.text, marginTop: 12, fontVariantNumeric: "tabular-nums" }}>
-          {fmtT(medLeft)}
-        </div>
-        <div style={{ fontSize: 13, color: AX.muted, marginBottom: 20 }}>
-          {medRun ? "In session" : "Paused"}
+        <div className="zen-track-copy">
+          <span>{track.frequency}</span>
+          <h2>{track.title}</h2>
+          <p>{track.subtitle}</p>
         </div>
 
-        <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <button onClick={() => setMedRun(r => !r)} style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            padding: "12px 24px", cursor: "pointer", borderRadius: 12,
-            background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF",
-            fontFamily: AX.font, fontSize: 14, fontWeight: 600,
-          }}>
-            {medRun ? <Pause size={16} strokeWidth={2} /> : <Play size={16} strokeWidth={2} />}
-            {medRun ? "Pause" : "Begin"}
-          </button>
-          <button onClick={() => { setMedRun(false); pickMed(medMin); }} style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            padding: "12px 20px", cursor: "pointer", borderRadius: 12,
-            background: "transparent", border: `1px solid ${AX.border}`, color: AX.text,
-            fontFamily: AX.font, fontSize: 14, fontWeight: 500,
-          }}>
-            <RotateCcw size={16} strokeWidth={2} /> Reset
-          </button>
+        <div className="zen-seek">
+          <Slider value={[progress * 100]} max={100} step={0.1} onValueChange={seek} aria-label="Track position" />
+          <div><span>{formatAudioTime(elapsed)}</span><span>{formatAudioTime(duration)}</span></div>
+        </div>
+
+        <div className="zen-controls">
+          <Button type="button" variant="ghost" size="icon" className="zen-icon-button" onClick={() => selectTrack(trackIndex - 1)} aria-label="Previous meditation track">
+            <ChevronLeft />
+          </Button>
+          <Button type="button" size="icon" className="zen-play-button" onClick={togglePlayback} aria-label={medRun ? "Pause meditation" : "Play meditation"}>
+            {medRun ? <Pause /> : <Play className="zen-play-icon" />}
+          </Button>
+          <Button type="button" variant="ghost" size="icon" className="zen-icon-button" onClick={() => selectTrack(trackIndex + 1)} aria-label="Next meditation track">
+            <ChevronRight />
+          </Button>
+        </div>
+
+        <div className="zen-utility-row">
+          <div className="zen-volume">
+            <Volume2 size={16} />
+            <Slider value={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} aria-label="Volume" />
+            <span>{volume}%</span>
+          </div>
+          <Button type="button" variant="ghost" size="icon-sm" className="zen-loop-button" aria-pressed={loop} onClick={() => { haptic("tap"); setLoop((value) => !value); }} aria-label="Loop track">
+            <InfinityIcon />
+          </Button>
+          <Button type="button" variant="ghost" size="icon-sm" className="zen-loop-button" onClick={resetSession} aria-label="Reset session">
+            <RotateCcw />
+          </Button>
         </div>
       </div>
 
-      <div style={CARD}>
-        <div style={titleStyle}>Stillness ledger</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
-          {[
-            { v: medSessions, l: "Sessions" },
-            { v: `${medTotal}m`, l: "Total today" },
-            { v: `+${medMin * 2}`, l: "Next reward" },
-          ].map(s => (
-            <div key={s.l} style={{ background: "#181820", border: `1px solid ${AX.border}`, borderRadius: 14, padding: "14px 8px", textAlign: "center" }}>
-              <div style={{ fontSize: 18, fontWeight: 600, color: AX.text }}>{s.v}</div>
-              <div style={{ fontSize: 12, color: AX.muted, marginTop: 3 }}>{s.l}</div>
-            </div>
-          ))}
-        </div>
+      <div className="zen-library" aria-label="Meditation library">
+        {TRACKS.map((item, index) => (
+          <Button key={item.id} type="button" variant="ghost" className="zen-library__track" aria-pressed={trackIndex === index} onClick={() => selectTrack(index)}>
+            <span className="zen-library__number">0{index + 1}</span>
+            <span className="zen-library__copy"><strong>{item.title}</strong><small>{item.frequency} · {formatAudioTime(item.duration)}</small></span>
+            <span className="zen-library__state">{trackIndex === index ? <Check /> : <Play />}</span>
+          </Button>
+        ))}
       </div>
-    </>
+
+      <div className="zen-ledger">
+        <div><strong>{medSessions}</strong><span>Sessions</span></div>
+        <div><strong>{medTotal}m</strong><span>Today</span></div>
+        <div><strong>+{medMin * 2}</strong><span>Next reward</span></div>
+      </div>
+
+      <audio
+        ref={audioRef}
+        src={track.src}
+        loop={loop}
+        preload="metadata"
+        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || track.duration)}
+        onTimeUpdate={(event) => setElapsed(event.currentTarget.currentTime)}
+        onEnded={() => { if (!loop) setMedRun(false); }}
+      />
+    </section>
   );
 }

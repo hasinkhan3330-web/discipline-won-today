@@ -940,3 +940,354 @@ select {
 .ax-spin {
   animation: ax-spin 1s linear infinite;
 }
+
+/* ===== AXEN Zen Mode — neural stillness console ===== */
+.zen-console {
+  --zen-ink: oklch(0.09 0.035 260);
+  --zen-panel: oklch(0.14 0.045 260 / 0.74);
+  --zen-line: oklch(0.76 0.15 213 / 0.2);
+  --zen-cyan: oklch(0.82 0.15 205);
+  --zen-violet: oklch(0.65 0.2 285);
+  --zen-soft: oklch(0.78 0.05 230);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: calc(100dvh - 190px);
+  margin: -14px -12px 0;
+  padding: 18px 12px 12px;
+  color: oklch(0.97 0.015 230);
+  background:
+    radial-gradient(circle at 50% 28%, oklch(0.39 0.17 273 / 0.27), transparent 31%),
+    radial-gradient(circle at 10% 5%, oklch(0.55 0.15 205 / 0.14), transparent 26%),
+    var(--zen-ink);
+  font-family: "Rajdhani", sans-serif;
+}
+.zen-console__aura {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  opacity: 0.38;
+  background-image:
+    linear-gradient(var(--zen-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--zen-line) 1px, transparent 1px);
+  background-size: 46px 46px;
+  mask-image: linear-gradient(to bottom, black, transparent 62%);
+}
+.zen-console__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.zen-console__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--zen-cyan);
+  font: 600 9px "Orbitron", sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.zen-console__header h1 {
+  margin: 5px 0 0;
+  font: 700 clamp(23px, 8vw, 30px) "Orbitron", sans-serif;
+  letter-spacing: 0;
+}
+.zen-console__live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 6px 8px;
+  border: 1px solid var(--zen-line);
+  border-radius: 4px;
+  color: var(--zen-soft);
+  background: var(--zen-panel);
+  font: 600 9px "Orbitron", sans-serif;
+  letter-spacing: 1px;
+  backdrop-filter: blur(14px);
+}
+.zen-console__live i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--zen-cyan);
+  box-shadow: 0 0 10px var(--zen-cyan);
+}
+.zen-session-pills {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.zen-session-pill {
+  height: 35px;
+  gap: 3px;
+  border: 1px solid var(--zen-line);
+  border-radius: 4px;
+  color: var(--zen-soft);
+  background: var(--zen-panel);
+  font: 700 13px "Orbitron", sans-serif;
+  backdrop-filter: blur(12px);
+}
+.zen-session-pill small {
+  font-size: 7px;
+  letter-spacing: 0.7px;
+}
+.zen-session-pill[aria-pressed="true"] {
+  border-color: var(--zen-cyan);
+  color: oklch(0.98 0 0);
+  background: color-mix(in oklab, var(--zen-cyan) 15%, var(--zen-panel));
+  box-shadow: inset 0 0 18px color-mix(in oklab, var(--zen-cyan) 13%, transparent);
+}
+.zen-player {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 13px 14px;
+  border: 1px solid color-mix(in oklab, var(--zen-cyan) 33%, transparent);
+  border-radius: 8px;
+  background: linear-gradient(145deg, oklch(0.18 0.055 260 / 0.76), oklch(0.1 0.045 260 / 0.82));
+  box-shadow:
+    0 22px 60px oklch(0.04 0.035 260 / 0.62),
+    inset 0 1px 0 oklch(0.9 0.08 210 / 0.1),
+    0 0 50px color-mix(in oklab, var(--zen-violet) 13%, transparent);
+  backdrop-filter: blur(22px) saturate(130%);
+}
+.zen-player__grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 49.7%, var(--zen-line) 50%, transparent 50.3%);
+  opacity: 0.4;
+}
+.zen-wave {
+  position: absolute;
+  top: 38px;
+  left: 9%;
+  right: 9%;
+  height: 105px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0.45;
+  mask-image: linear-gradient(90deg, transparent, black 20%, black 80%, transparent);
+}
+.zen-wave i {
+  width: 2px;
+  height: var(--zen-wave-height);
+  border-radius: 4px;
+  background: linear-gradient(to bottom, var(--zen-violet), var(--zen-cyan));
+  box-shadow: 0 0 8px var(--zen-cyan);
+  animation: zen-wave-pulse 1.4s ease-in-out infinite alternate;
+  animation-delay: var(--zen-wave-delay);
+}
+.zen-ring-wrap {
+  position: relative;
+  width: min(59vw, 212px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+.zen-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  filter: drop-shadow(0 0 7px color-mix(in oklab, var(--zen-cyan) 55%, transparent));
+}
+.zen-ring circle {
+  fill: none;
+  stroke-width: 2.4;
+}
+.zen-ring__track { stroke: var(--zen-line); }
+.zen-ring__progress {
+  stroke: var(--zen-cyan);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 300ms linear;
+}
+.zen-ring__core {
+  position: absolute;
+  inset: 23px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--zen-line);
+  border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.26 0.09 270 / 0.8), oklch(0.1 0.05 260 / 0.96) 70%);
+  box-shadow: inset 0 0 32px color-mix(in oklab, var(--zen-violet) 18%, transparent);
+}
+.zen-ring__core--active { animation: zen-core-breathe 4s ease-in-out infinite; }
+.zen-ring__core span {
+  color: var(--zen-cyan);
+  font: 600 8px "Orbitron", sans-serif;
+  letter-spacing: 1.5px;
+}
+.zen-ring__core strong {
+  margin: 5px 0;
+  font: 600 clamp(26px, 9vw, 36px) "Orbitron", sans-serif;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 18px color-mix(in oklab, var(--zen-cyan) 42%, transparent);
+}
+.zen-ring__core small {
+  max-width: 112px;
+  color: var(--zen-soft);
+  text-align: center;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.zen-track-copy { position: relative; text-align: center; }
+.zen-track-copy > span {
+  color: var(--zen-cyan);
+  font: 600 9px "Orbitron", sans-serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.zen-track-copy h2 {
+  margin: 4px 0 1px;
+  font: 600 17px "Orbitron", sans-serif;
+  letter-spacing: 0;
+}
+.zen-track-copy p { margin: 0; color: var(--zen-soft); font-size: 12px; }
+.zen-seek { position: relative; margin: 12px 3px 0; }
+.zen-seek [data-radix-slider-track],
+.zen-volume [data-radix-slider-track] { background: var(--zen-line); }
+.zen-seek [data-radix-slider-range],
+.zen-volume [data-radix-slider-range] { background: linear-gradient(90deg, var(--zen-violet), var(--zen-cyan)); }
+.zen-seek [role="slider"],
+.zen-volume [role="slider"] {
+  border-color: var(--zen-cyan);
+  background: var(--zen-cyan);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--zen-cyan) 70%, transparent);
+}
+.zen-seek > div:last-child {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 5px;
+  color: var(--zen-soft);
+  font: 500 9px "Orbitron", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.zen-controls {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: 4px 0 8px;
+}
+.zen-icon-button,
+.zen-loop-button {
+  border: 1px solid var(--zen-line);
+  border-radius: 50%;
+  color: var(--zen-soft);
+  background: var(--zen-panel);
+}
+.zen-play-button {
+  width: 58px;
+  height: 58px;
+  border: 1px solid var(--zen-cyan);
+  border-radius: 50%;
+  color: var(--zen-ink);
+  background: var(--zen-cyan);
+  box-shadow:
+    0 0 0 7px color-mix(in oklab, var(--zen-cyan) 9%, transparent),
+    0 0 28px color-mix(in oklab, var(--zen-cyan) 62%, transparent);
+  transition: transform 160ms ease, box-shadow 200ms ease;
+}
+.zen-play-button:active { transform: scale(0.93); }
+.zen-play-button svg { width: 22px; height: 22px; }
+.zen-play-icon { transform: translateX(1px); }
+.zen-utility-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px 32px;
+  align-items: center;
+  gap: 9px;
+  padding-top: 10px;
+  border-top: 1px solid var(--zen-line);
+}
+.zen-volume {
+  display: grid;
+  grid-template-columns: 17px minmax(0, 1fr) 31px;
+  align-items: center;
+  gap: 8px;
+  color: var(--zen-soft);
+}
+.zen-volume > span { font: 500 9px "Orbitron", sans-serif; }
+.zen-loop-button[aria-pressed="true"] {
+  border-color: var(--zen-cyan);
+  color: var(--zen-cyan);
+  box-shadow: inset 0 0 10px color-mix(in oklab, var(--zen-cyan) 15%, transparent);
+}
+.zen-library {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.zen-library__track {
+  width: 100%;
+  height: 51px;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 28px;
+  gap: 9px;
+  padding: 6px 10px;
+  border: 1px solid var(--zen-line);
+  border-radius: 5px;
+  color: var(--zen-soft);
+  background: var(--zen-panel);
+  text-align: left;
+  backdrop-filter: blur(14px);
+}
+.zen-library__track[aria-pressed="true"] {
+  border-color: color-mix(in oklab, var(--zen-cyan) 58%, transparent);
+  color: oklch(0.97 0.01 230);
+  background: color-mix(in oklab, var(--zen-cyan) 9%, var(--zen-panel));
+}
+.zen-library__number { color: var(--zen-cyan); font: 600 9px "Orbitron", sans-serif; }
+.zen-library__copy { min-width: 0; display: flex; flex-direction: column; }
+.zen-library__copy strong { overflow: hidden; text-overflow: ellipsis; font: 600 11px "Orbitron", sans-serif; }
+.zen-library__copy small { margin-top: 2px; color: var(--zen-soft); font-size: 10px; }
+.zen-library__state {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--zen-line);
+  border-radius: 50%;
+}
+.zen-library__state svg { width: 11px; height: 11px; }
+.zen-ledger {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+.zen-ledger > div {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  padding: 9px 5px;
+  border: 1px solid var(--zen-line);
+  border-radius: 4px;
+  background: var(--zen-panel);
+}
+.zen-ledger strong { font: 600 14px "Orbitron", sans-serif; }
+.zen-ledger span { margin-top: 2px; color: var(--zen-soft); font-size: 9px; }
+@keyframes zen-wave-pulse {
+  from { transform: scaleY(0.48); opacity: 0.42; }
+  to { transform: scaleY(1); opacity: 1; }
+}
+@keyframes zen-core-breathe {
+  0%, 100% { transform: scale(0.96); box-shadow: inset 0 0 28px color-mix(in oklab, var(--zen-violet) 16%, transparent); }
+  50% { transform: scale(1); box-shadow: inset 0 0 42px color-mix(in oklab, var(--zen-cyan) 22%, transparent); }
+}
+@media (min-width: 700px) {
+  .zen-console { margin-inline: 0; border-radius: 8px; padding: 22px; }
+  .zen-player { max-width: 560px; margin-inline: auto; }
+  .zen-library, .zen-ledger, .zen-session-pills { max-width: 560px; margin-inline: auto; }
+  .zen-session-pills { margin-bottom: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zen-wave i, .zen-ring__core--active { animation: none; }
+}
