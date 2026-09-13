@@ -778,7 +778,18 @@ function App() {
             )}
             {tab === "rank" && (!gateReady ? <GateSkeleton /> : (
               <PaywallGate hasAccess={premiumUnlocked} featureName="Rank & Accountability" onUpgrade={() => setShowPaywall(true)}>
-                <RankTab coins={coins} streak={streak} bestStreak={life?.bestStreak ?? 0} board={board} fallbackAvatar={fallbackAvatar} />
+                <RankTab
+                  coins={coins}
+                  streak={streak}
+                  bestStreak={life?.bestStreak ?? 0}
+                  name={myName}
+                  avatar={myAvatar || fallbackAvatar(myName)}
+                  todayDone={tasks.filter(task => task.done).length}
+                  todayTotal={tasks.length}
+                  activeTheme={themeKey}
+                  onApplyTheme={setThemeKey}
+                  onNavigate={setTab}
+                />
               </PaywallGate>
             ))}
             {tab === "zen" && (!gateReady ? <GateSkeleton /> : (
