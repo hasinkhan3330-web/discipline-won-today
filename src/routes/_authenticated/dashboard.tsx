@@ -419,6 +419,12 @@ function App() {
     setWakePlan(plan);
     setWakeSaved(true);
     void scheduleNativeAlarm(plan);
+    // persist the plan on the account so it survives reinstall / new device
+    void (supabase as any)
+      .rpc("save_wake_plan", { _slot: plan.tier, _tone: plan.tone, _mode: plan.mode })
+      .then(({ error }: { error: { message: string } | null }) => {
+        if (error) console.error("save_wake_plan", error);
+      });
     toast.success(`${plan.tier} wake protocol armed`, { description: "The verification screen opens at that time." });
     setTimeout(() => { setWakeSaved(false); setProof(null); }, 900);
   };
