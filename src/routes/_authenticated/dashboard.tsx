@@ -579,7 +579,7 @@ function App() {
     const row = Array.isArray(data) ? data[0] : data;
     const awarded = Number(row?.awarded ?? 0);
     if (typeof row?.coins === "number") setCoins(row.coins);
-    setLife(prev => prev ? { ...prev, lifetimeCoins: prev.lifetimeCoins + Math.max(0, awarded), medMinutes: prev.medMinutes + minutes } : prev);
+    setLife(prev => prev ? { ...prev, lifetimeCoins: prev.lifetimeCoins + Math.max(0, awarded) } : prev);
     if (awarded > 0) toast.success(`+${awarded} coins · ${minutes} min of stillness logged`);
   };
 
