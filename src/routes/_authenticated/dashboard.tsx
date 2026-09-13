@@ -1188,6 +1188,22 @@ function App() {
         </div>
       )}
 
+      {wakeAlarm && (
+        <WakeVerify
+          tier={wakeAlarm.tier}
+          pts={wakeAlarm.pts}
+          line={wakeAlarm.line}
+          mode={wakeAlarm.mode}
+          toneUrl={(RINGTONES.find(r => r.id === wakeAlarm.tone) || RINGTONES[0]).url}
+          onVerified={() => {
+            const pts = wakeAlarm.pts;
+            setWakeAlarm(null);
+            if (wakeTask && !wakeTask.done) completeTaskRpc((wakeTask as any)._uuid, pts);
+            toast.success(`+${pts} coins · wake verified`);
+          }}
+        />
+      )}
+
       {cropSrc && (
         <CropModal
           src={cropSrc}
