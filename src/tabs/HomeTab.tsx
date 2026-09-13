@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { AX, cardStyle, titleStyle } from "./styles";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { AX } from "./styles";
 import { DeepFocus, type DeepFocusHandle, type FocusTier } from "@/components/DeepFocus";
 import { haptic } from "@/lib/haptics";
 import { ShieldCard } from "@/components/ShieldCard";
@@ -7,7 +7,7 @@ import { RemindersCard, type ReminderTask } from "@/components/RemindersCard";
 import { EmptyState } from "@/components/EmptyState";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
-  Flame, Footprints, PenLine, Circle, Check, Shield, ScanLine, Coins, Zap,
+  Flame, Footprints, PenLine, Circle, Check, ScanLine, Coins, Zap,
   ChevronRight, Music2, type LucideIcon,
 } from "lucide-react";
 
@@ -96,7 +96,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
       <section className="home-discipline-panel">
         <div className="home-discipline-panel__top">
           <div><span>Today’s Discipline</span><strong>{pct}<small>%</small></strong><p>{done} of {tasks.length} missions complete</p></div>
-          <div className="home-discipline-ring" style={{ "--home-progress": `${pct * 3.6}deg` } as React.CSSProperties}><Zap size={22} /></div>
+          <div className="home-discipline-ring" style={{ "--home-progress": `${pct * 3.6}deg` } as CSSProperties}><Zap size={22} /></div>
         </div>
         <div className="home-discipline-stats">
           <div><Flame size={16} /><span>Current streak</span><strong>{streakShown} days</strong></div>
@@ -130,7 +130,6 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
                 <button className="home-scan-button" aria-label={`Scan to verify ${t.name}`} onClick={e => { e.stopPropagation(); haptic("tap"); onScan!(t.id); }}>
                   <ScanLine size={16} strokeWidth={1.8} />
                 </button>
-              </span>
               )}
               <div className={`home-check ${popped === t.id ? "home-check--pop" : ""}`}>{t.done && <Check size={14} strokeWidth={3} />}</div>
             </div>

@@ -1,6 +1,6 @@
 import { forwardRef, useState, useEffect, useRef, useCallback, useImperativeHandle } from "react";
 import { ChevronRight, Clock3, LockKeyhole, Music2 } from "lucide-react";
-import { cardStyle, titleStyle } from "@/tabs/styles";
+import { cardStyle } from "@/tabs/styles";
 import { FocusMusicPanel } from "@/components/FocusMusicPanel";
 
 export type FocusTier = { id: "f49" | "f120" | "f229"; label: string; sub: string; minutes: number; reward: number };
