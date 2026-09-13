@@ -1516,10 +1516,10 @@ select {
 .stats-score > p { margin: 5px 0 0; color: var(--stats-muted); font-size: 7.5px; line-height: 1.4; text-align: center; white-space: pre-line; }
 .stats-kpi-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin: 10px 0; }
 .stats-kpi { min-width: 0; min-height: 93px; padding: 10px; border-radius: 10px; }
-.stats-kpi__top { display: grid; grid-template-columns: 31px minmax(0, 1fr) 12px; align-items: center; gap: 6px; }
-.stats-kpi__top .stats-icon { width: 31px; height: 31px; border-radius: 50%; }
-.stats-kpi__top > span { overflow: hidden; color: var(--stats-muted); font-size: 8px; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
-.stats-kpi__top > svg { width: 12px; color: var(--stats-muted); }
+.stats-kpi__top { display: grid; grid-template-columns: 28px minmax(0, 1fr) 9px; align-items: center; gap: 4px; }
+.stats-kpi__top .stats-icon { width: 28px; height: 28px; border-radius: 50%; }
+.stats-kpi__top > span { min-width: 0; color: var(--stats-muted); font-size: 7px; font-weight: 600; line-height: 1.08; white-space: normal; }
+.stats-kpi__top > svg { width: 9px; color: var(--stats-muted); }
 .stats-kpi > strong { display: block; margin-top: 8px; font-size: 21px; line-height: 1; }
 .stats-kpi > small { display: block; margin-top: 4px; color: var(--stats-muted); font-size: 9px; }
 .stats-week { padding: 12px; }
