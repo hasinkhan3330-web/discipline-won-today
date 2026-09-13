@@ -3,8 +3,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type QuoteCombo = { p: string; q: string; img: string };
 
-// Server-side entitlement: active/trialing/past_due (or canceled but still in
-// period) subscription in ANY environment, OR an app trial that has not expired.
+// Server-side entitlement: paid active/past_due subscription, or canceled but
+// still inside its paid period. Trial rows never grant premium access.
 // Client state cannot influence this — it is derived from the bearer token's user.
 async function isEntitled(supabase: any, userId: string): Promise<boolean> {
   const { data: sub } = await supabase
@@ -18,17 +18,10 @@ async function isEntitled(supabase: any, userId: string): Promise<boolean> {
   const active = (sub ?? []).some((s: any) => {
     const end = s.current_period_end ? new Date(s.current_period_end).getTime() : null;
     const notExpired = end === null || end > now;
-    if (["active", "trialing", "past_due"].includes(s.status) && notExpired) return true;
+    if (["active", "past_due"].includes(s.status) && notExpired) return true;
     return s.status === "canceled" && end !== null && end > now;
   });
-  if (active) return true;
-
-  const { data: trial } = await supabase
-    .from("app_trials")
-    .select("trial_ends_at")
-    .eq("user_id", userId)
-    .maybeSingle();
-  return !!trial?.trial_ends_at && new Date(trial.trial_ends_at).getTime() > now;
+  return active;
 }
 
 /** Entitlement flag for UI gating. Authoritative, computed server-side. */

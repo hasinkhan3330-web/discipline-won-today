@@ -60,7 +60,7 @@ export const Route = createFileRoute("/api/public/payments/revenuecat-webhook")(
               provider_customer_id: ent.originalAppUserId ?? appUserId,
               price_id: priceKeyFor(ent.productId),
               product_id: ent.productId,
-              status: ent.isTrial ? "trialing" : "active",
+              status: "active",
               current_period_end: ent.expiresAt,
               cancel_at_period_end: !ent.willRenew,
               environment: "live",

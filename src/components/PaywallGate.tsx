@@ -7,8 +7,7 @@ import { PRICING } from "@/lib/pricing";
 /**
  * PaywallGate — wraps premium surfaces (Zen Mode, Rank, Accountability).
  *
- * hasAccess === true  → children render seamlessly (Days 1–3 feel fully free;
- *                       no counters, no lock badges, no upgrade prompts).
+ * hasAccess === true  → children render seamlessly for paid members.
  * hasAccess === false → blurred background preview + elegant paywall card
  *                       with a single "Upgrade Account" action.
  */
@@ -88,8 +87,8 @@ export function PaywallGate({
             {featureName ? `${featureName} is locked` : "Unlock Full Access"}
           </div>
           <div style={{ fontSize: 13, color: AX.muted, lineHeight: 1.6, marginTop: 8 }}>
-            Your 3-day free access has ended. Zen Mode, Rank and Accountability
-            now need AXEN PRO — every other habit, coin and streak feature stays free.
+            Zen Mode, Rank and Accountability need AXEN PRO — every other habit,
+            coin and streak feature stays free.
           </div>
           <div style={{ fontSize: 13, color: AX.text, lineHeight: 1.7, marginTop: 12, fontWeight: 600 }}>
             {PRICING.monthly.display} · {PRICING.yearly.display}
