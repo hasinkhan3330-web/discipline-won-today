@@ -2,25 +2,19 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AccessState = {
-  /** True while the 3-day trial is live OR the user is subscribed. */
   hasAccess: boolean;
   isSubscribed: boolean;
-  trialEndsAt: string | null;
   /** False until the first profile read resolves — don't flash gates. */
   ready: boolean;
   reload: () => Promise<void>;
 };
 
 /**
- * Global access-control state for the 3-Day Invisible Trial.
- *
- * Source of truth: public.profiles (trial_ends_at / is_subscribed), written
- * ONLY by server-side triggers and payment webhooks. A real-time channel on
+ * Subscription access fallback. A real-time channel on
  * the user's profile row flips the UI the instant a webhook marks
  * is_subscribed = true — no reload required.
  */
 export function useAccessControl(userId: string | null): AccessState {
-  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [ready, setReady] = useState(false);
 
@@ -28,11 +22,10 @@ export function useAccessControl(userId: string | null): AccessState {
     if (!userId) { setReady(false); return; }
     const { data } = await supabase
       .from("profiles")
-      .select("trial_ends_at, is_subscribed")
+      .select("is_subscribed")
       .eq("id", userId)
       .maybeSingle();
     if (data) {
-      setTrialEndsAt((data as any).trial_ends_at ?? null);
       setIsSubscribed(!!(data as any).is_subscribed);
     }
     setReady(true);
@@ -71,7 +64,5 @@ export function useAccessControl(userId: string | null): AccessState {
     };
   }, [userId, load]);
 
-  const trialActive = !!trialEndsAt && new Date(trialEndsAt) > new Date();
-
-  return { hasAccess: isSubscribed || trialActive, isSubscribed, trialEndsAt, ready, reload: load };
+  return { hasAccess: isSubscribed, isSubscribed, ready, reload: load };
 }

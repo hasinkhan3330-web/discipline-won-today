@@ -14,7 +14,6 @@ const PERKS = [
   "Full Daily Quotes library + rotating legends",
   "All 9 Victory milestones (Day 1 → Day 360)",
   "PRO badge on the Leaderboard",
-  "3 days free — cancel anytime",
 ];
 
 export function Paywall({ userId, email }: { userId: string; email?: string | null }) {
@@ -34,9 +33,7 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
         <div style={{ textAlign: "center" }}>
           <h1 style={{ fontSize: 32, fontWeight: 900, letterSpacing: 6, color: "#fff", textShadow: `0 0 20px ${G}` }}>AXEN PRO</h1>
           <p style={{ letterSpacing: 3, fontSize: 10, color: G, marginTop: 4 }}>UNLOCK THE FULL SYSTEM</p>
-          <p style={{ marginTop: 14, fontSize: 12, color: "#aaa", letterSpacing: 1 }}>
-            Start with <span style={{ color: G, fontWeight: 900 }}>3 DAYS FREE</span>. Cancel anytime before you're charged.
-          </p>
+          <p style={{ marginTop: 14, fontSize: 12, color: "#aaa", letterSpacing: 1 }}>Choose a plan and unlock AXEN PRO instantly.</p>
           <p style={{ marginTop: 6, fontSize: 9, color: "#666", letterSpacing: 2 }}>◈ SECURE STORE CHECKOUT</p>
         </div>
 
@@ -62,7 +59,7 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
                   {p.save && <div style={{ background: G, color: "#000", fontSize: 9, fontWeight: 900, padding: "2px 8px", letterSpacing: 2, borderRadius: 2 }}>{p.save}</div>}
                 </div>
                 <div style={{ marginTop: 8, fontSize: 20, fontWeight: 900, color: G }}>{p.display}</div>
-                <div style={{ marginTop: 4, fontSize: 10, color: "#888", letterSpacing: 1 }}>3 days free, then {p.sub.toLowerCase()}</div>
+                <div style={{ marginTop: 4, fontSize: 10, color: "#888", letterSpacing: 1 }}>{p.sub}</div>
               </button>
             );
           })}
@@ -81,7 +78,7 @@ export function Paywall({ userId, email }: { userId: string; email?: string | nu
 
         <p style={{ marginTop: 12, fontSize: 10, color: "#666", letterSpacing: 1, textAlign: "center" }}>
           {native
-            ? "3 days free, then billed securely by the app store. Manage or cancel anytime in your store subscriptions."
+            ? "Billed securely by the app store. Manage or cancel anytime in your store subscriptions."
             : "AXEN PRO is purchased inside the AXEN mobile app via Google Play Billing or the Apple App Store."}
         </p>
 
@@ -109,7 +106,7 @@ type SubRow = { status: string; current_period_end: string | null };
 function isRowActive(s: SubRow): boolean {
   const end = s.current_period_end ? new Date(s.current_period_end) : null;
   const notExpired = !end || end > new Date();
-  if (["active", "trialing", "past_due"].includes(s.status) && notExpired) return true;
+  if (["active", "past_due"].includes(s.status) && notExpired) return true;
   if (s.status === "canceled" && end && end > new Date()) return true;
   return false;
 }

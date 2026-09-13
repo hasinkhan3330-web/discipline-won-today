@@ -12,17 +12,15 @@ export const PRICING: Record<Cycle, { priceKey: string; display: string; sub: st
   monthly: {
     priceKey: "dwt_pro_monthly_play",
     display: "₹99 / month",
-    sub: "Billed ₹99 monthly by the app store after your free trial",
+    sub: "Billed ₹99 monthly by the app store",
   },
   yearly: {
     priceKey: "dwt_pro_yearly_play",
     display: "₹499 / year",
-    sub: "Billed ₹499 yearly by the app store after your free trial",
+    sub: "Billed ₹499 yearly by the app store",
     save: "SAVE 58%",
   },
 };
-
-export const TRIAL_DAYS = 3;
 
 export function planLabelFor(priceId?: string | null): string {
   if (!priceId) return "AXEN PRO";

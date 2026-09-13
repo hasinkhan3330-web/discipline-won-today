@@ -13,7 +13,7 @@ export type SubscriptionRow = {
 function rowActive(s: SubscriptionRow): boolean {
   const end = s.current_period_end ? new Date(s.current_period_end) : null;
   const notExpired = !end || end > new Date();
-  if (["active", "trialing", "past_due"].includes(s.status) && notExpired) return true;
+  if (["active", "past_due"].includes(s.status) && notExpired) return true;
   if (s.status === "canceled" && end && end > new Date()) return true;
   return false;
 }

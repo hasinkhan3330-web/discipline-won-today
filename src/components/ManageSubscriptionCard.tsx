@@ -48,10 +48,6 @@ export function ManageSubscriptionCard() {
 
   const endDate = sub?.current_period_end ? new Date(sub.current_period_end) : null;
   const endStr = endDate ? endDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
-  const isTrial = sub?.status === "trialing";
-  const trialDaysLeft = endDate
-    ? Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / 86400000))
-    : 0;
   const isCanceled = sub?.status === "canceled" || sub?.cancel_at_period_end;
   const isPastDue = sub?.status === "past_due";
 
@@ -79,9 +75,7 @@ export function ManageSubscriptionCard() {
     ? { color: R, text: `⚠ PAYMENT FAILED — ${storeName} is retrying your payment.` }
     : isCanceled && endStr
       ? { color: "#ffb84d", text: `◌ CANCELED — access ends ${endStr}` }
-      : isTrial && endStr
-        ? { color: G, text: `◉ FREE TRIAL — ${trialDaysLeft} day${trialDaysLeft === 1 ? "" : "s"} left · first charge on ${endStr}` }
-        : endStr
+      : endStr
           ? { color: G, text: `◉ ACTIVE — renews on ${endStr}` }
           : { color: G, text: "◉ ACTIVE" };
 
@@ -96,7 +90,7 @@ export function ManageSubscriptionCard() {
         {statusLine.text}
       </div>
       <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
-        {`Billed by ${storeName} (₹99/month · ₹499/year) after your 3-day free trial. Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`}
+        {`Billed by ${storeName} (₹99/month · ₹499/year). Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`}
       </div>
 
       <a

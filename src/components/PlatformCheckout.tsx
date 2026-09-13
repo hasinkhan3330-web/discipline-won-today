@@ -43,8 +43,8 @@ export function PlatformCheckout({
         }}
       >
         <div style={{ color: G, letterSpacing: 3, fontSize: 10, fontWeight: 900 }}>◈ SUBSCRIBE IN THE AXEN APP</div>
-        AXEN PRO is purchased inside the AXEN mobile app through Google Play Billing or the Apple App Store,
-        with a 3-day free trial. Open AXEN on your phone to start.
+        AXEN PRO is purchased inside the AXEN mobile app through Google Play Billing or the Apple App Store.
+        Open AXEN on your phone to subscribe.
       </div>
     );
   }
@@ -68,9 +68,8 @@ export function PlatformCheckout({
         <div style={{ marginTop: 12, fontSize: 11, color: G, letterSpacing: 2 }}>SIGN IN TO CONTINUE</div>
       )}
       <p style={{ marginTop: 10, fontSize: 9, color: "#666", letterSpacing: 1, textAlign: "center", lineHeight: 1.7 }}>
-        3 days free, then {PRICING[cycle].display} billed by {store}. A payment method on your{" "}
-        {apple ? "Apple ID" : "Google account"} is required to start the trial; you are not charged during the
-        3 days and it converts automatically unless cancelled. Manage or cancel anytime in {store} → Subscriptions.
+        {PRICING[cycle].display} billed by {store}. A payment method on your{" "}
+        {apple ? "Apple ID" : "Google account"} is required. Manage or cancel anytime in {store} → Subscriptions.
       </p>
     </div>
   );

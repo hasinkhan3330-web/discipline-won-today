@@ -10,9 +10,9 @@ export const Route = createFileRoute("/_authenticated/checkout/success")({
   head: () => ({
     meta: [
       { title: "Welcome to AXEN PRO" },
-      { name: "description", content: "Your AXEN PRO trial is now active. The full system is unlocked." },
+      { name: "description", content: "Your AXEN PRO subscription is now active. The full system is unlocked." },
       { property: "og:title", content: "Welcome to AXEN PRO" },
-      { property: "og:description", content: "Your AXEN PRO trial is now active." },
+      { property: "og:description", content: "Your AXEN PRO subscription is now active." },
     ],
   }),
   component: SuccessPage,
@@ -67,10 +67,10 @@ function SuccessPage() {
           AXEN PRO
         </h1>
         <p style={{ fontSize: 13, color: "#bbb", letterSpacing: 1, lineHeight: 1.6, margin: "0 auto 6px", maxWidth: 380 }}>
-          Your <span style={{ color: G, fontWeight: 900 }}>3-day free trial</span> is active. The full system is unlocked — meditation, wake protocol, victories, the legend library, and your PRO badge.
+          Your <span style={{ color: G, fontWeight: 900 }}>AXEN PRO subscription</span> is active. The full system is unlocked — meditation, wake protocol, victories, the legend library, and your PRO badge.
         </p>
         <p style={{ fontSize: 10, color: "#666", letterSpacing: 1, margin: "10px 0 24px" }}>
-          Cancel anytime before the trial ends. No charge until then.
+          Manage or cancel anytime through your app store subscriptions.
         </p>
 
         <Link

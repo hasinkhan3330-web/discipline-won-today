@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type SyncResult =
-  | { active: boolean; expiresAt: string | null; priceKey: string | null; isTrial?: boolean }
+  | { active: boolean; expiresAt: string | null; priceKey: string | null }
   | { error: string };
 
 /**
@@ -37,7 +37,7 @@ export const syncPlayEntitlement = createServerFn({ method: "POST" })
           provider_customer_id: ent.originalAppUserId ?? context.userId,
           price_id: priceKeyFor(ent.productId),
           product_id: ent.productId,
-          status: ent.isTrial ? "trialing" : "active",
+          status: "active",
           current_period_start: null,
           current_period_end: ent.expiresAt,
           cancel_at_period_end: !ent.willRenew,
@@ -48,7 +48,7 @@ export const syncPlayEntitlement = createServerFn({ method: "POST" })
         { onConflict: "provider,provider_subscription_id" },
       );
 
-      return { active: true, expiresAt: ent.expiresAt, priceKey, isTrial: ent.isTrial };
+      return { active: true, expiresAt: ent.expiresAt, priceKey };
     } catch (error) {
       return { error: error instanceof Error ? error.message : "Could not verify your store purchase." };
     }

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 /**
- * Post-trial soft gate: content stays visible but is blurred / frozen until
+ * Premium soft gate: content stays visible but is blurred / frozen until
  * the user subscribes. No hard lock screen.
  */
 export function BlurLock({
@@ -52,7 +52,7 @@ export function BlurLock({
         >
           <div style={{ fontSize: 10, letterSpacing: 3, color: G, fontWeight: 900 }}>◉ PRO LOCKED</div>
           <div style={{ fontSize: 11, color: "#bbb", letterSpacing: 1, lineHeight: 1.6, margin: "6px 0 12px" }}>
-            {note ?? "Your 3-day free access has ended. Subscribe to reveal this."}
+            {note ?? "Subscribe to AXEN PRO to reveal this."}
           </div>
           <button
             onClick={onUnlock}
