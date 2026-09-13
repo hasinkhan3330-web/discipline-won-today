@@ -158,7 +158,7 @@ export function NeuralWaveCanvas({
       observer.disconnect();
       window.removeEventListener("resize", resize);
     };
-  }, [running, elapsed, phase, phaseProgress, intensity, preset]);
+  }, [running]);
 
   return <canvas ref={canvasRef} className="zen-flow-canvas" aria-hidden="true" />;
 }
