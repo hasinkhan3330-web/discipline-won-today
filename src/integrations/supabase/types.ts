@@ -184,6 +184,39 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_notes: {
+        Row: {
+          consistency_score: number
+          created_at: string
+          id: string
+          note_date: string
+          recommended_focus: string | null
+          summary_text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consistency_score?: number
+          created_at?: string
+          id?: string
+          note_date?: string
+          recommended_focus?: string | null
+          summary_text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consistency_score?: number
+          created_at?: string
+          id?: string
+          note_date?: string
+          recommended_focus?: string | null
+          summary_text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       coin_transactions: {
         Row: {
           amount: number
@@ -549,6 +582,83 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_attempts: {
+        Row: {
+          alarm_id: string | null
+          answer_given: string | null
+          correct: boolean
+          created_at: string
+          id: string
+          question_id: string | null
+          subject: string | null
+          user_id: string
+        }
+        Insert: {
+          alarm_id?: string | null
+          answer_given?: string | null
+          correct?: boolean
+          created_at?: string
+          id?: string
+          question_id?: string | null
+          subject?: string | null
+          user_id: string
+        }
+        Update: {
+          alarm_id?: string | null
+          answer_given?: string | null
+          correct?: boolean
+          created_at?: string
+          id?: string
+          question_id?: string | null
+          subject?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_questions: {
+        Row: {
+          correct_answer: string
+          created_at: string
+          difficulty: string
+          explanation: string | null
+          id: string
+          is_active: boolean
+          options: Json | null
+          question_text: string
+          subject: string
+        }
+        Insert: {
+          correct_answer: string
+          created_at?: string
+          difficulty?: string
+          explanation?: string | null
+          id?: string
+          is_active?: boolean
+          options?: Json | null
+          question_text: string
+          subject: string
+        }
+        Update: {
+          correct_answer?: string
+          created_at?: string
+          difficulty?: string
+          explanation?: string | null
+          id?: string
+          is_active?: boolean
+          options?: Json | null
+          question_text?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       streak_shield_uses: {
         Row: {
           created_at: string
@@ -699,6 +809,36 @@ export type Database = {
           pts?: number
           sort_order?: number
           started_on?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      unlock_rewards: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json
+          reward_key: string
+          unlocked_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          reward_key: string
+          unlocked_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          reward_key?: string
+          unlocked_at?: string
           updated_at?: string
           user_id?: string
         }
