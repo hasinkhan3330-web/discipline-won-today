@@ -419,6 +419,12 @@ function App() {
     setWakePlan(plan);
     setWakeSaved(true);
     void scheduleNativeAlarm(plan);
+    // persist the plan on the account so it survives reinstall / new device
+    void (supabase as any)
+      .rpc("save_wake_plan", { _slot: plan.tier, _tone: plan.tone, _mode: plan.mode })
+      .then(({ error }: { error: { message: string } | null }) => {
+        if (error) console.error("save_wake_plan", error);
+      });
     toast.success(`${plan.tier} wake protocol armed`, { description: "The verification screen opens at that time." });
     setTimeout(() => { setWakeSaved(false); setProof(null); }, 900);
   };
@@ -537,7 +543,67 @@ function App() {
     });
   };
 
-  const med = useMeditation(tasks as any, completeTaskRpc);
+  /** Credits a verified wake-up server-side: coins for the tier, streak, and the Wake Up tick. */
+  const completeWakeProtocol = async (slot: string) => {
+    const uuid = (wakeTask as any)?._uuid as string | undefined;
+    const { data, error } = await (supabase as any).rpc("complete_wake_protocol", {
+      _slot: slot, _task_id: uuid ?? null,
+    });
+    if (error) {
+      console.error(error);
+      toast.error("Could not credit the wake protocol", { description: error.message });
+      return;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
+    if (uuid) setTasks(p => p.map(t => ((t as any)._uuid === uuid ? { ...t, done: true } : t)));
+    const awarded = Number(row?.awarded ?? 0);
+    if (awarded > 0) {
+      const today = new Date().toISOString().slice(0, 10);
+      setLife(prev => prev ? {
+        ...prev,
+        bestStreak: Math.max(prev.bestStreak, Number(row?.longest_streak ?? row?.streak ?? 0)),
+        lifetimeCoins: prev.lifetimeCoins + awarded,
+        heat: prev.heat.map(h => (h.date === today ? { ...h, count: h.count + 1 } : h)),
+      } : prev);
+      toast.success(`+${awarded} coins · wake verified`);
+    } else {
+      toast.success("Wake protocol already verified today");
+    }
+  };
+
+  /** Logs a finished Zen session on the account and credits its coins. */
+  const onZenComplete = async (minutes: number) => {
+    const { data, error } = await (supabase as any).rpc("complete_zen_session", { _minutes: minutes });
+    if (error) { console.error("complete_zen_session", error); return; }
+    const row = Array.isArray(data) ? data[0] : data;
+    const awarded = Number(row?.awarded ?? 0);
+    if (typeof row?.coins === "number") setCoins(row.coins);
+    setLife(prev => prev ? { ...prev, lifetimeCoins: prev.lifetimeCoins + Math.max(0, awarded) } : prev);
+    if (awarded > 0) toast.success(`+${awarded} coins · ${minutes} min of stillness logged`);
+  };
+
+  // One-time 5,000-coin milestone gift, stored on the account so it never repeats.
+  const giftRef = useRef(false);
+  useEffect(() => {
+    if (!myId || coins < 5000 || giftRef.current) return;
+    giftRef.current = true;
+    (async () => {
+      const { data: existing } = await supabase
+        .from("unlock_rewards").select("id")
+        .eq("user_id", myId).eq("reward_key", "gift_5000").maybeSingle();
+      if (existing) return;
+      const { error } = await supabase
+        .from("unlock_rewards")
+        .insert({ user_id: myId, reward_key: "gift_5000", metadata: { coins } } as never);
+      if (error) { giftRef.current = false; return; }
+      toast.success("5,000 coin milestone unlocked", {
+        description: "Your exclusive theme reward is now available on the Rank screen.",
+      });
+    })();
+  }, [coins, myId]);
+
+  const med = useMeditation(tasks as any, completeTaskRpc, onZenComplete);
 
   const onFocusComplete = async (
     tier: { id: string; reward: number },
@@ -608,7 +674,7 @@ function App() {
     setTimeout(() => {
       setProof(p => (p && p.mode === "scan" ? { ...p, mode: "result" } : p));
       if (verdict.awake && wakeTask && !wakeTask.done) {
-        completeTaskRpc((wakeTask as any)._uuid, proof.wakePts ?? 10);
+        void completeWakeProtocol(proof.wakeTime || wakePlan?.tier || "4AM");
       }
     }, 2800);
   };
@@ -1196,10 +1262,9 @@ function App() {
           mode={wakeAlarm.mode}
           toneUrl={(RINGTONES.find(r => r.id === wakeAlarm.tone) || RINGTONES[0]).url}
           onVerified={() => {
-            const pts = wakeAlarm.pts;
+            const slot = wakeAlarm.tier;
             setWakeAlarm(null);
-            if (wakeTask && !wakeTask.done) completeTaskRpc((wakeTask as any)._uuid, pts);
-            toast.success(`+${pts} coins · wake verified`);
+            void completeWakeProtocol(slot);
           }}
         />
       )}

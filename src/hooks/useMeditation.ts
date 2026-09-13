@@ -10,6 +10,7 @@ const CYCLE_MS = 16000;
 export function useMeditation(
   tasks: MedTask[],
   completeTaskRpc: (uuid: string, overridePts?: number) => Promise<void>,
+  onSessionComplete?: (minutes: number) => Promise<void> | void,
 ) {
   const [medMin, setMedMin] = useState(10);
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -25,8 +26,10 @@ export function useMeditation(
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tasksRef = useRef(tasks);
   const completeRef = useRef(completeTaskRpc);
+  const sessionRef = useRef(onSessionComplete);
   tasksRef.current = tasks;
   completeRef.current = completeTaskRpc;
+  sessionRef.current = onSessionComplete;
 
   const totalMs = medMin * 60_000;
   const getElapsedMs = useCallback(() => {
@@ -70,6 +73,7 @@ export function useMeditation(
     });
     const medTask = tasksRef.current.find(task => /medit/i.test(task.name));
     if (medTask && !medTask.done && medTask._uuid) await completeRef.current(medTask._uuid);
+    try { await sessionRef.current?.(medMin); } catch { /* session logging must never break the timer */ }
     resetTimerRef.current = setTimeout(() => {
       liveElapsedRef.current = 0;
       bankedMsRef.current = 0;
