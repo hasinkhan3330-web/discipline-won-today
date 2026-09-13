@@ -60,7 +60,7 @@ function greeting() {
   return "Good evening";
 }
 
-export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan, onFocusComplete, onBuyShield, reminderTasks = [] }: {
+export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan, onFocusComplete, onBuyShield, reminderTasks = [], wakeSet = true }: {
   name: string;
   coins: number; streak: number; shields?: number;
   tasks: Task[];
@@ -69,6 +69,8 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
   onFocusComplete: (tier: FocusTier, lockMode: "strict" | "flex", apps: string[]) => Promise<number | null>;
   onBuyShield?: () => Promise<void>;
   reminderTasks?: ReminderTask[];
+  /** false when no wake tier/tone is saved for today — the row shows "Not set" */
+  wakeSet?: boolean;
 }) {
   const done = tasks.filter(t => t.done).length;
   const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
@@ -118,20 +120,22 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
 
         {tasks.map(t => {
           const Ico = taskIcon(t.name);
+          const isWake = /wake|alarm|rise/i.test(t.name);
+          const unset = isWake && !wakeSet && !t.done;
           const scannable = !t.done && !!onScan && /workout|gym|train|exercise|shower|bath|cold|focus|study|read/i.test(t.name);
           return (
-            <div key={t.id} className={`home-mission ${t.done ? "is-done" : ""}`} onClick={() => handleTick(t)}>
+            <div key={t.id} className={`home-mission ${t.done ? "is-done" : ""} ${unset ? "is-unset" : ""}`} onClick={() => handleTick(t)}>
               <span className="home-mission__icon"><Ico size={18} strokeWidth={1.7} /></span>
               <div className="home-mission__copy">
                 <strong>{t.name}</strong>
-                <span>+{t.pts} coins</span>
+                <span>{unset ? "Not set — tap to schedule" : `+${t.pts} coins`}</span>
               </div>
               {scannable && (
                 <button className="home-scan-button" aria-label={`Scan to verify ${t.name}`} onClick={e => { e.stopPropagation(); haptic("tap"); onScan!(t.id); }}>
                   <ScanLine size={16} strokeWidth={1.8} />
                 </button>
               )}
-              <div className={`home-check ${popped === t.id ? "home-check--pop" : ""}`}>{t.done && <Check size={14} strokeWidth={3} />}</div>
+              {!unset && <div className={`home-check ${popped === t.id ? "home-check--pop" : ""}`}>{t.done && <Check size={14} strokeWidth={3} />}</div>}
             </div>
           );
         })}
