@@ -10,6 +10,7 @@ const CYCLE_MS = 16000;
 export function useMeditation(
   tasks: MedTask[],
   completeTaskRpc: (uuid: string, overridePts?: number) => Promise<void>,
+  onSessionComplete?: (minutes: number) => Promise<void> | void,
 ) {
   const [medMin, setMedMin] = useState(10);
   const [elapsedMs, setElapsedMs] = useState(0);
