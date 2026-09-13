@@ -1,178 +1,102 @@
 import { useState } from "react";
-import { AX, cardStyle, titleStyle, buttonStyle } from "./styles";
+import {
+  Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins, Crown,
+  Circle, Flame, LogOut, Orbit, Settings, Sparkles, Target, Trophy,
+} from "lucide-react";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
 import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
 import { ReferralCard } from "@/components/ReferralCard";
-import { Camera, LogOut, AlarmClock, Check } from "lucide-react";
+import { useCountUp } from "./HomeTab";
+import {
+  AchievementsView, GoalsView, HabitsView, JourneyView, RemindersView,
+  type ProfileHabit, type ProfileLife, type ProfileView,
+} from "./ProfileDetailScreens";
 
-const VICTORIES = [
-  { d: 1,   label: "Day 1 · The first step",  line: "The first step is the heaviest. Most surrender here — you did not." },
-  { d: 7,   label: "Day 7 · Iron week",       line: "One full week. Most quit before this line. You crossed it quietly." },
-  { d: 21,  label: "Day 21 · Neural forge",   line: "Twenty-one days. Your brain has begun rewiring." },
-  { d: 60,  label: "Day 60 · Steel spine",    line: "Sixty days of work with yourself — and you kept showing up." },
-  { d: 90,  label: "Day 90 · Identity shift", line: "Ninety days. You are no longer trying to change; you have changed." },
-  { d: 180, label: "Day 180 · Unbreakable",   line: "Half a year. Weakness no longer decides your mornings." },
-  { d: 365, label: "Day 365 · Legend",        line: "One year. You did not build a habit — you became someone else." },
+type Props = {
+  coins: number; streak: number; myName: string; myAvatar: string; uploading: boolean;
+  openCropper: (file: File) => void; fallbackAvatar: (name: string) => string;
+  todayDone?: number; todayTotal?: number; weekly: number[]; life?: ProfileLife;
+  habits: ProfileHabit[]; userId: string | null;
+  onCompleteHabit: (uuid: string) => Promise<void>; onRefresh: () => Promise<void>;
+  onOpenStats: () => void; onSignOut?: () => void; referredBy?: string | null;
+  onCoins?: (coins: number) => void;
+};
+
+const RANKS = [
+  { name: "Discipline Seeker", min: 0 }, { name: "Discipline Rising", min: 100 },
+  { name: "Iron Mind", min: 300 }, { name: "Unbreakable", min: 700 },
+  { name: "Discipline Master", min: 1500 },
 ];
 
-const WAKE_TIERS = [
-  { time: "4 AM", pts: 21, tag: "Elite" },
-  { time: "5 AM", pts: 17, tag: "Strong" },
-  { time: "6 AM", pts: 9,  tag: "Solid" },
-  { time: "7 AM", pts: 5,  tag: "Base" },
-];
+export function ProfileTab(props: Props) {
+  const [view, setView] = useState<ProfileView>("dashboard");
+  const done = props.todayDone ?? 0;
+  const total = props.todayTotal ?? 0;
+  const completion = total ? Math.round(done / total * 100) : 0;
+  const coinsShown = useCountUp(props.coins);
+  const streakShown = useCountUp(props.streak);
+  const rankIndex = Math.max(0, RANKS.reduce((found, item, index) => props.coins >= item.min ? index : found, 0));
+  const rank = RANKS[rankIndex];
+  const nextRank = RANKS[rankIndex + 1];
+  const level = Math.max(1, Math.floor(props.coins / 160) + 1);
+  const levelProgress = props.coins % 160;
+  const weekActive = props.weekly.filter(value => value > 0).length;
+  const weeklyAverage = props.weekly.length ? Math.round(props.weekly.reduce((sum, value) => sum + value, 0) / props.weekly.length) : 0;
+  const back = () => setView("dashboard");
 
-function Segmented({ active, onChange, tabs }: { active: string; onChange: (id: string) => void; tabs: { id: string; label: string }[] }) {
-  return (
-    <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-      {tabs.map(t => {
-        const on = active === t.id;
-        return (
-          <button key={t.id} onClick={() => onChange(t.id)} style={{
-            flex: 1, padding: "10px 8px", borderRadius: 12, cursor: "pointer",
-            background: on ? AX.accent : "#181820",
-            border: `1px solid ${on ? AX.accent : AX.border}`,
-            color: on ? "#FFFFFF" : AX.muted,
-            fontFamily: AX.font, fontSize: 13, fontWeight: 600,
-          }}>{t.label}</button>
-        );
-      })}
+  if (view === "habits") return <HabitsView habits={props.habits} userId={props.userId} onBack={back} onComplete={props.onCompleteHabit} onChanged={props.onRefresh} />;
+  if (view === "journey") return <JourneyView life={props.life} streak={props.streak} onBack={back} />;
+  if (view === "achievements") return <AchievementsView bestStreak={props.life?.bestStreak ?? props.streak} onBack={back} />;
+  if (view === "goals") return <GoalsView userId={props.userId} onBack={back} />;
+  if (view === "reminders") return <RemindersView habits={props.habits} userId={props.userId} onBack={back} />;
+  if (view === "account") return <div className="you-detail animate-fade-in"><header className="you-detail-header"><button className="you-icon-button" onClick={back} aria-label="Back to profile">←</button><div><h1>Account</h1><p>Identity, membership and invitations.</p></div></header><ReferralCard referredBy={props.referredBy ?? null} onCoins={props.onCoins} /><ManageSubscriptionCard /><SubscriptionTimeline />{props.onSignOut && <button className="you-signout" onClick={props.onSignOut}><LogOut size={17} /> Sign out</button>}</div>;
+
+  const features = [
+    { id: "journey", title: "My Journey", copy: "Track your progress", icon: Orbit, tone: "blue" },
+    { id: "achievements", title: "Achievements", copy: "Unlock rewards", icon: Trophy, tone: "gold" },
+    { id: "stats", title: "Statistics", copy: "See your insights", icon: BarChart3, tone: "cyan" },
+    { id: "goals", title: "Goals", copy: "Set & track goals", icon: Target, tone: "pink" },
+    { id: "habits", title: "Habits", copy: "Build better habits", icon: CheckCircle2, tone: "green" },
+    { id: "reminders", title: "Reminders", copy: "Stay on track", icon: Bell, tone: "violet" },
+  ] as const;
+
+  return <section className="you-screen animate-fade-in">
+    <header className="you-profile-hero">
+      <label className="you-avatar" aria-label="Change profile photo"><img src={props.myAvatar || props.fallbackAvatar(props.myName)} onError={event => { event.currentTarget.src = props.fallbackAvatar(props.myName); }} alt={props.myName} /><span><Camera size={14} /></span><input type="file" accept="image/*" disabled={props.uploading} onChange={event => { const file = event.target.files?.[0]; if (file) props.openCropper(file); event.currentTarget.value = ""; }} /></label>
+      <div className="you-profile-copy"><h1>{props.myName}</h1><div><Crown size={15} /><strong>{rank.name}</strong><span className="you-verified">✓</span></div><p>Better Habits <b>·</b> Stronger Mind <b>·</b> Greater You</p></div>
+      <button className="you-account-button" onClick={() => setView("account")} aria-label="Open account settings"><Settings size={18} /></button>
+      <div className="you-coin-pill"><Coins size={18} /><strong>{coinsShown} coins</strong></div>
+    </header>
+
+    <article className="you-rank-card">
+      <div className="you-rank-emblem"><Crown size={36} /><i /></div>
+      <div className="you-rank-copy"><span>Your Rank</span><h2>{rank.name}</h2><p>{nextRank ? `${nextRank.min - props.coins} coins to ${nextRank.name}` : "You reached the highest rank."}</p></div>
+      <div className="you-rank-level"><strong>Level {level}</strong><ProgressBar value={levelProgress / 160 * 100} /><span>{levelProgress} / 160 XP</span></div>
+    </article>
+
+    <div className="you-kpis">
+      <Metric icon={<Flame />} title="Current Streak" value={`${streakShown}`} unit="day" tone="pink" />
+      <Metric icon={<Coins />} title="Total Coins" value={`${coinsShown}`} unit="earned" tone="gold" />
+      <Metric icon={<Target />} title="Completion Rate" value={`${completion}%`} unit={`${done}/${total} today`} tone="cyan" />
+      <Metric icon={<Crown />} title="Best Rank" value={rank.name} unit={`Top ${Math.max(1, 100 - Math.min(99, props.life?.bestStreak ?? 0))}%`} tone="violet" />
     </div>
-  );
+
+    <button className="you-motivation" onClick={() => setView("journey")}><Sparkles size={23} /><blockquote>“Discipline is the bridge between your goals and your dreams.”<span>— Keep going, Champion!</span></blockquote><b>Daily Motivation</b><ChevronRight size={18} /></button>
+
+    <div className="you-feature-grid">{features.map(item => {
+      const Icon = item.icon;
+      return <button key={item.id} className={`you-feature-card you-tone-${item.tone}`} onClick={() => item.id === "stats" ? props.onOpenStats() : setView(item.id)}><span><Icon size={25} /></span><div><strong>{item.title}</strong><small>{item.copy}</small></div><ChevronRight size={18} /></button>;
+    })}</div>
+
+    <article className="you-week-card">
+      <div className="you-week-heading"><div><h2>This Week</h2><p>Your consistency matters</p></div><button onClick={props.onOpenStats}>View Details <ChevronRight size={14} /></button></div>
+      <div className="you-week-content"><div className="you-week-days">{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, index) => <div key={day}><i className={props.weekly[index] > 0 ? "is-active" : ""}>{props.weekly[index] >= 100 ? <CheckCircle2 size={18} /> : <Circle size={13} />}</i><span>{day}</span></div>)}</div><div className="you-week-summary"><b>{weeklyAverage}%</b><span>Weekly<br />Consistency</span><small>{weekActive}/7 days</small></div></div>
+    </article>
+    <button className="you-closing-banner" onClick={() => setView("habits")}><Award size={23} /><div><strong>Discipline Today = Freedom Tomorrow</strong><span>Keep going. Your future self is watching.</span></div><ChevronRight size={18} /></button>
+  </section>;
 }
 
-export function ProfileTab({
-  coins, streak,
-  myName, myAvatar, uploading,
-  openCropper, fallbackAvatar,
-  todayDone = 0, todayTotal = 0,
-  onSignOut,
-  referredBy = null,
-  onCoins,
-}: {
-  coins: number; streak: number;
-  myName: string; myAvatar: string; uploading: boolean;
-  openCropper: (f: File) => void;
-  fallbackAvatar: (n: string) => string;
-  todayDone?: number; todayTotal?: number;
-  onSignOut?: () => void;
-  referredBy?: string | null;
-  onCoins?: (coins: number) => void;
-}) {
-  const CARD = cardStyle();
-  const [tab, setTab] = useState("profile");
-  const dayPct = todayTotal ? Math.round((todayDone / todayTotal) * 100) : 0;
-
-  return (
-    <>
-      <div style={{ ...CARD, display: "flex", alignItems: "center", gap: 16 }}>
-        <img
-          src={myAvatar || fallbackAvatar(myName)}
-          onError={(e) => { (e.currentTarget as HTMLImageElement).src = fallbackAvatar(myName); }}
-          alt={myName}
-          style={{ width: 60, height: 60, borderRadius: "50%", objectFit: "cover", border: `1px solid ${AX.border}`, flexShrink: 0 }}
-        />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 18, fontWeight: 600, color: AX.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{myName}</div>
-          <div style={{ fontSize: 13, color: AX.muted, marginTop: 2 }}>{coins} coins · {streak} day streak</div>
-          <label style={{
-            display: "inline-flex", alignItems: "center", gap: 8, marginTop: 10,
-            padding: "9px 14px", borderRadius: 12, cursor: uploading ? "wait" : "pointer",
-            background: "#181820", border: `1px solid ${AX.border}`, color: AX.text,
-            fontSize: 13, fontWeight: 500, opacity: uploading ? 0.6 : 1,
-          }}>
-            <Camera size={15} strokeWidth={1.8} />
-            {uploading ? "Uploading…" : "Change photo"}
-            <input type="file" accept="image/*" disabled={uploading} style={{ display: "none" }}
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) openCropper(f); e.currentTarget.value = ""; }} />
-          </label>
-        </div>
-      </div>
-
-      <Segmented active={tab} onChange={setTab} tabs={[
-        { id: "profile", label: "Today" },
-        { id: "wake", label: "Wake" },
-        { id: "account", label: "Account" },
-      ]} />
-
-      {tab === "profile" && (
-        <>
-          <div style={CARD}>
-            <div style={titleStyle}>Today</div>
-            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <div style={{ fontSize: 30, fontWeight: 600, color: dayPct >= 100 ? AX.success : AX.text }}>{dayPct}%</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ height: 6, background: "#1D1D28", borderRadius: 6, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${dayPct}%`, background: dayPct >= 100 ? AX.success : AX.accent, transition: "width .4s ease" }} />
-                </div>
-                <div style={{ fontSize: 12, color: AX.muted, marginTop: 8 }}>{todayDone} of {todayTotal} habits complete</div>
-              </div>
-            </div>
-          </div>
-
-          <div style={CARD}>
-            <div style={titleStyle}>Victories</div>
-            {VICTORIES.map(v => {
-              const done = streak >= v.d;
-              return (
-                <div key={v.d} style={{
-                  display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 14px",
-                  background: "#181820", border: `1px solid ${done ? AX.success : AX.border}`,
-                  borderRadius: 14, marginBottom: 10,
-                }}>
-                  <div style={{
-                    width: 22, height: 22, borderRadius: 8, flexShrink: 0, marginTop: 2,
-                    background: done ? AX.success : "transparent",
-                    border: `1px solid ${done ? AX.success : AX.border}`,
-                    display: "flex", alignItems: "center", justifyContent: "center", color: "#0A0A0F",
-                  }}>{done && <Check size={14} strokeWidth={3} />}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: done ? AX.text : AX.muted }}>{v.label}</div>
-                    <div style={{ fontSize: 12, color: AX.muted, marginTop: 3, lineHeight: 1.5 }}>{v.line}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      {tab === "wake" && (
-        <div style={CARD}>
-          <div style={titleStyle}>Wake protocol</div>
-          <div style={{ fontSize: 13, color: AX.muted, marginBottom: 14, lineHeight: 1.5 }}>
-            Tap the wake habit on Home to start the protocol. Earlier rises earn more coins.
-          </div>
-          {WAKE_TIERS.map(w => (
-            <div key={w.time} style={{
-              display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-              background: "#181820", border: `1px solid ${AX.border}`, borderRadius: 14, marginBottom: 10,
-            }}>
-              <AlarmClock size={18} strokeWidth={1.8} color={AX.accent} />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 500, color: AX.text }}>{w.time}</div>
-                <div style={{ fontSize: 12, color: AX.muted, marginTop: 2 }}>{w.tag}</div>
-              </div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: AX.accent }}>+{w.pts}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {tab === "account" && (
-        <>
-          <ReferralCard referredBy={referredBy ?? null} onCoins={onCoins} />
-          <ManageSubscriptionCard />
-          <SubscriptionTimeline />
-          {onSignOut && (
-            <div style={CARD}>
-              <button onClick={onSignOut} style={{ ...buttonStyle("ghost"), width: "100%", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                <LogOut size={16} strokeWidth={1.8} /> Sign out
-              </button>
-            </div>
-          )}
-        </>
-      )}
-    </>
-  );
+function ProgressBar({ value }: { value: number }) { return <div className="you-rank-progress"><i style={{ width: `${Math.max(0, Math.min(100, value))}%` }} /></div>; }
+function Metric({ icon, title, value, unit, tone }: { icon: React.ReactNode; title: string; value: string; unit: string; tone: string }) {
+  return <article className={`you-metric you-tone-${tone}`}><span>{icon}</span><small>{title}</small><strong>{value}</strong><em>{unit}</em></article>;
 }
