@@ -271,13 +271,65 @@ export type Database = {
         }
         Relationships: []
       }
+      goals: {
+        Row: {
+          completed: boolean
+          created_at: string
+          description: string | null
+          id: string
+          progress: number
+          target_date: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          progress?: number
+          target_date?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          description?: string | null
+          id?: string
+          progress?: number
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goals_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       habit_reminders: {
         Row: {
           created_at: string
           enabled: boolean
+          goal_id: string | null
           id: string
           remind_at: string
-          task_id: string
+          task_id: string | null
           timezone: string
           updated_at: string
           user_id: string
@@ -285,9 +337,10 @@ export type Database = {
         Insert: {
           created_at?: string
           enabled?: boolean
+          goal_id?: string | null
           id?: string
           remind_at?: string
-          task_id: string
+          task_id?: string | null
           timezone?: string
           updated_at?: string
           user_id: string
@@ -295,14 +348,22 @@ export type Database = {
         Update: {
           created_at?: string
           enabled?: boolean
+          goal_id?: string | null
           id?: string
           remind_at?: string
-          task_id?: string
+          task_id?: string | null
           timezone?: string
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "habit_reminders_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "habit_reminders_task_id_fkey"
             columns: ["task_id"]
@@ -601,34 +662,43 @@ export type Database = {
       tasks: {
         Row: {
           created_at: string
+          duration_days: number
+          frequency: string
           icon: string
           id: string
           is_active: boolean
           name: string
           pts: number
           sort_order: number
+          started_on: string
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          duration_days?: number
+          frequency?: string
           icon?: string
           id?: string
           is_active?: boolean
           name: string
           pts?: number
           sort_order?: number
+          started_on?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          duration_days?: number
+          frequency?: string
           icon?: string
           id?: string
           is_active?: boolean
           name?: string
           pts?: number
           sort_order?: number
+          started_on?: string
           updated_at?: string
           user_id?: string
         }
