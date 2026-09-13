@@ -9,13 +9,13 @@ export const Route = createFileRoute("/pro")({
   head: () => ({
     title: "AXEN PRO — Unlock Full Access",
     meta: [
-      { name: "description", content: "Upgrade to AXEN PRO. ₹99/month or ₹499/year with a 3-day free trial. Unlock Accountability, Zen, Rank Scan, and AI Assistant." },
+      { name: "description", content: "Upgrade to AXEN PRO for ₹99/month or ₹499/year. Unlock Accountability, Zen, Rank Scan, and AI Assistant." },
       { property: "og:title", content: "AXEN PRO — Unlock Full Access" },
-      { property: "og:description", content: "Upgrade to AXEN PRO. 3-day free trial, cancel anytime." },
+      { property: "og:description", content: "Upgrade to AXEN PRO for ₹99/month or ₹499/year. Cancel anytime." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "AXEN PRO — Unlock Full Access" },
-      { name: "twitter:description", content: "Upgrade to AXEN PRO. ₹99/month or ₹499/year, 3-day free trial." },
+      { name: "twitter:description", content: "Upgrade to AXEN PRO for ₹99/month or ₹499/year." },
     ],
   }),
   component: ProPage,
@@ -38,13 +38,13 @@ const PLAN_COPY: Record<Cycle, { title: string; price: string; per: string; note
     title: "MONTHLY",
     price: "₹99",
     per: "/month",
-    note: "3 days free, then billed via the app store",
+    note: "Billed monthly via the app store",
   },
   yearly: {
     title: "YEARLY",
     price: "₹499",
     per: "/year",
-    note: "3 days free, then billed via the app store",
+    note: "Billed yearly via the app store",
     save: "SAVE 58%",
   },
 };
@@ -198,36 +198,6 @@ function ProPage() {
           >
             HABIT &amp; DISCIPLINE — ACCESS TERMINAL
           </p>
-          <div
-            style={{
-              position: "relative",
-              marginTop: 10,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "4px 10px",
-              borderRadius: 2,
-              background: "rgba(0, 212, 255, 0.10)",
-              border: `1px solid ${G}44`,
-              fontSize: 8,
-              fontWeight: 800,
-              letterSpacing: 3,
-              color: G,
-              textShadow: `0 0 8px ${G}66`,
-            }}
-          >
-            <span
-              style={{
-                width: 5,
-                height: 5,
-                borderRadius: "50%",
-                background: G,
-                boxShadow: `0 0 8px ${G}`,
-                animation: "axen-flicker 2s linear infinite",
-              }}
-            />
-            3 DAYS FREE
-          </div>
         </div>
 
         {/* comparison card */}

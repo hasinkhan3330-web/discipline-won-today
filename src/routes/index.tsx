@@ -13,14 +13,14 @@ import axenLogo from "@/assets/axen-logo.png";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AXEN Habit & Discipline — Sign In & Start Free Trial" },
-      { name: "description", content: "Enter AXEN Habit & Discipline. Sign in with Google or email, then unlock PRO — ₹99/month or ₹499/year, with a 3-day free trial." },
-      { property: "og:title", content: "AXEN Habit & Discipline — Sign In & Start Free Trial" },
-      { property: "og:description", content: "Sign in to AXEN and unlock PRO. ₹99/month or ₹499/year, with a 3-day free trial." },
+      { title: "AXEN Habit & Discipline — Sign In" },
+      { name: "description", content: "Enter AXEN Habit & Discipline. Sign in with Google or email, then unlock PRO for ₹99/month or ₹499/year." },
+      { property: "og:title", content: "AXEN Habit & Discipline — Sign In" },
+      { property: "og:description", content: "Sign in to AXEN and unlock PRO for ₹99/month or ₹499/year." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "AXEN Habit & Discipline — Sign In & Start Free Trial" },
-      { name: "twitter:description", content: "Sign in to AXEN and unlock PRO. 3-day free trial, cancel anytime." },
+      { name: "twitter:title", content: "AXEN Habit & Discipline — Sign In" },
+      { name: "twitter:description", content: "Sign in to AXEN and unlock PRO for ₹99/month or ₹499/year." },
     ],
   }),
   component: Landing,
@@ -40,13 +40,13 @@ const PLAN_COPY: Record<Cycle, { title: string; price: string; per: string; note
     title: "MONTHLY",
     price: "₹99",
     per: "/month",
-    note: "3 days free, then ₹99/mo via the app store",
+    note: "₹99/month via the app store",
   },
   yearly: {
     title: "YEARLY",
     price: "₹499",
     per: "/year",
-    note: "3 days free, then ₹499/year via the app store",
+    note: "₹499/year via the app store",
     save: "SAVE 58%",
   },
 };
@@ -217,7 +217,7 @@ function Landing() {
           <div style={{ position: "absolute", left: "50%", top: "50%", width: 240, height: 240, marginLeft: -120, marginTop: -120, borderRadius: "50%", border: `1px solid ${G}22`, borderTopColor: `${G}88`, animation: "axen-orbit 16s linear infinite" }} />
           <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ position: "relative", width: "100%", maxWidth: 190, margin: "0 auto", display: "block", animation: "axen-glow 3.4s ease-in-out infinite" }} />
           <h1 className="axen-display ax-wrap" style={{ position: "relative", marginTop: 12, fontSize: "clamp(11px, 3.4vw, 14px)", fontWeight: 900, letterSpacing: "clamp(3px, 1.4vw, 6px)", color: "#fff", textShadow: `0 0 22px ${G}, 0 0 60px ${G}55` }}>AXEN HABIT &amp; DISCIPLINE</h1>
-          <p className="axen-display" style={{ position: "relative", marginTop: 6, letterSpacing: 5, fontSize: 9, fontWeight: 700, color: G, textShadow: `0 0 14px ${G}88` }}>ACCESS TERMINAL · 3 DAYS FREE</p>
+          <p className="axen-display" style={{ position: "relative", marginTop: 6, letterSpacing: 5, fontSize: 9, fontWeight: 700, color: G, textShadow: `0 0 14px ${G}88` }}>SECURE ACCESS TERMINAL</p>
         </div>
 
         {authed ? (

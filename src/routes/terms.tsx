@@ -36,7 +36,7 @@ function Terms() {
 
     <h2>6. Payment, Subscription & Merchant of Record</h2>
     <p>Payments are processed securely by <b>Google Play Billing</b> (Google LLC). Payment methods are entered directly into the Google Play purchase sheet and are never stored on our servers. Purchases, renewals, cancellations and refunds are governed by these Terms together with <a href="https://play.google.com/intl/en_us/about/play-terms/" style={{color:"#00d4ff"}}>Google Play's Terms of Service</a>. Billing questions can be sent to us directly.</p>
-    <p>Subscriptions renew automatically at the end of each billing period until cancelled. You may cancel at any time via the account portal. A 3-day free trial is offered on all plans — you will not be charged until day 4.</p>
+    <p>Subscriptions renew automatically at the end of each billing period until cancelled. You may cancel at any time through your app store subscription settings.</p>
 
     <h2>7. User Content</h2>
     <p>You retain ownership of content you upload (e.g. profile photos). You grant NEXT AI a limited licence to host and process it solely to provide the service.</p>

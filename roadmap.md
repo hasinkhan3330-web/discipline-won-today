@@ -3,14 +3,14 @@
 ## Done (this pass)
 - [x] Removed all third-party payment code from the app: Razorpay order/verify functions, Razorpay webhook route, PaymentOptions, RazorpayPayButton, PayPal leftovers.
 - [x] Checkout is store-only: Android → Google Play Billing (RevenueCat), iOS → Apple StoreKit 2 (RevenueCat). Browser build shows "subscribe in the AXEN app" with no external link.
-- [x] Monthly ₹99 / Yearly ₹999 plan display with 3-day free-trial copy everywhere.
-- [x] Entitlement state server-verified via RevenueCat REST; `trialing` status now mapped from store `period_type: trial`; trial days left shown on profile subscription card.
+- [x] Monthly ₹99 / Yearly ₹499 plan display with no free-trial offer.
+- [x] Entitlement state server-verified via RevenueCat REST; only paid subscription periods unlock PRO.
 - [x] RevenueCat webhook endpoint `/api/public/payments/revenuecat-webhook` mirrors store renewals/cancellations into `subscriptions` (guarded by REVENUECAT_WEBHOOK_SECRET).
 - [x] Clean typecheck + production build.
 
 ## Pending (user / dashboard configuration)
 - [ ] RevenueCat dashboard: replace test Android key (`test_xnCGAoUukcDaVpDzpJEpBxtDghu` in src/lib/play-billing.ts) with the real `goog_...` public key; add `appl_...` iOS key via VITE_REVENUECAT_IOS_API_KEY.
-- [ ] Play Console / App Store Connect: subscription products with 3-day free trial offer (`dwt_premium_monthly`, `dwt_premium_yearly`).
+- [ ] Play Console / App Store Connect: remove introductory free-trial offers from `dwt_premium_monthly` and `dwt_premium_yearly`.
 - [ ] Save REVENUECAT_SECRET_KEY and REVENUECAT_WEBHOOK_SECRET; point RevenueCat webhook at /api/public/payments/revenuecat-webhook.
 - [ ] Delete leftover Razorpay runtime secrets (RAZORPAY_KEY_ID/SECRET/WEBHOOK_SECRET) — deletion was interrupted; retry later.
 

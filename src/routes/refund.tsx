@@ -22,10 +22,7 @@ function Refund() {
     <h2>1. 30-Day Money-Back Guarantee</h2>
     <p>We offer a <b>30-day money-back guarantee</b>. If you are not satisfied with your AXEN subscription, you may request a full refund within 30 days of your order date.</p>
 
-    <h2>2. Free Trial</h2>
-    <p>Every AXEN plan starts with a <b>3-day free trial</b>. You will not be charged during the trial. Cancel any time before day 4 to avoid all charges.</p>
-
-    <h2>3. How to Request a Refund</h2>
+    <h2>2. How to Request a Refund</h2>
     <p>Refunds are processed through <b>Google Play</b>, back to the payment method used on your Google account, typically within 5–10 business days. To request a refund:</p>
     <ul>
       <li>Open the billing portal from your profile and review your invoices, or</li>
@@ -33,10 +30,10 @@ function Refund() {
     </ul>
     <p>Refunds are returned to the original payment method within 5–10 business days.</p>
 
-    <h2>4. Cancellation</h2>
+    <h2>3. Cancellation</h2>
     <p>You can cancel your subscription at any time from your account portal. Cancellation stops future renewals but does not automatically issue a refund for the current billing period — request a refund separately if within the 30-day window.</p>
 
-    <h2>5. Questions</h2>
+    <h2>4. Questions</h2>
     <p>Contact <b>support@next-ai.app</b> for anything refund-related.</p>
   </LegalShell>;
 }
