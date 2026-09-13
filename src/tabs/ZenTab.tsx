@@ -88,6 +88,12 @@ export function ZenTab({ med, coins }: {
 
   useEffect(() => { if (!medRun) audioRef.current?.pause(); }, [medRun]);
   useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (!soundEnabled) audio.pause();
+    else if (medRun) void audio.play().catch(() => undefined);
+  }, [medRun, soundEnabled]);
+  useEffect(() => {
     if (!medRun || lastCuePhase.current === medPhase) return;
     lastCuePhase.current = medPhase;
     if (haptics || cues) haptic("tap");
