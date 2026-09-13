@@ -1600,6 +1600,10 @@ select {
 .stats-milestones__steps strong { font-size: 13px; }
 .stats-milestones__steps span { margin-top: 1px; color: var(--stats-muted); font-size: 8px; white-space: nowrap; }
 .stats-milestones__steps .is-reached { border-color: var(--stats-violet); color: var(--stats-violet); background: color-mix(in oklab, var(--stats-violet) 5%, transparent); box-shadow: none; }
+.ax-shell:has(.stats-screen) .ax-safe-bottom { background: oklch(0.075 0.012 220) !important; border-top-color: oklch(0.31 0.035 224) !important; }
+.ax-shell:has(.stats-screen) .ax-safe-bottom .ax-nav { color: oklch(0.72 0.035 235) !important; font-family: "Manrope", sans-serif !important; }
+.ax-shell:has(.stats-screen) .ax-safe-bottom .ax-nav:nth-child(5) { position: relative; color: oklch(0.9 0.25 125) !important; }
+.ax-shell:has(.stats-screen) .ax-safe-bottom .ax-nav:nth-child(5)::after { content: ""; position: absolute; bottom: 4px; left: 31%; right: 31%; height: 2px; border-radius: 2px; background: oklch(0.9 0.25 125); }
 @keyframes stats-line-in { from { stroke-dasharray: 700; stroke-dashoffset: 700; } to { stroke-dasharray: 700; stroke-dashoffset: 0; } }
 @keyframes stats-area-in { from { opacity: 0; transform: scaleY(.25); } to { opacity: 1; transform: scaleY(1); } }
 @keyframes stats-point-in { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
