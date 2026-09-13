@@ -543,7 +543,47 @@ function App() {
     });
   };
 
-  const med = useMeditation(tasks as any, completeTaskRpc);
+  /** Credits a verified wake-up server-side: coins for the tier, streak, and the Wake Up tick. */
+  const completeWakeProtocol = async (slot: string) => {
+    const uuid = (wakeTask as any)?._uuid as string | undefined;
+    const { data, error } = await (supabase as any).rpc("complete_wake_protocol", {
+      _slot: slot, _task_id: uuid ?? null,
+    });
+    if (error) {
+      console.error(error);
+      toast.error("Could not credit the wake protocol", { description: error.message });
+      return;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
+    if (uuid) setTasks(p => p.map(t => ((t as any)._uuid === uuid ? { ...t, done: true } : t)));
+    const awarded = Number(row?.awarded ?? 0);
+    if (awarded > 0) {
+      const today = new Date().toISOString().slice(0, 10);
+      setLife(prev => prev ? {
+        ...prev,
+        bestStreak: Math.max(prev.bestStreak, Number(row?.longest_streak ?? row?.streak ?? 0)),
+        lifetimeCoins: prev.lifetimeCoins + awarded,
+        heat: prev.heat.map(h => (h.date === today ? { ...h, count: h.count + 1 } : h)),
+      } : prev);
+      toast.success(`+${awarded} coins · wake verified`);
+    } else {
+      toast.success("Wake protocol already verified today");
+    }
+  };
+
+  /** Logs a finished Zen session on the account and credits its coins. */
+  const onZenComplete = async (minutes: number) => {
+    const { data, error } = await (supabase as any).rpc("complete_zen_session", { _minutes: minutes });
+    if (error) { console.error("complete_zen_session", error); return; }
+    const row = Array.isArray(data) ? data[0] : data;
+    const awarded = Number(row?.awarded ?? 0);
+    if (typeof row?.coins === "number") setCoins(row.coins);
+    setLife(prev => prev ? { ...prev, lifetimeCoins: prev.lifetimeCoins + Math.max(0, awarded), medMinutes: prev.medMinutes + minutes } : prev);
+    if (awarded > 0) toast.success(`+${awarded} coins · ${minutes} min of stillness logged`);
+  };
+
+  const med = useMeditation(tasks as any, completeTaskRpc, onZenComplete);
 
   const onFocusComplete = async (
     tier: { id: string; reward: number },
