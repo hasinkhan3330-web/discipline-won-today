@@ -45,9 +45,9 @@ const REWARDS: Reward[] = [
   { name: "5,000 Coins", requirement: 3001, Icon: Coins },
   { name: "Exclusive Theme Unlock", requirement: 5000, Icon: Palette, theme: "aurora" },
   { name: "Weekly tasks +10%", requirement: 7000, Icon: CalendarCheck2 },
-  { name: "Special profile border", requirement: 10000, Icon: Hexagon, theme: "plasma" },
+  { name: "Premium Theme / Reward", requirement: 10000, Icon: Hexagon, theme: "plasma" },
   { name: "Profile flair", requirement: 15000, Icon: Sparkles },
-  { name: "AXEN Quote", requirement: 20000, Icon: Gift, theme: "ignite" },
+  { name: "Legend Theme Unlock", requirement: 20000, Icon: Gift, theme: "ignite" },
 ];
 
 const MOTIVATIONS = [
@@ -129,7 +129,7 @@ export function RankTab({
           { title: "Meditate", xp: "+10 XP", Icon: Flower2, tab: "zen", copy: "Complete a meditation session in Zen." },
           { title: "Stay Consistent", xp: "+5 XP daily", Icon: CalendarCheck2, tab: "stats", copy: "Keep your weekly consistency active." },
           { title: "Unlock Achievements", xp: "+25 XP", Icon: Trophy, tab: "profile", copy: "Reach streak milestones and achievements." },
-        ].map(item => <button key={item.title} onClick={() => { setPanel({ type: "xp", title: item.title, copy: item.copy }); setTimeout(() => onNavigate(item.tab), 280); }}><item.Icon size={18} /><span><strong>{item.title}</strong><small>{item.xp}</small></span><ChevronRight size={15} /></button>)}</div>
+        ].map(item => <button key={item.title} onClick={() => onNavigate(item.tab)} aria-label={`${item.title}: ${item.copy}`}><item.Icon size={18} /><span><strong>{item.title}</strong><small>{item.xp}</small></span><ChevronRight size={15} /></button>)}</div>
       </article>
 
       {panel && <RankSheet panel={panel} coins={coins} tiers={TIERS} activeTheme={activeTheme} onApplyTheme={theme => { onApplyTheme(theme); setPanel(null); }} onClose={() => setPanel(null)} quote={quote} quoteLine={quoteLine} />}
