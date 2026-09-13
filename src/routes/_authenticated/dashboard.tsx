@@ -1242,10 +1242,9 @@ function App() {
           mode={wakeAlarm.mode}
           toneUrl={(RINGTONES.find(r => r.id === wakeAlarm.tone) || RINGTONES[0]).url}
           onVerified={() => {
-            const pts = wakeAlarm.pts;
+            const slot = wakeAlarm.tier;
             setWakeAlarm(null);
-            if (wakeTask && !wakeTask.done) completeTaskRpc((wakeTask as any)._uuid, pts);
-            toast.success(`+${pts} coins · wake verified`);
+            void completeWakeProtocol(slot);
           }}
         />
       )}
