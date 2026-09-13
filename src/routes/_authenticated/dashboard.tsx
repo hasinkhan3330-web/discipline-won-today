@@ -654,7 +654,7 @@ function App() {
     setTimeout(() => {
       setProof(p => (p && p.mode === "scan" ? { ...p, mode: "result" } : p));
       if (verdict.awake && wakeTask && !wakeTask.done) {
-        completeTaskRpc((wakeTask as any)._uuid, proof.wakePts ?? 10);
+        void completeWakeProtocol(proof.wakeTime || wakePlan?.tier || "4AM");
       }
     }, 2800);
   };
