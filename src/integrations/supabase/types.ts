@@ -943,6 +943,23 @@ export type Database = {
           streak: number
         }[]
       }
+      complete_wake_protocol: {
+        Args: { _slot: string; _task_id?: string }
+        Returns: {
+          awarded: number
+          coins: number
+          longest_streak: number
+          streak: number
+        }[]
+      }
+      complete_zen_session: {
+        Args: { _minutes: number }
+        Returns: {
+          awarded: number
+          coins: number
+          minutes: number
+        }[]
+      }
       ensure_app_trial: {
         Args: never
         Returns: {
@@ -1039,6 +1056,10 @@ export type Database = {
           reason: string
         }[]
       }
+      save_wake_plan: {
+        Args: { _mode: string; _slot: string; _tone: string }
+        Returns: string
+      }
       send_friend_request: {
         Args: { _username: string }
         Returns: {
@@ -1054,6 +1075,7 @@ export type Database = {
           shields: number
         }[]
       }
+      wake_slot_reward: { Args: { _slot: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never
