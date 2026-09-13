@@ -583,6 +583,26 @@ function App() {
     if (awarded > 0) toast.success(`+${awarded} coins · ${minutes} min of stillness logged`);
   };
 
+  // One-time 5,000-coin milestone gift, stored on the account so it never repeats.
+  const giftRef = useRef(false);
+  useEffect(() => {
+    if (!myId || coins < 5000 || giftRef.current) return;
+    giftRef.current = true;
+    (async () => {
+      const { data: existing } = await supabase
+        .from("unlock_rewards").select("id")
+        .eq("user_id", myId).eq("reward_key", "gift_5000").maybeSingle();
+      if (existing) return;
+      const { error } = await supabase
+        .from("unlock_rewards")
+        .insert({ user_id: myId, reward_key: "gift_5000", metadata: { coins } } as never);
+      if (error) { giftRef.current = false; return; }
+      toast.success("5,000 coin milestone unlocked", {
+        description: "Your exclusive theme reward is now available on the Rank screen.",
+      });
+    })();
+  }, [coins, myId]);
+
   const med = useMeditation(tasks as any, completeTaskRpc, onZenComplete);
 
   const onFocusComplete = async (
