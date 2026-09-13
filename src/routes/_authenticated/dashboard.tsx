@@ -794,7 +794,7 @@ function App() {
             ))}
             {tab === "zen" && (!gateReady ? <GateSkeleton /> : (
               <PaywallGate hasAccess={premiumUnlocked} featureName="Zen Mode" onUpgrade={() => setShowPaywall(true)}>
-                <ZenTab med={med} />
+                <ZenTab med={med} coins={coins} />
               </PaywallGate>
             ))}
             {tab === "coach" && (!gateReady ? <GateSkeleton /> : (

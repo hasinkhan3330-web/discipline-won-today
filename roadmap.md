@@ -31,3 +31,4 @@
 - [x] Add the supplied golden meditation scene with timer-synchronized mandala rotation, chakra glow, exact pause/resume, and cinematic stop.
 - [x] Rebuild Stats from the supplied futuristic mobile reference while preserving live user data and navigation.
 - [x] Rebuild Rank from the supplied reference with live rank metrics, interactive details, coin rewards, and usable unlockable themes.
+- [ ] Rebuild Zen as the supplied animated Flow Chamber with synchronized timing, breathing, audio, and controls.
