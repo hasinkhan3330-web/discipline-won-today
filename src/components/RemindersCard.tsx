@@ -91,7 +91,7 @@ export function RemindersCard({ tasks }: { tasks: ReminderTask[] }) {
   };
 
   return (
-    <div style={{ ...CARD, padding: 0, marginBottom: 8, borderColor: `${AX.cyan}35`, boxShadow: `inset 0 1px 0 ${AX.cyan}12` }}>
+    <div className="home-reminders-card" style={{ ...CARD, padding: 0, marginBottom: 8, borderColor: `${AX.cyan}35`, boxShadow: `inset 0 1px 0 ${AX.cyan}12` }}>
       <button
         type="button"
         aria-expanded={open}
@@ -99,8 +99,8 @@ export function RemindersCard({ tasks }: { tasks: ReminderTask[] }) {
         style={{ ...titleStyle, width: "100%", minHeight: 46, margin: 0, padding: "10px 12px", background: "transparent", border: 0, color: AX.text, cursor: "pointer", fontFamily: AX.font }}
       >
         <Bell size={16} strokeWidth={1.8} color={AX.accent} />
-        <span style={{ flex: 1, textAlign: "left" }}>Reminders</span>
-        <span style={{ color: AX.muted, fontSize: 12 }}>{Object.values(rows).filter(row => row.enabled).length} active</span>
+        <span style={{ flex: 1, textAlign: "left" }}>Reminders · {Object.values(rows).filter(row => row.enabled).length} active</span>
+        <span style={{ color: AX.muted, fontSize: 11 }}>View all reminders</span>
         <ChevronDown size={16} color={AX.cyan} style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .25s ease" }} />
       </button>
       <div className={`ax-collapse-grid ${open ? "ax-collapse-grid--open" : ""}`} aria-hidden={!open}>

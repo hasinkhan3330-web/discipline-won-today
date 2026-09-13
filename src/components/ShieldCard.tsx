@@ -26,7 +26,7 @@ export function ShieldCard({ shields, coins, onBuy }: {
   };
 
   return (
-    <div style={{ ...CARD, padding: 0, marginBottom: 8, borderColor: `${AX.cyan}35`, boxShadow: `inset 0 1px 0 ${AX.cyan}12` }}>
+    <div className="home-shield-card" style={{ ...CARD, padding: 0, marginBottom: 8, borderColor: `${AX.cyan}35`, boxShadow: `inset 0 1px 0 ${AX.cyan}12` }}>
       <button
         type="button"
         aria-expanded={open}
@@ -34,8 +34,8 @@ export function ShieldCard({ shields, coins, onBuy }: {
         style={{ ...titleStyle, width: "100%", minHeight: 46, margin: 0, padding: "10px 12px", background: "transparent", border: 0, color: AX.text, cursor: "pointer", fontFamily: AX.font }}
       >
         <Shield size={17} strokeWidth={1.8} color={AX.cyan} />
-        <span style={{ flex: 1, textAlign: "left" }}>Streak shields</span>
-        <span style={{ color: AX.muted, fontSize: 12 }}>{shields}/{SHIELD_MAX}</span>
+        <span style={{ flex: 1, textAlign: "left" }}>Streak &amp; Shields</span>
+        <span style={{ color: AX.muted, fontSize: 12 }}>{shields}/{SHIELD_MAX} shields · Details</span>
         <ChevronDown size={16} color={AX.cyan} style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .25s ease" }} />
       </button>
       <div className={`ax-collapse-grid ${open ? "ax-collapse-grid--open" : ""}`} aria-hidden={!open}>

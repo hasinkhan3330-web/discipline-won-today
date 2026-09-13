@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { cardStyle, titleStyle } from "@/tabs/styles";
+import { forwardRef, useState, useEffect, useRef, useCallback, useImperativeHandle } from "react";
+import { ChevronRight, Clock3, LockKeyhole, Music2 } from "lucide-react";
+import { cardStyle } from "@/tabs/styles";
 import { FocusMusicPanel } from "@/components/FocusMusicPanel";
 
 export type FocusTier = { id: "f49" | "f120" | "f229"; label: string; sub: string; minutes: number; reward: number };
@@ -54,10 +54,15 @@ type LockMode = "strict" | "flex";
 const two = (n: number) => String(n).padStart(2, "0");
 const fmt = (s: number) => `${two(Math.floor(s / 3600))}:${two(Math.floor((s % 3600) / 60))}:${two(s % 60)}`;
 
-export function DeepFocus({ G, G2, onComplete }: {
+export type DeepFocusHandle = {
+  start: () => void;
+  openMusic: () => void;
+};
+
+export const DeepFocus = forwardRef<DeepFocusHandle, {
   G: string; G2: string;
   onComplete: (tier: FocusTier, lockMode: LockMode, apps: string[]) => Promise<number | null>;
-}) {
+}>(function DeepFocus({ G, G2, onComplete }, ref) {
   const CARD = cardStyle(G);
   const [phase, setPhase] = useState<Phase>("idle");
   const [tier, setTier] = useState<FocusTier | null>(null);
@@ -71,7 +76,6 @@ export function DeepFocus({ G, G2, onComplete }: {
   const [penalty, setPenalty] = useState(0);
   const [showAudio, setShowAudio] = useState(true);
   const [showMusic, setShowMusic] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const [trackIdx, setTrackIdx] = useState(0);
   const [loop, setLoop] = useState(true);
   const [vol, setVol] = useState(0.7);
@@ -135,53 +139,49 @@ export function DeepFocus({ G, G2, onComplete }: {
 
   const allApps = [...APP_GROUPS.flatMap(g => g.apps), ...customApps];
 
+  useImperativeHandle(ref, () => ({
+    start: () => {
+      const defaultTier = FOCUS_TIERS[0];
+      if (!defaultTier) return;
+      setTier(defaultTier);
+      setPhase("setup");
+    },
+    openMusic: () => setShowMusic(true),
+  }), []);
+
   /* ---------------- IDLE: tier picker ---------------- */
   if (phase === "idle") {
     return (
-      <div style={{ ...CARD, padding: 0, marginBottom: 8, borderColor: `${G}35`, boxShadow: `inset 0 1px 0 ${G}12` }}>
-        <button type="button" aria-expanded={expanded} onClick={() => setExpanded(value => !value)} style={{ ...titleStyle, width: "100%", minHeight: 46, margin: 0, padding: "10px 12px", background: "transparent", border: 0, color: "#e8e8e8", cursor: "pointer", fontFamily: "monospace" }}>
-          <span style={{ color: G }}>▸</span> DEEP <span style={{ color: G }}>FOCUS SYSTEM</span>
-          <span style={{ marginLeft: "auto", color: "#888", fontSize: 9, letterSpacing: 1.2 }}>49M · 2H · 3H49M</span>
-          <ChevronDown size={16} color={G} style={{ transform: expanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform .25s ease" }} />
-        </button>
-        <div className={`ax-collapse-grid ${expanded ? "ax-collapse-grid--open" : ""}`} aria-hidden={!expanded}>
-         <div><div style={{ padding: "0 12px 12px" }}>
-        <div style={{ ...titleStyle, marginBottom: 6 }}>
-          <button onClick={() => setShowMusic(true)} aria-label="Open focus music" style={{
-            marginLeft: "auto", display: "inline-flex", alignItems: "center", justifyContent: "center",
-            width: 26, height: 26, borderRadius: 8, cursor: "pointer",
-            background: "transparent", border: `1px solid ${G}44`, color: G, padding: 0,
-          }}>
-            <ChevronRight size={16} strokeWidth={2} />
-          </button>
+      <section className="home-focus-card" style={{ ...CARD }}>
+        <div className="home-section-heading">
+          <span><LockKeyhole size={18} strokeWidth={1.8} /></span>
+          <div><h2>Deep Focus System</h2><p>Lock distractions. Enter the work.</p></div>
         </div>
         {showMusic && <FocusMusicPanel onClose={() => setShowMusic(false)} />}
-        <div style={{ fontSize: 8.5, color: "#888", letterSpacing: 1.2, lineHeight: 1.5, marginBottom: 10 }}>
-          LOCK YOUR APPS. STACK UNLIMITED SESSIONS. CLIMB THE LEADERBOARD.
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 6 }}>
+        <div className="home-focus-tiers">
           {FOCUS_TIERS.map(t => (
-            <button key={t.id} onClick={() => { setTier(t); setPhase("setup"); }} style={{
-              padding: "10px 6px", cursor: "pointer", textAlign: "center", borderRadius: 2,
-              background: `linear-gradient(160deg, ${G}18, transparent)`,
-              border: `1px solid ${G}33`, borderTop: `2px solid ${G}`, color: "#e8e8e8", fontFamily: "monospace",
-            }}>
-              <div style={{ fontSize: 18, fontWeight: 900, color: G, textShadow: `0 0 12px ${G}88`, lineHeight: 1 }}>
-                {t.minutes >= 60 ? Math.floor(t.minutes / 60) : t.minutes}
-                <span style={{ fontSize: 8, color: "#777", marginLeft: 2 }}>{t.minutes >= 60 ? "H" : "M"}</span>
-              </div>
-              <div style={{ fontSize: 9, fontWeight: 800, letterSpacing: 1, marginTop: 4 }}>{t.label}</div>
-              <div style={{ fontSize: 7.5, color: "#777", letterSpacing: 1.2, marginTop: 2 }}>{t.sub}</div>
-              <div style={{ fontSize: 10, fontWeight: 900, color: G, marginTop: 5 }}>+{t.reward}</div>
-              <div style={{ fontSize: 7, color: "#666", letterSpacing: 1 }}>COINS · PTS</div>
+            <button key={t.id} onClick={() => { setTier(t); setPhase("setup"); }}>
+              <Clock3 size={16} strokeWidth={1.8} />
+              <strong>{t.label}</strong>
+              <span>{t.sub}</span>
+              <b>+{t.reward} coins</b>
+              <small>+{t.reward} leaderboard pts</small>
             </button>
           ))}
         </div>
-        {penalty > 0 && <div style={{ fontSize: 8.5, color: "#ff5566", letterSpacing: 1.5, marginTop: 6 }}>◉ LAST SESSION ABANDONED · -{penalty} PTS</div>}
-        </div></div>
-        </div>
-      </div>
-
+        {penalty > 0 && <div className="home-focus-penalty">Last session abandoned · −{penalty} pts</div>}
+        <button className="home-focus-configure" onClick={() => {
+          const defaultTier = FOCUS_TIERS[0];
+          if (!defaultTier) return;
+          setTier(defaultTier);
+          setPhase("setup");
+        }}>
+          <LockKeyhole size={17} strokeWidth={2} /> Configure Lock <ChevronRight size={16} />
+        </button>
+        <button className="home-focus-music-link" onClick={() => setShowMusic(true)}>
+          <Music2 size={16} /> Focus music <ChevronRight size={16} />
+        </button>
+      </section>
     );
   }
 
@@ -445,4 +445,4 @@ export function DeepFocus({ G, G2, onComplete }: {
   }
 
   return null;
-}
+});
