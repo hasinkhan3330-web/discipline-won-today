@@ -16,32 +16,19 @@ import { haptic } from "@/lib/haptics";
 import manifestation from "@/assets/audio/deep-manifestation.mp3.asset.json";
 import stillness852 from "@/assets/audio/852hz-stillness.mp3.asset.json";
 import higherSelf from "@/assets/audio/higher-self-alpha.mp3.asset.json";
+import spiritual10 from "@/assets/audio/spiritual-guide-10.mp3.asset.json";
+import spiritual15 from "@/assets/audio/spiritual-guide-15.mp3.asset.json";
+import thetaWaves from "@/assets/audio/theta-waves.mp3.asset.json";
+import tibetanBowls from "@/assets/audio/tibetan-bowls.mp3.asset.json";
 
 const TRACKS = [
-  {
-    id: "manifestation",
-    title: "Deep Manifestation",
-    subtitle: "Align energy & intentions",
-    frequency: "Theta flow",
-    duration: 751.36,
-    src: manifestation.url,
-  },
-  {
-    id: "stillness-852",
-    title: "852 Hz Stillness",
-    subtitle: "Release thought loops",
-    frequency: "852 Hz",
-    duration: 1800.15,
-    src: stillness852.url,
-  },
-  {
-    id: "higher-self",
-    title: "Higher Self",
-    subtitle: "Alpha wave meditation",
-    frequency: "Alpha flow",
-    duration: 1219.6,
-    src: higherSelf.url,
-  },
+  { id: "manifestation", title: "Deep Manifestation", subtitle: "Align energy & intentions", frequency: "Theta flow", src: manifestation.url },
+  { id: "stillness-852", title: "852 Hz Stillness", subtitle: "Release thought loops", frequency: "852 Hz", src: stillness852.url },
+  { id: "higher-self", title: "Higher Self", subtitle: "Alpha wave meditation", frequency: "Alpha flow", src: higherSelf.url },
+  { id: "spiritual-10", title: "Spiritual Guide", subtitle: "Super deep healing", frequency: "Deep healing", src: spiritual10.url },
+  { id: "spiritual-15", title: "Spiritual Guide II", subtitle: "Extended deep healing", frequency: "Deep healing", src: spiritual15.url },
+  { id: "theta-waves", title: "Relaxing Theta Waves", subtitle: "Slow down your brainwaves", frequency: "Theta binaural", src: thetaWaves.url },
+  { id: "tibetan-bowls", title: "Tibetan Singing Bowls", subtitle: "Release fatigue & tension", frequency: "Healing bowls", src: tibetanBowls.url },
 ] as const;
 
 const WAVE_BARS = [12, 25, 18, 36, 28, 48, 34, 56, 42, 68, 52, 76, 61, 82, 56, 72, 44, 64, 38, 54, 31, 46, 26, 38, 20, 31, 16, 24];
@@ -66,9 +53,8 @@ export function ZenTab({ med }: {
   const { medMin, medLeft, medRun, setMedRun, medSessions, medTotal, medPhaseLabel, pickMed, fmtT } = med;
   const [trackIndex, setTrackIndex] = useState(0);
   const [elapsed, setElapsed] = useState(0);
-  const [duration, setDuration] = useState<number>(TRACKS[0].duration);
+  const [duration, setDuration] = useState<number>(0);
   const [volume, setVolume] = useState(72);
-  const [loop, setLoop] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const track = TRACKS[trackIndex];
   const progress = duration > 0 ? Math.min(1, elapsed / duration) : 0;
@@ -119,7 +105,7 @@ export function ZenTab({ med }: {
     haptic("tap");
     setTrackIndex(nextIndex);
     setElapsed(0);
-    setDuration(TRACKS[nextIndex].duration);
+    setDuration(0);
     requestAnimationFrame(() => {
       const audio = audioRef.current;
       if (audio && autoPlay) void audio.play().catch(() => setMedRun(false));
@@ -217,9 +203,9 @@ export function ZenTab({ med }: {
             <Slider value={[volume]} max={100} step={1} onValueChange={(value) => setVolume(value[0])} aria-label="Volume" />
             <span>{volume}%</span>
           </div>
-          <Button type="button" variant="ghost" size="icon-sm" className="zen-loop-button" aria-pressed={loop} onClick={() => { haptic("tap"); setLoop((value) => !value); }} aria-label="Loop track">
+          <span className="zen-loop-button" aria-label="Looping until session ends" title="Loops until the session timer ends">
             <InfinityIcon />
-          </Button>
+          </span>
           <Button type="button" variant="ghost" size="icon-sm" className="zen-loop-button" onClick={resetSession} aria-label="Reset session">
             <RotateCcw />
           </Button>
@@ -230,7 +216,7 @@ export function ZenTab({ med }: {
         {TRACKS.map((item, index) => (
           <Button key={item.id} type="button" variant="ghost" className="zen-library__track" aria-pressed={trackIndex === index} onClick={() => selectTrack(index)}>
             <span className="zen-library__number">0{index + 1}</span>
-            <span className="zen-library__copy"><strong>{item.title}</strong><small>{item.frequency} · {formatAudioTime(item.duration)}</small></span>
+            <span className="zen-library__copy"><strong>{item.title}</strong><small>{item.frequency}</small></span>
             <span className="zen-library__state">{trackIndex === index ? <Check /> : <Play />}</span>
           </Button>
         ))}
@@ -245,11 +231,15 @@ export function ZenTab({ med }: {
       <audio
         ref={audioRef}
         src={track.src}
-        loop={loop}
+        loop
         preload="metadata"
-        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || track.duration)}
+        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
         onTimeUpdate={(event) => setElapsed(event.currentTarget.currentTime)}
-        onEnded={() => { if (!loop) setMedRun(false); }}
+        onEnded={(event) => {
+          const audio = event.currentTarget;
+          audio.currentTime = 0;
+          if (medRun) void audio.play().catch(() => undefined);
+        }}
       />
     </section>
   );
