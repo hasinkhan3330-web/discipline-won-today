@@ -8,7 +8,6 @@ import {
   Play,
   RotateCcw,
   Settings,
-  SlidersHorizontal,
   Volume2,
   Waves,
 } from "lucide-react";
