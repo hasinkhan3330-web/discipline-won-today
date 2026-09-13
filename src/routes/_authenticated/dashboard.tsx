@@ -107,7 +107,7 @@ function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [board, setBoard] = useState<{ n: string; c: number; s: number; img: string; you?: boolean }[]>([]);
   const [weekly, setWeekly] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
-  const [life, setLife] = useState<{ bestStreak: number; lifetimeCoins: number; heat: { date: string; count: number }[]; topTask: { icon: string; name: string; count: number } | null; focusMinutes: number; taskTotal?: number } | null>(null);
+  const [life, setLife] = useState<{ bestStreak: number; lifetimeCoins: number; heat: { date: string; count: number }[]; topTask: { icon: string; name: string; count: number } | null; focusMinutes: number; taskTotal?: number; completionCount?: number } | null>(null);
 
   const [myId, setMyId] = useState<string | null>(null);
   const [myEmail, setMyEmail] = useState<string | null>(null);
@@ -172,7 +172,7 @@ function App() {
     const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
       supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url, shields, onboarded, referred_by").eq("id", uid).maybeSingle(),
 
-      supabase.from("tasks").select("id, icon, name, pts, sort_order").eq("user_id", uid).eq("is_active", true).order("sort_order"),
+      supabase.from("tasks").select("id, icon, name, pts, sort_order, frequency, duration_days, started_on").eq("user_id", uid).eq("is_active", true).order("sort_order"),
       supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
       supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20),
       supabase.from("task_completions").select("completed_on").eq("user_id", uid).gte("completed_on", sevenAgo),
@@ -200,6 +200,9 @@ function App() {
       name: r.name,
       pts: r.pts,
       done: doneIds.has(r.id as string),
+      frequency: r.frequency,
+      durationDays: r.duration_days,
+      startedOn: r.started_on,
     }) as unknown as Task));
 
     setBoard((leaders || []).map(l => ({
@@ -256,6 +259,7 @@ function App() {
       topTask,
       focusMinutes: (focusSessions || []).reduce((sum, session) => sum + (session.minutes || 0), 0),
       taskTotal: (taskRows || []).length,
+      completionCount: (allComps || []).length,
     });
   };
 
@@ -717,7 +721,7 @@ function App() {
 
       <div className="ax-shell" style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column" }}>
         {/* TOPBAR */}
-        <div className="ax-safe-top" style={{ padding: tab === "home" ? "9px 12px" : "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: tab === "coach" || tab === "stats" ? "none" : "flex", justifyContent: "space-between", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 99 }}>
+        <div className="ax-safe-top" style={{ padding: tab === "home" ? "9px 12px" : "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: tab === "coach" || tab === "stats" || tab === "profile" ? "none" : "flex", justifyContent: "space-between", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 99 }}>
           <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto", flexShrink: 0 }} />
           <div style={{ display: "flex", gap: 8, alignItems: "center", minWidth: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
             {gateReady && !premiumUnlocked && (
@@ -734,9 +738,9 @@ function App() {
           style={{
             flex: 1,
             minWidth: 0,
-            paddingTop: tab === "coach" || tab === "stats" ? 0 : tab === "home" ? 8 : 14,
-            paddingLeft: tab === "coach" || tab === "stats" ? 0 : tab === "home" ? 10 : 12,
-            paddingRight: tab === "coach" || tab === "stats" ? 0 : tab === "home" ? 10 : 12,
+            paddingTop: tab === "coach" || tab === "stats" || tab === "profile" ? 0 : tab === "home" ? 8 : 14,
+            paddingLeft: tab === "coach" || tab === "stats" || tab === "profile" ? 0 : tab === "home" ? 10 : 12,
+            paddingRight: tab === "coach" || tab === "stats" || tab === "profile" ? 0 : tab === "home" ? 10 : 12,
             paddingBottom: "calc(96px + env(safe-area-inset-bottom, 0px))",
           }}
           key={tab}
@@ -804,6 +808,22 @@ function App() {
                 fallbackAvatar={fallbackAvatar}
                 todayDone={tasks.filter(t => t.done).length}
                 todayTotal={tasks.length}
+                weekly={weekly}
+                life={life ?? undefined}
+                habits={tasks.map(task => ({
+                  uuid: (task as any)._uuid as string,
+                  name: task.name,
+                  icon: task.icon,
+                  pts: task.pts,
+                  done: task.done,
+                  frequency: (task as any).frequency,
+                  durationDays: (task as any).durationDays,
+                  startedOn: (task as any).startedOn,
+                }))}
+                userId={myId}
+                onCompleteHabit={completeTaskRpc}
+                onRefresh={refreshAll}
+                onOpenStats={() => setTab("stats")}
                 onSignOut={handleSignOut}
                 referredBy={referredBy}
                 onCoins={setCoins}
@@ -813,7 +833,7 @@ function App() {
 
 
           {/* LEGAL LINKS */}
-          <div style={{ display: tab === "home" || tab === "coach" || tab === "stats" ? "none" : "block", marginTop: 28, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${AX.border}` }}>
+          <div style={{ display: tab === "home" || tab === "coach" || tab === "stats" || tab === "profile" ? "none" : "block", marginTop: 28, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${AX.border}` }}>
             <div style={{ fontSize: 12, color: AX.muted, marginBottom: 10 }}>AXEN Habit &amp; Discipline · a product of Next AI</div>
             <div style={{ display: "flex", justifyContent: "center", gap: 18, flexWrap: "wrap" }}>
               <Link to="/privacy" style={{ color: AX.muted, textDecoration: "none", fontSize: 12 }}>Privacy</Link>

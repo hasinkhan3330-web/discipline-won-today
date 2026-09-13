@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Bell, BellOff, CalendarDays, Check, ChevronRight, Circle,
-  Clock3, Coins, Flame, Medal, Pencil, Plus, Sparkles, Target, Trash2,
+  ArrowLeft, Bell, BellOff, Check, ChevronRight, Circle,
+  Coins, Flame, Medal, Pencil, Plus, Sparkles, Trash2,
 } from "lucide-react";
 
 export type ProfileView = "dashboard" | "habits" | "journey" | "achievements" | "goals" | "reminders" | "account";

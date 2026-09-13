@@ -20,6 +20,8 @@
 ## UI pass (in progress)
 - [x] Paywall/plan display: ₹99/month and ₹499/year only (₹83 card removed), SAVE badge on yearly.
 - [x] Dashboard home: denser native-app layout, collapsible Streak shields / Reminders / Deep Focus.
+- [x] You/Profile: reference-matched cosmic dashboard with functional Journey, Achievements, Habits, Goals, Reminders, Statistics, and Account views.
+- [x] Habits and goals persist in Lovable Cloud and synchronize through the existing completion reward flow.
 
 ## Requested next
 - [x] Roboflow photo detection wired into habit verification (server-side call, key in secrets). Pending: ROBOFLOW_API_KEY.

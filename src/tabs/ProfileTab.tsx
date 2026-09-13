@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins, Crown,
-  Flame, LogOut, Orbit, Settings, Sparkles, Target, Trophy,
+  Circle, Flame, LogOut, Orbit, Settings, Sparkles, Target, Trophy,
 } from "lucide-react";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
 import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
@@ -35,7 +35,7 @@ export function ProfileTab(props: Props) {
   const completion = total ? Math.round(done / total * 100) : 0;
   const coinsShown = useCountUp(props.coins);
   const streakShown = useCountUp(props.streak);
-  const rankIndex = Math.max(0, RANKS.findLastIndex(rank => props.coins >= rank.min));
+  const rankIndex = Math.max(0, RANKS.reduce((found, item, index) => props.coins >= item.min ? index : found, 0));
   const rank = RANKS[rankIndex];
   const nextRank = RANKS[rankIndex + 1];
   const level = Math.max(1, Math.floor(props.coins / 160) + 1);

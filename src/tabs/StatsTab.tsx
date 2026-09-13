@@ -183,7 +183,7 @@ export function StatsTab({ weekly, life, coins, streak }: StatsTabProps) {
       </article>
 
       <div className="stats-kpi-grid">
-        <KpiCard icon={<Flame size={19} />} label="Best Streak" value={`${life?.bestStreak ?? 0}`} unit="days" />
+        <KpiCard icon={<Flame size={19} />} label="Current Streak" value={`${streak}`} unit="days" />
         <KpiCard icon={<Coins size={19} />} label="Lifetime Coins" value={`${life?.lifetimeCoins ?? 0}`} unit="coins" gold />
         <KpiCard icon={<Flower2 size={19} />} label="Meditation" value={`${life?.medMinutes ?? 0}m`} unit="stillness" />
       </div>
