@@ -66,7 +66,7 @@ export function ZenTab({ med }: {
   const { medMin, medLeft, medRun, setMedRun, medSessions, medTotal, medPhaseLabel, pickMed, fmtT } = med;
   const [trackIndex, setTrackIndex] = useState(0);
   const [elapsed, setElapsed] = useState(0);
-  const [duration, setDuration] = useState(TRACKS[0].duration);
+  const [duration, setDuration] = useState<number>(TRACKS[0].duration);
   const [volume, setVolume] = useState(72);
   const [loop, setLoop] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
