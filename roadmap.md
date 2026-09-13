@@ -32,4 +32,5 @@
 - [x] Rebuild Stats from the supplied futuristic mobile reference while preserving live user data and navigation.
 - [x] Rebuild Rank from the supplied reference with live rank metrics, interactive details, coin rewards, and usable unlockable themes.
 - [x] Restyle Stats to the supplied graphite-black and electric-lime reference while preserving its data, layout, and navigation.
+- [x] Rebuild Home as the graphite-black AXEN Command Center while preserving habits, shields, reminders, Deep Focus, lock setup, music, and navigation.
 - [ ] Rebuild Zen as the supplied animated Flow Chamber with synchronized timing, breathing, audio, and controls.

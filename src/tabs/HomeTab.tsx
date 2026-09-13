@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { AX, cardStyle, titleStyle } from "./styles";
-import { DeepFocus, type FocusTier } from "@/components/DeepFocus";
+import { DeepFocus, type DeepFocusHandle, type FocusTier } from "@/components/DeepFocus";
 import { haptic } from "@/lib/haptics";
 import { ShieldCard } from "@/components/ShieldCard";
 import { RemindersCard, type ReminderTask } from "@/components/RemindersCard";
 import { EmptyState } from "@/components/EmptyState";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
-  Flame, Footprints, PenLine, Circle, Check, Shield, ScanLine, type LucideIcon,
+  Flame, Footprints, PenLine, Circle, Check, Shield, ScanLine, Coins, Zap,
+  ChevronRight, Music2, type LucideIcon,
 } from "lucide-react";
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
@@ -69,12 +70,12 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
   onBuyShield?: () => Promise<void>;
   reminderTasks?: ReminderTask[];
 }) {
-  const CARD = { ...cardStyle(), padding: 12, marginBottom: 8, borderRadius: 14, borderColor: `${AX.cyan}2E`, boxShadow: `inset 0 1px 0 ${AX.cyan}10` };
   const done = tasks.filter(t => t.done).length;
   const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;
   const streakShown = useCountUp(streak);
   const [popped, setPopped] = useState<number | null>(null);
   const pending = useRef<Set<number>>(new Set());
+  const focusRef = useRef<DeepFocusHandle>(null);
 
   const handleTick = (t: Task) => {
     if (t.done || pending.current.has(t.id)) return; // guard rapid double taps
@@ -86,48 +87,27 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
   };
 
   return (
-    <>
-      <style>{`
-        .ax-check { transition: transform 150ms ease, background 150ms ease, border-color 150ms ease; }
-        .ax-check--pop { transform: scale(1.25); }
-        .ax-task { transition: border-color .15s ease, background .15s ease, transform .15s ease; }
-        .ax-task:active { background: #191922; }
-      `}</style>
+    <main className="home-command">
+      <header className="home-header">
+        <div><span>AXEN</span><h1>Command Center</h1><p>{greeting()}, {name}</p></div>
+        <div className="home-coin-pill"><Coins size={17} strokeWidth={1.8} /><strong>{coins}</strong><span>coins</span></div>
+      </header>
 
-      <div style={{ padding: "0 2px 8px", minWidth: 0 }}>
-        <div className="ax-wrap" style={{ fontSize: 11, color: AX.muted }}>{greeting()},</div>
-        <div className="ax-wrap" style={{ fontSize: 19, fontWeight: 650, color: AX.text, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{name}</div>
-      </div>
+      <section className="home-discipline-panel">
+        <div className="home-discipline-panel__top">
+          <div><span>Today’s Discipline</span><strong>{pct}<small>%</small></strong><p>{done} of {tasks.length} missions complete</p></div>
+          <div className="home-discipline-ring" style={{ "--home-progress": `${pct * 3.6}deg` } as React.CSSProperties}><Zap size={22} /></div>
+        </div>
+        <div className="home-discipline-stats">
+          <div><Flame size={16} /><span>Current streak</span><strong>{streakShown} days</strong></div>
+          <div><Coins size={16} /><span>Today coins</span><strong>{tasks.filter(t => t.done).reduce((sum, t) => sum + t.pts, 0)}</strong></div>
+        </div>
+        <button className="home-primary-action" onClick={() => focusRef.current?.start()}><Zap size={18} fill="currentColor" /> Start Deep Focus</button>
+      </section>
 
-      <div style={{ ...CARD, display: "flex", alignItems: "center", gap: 11 }}>
-        <div style={{
-           width: 42, height: 42, borderRadius: 12, flexShrink: 0,
-          background: "#1D1D28", border: `1px solid ${AX.border}`,
-          display: "flex", alignItems: "center", justifyContent: "center", color: AX.flame,
-        }}>
-           <Flame size={21} strokeWidth={1.8} />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="ax-wrap" style={{ fontSize: 20, fontWeight: 650, color: AX.text, lineHeight: 1.1 }}>
-            {streakShown} <span style={{ fontSize: 12, color: AX.muted, fontWeight: 500 }}>day streak</span>
-          </div>
-          <div className="ax-wrap" style={{ fontSize: 11, color: AX.muted, marginTop: 2 }}>{coins} coins earned</div>
-        </div>
-        <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <div style={{ fontSize: 16, fontWeight: 600, color: pct === 100 ? AX.success : AX.text }}>{pct}%</div>
-          <div style={{ fontSize: 10, color: AX.muted }}>{done}/{tasks.length} today</div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 3, marginTop: 3, fontSize: 10, color: shields > 0 ? AX.success : AX.muted }}>
-            <Shield size={13} strokeWidth={1.9} />{shields}
-          </div>
-        </div>
-      </div>
-
-      <div style={CARD}>
-        <div style={{ ...titleStyle, fontSize: 13, marginBottom: 8 }}>Today's habits</div>
-
-        <div style={{ height: 3, background: "#1D1D28", borderRadius: 4, overflow: "hidden", marginBottom: 8 }}>
-          <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? AX.success : AX.cyan, boxShadow: `0 0 9px ${pct === 100 ? AX.success : AX.cyan}`, transition: "width .4s ease" }} />
-        </div>
+      <section className="home-missions">
+        <div className="home-section-heading home-section-heading--plain"><div><h2>Today Missions</h2><p>Execute the plan. No negotiation.</p></div><span>{done}/{tasks.length}</span></div>
+        <div className="home-mission-progress"><i style={{ width: `${pct}%` }} /></div>
 
         {tasks.length === 0 && (
           <EmptyState
@@ -140,54 +120,33 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
           const Ico = taskIcon(t.name);
           const scannable = !t.done && !!onScan && /workout|gym|train|exercise|shower|bath|cold|focus|study|read/i.test(t.name);
           return (
-            <div key={t.id} className="ax-task" onClick={() => handleTick(t)} style={{
-               display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", minHeight: 46,
-              background: "#181820",
-              border: `1px solid ${AX.border}`,
-               borderRadius: 11, marginBottom: 6, cursor: "pointer",
-            }}>
-              <span style={{ color: t.done ? AX.muted : AX.accent, display: "inline-flex", flexShrink: 0 }}>
-                 <Ico size={17} strokeWidth={1.8} />
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                   fontSize: 13, fontWeight: 550,
-                  color: t.done ? AX.muted : AX.text,
-                  textDecoration: t.done ? "line-through" : "none",
-                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                }}>{t.name}</div>
-                 <div style={{ fontSize: 10, color: AX.muted, marginTop: 1 }}>+{t.pts} coins</div>
+            <div key={t.id} className={`home-mission ${t.done ? "is-done" : ""}`} onClick={() => handleTick(t)}>
+              <span className="home-mission__icon"><Ico size={18} strokeWidth={1.7} /></span>
+              <div className="home-mission__copy">
+                <strong>{t.name}</strong>
+                <span>+{t.pts} coins</span>
               </div>
               {scannable && (
-                <button
-                  aria-label={`Scan to verify ${t.name}`}
-                  onClick={e => { e.stopPropagation(); haptic("tap"); onScan!(t.id); }}
-                  style={{
-                     width: 32, height: 32, flexShrink: 0, borderRadius: 9, cursor: "pointer",
-                     background: "#1D1D28", border: `1px solid ${AX.cyan}`, color: AX.cyan,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}
-                >
-                   <ScanLine size={16} strokeWidth={2} />
+                <button className="home-scan-button" aria-label={`Scan to verify ${t.name}`} onClick={e => { e.stopPropagation(); haptic("tap"); onScan!(t.id); }}>
+                  <ScanLine size={16} strokeWidth={1.8} />
                 </button>
+              </span>
               )}
-              <div className={`ax-check ${popped === t.id ? "ax-check--pop" : ""}`} style={{
-                 width: 23, height: 23, flexShrink: 0, borderRadius: 8,
-                border: `1.5px solid ${t.done ? AX.success : AX.border}`,
-                background: t.done ? AX.success : "transparent",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                color: "#0A0A0F",
-               }}>{t.done && <Check size={14} strokeWidth={3} />}</div>
+              <div className={`home-check ${popped === t.id ? "home-check--pop" : ""}`}>{t.done && <Check size={14} strokeWidth={3} />}</div>
             </div>
           );
         })}
-      </div>
+      </section>
 
-      {onBuyShield && <ShieldCard shields={shields} coins={coins} onBuy={onBuyShield} />}
+      {onBuyShield && <div className="home-command-block"><ShieldCard shields={shields} coins={coins} onBuy={onBuyShield} /></div>}
 
-      {reminderTasks.length > 0 && <RemindersCard tasks={reminderTasks} />}
+      {reminderTasks.length > 0 && <div className="home-command-block"><RemindersCard tasks={reminderTasks} /></div>}
 
-      <DeepFocus G={AX.cyan} G2={AX.accent} onComplete={onFocusComplete} />
-    </>
+      <DeepFocus ref={focusRef} G={AX.cyan} G2={AX.accent} onComplete={onFocusComplete} />
+
+      <button className="home-music-strip" onClick={() => focusRef.current?.openMusic()}>
+        <span><Music2 size={18} /></span><div><strong>Focus Music</strong><small>30:00 · 14Hz Beta · Study Melody</small></div><ChevronRight size={17} />
+      </button>
+    </main>
   );
 }
