@@ -624,7 +624,11 @@ function App() {
   const tick = (id: number) => {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
-    if (/wake/i.test(t.name)) { setProof({ mode: "time" }); return; }
+    if (/wake/i.test(t.name)) {
+      const p = wakePlan && wakePlan.date === todayKey() ? wakePlan : null;
+      setProof(p ? { mode: "time", wakeTime: p.tier, wakePts: p.pts, wakeLine: p.line } : { mode: "time" });
+      return;
+    }
     const kind = verifyKindFor(t.name);
     if (kind) { setVerify({ uuid: (t as any)._uuid as string, kind, scan: false }); return; }
     completeTaskRpc((t as any)._uuid);
