@@ -73,6 +73,7 @@ export function useMeditation(
     });
     const medTask = tasksRef.current.find(task => /medit/i.test(task.name));
     if (medTask && !medTask.done && medTask._uuid) await completeRef.current(medTask._uuid);
+    try { await sessionRef.current?.(medMin); } catch { /* session logging must never break the timer */ }
     resetTimerRef.current = setTimeout(() => {
       liveElapsedRef.current = 0;
       bankedMsRef.current = 0;
