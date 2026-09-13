@@ -403,8 +403,8 @@ function App() {
   }, []);
 
   const theme = THEMES[themeKey];
-  const G = AX.accent;
-  const G2 = AX.accent;
+  const G = theme.accent;
+  const G2 = theme.accent2;
   // wallpaper is bound to the selected theme — changing theme changes wallpaper too
   const wallLevel = theme.wall;
   const wallPhoto = THEME_PHOTO[themeKey];
@@ -721,7 +721,7 @@ function App() {
 
       <div className="ax-shell" style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column" }}>
         {/* TOPBAR */}
-        <div className="ax-safe-top" style={{ padding: tab === "home" ? "9px 12px" : "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: tab === "coach" || tab === "stats" || tab === "profile" ? "none" : "flex", justifyContent: "space-between", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 99 }}>
+        <div className="ax-safe-top" style={{ padding: tab === "home" ? "9px 12px" : "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: tab === "coach" || tab === "stats" || tab === "profile" || tab === "rank" ? "none" : "flex", justifyContent: "space-between", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 99 }}>
           <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto", flexShrink: 0 }} />
           <div style={{ display: "flex", gap: 8, alignItems: "center", minWidth: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
             {gateReady && !premiumUnlocked && (
@@ -738,9 +738,9 @@ function App() {
           style={{
             flex: 1,
             minWidth: 0,
-            paddingTop: tab === "coach" || tab === "stats" || tab === "profile" ? 0 : tab === "home" ? 8 : 14,
-            paddingLeft: tab === "coach" || tab === "stats" || tab === "profile" ? 0 : tab === "home" ? 10 : 12,
-            paddingRight: tab === "coach" || tab === "stats" || tab === "profile" ? 0 : tab === "home" ? 10 : 12,
+            paddingTop: tab === "coach" || tab === "stats" || tab === "profile" || tab === "rank" ? 0 : tab === "home" ? 8 : 14,
+            paddingLeft: tab === "coach" || tab === "stats" || tab === "profile" || tab === "rank" ? 0 : tab === "home" ? 10 : 12,
+            paddingRight: tab === "coach" || tab === "stats" || tab === "profile" || tab === "rank" ? 0 : tab === "home" ? 10 : 12,
             paddingBottom: "calc(96px + env(safe-area-inset-bottom, 0px))",
           }}
           key={tab}
@@ -844,7 +844,7 @@ function App() {
 
 
           {/* LEGAL LINKS */}
-          <div style={{ display: tab === "home" || tab === "coach" || tab === "stats" || tab === "profile" ? "none" : "block", marginTop: 28, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${AX.border}` }}>
+          <div style={{ display: tab === "home" || tab === "coach" || tab === "stats" || tab === "profile" || tab === "rank" ? "none" : "block", marginTop: 28, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${AX.border}` }}>
             <div style={{ fontSize: 12, color: AX.muted, marginBottom: 10 }}>AXEN Habit &amp; Discipline · a product of Next AI</div>
             <div style={{ display: "flex", justifyContent: "center", gap: 18, flexWrap: "wrap" }}>
               <Link to="/privacy" style={{ color: AX.muted, textDecoration: "none", fontSize: 12 }}>Privacy</Link>
