@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { ZenMandalaScene } from "@/components/ZenMandalaScene";
 import { haptic } from "@/lib/haptics";
 import manifestation from "@/assets/audio/deep-manifestation.mp3.asset.json";
 import stillness852 from "@/assets/audio/852hz-stillness.mp3.asset.json";
@@ -30,8 +31,6 @@ const TRACKS = [
   { id: "theta-waves", title: "Relaxing Theta Waves", subtitle: "Slow down your brainwaves", frequency: "Theta binaural", src: thetaWaves.url },
   { id: "tibetan-bowls", title: "Tibetan Singing Bowls", subtitle: "Release fatigue & tension", frequency: "Healing bowls", src: tibetanBowls.url },
 ] as const;
-
-const WAVE_BARS = [12, 25, 18, 36, 28, 48, 34, 56, 42, 68, 52, 76, 61, 82, 56, 72, 44, 64, 38, 54, 31, 46, 26, 38, 20, 31, 16, 24];
 
 function formatAudioTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds < 0) return "00:00";
@@ -148,29 +147,17 @@ export function ZenTab({ med }: {
       </div>
 
       <div className="zen-player">
-        <div className="zen-player__grid" aria-hidden="true" />
-        <div className="zen-wave" aria-hidden="true">
-          {WAVE_BARS.map((height, index) => (
-            <i key={`${height}-${index}`} style={{ "--zen-wave-height": `${height}%`, "--zen-wave-delay": `${index * -38}ms` } as React.CSSProperties} />
-          ))}
-        </div>
+        <ZenMandalaScene running={medRun} secondsLeft={medLeft} totalSeconds={medMin * 60} />
 
-        <div className="zen-ring-wrap">
+        <div className="zen-scene-timer">
           <svg className="zen-ring" viewBox="0 0 200 200" aria-hidden="true">
             <circle className="zen-ring__track" cx="100" cy="100" r={ringRadius} />
-            <circle
-              className="zen-ring__progress"
-              cx="100"
-              cy="100"
-              r={ringRadius}
-              strokeDasharray={ringLength}
-              strokeDashoffset={ringLength * (1 - progress)}
-            />
+            <circle className="zen-ring__progress" cx="100" cy="100" r={ringRadius} strokeDasharray={ringLength} strokeDashoffset={ringLength * (1 - ((medMin * 60 - medLeft) / (medMin * 60)))} />
           </svg>
-          <div className={`zen-ring__core${medRun ? " zen-ring__core--active" : ""}`}>
+          <div className="zen-scene-timer__copy">
             <span>{medRun ? medPhaseLabel : "SESSION"}</span>
             <strong>{fmtT(medLeft)}</strong>
-            <small>{medRun ? "BREATHE WITH THE PULSE" : `${medMin} MIN PROTOCOL`}</small>
+            <small>{medRun ? "BREATHE WITH THE LIGHT" : `${medMin} MIN PROTOCOL`}</small>
           </div>
         </div>
 
