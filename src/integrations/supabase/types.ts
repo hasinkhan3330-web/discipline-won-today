@@ -169,6 +169,33 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_notifications: {
+        Row: {
+          event_id: string
+          event_type: string | null
+          id: string
+          processed_at: string
+          provider: string
+          user_id: string | null
+        }
+        Insert: {
+          event_id: string
+          event_type?: string | null
+          id?: string
+          processed_at?: string
+          provider?: string
+          user_id?: string | null
+        }
+        Update: {
+          event_id?: string
+          event_type?: string | null
+          id?: string
+          processed_at?: string
+          provider?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       billing_plans: {
         Row: {
           amount: number
@@ -326,6 +353,42 @@ export type Database = {
           id?: string
           reason?: string
           ref_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      entitlements: {
+        Row: {
+          product_id: string | null
+          purchase_token_hash: string | null
+          subscription_expires_at: string | null
+          subscription_status: string
+          trial_claimed: boolean
+          trial_ends_at: string | null
+          trial_started_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          product_id?: string | null
+          purchase_token_hash?: string | null
+          subscription_expires_at?: string | null
+          subscription_status?: string
+          trial_claimed?: boolean
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          product_id?: string | null
+          purchase_token_hash?: string | null
+          subscription_expires_at?: string | null
+          subscription_status?: string
+          trial_claimed?: boolean
+          trial_ends_at?: string | null
+          trial_started_at?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -1161,9 +1224,12 @@ export type Database = {
       get_entitlement: {
         Args: never
         Returns: {
+          access_status: string
           current_period_end: string
           is_premium: boolean
           plan: string
+          premium_access: boolean
+          remaining_seconds: number
           server_now: string
           subscription_provider: string
           subscription_status: string
@@ -1198,6 +1264,14 @@ export type Database = {
         Returns: boolean
       }
       has_premium_access: { Args: { _user_id?: string }; Returns: boolean }
+      initialize_trial: {
+        Args: never
+        Returns: {
+          trial_claimed: boolean
+          trial_ends_at: string
+          trial_started_at: string
+        }[]
+      }
       list_friends: {
         Args: never
         Returns: {
