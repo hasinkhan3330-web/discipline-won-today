@@ -898,7 +898,11 @@ function App() {
 
         </div>
 
+        <TrialBanner ent={ent} onUpgrade={() => setShowPaywall(true)} />
+        {ent.justStartedTrial && <TrialWelcome onClose={ent.dismissTrialWelcome} />}
+
         {/* CONTENT */}
+
         <div
           className="ax-content-pad"
           style={{
