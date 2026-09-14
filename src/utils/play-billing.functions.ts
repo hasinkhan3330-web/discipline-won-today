@@ -17,8 +17,11 @@ export const syncPlayEntitlement = createServerFn({ method: "POST" })
       const { verifyEntitlement, priceKeyFor } = await import("@/lib/revenuecat.server");
       const ent = await verifyEntitlement(context.userId);
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { mirrorEntitlement } = await import("@/lib/entitlement-sync.server");
+      await mirrorEntitlement(context.userId, ent);
 
       const priceKey = ent.active ? priceKeyFor(ent.productId) : null;
+
 
       if (!ent.active) {
         await supabaseAdmin
