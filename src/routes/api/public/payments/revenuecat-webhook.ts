@@ -37,11 +37,24 @@ export const Route = createFileRoute("/api/public/payments/revenuecat-webhook")(
           payload?.event?.app_user_id ?? payload?.event?.original_app_user_id;
         if (!appUserId) return new Response("ok");
 
+        const eventType: string = payload?.event?.type ?? "unknown";
+        const eventId: string | undefined = payload?.event?.id;
+
         try {
           const { verifyEntitlement, priceKeyFor } = await import("@/lib/revenuecat.server");
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { mirrorEntitlement, claimNotification } = await import("@/lib/entitlement-sync.server");
+
+          // Duplicate deliveries must never be processed twice.
+          if (eventId) {
+            const fresh = await claimNotification(eventId, "google_play", eventType, appUserId);
+            if (!fresh) return new Response("ok");
+          }
+
+          // Never trust the notification body — re-query the verified state.
           const ent = await verifyEntitlement(appUserId);
           const now = new Date().toISOString();
+          await mirrorEntitlement(appUserId, ent);
 
           if (!ent.active) {
             await supabaseAdmin
@@ -51,6 +64,7 @@ export const Route = createFileRoute("/api/public/payments/revenuecat-webhook")(
               .eq("provider", "google_play");
             return new Response("ok");
           }
+
 
           await supabaseAdmin.from("subscriptions").upsert(
             {
