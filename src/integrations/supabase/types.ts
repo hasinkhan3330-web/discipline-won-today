@@ -689,6 +689,7 @@ export type Database = {
           coins: number
           commitment_milestone: number | null
           consistency_days: number | null
+          country: string
           created_at: string
           display_name: string | null
           first_habit: string | null
@@ -738,6 +739,7 @@ export type Database = {
           coins?: number
           commitment_milestone?: number | null
           consistency_days?: number | null
+          country?: string
           created_at?: string
           display_name?: string | null
           first_habit?: string | null
@@ -787,6 +789,7 @@ export type Database = {
           coins?: number
           commitment_milestone?: number | null
           consistency_days?: number | null
+          country?: string
           created_at?: string
           display_name?: string | null
           first_habit?: string | null
@@ -901,6 +904,36 @@ export type Database = {
           options?: Json | null
           question_text?: string
           subject?: string
+        }
+        Relationships: []
+      }
+      score_events: {
+        Row: {
+          created_at: string
+          id: string
+          idempotency_key: string
+          kind: string
+          occurred_at: string
+          points: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          idempotency_key: string
+          kind: string
+          occurred_at?: string
+          points: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          idempotency_key?: string
+          kind?: string
+          occurred_at?: string
+          points?: number
+          user_id?: string
         }
         Relationships: []
       }
@@ -1272,6 +1305,33 @@ export type Database = {
           trial_started_at: string
         }[]
       }
+      leaderboard_scores: {
+        Args: { _period: string }
+        Returns: {
+          points: number
+          reached_at: string
+          user_id: string
+        }[]
+      }
+      leaderboard_top: {
+        Args: {
+          _limit?: number
+          _offset?: number
+          _period?: string
+          _scope?: string
+        }
+        Returns: {
+          avatar_url: string
+          consistency: number
+          country: string
+          elite: boolean
+          is_me: boolean
+          points: number
+          rank: number
+          user_id: string
+          username: string
+        }[]
+      }
       list_friends: {
         Args: never
         Returns: {
@@ -1285,6 +1345,21 @@ export type Database = {
           status: string
           streak: number
           username: string
+        }[]
+      }
+      my_leaderboard_position: {
+        Args: { _period?: string; _scope?: string }
+        Returns: {
+          consistency: number
+          country: string
+          elite: boolean
+          in_top100: boolean
+          next_milestone: number
+          percentile: number
+          points: number
+          points_to_next: number
+          rank: number
+          total: number
         }[]
       }
       rank_scan: {
