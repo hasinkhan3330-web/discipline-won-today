@@ -14,15 +14,20 @@ import { PRICING } from "@/lib/pricing";
 export function PaywallGate({
   hasAccess,
   featureName,
+  trialExpired,
   onUpgrade,
+  onContinueBasic,
   children,
 }: {
   hasAccess: boolean;
   featureName?: string;
+  trialExpired?: boolean;
   onUpgrade: () => void;
+  onContinueBasic?: () => void;
   children: ReactNode;
 }) {
   if (hasAccess) return <>{children}</>;
+
 
   return (
     <div style={{ position: "relative", minHeight: 320, borderRadius: 16, overflow: "hidden" }}>
