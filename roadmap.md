@@ -43,3 +43,5 @@
 - [x] Upgrade Focus Music with synchronized sessions and one-time rewards.
 - [x] Upgrade reminders with reliable native/browser scheduling and complete controls.
 - [x] Verify all six upgrades and regression-test completed AXEN pages.
+
+- [x] 3-day AXEN Pro trial (entitlements table, initialize_trial, get_entitlement, EntitlementProvider, ProtectedFeatureGate, trial banner/welcome, billing mirror + RTDN idempotency)

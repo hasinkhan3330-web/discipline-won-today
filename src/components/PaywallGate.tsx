@@ -14,15 +14,20 @@ import { PRICING } from "@/lib/pricing";
 export function PaywallGate({
   hasAccess,
   featureName,
+  trialExpired,
   onUpgrade,
+  onContinueBasic,
   children,
 }: {
   hasAccess: boolean;
   featureName?: string;
+  trialExpired?: boolean;
   onUpgrade: () => void;
+  onContinueBasic?: () => void;
   children: ReactNode;
 }) {
   if (hasAccess) return <>{children}</>;
+
 
   return (
     <div style={{ position: "relative", minHeight: 320, borderRadius: 16, overflow: "hidden" }}>
@@ -84,11 +89,14 @@ export function PaywallGate({
           </div>
 
           <div style={{ fontSize: 18, fontWeight: 700, color: AX.text, letterSpacing: 0.2 }}>
-            {featureName ? `${featureName} is locked` : "Unlock Full Access"}
+            {trialExpired
+              ? "Your AXEN Pro trial is complete."
+              : featureName ? `${featureName} is locked` : "Unlock Full Access"}
           </div>
           <div style={{ fontSize: 13, color: AX.muted, lineHeight: 1.6, marginTop: 8 }}>
-            Zen Mode, Rank and Accountability need AXEN PRO — every other habit,
-            coin and streak feature stays free.
+            {trialExpired
+              ? "Zen, Rank and Coach are now locked. All your progress, streaks and history are safely kept."
+              : "Zen Mode, Rank and Accountability need AXEN PRO — every other habit, coin and streak feature stays free."}
           </div>
           <div style={{ fontSize: 13, color: AX.text, lineHeight: 1.7, marginTop: 12, fontWeight: 600 }}>
             {PRICING.monthly.display} · {PRICING.yearly.display}
@@ -104,6 +112,7 @@ export function PaywallGate({
             style={{
               marginTop: 18,
               width: "100%",
+              minHeight: 46,
               padding: "13px 0",
               background: AX.accent,
               border: "none",
@@ -116,8 +125,30 @@ export function PaywallGate({
               transition: "opacity 0.15s ease",
             }}
           >
-            Upgrade Account
+            {trialExpired ? "Unlock AXEN Pro" : "Upgrade Account"}
           </button>
+          {onContinueBasic && (
+            <button
+              onClick={onContinueBasic}
+              style={{
+                marginTop: 10,
+                width: "100%",
+                minHeight: 44,
+                padding: "11px 0",
+                background: "transparent",
+                border: `1px solid ${AX.border}`,
+                borderRadius: 12,
+                color: AX.muted,
+                fontSize: 13,
+                fontWeight: 600,
+                fontFamily: AX.font,
+                cursor: "pointer",
+              }}
+            >
+              Continue with Basic
+            </button>
+          )}
+
         </div>
       </div>
     </div>

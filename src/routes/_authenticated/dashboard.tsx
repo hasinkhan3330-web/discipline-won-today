@@ -10,9 +10,12 @@ import { Paywall } from "@/components/Paywall";
 import { PaywallGate } from "@/components/PaywallGate";
 import { TaskVerify, type VerifyKind } from "@/components/TaskVerify";
 import { useAccessControl } from "@/hooks/useAccessControl";
-import { useEntitlement } from "@/hooks/useEntitlement";
+import { useEntitlementContext, EntitlementProvider } from "@/components/EntitlementProvider";
+import { ProtectedFeatureGate } from "@/components/ProtectedFeatureGate";
+import { TrialBanner, TrialWelcome } from "@/components/TrialBanner";
 import { GateSkeleton } from "@/components/GateSkeleton";
 import { AiCoach } from "@/components/AiCoach";
+
 
 
 import { CropModal } from "@/components/CropModal";
@@ -80,8 +83,19 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       { property: "og:description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, legendary quotes, streaks." },
     ],
   }),
-  component: App,
+  component: DashboardShell,
 });
+
+/** One shared, server-authoritative entitlement verdict for the whole app. */
+function DashboardShell() {
+  const ctx = Route.useRouteContext() as { user?: { id: string } };
+  return (
+    <EntitlementProvider userId={ctx?.user?.id ?? null}>
+      <App />
+    </EntitlementProvider>
+  );
+}
+
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
 
@@ -131,7 +145,7 @@ function App() {
   // Paid subscription access fallback, refreshed in real time.
   const access = useAccessControl(myId);
   // ONE centralized, server-clock paid entitlement verdict.
-  const ent = useEntitlement(myId);
+  const ent = useEntitlementContext();
   // Authoritative entitlement, computed server-side from the bearer token.
   const checkEntitlement = useServerFn(getEntitlement);
   const [serverEntitled, setServerEntitled] = useState<boolean | null>(null);
@@ -746,16 +760,17 @@ function App() {
     setVerify({ uuid: (t as any)._uuid as string, kind, scan: true });
   };
 
-  // useEntitlement() (database clock, paid subscription only) is the single verdict;
-  // the legacy server fn / profiles row only act as a fallback while it loads.
+  // get_entitlement() (database clock: verified subscription OR unexpired 3-day
+  // trial) is the single verdict; the legacy fallbacks only apply while it loads.
   const premiumUnlocked = !ent.isLoading
-    ? ent.isPremium
+    ? ent.premiumAccess
     : serverEntitled === null
       ? access.hasAccess
       : serverEntitled;
   const premiumTabs = ["rank", "zen", "coach"]; // Rank hosts Rank Scan + Accountability; Coach is the AI assistant
   // Resolve entitlement BEFORE gating renders — no unlocked↔locked flash.
   const gateReady = !!myId && !ent.isLoading;
+
 
   
 
@@ -883,7 +898,11 @@ function App() {
 
         </div>
 
+        <TrialBanner ent={ent} onUpgrade={() => setShowPaywall(true)} />
+        {ent.justStartedTrial && <TrialWelcome onClose={ent.dismissTrialWelcome} />}
+
         {/* CONTENT */}
+
         <div
           className="ax-content-pad"
           style={{
@@ -929,7 +948,7 @@ function App() {
               />
             )}
             {tab === "rank" && (!gateReady ? <GateSkeleton /> : (
-              <PaywallGate hasAccess={premiumUnlocked} featureName="Rank & Accountability" onUpgrade={() => setShowPaywall(true)}>
+              <ProtectedFeatureGate featureName="Rank & Accountability" onUpgrade={() => setShowPaywall(true)} onContinueBasic={() => setTab("home")}>
                 <RankTab
                   coins={coins}
                   streak={streak}
@@ -942,18 +961,19 @@ function App() {
                   onApplyTheme={setThemeKey}
                   onNavigate={setTab}
                 />
-              </PaywallGate>
+              </ProtectedFeatureGate>
             ))}
             {tab === "zen" && (!gateReady ? <GateSkeleton /> : (
-              <PaywallGate hasAccess={premiumUnlocked} featureName="Zen Mode" onUpgrade={() => setShowPaywall(true)}>
+              <ProtectedFeatureGate featureName="Zen Mode" onUpgrade={() => setShowPaywall(true)} onContinueBasic={() => setTab("home")}>
                 <ZenTab med={med} coins={coins} />
-              </PaywallGate>
+              </ProtectedFeatureGate>
             ))}
             {tab === "coach" && (!gateReady ? <GateSkeleton /> : (
-              <PaywallGate hasAccess={premiumUnlocked} featureName="AI Assistant" onUpgrade={() => setShowPaywall(true)}>
+              <ProtectedFeatureGate featureName="AI Assistant" onUpgrade={() => setShowPaywall(true)} onContinueBasic={() => setTab("home")}>
                 <AiCoach onOpenFocus={() => { setTab("home"); window.setTimeout(() => window.dispatchEvent(new Event("axen:open-focus")), 80); }} onCreateHabit={createCoachHabit} />
-              </PaywallGate>
+              </ProtectedFeatureGate>
             ))}
+
 
             {tab === "stats" && (
               <StatsTab
