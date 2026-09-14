@@ -34,3 +34,12 @@
 - [x] Restyle Stats to the supplied graphite-black and electric-lime reference while preserving its data, layout, and navigation.
 - [x] Rebuild Home as the graphite-black AXEN Command Center while preserving habits, shields, reminders, Deep Focus, lock setup, music, and navigation.
 - [ ] Rebuild Zen as the supplied animated Flow Chamber with synchronized timing, breathing, audio, and controls.
+
+## AXEN production upgrade (active)
+- [ ] Build resumable 12-step onboarding and personalized blueprint with safe minor mode.
+- [ ] Replace the visible membership experience while preserving verified store billing.
+- [ ] Harden and complete the 4AM Protocol.
+- [ ] Add persistent, actionable AXEN Coach conversations.
+- [ ] Upgrade Focus Music with synchronized sessions and one-time rewards.
+- [ ] Upgrade reminders with reliable native/browser scheduling and complete controls.
+- [ ] Verify all six upgrades and regression-test completed AXEN pages.
