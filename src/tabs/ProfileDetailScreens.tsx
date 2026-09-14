@@ -5,6 +5,7 @@ import {
   ArrowLeft, Bell, BellOff, Check, ChevronRight, Circle,
   Coins, Flame, Medal, Pencil, Plus, Sparkles, Trash2,
 } from "lucide-react";
+import { cancelLocalReminder, nextReminderAt, scheduleLocalReminder, stableNotificationId } from "@/lib/local-notifications";
 
 export type ProfileView = "dashboard" | "habits" | "journey" | "achievements" | "goals" | "reminders" | "account";
 export type ProfileHabit = {
@@ -195,10 +196,10 @@ export function RemindersView({ habits, userId, onBack }: { habits: ProfileHabit
     const result = conflict ? await supabase.from("habit_reminders").upsert(payload, { onConflict: conflict }) : await supabase.from("habit_reminders").insert(payload);
     if (result.error) return void toast.error("Could not save reminder", { description: result.error.message });
     await load();
-    if ("Notification" in window && Notification.permission === "default") await Notification.requestPermission();
+    await scheduleLocalReminder({ id: stableNotificationId(`${kind}:${target}`), title: "AXEN reminder", body: `${names.get(target) ?? "Your commitment"} is due.`, at: nextReminderAt(time) });
   };
-  const patch = async (row: Reminder, values: Partial<Reminder>) => { await supabase.from("habit_reminders").update(values).eq("id", row.id); await load(); };
-  const remove = async (id: string) => { await supabase.from("habit_reminders").delete().eq("id", id); await load(); };
+  const patch = async (row: Reminder, values: Partial<Reminder>) => { const next={...row,...values}; await supabase.from("habit_reminders").update(values).eq("id", row.id); const key=`${next.task_id?"habit":"goal"}:${next.task_id??next.goal_id??row.id}`; const notificationId=stableNotificationId(key); if(next.enabled)await scheduleLocalReminder({id:notificationId,title:"AXEN reminder",body:`${names.get(next.task_id??next.goal_id??"")??"Your commitment"} is due.`,at:nextReminderAt(next.remind_at)});else await cancelLocalReminder(notificationId); await load(); };
+  const remove = async (id: string) => { const row=rows.find(item=>item.id===id); if(row)await cancelLocalReminder(stableNotificationId(`${row.task_id?"habit":"goal"}:${row.task_id??row.goal_id??row.id}`)); await supabase.from("habit_reminders").delete().eq("id", id); await load(); };
   return <div className="you-detail animate-fade-in">
     <DetailHeader title="Reminders" subtitle="Keep every promise visible." onBack={onBack} />
     <section className="you-form-panel"><div className="you-segmented"><button className={kind === "habit" ? "is-active" : ""} onClick={() => setKind("habit")}>Habits</button><button className={kind === "goal" ? "is-active" : ""} onClick={() => setKind("goal")}>Goals</button></div><label>Remind me about<select value={target} onChange={event => setTarget(event.target.value)}>{targets.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}</select></label><label>Time<input type="time" value={time} onChange={event => setTime(event.target.value)} /></label><button className="you-save-button" disabled={!target} onClick={create}><Plus size={16} /> Add reminder</button></section>

@@ -16,7 +16,7 @@ import { AiCoach } from "@/components/AiCoach";
 
 
 import { CropModal } from "@/components/CropModal";
-import { Onboarding } from "@/components/Onboarding";
+import { Onboarding, type OnboardingAnswers } from "@/components/Onboarding";
 import { flushQuizToProfile } from "@/lib/quiz";
 import { THEMES, MILESTONES, THEME_PHOTO, THEME_VIDEO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
 import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
@@ -45,7 +45,7 @@ import toneRetro from "@/assets/ringtones/retro_emergency.wav.asset.json";
 import toneLoudEmergency from "@/assets/ringtones/loud_emergency.mp3.asset.json";
 import { WakeVerify } from "@/components/WakeVerify";
 import {
-  loadPlan, savePlan, todayKey, shouldFire, markFired, scheduleNativeAlarm,
+  loadPlan, savePlan, todayKey, shouldFire, markFired, scheduleNativeAlarm, rearmWakePlan,
   type WakePlan,
 } from "@/lib/wake-plan";
 
@@ -109,6 +109,8 @@ function App() {
   const [streak, setStreak] = useState(0);
   const [shields, setShields] = useState(0);
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  const [onboardingStep, setOnboardingStep] = useState(1);
+  const [onboardingAnswers, setOnboardingAnswers] = useState<OnboardingAnswers>({});
   const [referredBy, setReferredBy] = useState<string | null>(null);
   const [streakLoaded, setStreakLoaded] = useState(false);
 
@@ -179,7 +181,7 @@ function App() {
     await flushQuizToProfile(uid).catch(() => false);
 
     const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
-      supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url, shields, onboarded, referred_by").eq("id", uid).maybeSingle(),
+      supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url, shields, onboarded, referred_by, preferred_name, age_range, acquisition_source, primary_goal, first_habit, social_hours_daily, biggest_distraction, wake_time, sleep_time, consistency_days, routine_breaker, preferred_focus_time, commitment_milestone, onboarding_step").eq("id", uid).maybeSingle(),
 
       supabase.from("tasks").select("id, icon, name, pts, sort_order, frequency, duration_days, started_on").eq("user_id", uid).eq("is_active", true).order("sort_order"),
       supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
@@ -195,6 +197,22 @@ function App() {
       setShields((prof as any).shields ?? 0);
       setOnboarded(!!(prof as any).onboarded);
       setReferredBy((prof as any).referred_by ?? null);
+      setOnboardingStep(Number((prof as any).onboarding_step ?? 1));
+      setOnboardingAnswers({
+        preferred_name: (prof as any).preferred_name ?? prof.display_name ?? "",
+        age_range: (prof as any).age_range ?? undefined,
+        acquisition_source: (prof as any).acquisition_source ?? undefined,
+        primary_goal: (prof as any).primary_goal ?? undefined,
+        first_habit: (prof as any).first_habit ?? undefined,
+        social_hours_daily: (prof as any).social_hours_daily ?? undefined,
+        biggest_distraction: (prof as any).biggest_distraction ?? undefined,
+        wake_time: (prof as any).wake_time?.slice?.(0,5) ?? undefined,
+        sleep_time: (prof as any).sleep_time?.slice?.(0,5) ?? undefined,
+        consistency_days: (prof as any).consistency_days ?? undefined,
+        routine_breaker: (prof as any).routine_breaker ?? undefined,
+        preferred_focus_time: (prof as any).preferred_focus_time ?? undefined,
+        commitment_milestone: (prof as any).commitment_milestone ?? undefined,
+      });
     } else {
       setOnboarded(true);
     }
@@ -298,8 +316,7 @@ function App() {
 
   const finishOnboarding = async () => {
     setOnboarded(true);
-    if (!myId) return;
-    await supabase.from("profiles").update({ onboarded: true } as any).eq("id", myId);
+    await refreshAll();
   };
 
   // ---- streak milestones: auto-evolve theme + wallpaper, celebrate once; revert on break ----
@@ -441,7 +458,9 @@ function App() {
     };
     check();
     const id = window.setInterval(check, 10000);
-    return () => window.clearInterval(id);
+    window.addEventListener("focus", check);
+    document.addEventListener("visibilitychange", check);
+    return () => { window.clearInterval(id); window.removeEventListener("focus", check); document.removeEventListener("visibilitychange", check); };
   }, [wakePlan, wakeAlarm]);
 
 
@@ -636,6 +655,19 @@ function App() {
     return newCoins;
   };
 
+  const onMusicReward = (awarded: number, minutes: number) => {
+    if (awarded <= 0) return;
+    setCoins(value => value + awarded);
+    setLife(previous => previous ? { ...previous, lifetimeCoins: previous.lifetimeCoins + awarded, focusMinutes: previous.focusMinutes + minutes } : previous);
+  };
+
+  const createCoachHabit = async (name: string) => {
+    if (!myId || !name.trim()) return;
+    const { error } = await supabase.from("tasks").insert({ user_id: myId, name: name.trim().slice(0,80), icon: "◎", pts: 10, sort_order: tasks.length + 1, frequency: "daily", duration_days: 21 });
+    if (error) return void toast.error("Could not add that habit", { description: error.message });
+    await refreshAll(); toast.success("Habit added to today’s missions"); setTab("home");
+  };
+
 
   const submitProof = () => {
     if (!proof || proof.mode !== "quiz") return;
@@ -774,7 +806,7 @@ function App() {
     <div style={{ width: "100%", minHeight: "100vh", color: AX.text, background: AX.bg, fontFamily: AX.font, position: "relative" }}>
       <style>{keyframes}</style>
 
-      {onboarded === false && <Onboarding onFinish={finishOnboarding} />}
+      {onboarded === false && <Onboarding initialStep={onboardingStep} initialAnswers={onboardingAnswers} onFinish={finishOnboarding} />}
 
       {celebration && (
         <div onClick={() => setCelebration(null)} style={{
@@ -884,7 +916,7 @@ function App() {
             {tab === "home" && (
               <HomeTab
                 name={myName} coins={coins} streak={streak} shields={shields}
-                tasks={tasks} tick={tick} onScan={scanTask} onFocusComplete={onFocusComplete}
+                tasks={tasks} tick={tick} onScan={scanTask} onFocusComplete={onFocusComplete} onMusicReward={onMusicReward}
                 onBuyShield={buyShield}
                 reminderTasks={tasks.map(t => ({ uuid: (t as any)._uuid as string, name: t.name, done: t.done }))}
                 wakeSet={!!wakePlan && wakePlan.date === todayKey()}
@@ -913,7 +945,7 @@ function App() {
             ))}
             {tab === "coach" && (!gateReady ? <GateSkeleton /> : (
               <PaywallGate hasAccess={premiumUnlocked} featureName="AI Assistant" onUpgrade={() => setShowPaywall(true)}>
-                <AiCoach />
+                <AiCoach onOpenFocus={() => { setTab("home"); window.setTimeout(() => window.dispatchEvent(new Event("axen:open-focus")), 80); }} onCreateHabit={createCoachHabit} />
               </PaywallGate>
             ))}
 
@@ -1264,6 +1296,7 @@ function App() {
           onVerified={() => {
             const slot = wakeAlarm.tier;
             setWakeAlarm(null);
+            void rearmWakePlan(wakeAlarm).then(setWakePlan);
             void completeWakeProtocol(slot);
           }}
         />

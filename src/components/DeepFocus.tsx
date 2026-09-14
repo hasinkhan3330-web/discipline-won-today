@@ -62,7 +62,8 @@ export type DeepFocusHandle = {
 export const DeepFocus = forwardRef<DeepFocusHandle, {
   G: string; G2: string;
   onComplete: (tier: FocusTier, lockMode: LockMode, apps: string[]) => Promise<number | null>;
-}>(function DeepFocus({ G, G2, onComplete }, ref) {
+  onMusicReward?: (coins: number, minutes: number) => void;
+}>(function DeepFocus({ G, G2, onComplete, onMusicReward }, ref) {
   const CARD = cardStyle(G);
   const [phase, setPhase] = useState<Phase>("idle");
   const [tier, setTier] = useState<FocusTier | null>(null);
@@ -157,7 +158,7 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
           <span><LockKeyhole size={18} strokeWidth={1.8} /></span>
           <div><h2>Deep Focus System</h2><p>Lock distractions. Enter the work.</p></div>
         </div>
-        {showMusic && <FocusMusicPanel onClose={() => setShowMusic(false)} />}
+        {showMusic && <FocusMusicPanel onClose={() => setShowMusic(false)} onReward={onMusicReward} />}
         <div className="home-focus-tiers">
           {FOCUS_TIERS.map(t => (
             <button key={t.id} onClick={() => { setTier(t); setPhase("setup"); }}>

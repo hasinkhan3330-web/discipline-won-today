@@ -1,146 +1,76 @@
-import { useEffect, useRef, useState } from "react";
-import { AX } from "@/tabs/styles";
-import { X, Play, Pause, Music2 } from "lucide-react";
-
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
+import { X, Play, Pause, Music2, Volume2 } from "lucide-react";
+import { completeFocusMusic } from "@/utils/focus-music.functions";
 import beta14 from "@/assets/audio/beta14.mp3.asset.json";
 import pure40 from "@/assets/audio/pure40.mp3.asset.json";
 import battleWave from "@/assets/audio/battlewave.mp3.asset.json";
 
 const TRACKS = [
-  { id: "beta14", name: "14Hz Beta · Study Melody", sub: "Deep focus & concentration", src: beta14.url },
-  { id: "pure40", name: "40Hz Pure Binaural", sub: "Focus · memory · clarity", src: pure40.url },
-  { id: "battle", name: "Battle Wave", sub: "High-intensity war mode", src: battleWave.url },
+  { id: "beta14", name: "14Hz Beta", sub: "Deep concentration", src: beta14.url, intensity: "steady" as const },
+  { id: "pure40", name: "40Hz Binaural", sub: "Memory and clarity", src: pure40.url, intensity: "calm" as const },
+  { id: "battle", name: "Battle Wave", sub: "High-intensity execution", src: battleWave.url, intensity: "intense" as const },
 ];
+const DURATIONS = [{m:25,reward:5},{m:45,reward:9},{m:60,reward:12},{m:90,reward:18}] as const;
+const two = (n:number) => String(n).padStart(2,"0");
+const fmt = (seconds:number) => `${two(Math.floor(seconds/3600))}:${two(Math.floor((seconds%3600)/60))}:${two(seconds%60)}`;
 
-const DURATIONS = [
-  { m: 30, label: "30 min" },
-  { m: 60, label: "1 hr" },
-  { m: 120, label: "2 hr" },
-  { m: 180, label: "3 hr" },
-];
+export function FocusMusicPanel({ onClose, onReward }: { onClose: () => void; onReward?: (coins: number, minutes: number) => void }) {
+  const complete = useServerFn(completeFocusMusic);
+  const [trackId,setTrackId] = useState(TRACKS[0]?.id ?? "beta14");
+  const [minutes,setMinutes] = useState<25|45|60|90>(25);
+  const [running,setRunning] = useState(false);
+  const [left,setLeft] = useState(25*60);
+  const [volume,setVolume] = useState(.7);
+  const [rewarding,setRewarding] = useState(false);
+  const audioRef = useRef<HTMLAudioElement|null>(null);
+  const tokenRef = useRef<string|null>(null);
+  const track = TRACKS.find(item => item.id===trackId) ?? TRACKS[0];
+  const reward = DURATIONS.find(item => item.m===minutes)?.reward ?? 5;
 
-const two = (n: number) => String(n).padStart(2, "0");
-const fmt = (s: number) => `${two(Math.floor(s / 3600))}:${two(Math.floor((s % 3600) / 60))}:${two(s % 60)}`;
+  useEffect(() => { if (!running) setLeft(minutes*60); },[minutes,running]);
+  useEffect(() => { if (audioRef.current) audioRef.current.volume=volume; },[volume,trackId]);
+  useEffect(() => () => audioRef.current?.pause(),[]);
 
-export function FocusMusicPanel({ onClose }: { onClose: () => void }) {
-  const [trackId, setTrackId] = useState(TRACKS[0]!.id);
-  const [minutes, setMinutes] = useState(30);
-  const [running, setRunning] = useState(false);
-  const [left, setLeft] = useState(30 * 60);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-
-  const track = TRACKS.find(t => t.id === trackId)!;
-
-  useEffect(() => { if (!running) setLeft(minutes * 60); }, [minutes, running]);
+  const finish = useCallback(async () => {
+    const token=tokenRef.current;
+    if (!token || rewarding || !track) return;
+    setRewarding(true);
+    try {
+      const result=await complete({data:{sessionToken:token,minutes,intensity:track.intensity}});
+      onReward?.(result.awarded,result.minutes);
+      toast.success(result.awarded ? `+${result.awarded} coins · focus logged` : "Focus session already logged");
+    } catch (cause) { toast.error("Could not save that focus session",{description:cause instanceof Error?cause.message:"Try again."}); }
+    finally { setRewarding(false); }
+  },[complete,minutes,onReward,rewarding,track]);
 
   useEffect(() => {
     if (!running) return;
-    const id = setInterval(() => {
-      setLeft(s => {
-        if (s <= 1) {
-          clearInterval(id);
-          audioRef.current?.pause();
-          setRunning(false);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [running]);
+    const id=window.setInterval(() => setLeft(seconds => {
+      if (seconds>1) return seconds-1;
+      window.clearInterval(id); audioRef.current?.pause(); setRunning(false); queueMicrotask(() => void finish()); return 0;
+    }),1000);
+    return () => window.clearInterval(id);
+  },[running,finish]);
 
-  useEffect(() => () => { audioRef.current?.pause(); }, []);
-
-  const toggle = async () => {
-    const a = audioRef.current;
-    if (!a) return;
-    if (running) { a.pause(); setRunning(false); return; }
-    if (left <= 0) setLeft(minutes * 60);
-    try { await a.play(); setRunning(true); } catch { /* ignore */ }
+  const toggle=async()=>{
+    const audio=audioRef.current; if(!audio||rewarding) return;
+    if(running){audio.pause();setRunning(false);return;}
+    if(left<=0){setLeft(minutes*60);tokenRef.current=null;}
+    if(!tokenRef.current) tokenRef.current=crypto.randomUUID();
+    try{await audio.play();setRunning(true);}catch{toast.error("Audio could not start");}
   };
+  const pickTrack=(id:string)=>{audioRef.current?.pause();setRunning(false);setTrackId(id);};
 
-  const pickTrack = (id: string) => {
-    setTrackId(id);
-    setRunning(false);
-    audioRef.current?.pause();
-  };
-
-  return (
-    <div onClick={onClose} style={{
-      position: "fixed", inset: 0, zIndex: 400,
-      background: "rgba(6,6,12,0.82)", backdropFilter: "blur(6px)",
-      display: "flex", alignItems: "flex-end", justifyContent: "center",
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        width: "100%", maxWidth: 440, maxHeight: "85dvh", overflowY: "auto",
-        background: AX.surface, border: `1px solid ${AX.border}`,
-        borderRadius: `${AX.radius}px ${AX.radius}px 0 0`,
-        padding: "18px 18px calc(18px + env(safe-area-inset-bottom, 0px))",
-        fontFamily: AX.font,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-          <Music2 size={18} strokeWidth={1.8} color={AX.accent} />
-          <div style={{ flex: 1, fontSize: 16, fontWeight: 600, color: AX.text }}>Focus music</div>
-          <button onClick={onClose} aria-label="Close music panel" style={{
-            background: "transparent", border: "none", color: AX.muted, cursor: "pointer", padding: 4,
-          }}><X size={18} strokeWidth={2} /></button>
-        </div>
-
-        <div style={{ fontSize: 13, color: AX.muted, marginBottom: 8 }}>Timer</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: 8, marginBottom: 18 }}>
-          {DURATIONS.map(d => {
-            const active = minutes === d.m;
-            return (
-              <button key={d.m} onClick={() => setMinutes(d.m)} style={{
-                padding: "12px 4px", cursor: "pointer", borderRadius: AX.radiusSm,
-                background: active ? AX.accent : "#181820",
-                border: `1px solid ${active ? AX.accent : AX.border}`,
-                color: active ? "#FFFFFF" : AX.text,
-                fontFamily: AX.font, fontSize: 13, fontWeight: 600,
-              }}>{d.label}</button>
-            );
-          })}
-        </div>
-
-        <div style={{ fontSize: 13, color: AX.muted, marginBottom: 8 }}>Track</div>
-        {TRACKS.map(t => {
-          const active = t.id === trackId;
-          return (
-            <div key={t.id} onClick={() => pickTrack(t.id)} style={{
-              display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-              marginBottom: 8, cursor: "pointer", borderRadius: AX.radiusSm,
-              background: "#181820",
-              border: `1px solid ${active ? AX.accent : AX.border}`,
-            }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 14, fontWeight: 500, color: active ? AX.text : AX.text }}>{t.name}</div>
-                <div style={{ fontSize: 12, color: AX.muted, marginTop: 2 }}>{t.sub}</div>
-              </div>
-              {active && <div style={{ width: 8, height: 8, borderRadius: "50%", background: AX.accent }} />}
-            </div>
-          );
-        })}
-
-        <div style={{
-          marginTop: 16, textAlign: "center", padding: "16px 0 4px",
-        }}>
-          <div style={{ fontSize: 34, fontWeight: 600, color: AX.text, fontVariantNumeric: "tabular-nums" }}>{fmt(left)}</div>
-          <div style={{ fontSize: 12, color: AX.muted, marginBottom: 14 }}>
-            {running ? "Playing · loops until timer ends" : left === 0 ? "Session complete" : "Ready"}
-          </div>
-          <button onClick={toggle} style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            padding: "12px 26px", cursor: "pointer", borderRadius: 12,
-            background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF",
-            fontFamily: AX.font, fontSize: 14, fontWeight: 600,
-          }}>
-            {running ? <Pause size={16} strokeWidth={2} /> : <Play size={16} strokeWidth={2} />}
-            {running ? "Pause" : "Start"}
-          </button>
-        </div>
-
-        <audio ref={audioRef} src={track.src} loop preload="none" />
-      </div>
-    </div>
-  );
+  return <div className="focus-music-overlay" onClick={onClose}><section className="focus-music-panel" onClick={event=>event.stopPropagation()} aria-label="Focus music session">
+    <header><span><Music2 size={19}/></span><div><h2>Focus Music</h2><p>Sound engineered for disciplined work</p></div><button onClick={onClose} aria-label="Close focus music"><X size={19}/></button></header>
+    <div className="focus-wave" aria-hidden="true">{Array.from({length:24},(_,index)=><i key={index} style={{animationDelay:`${index*35}ms`}} className={running?"is-running":""}/>)}</div>
+    <div className="focus-clock"><strong>{fmt(left)}</strong><span>{running?"Session active":left===0?"Session complete":"Ready to focus"} · +{reward} coins</span></div>
+    <label className="focus-label">Session length</label><div className="focus-durations">{DURATIONS.map(item=><button key={item.m} disabled={running} className={minutes===item.m?"is-active":""} onClick={()=>setMinutes(item.m)}><strong>{item.m}</strong><span>MIN</span><small>+{item.reward}</small></button>)}</div>
+    <label className="focus-label">Soundscape</label><div className="focus-tracks">{TRACKS.map(item=><button key={item.id} className={item.id===trackId?"is-active":""} onClick={()=>pickTrack(item.id)}><Volume2 size={16}/><span><strong>{item.name}</strong><small>{item.sub}</small></span><i/></button>)}</div>
+    <div className="focus-volume"><Volume2 size={15}/><input aria-label="Volume" type="range" min="0" max="1" step="0.05" value={volume} onChange={event=>setVolume(Number(event.target.value))}/></div>
+    <button className="focus-main-control" onClick={toggle} disabled={rewarding}>{running?<Pause size={18}/>:<Play size={18}/>} {rewarding?"Saving…":running?"Pause session":left===0?"Start another session":"Start focus session"}</button>
+    <audio ref={audioRef} src={track?.src} loop preload="metadata"/>
+  </section></div>;
 }
