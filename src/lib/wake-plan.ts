@@ -114,6 +114,15 @@ export async function scheduleNativeAlarm(p: WakePlan) {
   } catch { /* ignore */ }
 }
 
+export async function cancelNativeAlarm() {
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (!Capacitor.isNativePlatform() || !Capacitor.isPluginAvailable("LocalNotifications")) return;
+    const { LocalNotifications } = await import("@capacitor/local-notifications");
+    await LocalNotifications.cancel({ notifications: [{ id: 4001 }] });
+  } catch { /* best effort */ }
+}
+
 /** Re-arms a saved daily wake plan after verification or app resume. */
 export async function rearmWakePlan(p: WakePlan) {
   const next = rollPlanForward(p);

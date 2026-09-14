@@ -44,8 +44,9 @@ import toneScariest from "@/assets/ringtones/The_Scariest_Alarm_256k.mp3.asset.j
 import toneRetro from "@/assets/ringtones/retro_emergency.wav.asset.json";
 import toneLoudEmergency from "@/assets/ringtones/loud_emergency.mp3.asset.json";
 import { WakeVerify } from "@/components/WakeVerify";
+import { WakeProtocol } from "@/components/WakeProtocol";
 import {
-  loadPlan, savePlan, todayKey, shouldFire, markFired, scheduleNativeAlarm, rearmWakePlan,
+  loadPlan, savePlan, todayKey, shouldFire, markFired, scheduleNativeAlarm, cancelNativeAlarm, rearmWakePlan,
   type WakePlan,
 } from "@/lib/wake-plan";
 
@@ -427,23 +428,27 @@ function App() {
   const [wakeSaved, setWakeSaved] = useState(false);
   const [wakeAlarm, setWakeAlarm] = useState<WakePlan | null>(null);
 
-  const saveWakePlan = (w: { time: string; pts: number; line: string }) => {
+  const saveWakePlan = async (w: { time: string; pts: number; line: string }, reminderEnabled = true, sleepGoal = "20:30", selectedTone = ringtone, selectedMode = wakeMode) => {
     const plan: WakePlan = {
-      date: todayKey(), tier: w.time, pts: w.pts, line: w.line, tone: ringtone, mode: wakeMode,
+      date: todayKey(), tier: w.time, pts: w.pts, line: w.line, tone: selectedTone, mode: selectedMode,
     };
     stopPreview();
     savePlan(plan);
     setWakePlan(plan);
     setWakeSaved(true);
-    void scheduleNativeAlarm(plan);
+    if (reminderEnabled) await scheduleNativeAlarm(plan);
+    else await cancelNativeAlarm();
     // persist the plan on the account so it survives reinstall / new device
-    void (supabase as any)
-      .rpc("save_wake_plan", { _slot: plan.tier, _tone: plan.tone, _mode: plan.mode })
-      .then(({ error }: { error: { message: string } | null }) => {
-        if (error) console.error("save_wake_plan", error);
-      });
+    const { data: alarmId, error } = await (supabase as any)
+      .rpc("save_wake_plan", { _slot: plan.tier, _tone: plan.tone, _mode: plan.mode });
+    if (error) throw new Error(error.message);
+    const { error: updateError } = await supabase.from("alarms").update({
+      recovery_enabled: reminderEnabled,
+      sleep_recommendation: sleepGoal,
+    }).eq("id", alarmId);
+    if (updateError) throw new Error(updateError.message);
     toast.success(`${plan.tier} wake protocol armed`, { description: "The verification screen opens at that time." });
-    setTimeout(() => { setWakeSaved(false); setProof(null); }, 900);
+    setTimeout(() => setWakeSaved(false), 900);
   };
 
   // fires the full-screen takeover at the saved time while the app is open
@@ -571,7 +576,7 @@ function App() {
     if (error) {
       console.error(error);
       toast.error("Could not credit the wake protocol", { description: error.message });
-      return;
+      throw new Error(error.message);
     }
     const row = Array.isArray(data) ? data[0] : data;
     if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
@@ -589,6 +594,7 @@ function App() {
     } else {
       toast.success("Wake protocol already verified today");
     }
+    return awarded;
   };
 
   /** Logs a finished Zen session on the account and credits its coins. */
@@ -1030,8 +1036,26 @@ function App() {
       </div>
 
 
-      {/* 4AM PROOF-OF-WAKEUP MODAL */}
-      {proof && (
+      {proof?.mode === "time" && (
+        <WakeProtocol
+          options={WAKE_OPTIONS}
+          tones={RINGTONES}
+          initialTier={proof.wakeTime ?? wakePlan?.tier}
+          initialTone={ringtone}
+          initialMode={wakeMode}
+          coins={coins}
+          streak={streak}
+          bestStreak={life?.bestStreak ?? streak}
+          onClose={() => { stopPreview(); setProof(null); }}
+          onTone={pickRingtone}
+          onMode={setWakeMode}
+          onSave={saveWakePlan}
+          onCheckIn={completeWakeProtocol}
+        />
+      )}
+
+      {/* Existing challenge and analysis flow remains unchanged. */}
+      {proof && proof.mode !== "time" && (
         <div onClick={() => proof.mode === "result" && setProof(null)} style={{
           position: "fixed", inset: 0, zIndex: 999, background: "rgba(0,0,0,0.85)",
           backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center",
@@ -1044,119 +1068,14 @@ function App() {
             fontFamily: AX.font,
           }}>
             <div style={{ fontSize: 10, letterSpacing: 4, color: G, marginBottom: 6 }}>
-              ▸ {proof.mode === "time" ? "WAKE PROTOCOL" : `${proof.wakeTime || "04:00"} PROTOCOL`}
+              ▸ {proof.wakeTime || "04:00"} PROTOCOL
             </div>
             <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 2, marginBottom: 4, textShadow: `0 0 12px ${G}` }}>
-              {proof.mode === "time" ? "WHEN DID YOU RISE?" : "PROVE YOU ARE AWAKE"}
+              PROVE YOU ARE AWAKE
             </div>
             <div style={{ fontSize: 11, color: "#888", marginBottom: 18, lineHeight: 1.5 }}>
-              {proof.mode === "time"
-                ? <>Pick your wake-up tier. Earlier = more coins. Then set your alarm tone.</>
-                : <>Sleeping minds cannot solve. Answer correctly to earn <span style={{ color: G }}>+{proof.wakePts ?? 10} coins</span>.</>}
+              Sleeping minds cannot solve. Answer correctly to earn <span style={{ color: G }}>+{proof.wakePts ?? 10} coins</span>.
             </div>
-
-            {proof.mode === "time" && (
-              <>
-                <button
-                  onClick={() => setWakeMode(m => (m === "math" ? "science" : "math"))}
-                  style={{
-                    marginBottom: 14, padding: "6px 10px", borderRadius: 999, cursor: "pointer",
-                    background: "rgba(0,0,0,0.4)", border: `1px solid ${G}66`, color: G,
-                    fontFamily: AX.font, fontSize: 9, letterSpacing: 2, fontWeight: 800,
-                  }}
-                >
-                  🧠 SCIENCE &amp; MATH · {wakeMode === "math" ? "MATH MODE" : "SCIENCE MODE"} · TAP TO SWITCH
-                </button>
-
-                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 10 }}>WAKE TIER</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 18 }}>
-                  {WAKE_OPTIONS.map(w => {
-                    const sel = proof.wakeTime === w.time;
-                    return (
-                    <button key={w.time} onClick={() => setProof({ mode: "time", wakePts: w.pts, wakeTime: w.time, wakeLine: w.line })} style={{
-                      textAlign: "left", padding: "12px 12px", background: `linear-gradient(135deg, ${G}${sel ? "44" : "22"}, transparent)`,
-                      border: `1px solid ${sel ? G : G + "66"}`, borderLeft: `3px solid ${G}`, color: "#fff", cursor: "pointer",
-                      boxShadow: sel ? `0 0 18px ${G}66` : "none", fontFamily: AX.font,
-                    }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 4 }}>
-                        <span style={{ fontSize: 18, fontWeight: 900, letterSpacing: 2, textShadow: `0 0 10px ${G}` }}>{w.time}</span>
-                        <span style={{ fontSize: 11, fontWeight: 900, color: G }}>+{w.pts}</span>
-                      </div>
-                      <div style={{ fontSize: 8, letterSpacing: 2, color: G2, marginBottom: 4 }}>{w.tag}</div>
-                      <div style={{ fontSize: 9, color: "#999", lineHeight: 1.4 }}>{w.line}</div>
-                    </button>
-                    );
-                  })}
-                </div>
-
-                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 8, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 12 }}>🚨</span> EMERGENCY RINGTONE
-                  </span>
-                  <span style={{ fontSize: 8, color: G, letterSpacing: 1 }}>200% BOOST</span>
-                </div>
-                <div style={{
-                  maxHeight: 190, overflowY: "auto", marginBottom: 14, display: "grid", gap: 6,
-                  padding: 6, background: "rgba(0,0,0,0.35)", border: "1px solid #23232E", borderRadius: 14,
-                  WebkitOverflowScrolling: "touch",
-                }}>
-                  {RINGTONES.map(r => {
-                    const active = ringtone === r.id;
-                    const playing = previewId === r.id;
-                    return (
-                      <button key={r.id} onClick={() => pickRingtone(r.id)} style={{
-                        padding: "12px 12px", borderRadius: 12,
-                        background: active ? `linear-gradient(135deg, ${G}44, ${G2}22)` : "rgba(255,255,255,0.03)",
-                        border: `1px solid ${active ? G : "#2A2A36"}`,
-                        color: active ? "#fff" : "#aaa", cursor: "pointer",
-                        fontFamily: AX.font, fontSize: 11, letterSpacing: 2, fontWeight: 700,
-                        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
-                        transition: "background .15s ease, border-color .15s ease",
-                      }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
-                          <span style={{ color: active ? G : "#555" }}>{active ? "◉" : "○"}</span>
-                          <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</span>
-                        </span>
-                        <span style={{ fontSize: 10, color: G, flexShrink: 0 }}>{playing ? "■ STOP" : "▶"}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-
-
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 4 }}>
-                  <button onClick={() => { stopPreview(); setProof(null); }} style={{
-                    width: "100%", padding: 12, background: "transparent",
-                    border: "1px solid #333", color: "#666", cursor: "pointer",
-                    fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
-                  }}>CANCEL</button>
-                  <button
-                    disabled={!proof.wakeTime}
-                    onClick={() => {
-                      const w = WAKE_OPTIONS.find(o => o.time === proof.wakeTime);
-                      if (w) saveWakePlan({ time: w.time, pts: w.pts, line: w.line });
-                    }}
-                    style={{
-                      width: "100%", padding: 12, cursor: proof.wakeTime ? "pointer" : "not-allowed",
-                      background: proof.wakeTime ? `linear-gradient(90deg, ${G}, ${G2})` : "#222",
-                      border: "none", color: proof.wakeTime ? "#000" : "#555",
-                      fontFamily: AX.font, fontSize: 11, fontWeight: 900, letterSpacing: 2,
-                      transform: wakeSaved ? "scale(1.03)" : "none", transition: "transform .2s ease",
-                    }}
-                  >{wakeSaved ? "✓ SAVED" : "SAVE"}</button>
-                </div>
-                {!proof.wakeTime && (
-                  <div style={{ marginTop: 8, fontSize: 9, color: "#666", letterSpacing: 1.5, textAlign: "center" }}>
-                    PICK A WAKE TIER TO ARM THE ALARM
-                  </div>
-                )}
-                {wakePlan && (
-                  <div style={{ marginTop: 8, fontSize: 9, color: G, letterSpacing: 1.5, textAlign: "center" }}>
-                    ARMED · {wakePlan.tier} · {(RINGTONES.find(r => r.id === wakePlan.tone) || RINGTONES[0]).name} · {wakePlan.mode.toUpperCase()}
-                  </div>
-                )}
-              </>
-            )}
 
             {proof.mode === "choose" && (
               <>
