@@ -145,7 +145,7 @@ function App() {
   // Paid subscription access fallback, refreshed in real time.
   const access = useAccessControl(myId);
   // ONE centralized, server-clock paid entitlement verdict.
-  const ent = useEntitlement(myId);
+  const ent = useEntitlementContext();
   // Authoritative entitlement, computed server-side from the bearer token.
   const checkEntitlement = useServerFn(getEntitlement);
   const [serverEntitled, setServerEntitled] = useState<boolean | null>(null);
@@ -760,16 +760,17 @@ function App() {
     setVerify({ uuid: (t as any)._uuid as string, kind, scan: true });
   };
 
-  // useEntitlement() (database clock, paid subscription only) is the single verdict;
-  // the legacy server fn / profiles row only act as a fallback while it loads.
+  // get_entitlement() (database clock: verified subscription OR unexpired 3-day
+  // trial) is the single verdict; the legacy fallbacks only apply while it loads.
   const premiumUnlocked = !ent.isLoading
-    ? ent.isPremium
+    ? ent.premiumAccess
     : serverEntitled === null
       ? access.hasAccess
       : serverEntitled;
   const premiumTabs = ["rank", "zen", "coach"]; // Rank hosts Rank Scan + Accountability; Coach is the AI assistant
   // Resolve entitlement BEFORE gating renders — no unlocked↔locked flash.
   const gateReady = !!myId && !ent.isLoading;
+
 
   
 
