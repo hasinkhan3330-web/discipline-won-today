@@ -1068,15 +1068,13 @@ function App() {
             fontFamily: AX.font,
           }}>
             <div style={{ fontSize: 10, letterSpacing: 4, color: G, marginBottom: 6 }}>
-              ▸ {proof.mode === "time" ? "WAKE PROTOCOL" : `${proof.wakeTime || "04:00"} PROTOCOL`}
+              ▸ {proof.wakeTime || "04:00"} PROTOCOL
             </div>
             <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 2, marginBottom: 4, textShadow: `0 0 12px ${G}` }}>
-              {proof.mode === "time" ? "WHEN DID YOU RISE?" : "PROVE YOU ARE AWAKE"}
+              PROVE YOU ARE AWAKE
             </div>
             <div style={{ fontSize: 11, color: "#888", marginBottom: 18, lineHeight: 1.5 }}>
-              {proof.mode === "time"
-                ? <>Pick your wake-up tier. Earlier = more coins. Then set your alarm tone.</>
-                : <>Sleeping minds cannot solve. Answer correctly to earn <span style={{ color: G }}>+{proof.wakePts ?? 10} coins</span>.</>}
+              Sleeping minds cannot solve. Answer correctly to earn <span style={{ color: G }}>+{proof.wakePts ?? 10} coins</span>.
             </div>
 
             {proof.mode === "choose" && (
