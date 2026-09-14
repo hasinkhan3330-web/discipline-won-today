@@ -944,7 +944,7 @@ function App() {
               />
             )}
             {tab === "rank" && (!gateReady ? <GateSkeleton /> : (
-              <PaywallGate hasAccess={premiumUnlocked} featureName="Rank & Accountability" onUpgrade={() => setShowPaywall(true)}>
+              <ProtectedFeatureGate featureName="Rank & Accountability" onUpgrade={() => setShowPaywall(true)} onContinueBasic={() => setTab("home")}>
                 <RankTab
                   coins={coins}
                   streak={streak}
@@ -957,18 +957,19 @@ function App() {
                   onApplyTheme={setThemeKey}
                   onNavigate={setTab}
                 />
-              </PaywallGate>
+              </ProtectedFeatureGate>
             ))}
             {tab === "zen" && (!gateReady ? <GateSkeleton /> : (
-              <PaywallGate hasAccess={premiumUnlocked} featureName="Zen Mode" onUpgrade={() => setShowPaywall(true)}>
+              <ProtectedFeatureGate featureName="Zen Mode" onUpgrade={() => setShowPaywall(true)} onContinueBasic={() => setTab("home")}>
                 <ZenTab med={med} coins={coins} />
-              </PaywallGate>
+              </ProtectedFeatureGate>
             ))}
             {tab === "coach" && (!gateReady ? <GateSkeleton /> : (
-              <PaywallGate hasAccess={premiumUnlocked} featureName="AI Assistant" onUpgrade={() => setShowPaywall(true)}>
+              <ProtectedFeatureGate featureName="AI Assistant" onUpgrade={() => setShowPaywall(true)} onContinueBasic={() => setTab("home")}>
                 <AiCoach onOpenFocus={() => { setTab("home"); window.setTimeout(() => window.dispatchEvent(new Event("axen:open-focus")), 80); }} onCreateHabit={createCoachHabit} />
-              </PaywallGate>
+              </ProtectedFeatureGate>
             ))}
+
 
             {tab === "stats" && (
               <StatsTab
