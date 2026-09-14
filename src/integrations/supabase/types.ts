@@ -50,26 +50,38 @@ export type Database = {
       alarm_sessions: {
         Row: {
           alarm_id: string
+          attempts: number
+          checked_in_at: string | null
           coins_awarded: number
           completed_on: string
           created_at: string
           id: string
+          recovered: boolean
+          status: string
           user_id: string
         }
         Insert: {
           alarm_id: string
+          attempts?: number
+          checked_in_at?: string | null
           coins_awarded?: number
           completed_on?: string
           created_at?: string
           id?: string
+          recovered?: boolean
+          status?: string
           user_id: string
         }
         Update: {
           alarm_id?: string
+          attempts?: number
+          checked_in_at?: string | null
           coins_awarded?: number
           completed_on?: string
           created_at?: string
           id?: string
+          recovered?: boolean
+          status?: string
           user_id?: string
         }
         Relationships: [
@@ -84,36 +96,48 @@ export type Database = {
       }
       alarms: {
         Row: {
+          challenge_started_on: string | null
           challenge_type: string
+          checkin_window_minutes: number
           created_at: string
           days: number[]
           id: string
           is_active: boolean
           label: string | null
+          recovery_enabled: boolean
+          sleep_recommendation: string | null
           time: string
           tone: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          challenge_started_on?: string | null
           challenge_type?: string
+          checkin_window_minutes?: number
           created_at?: string
           days?: number[]
           id?: string
           is_active?: boolean
           label?: string | null
+          recovery_enabled?: boolean
+          sleep_recommendation?: string | null
           time: string
           tone?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          challenge_started_on?: string | null
           challenge_type?: string
+          checkin_window_minutes?: number
           created_at?: string
           days?: number[]
           id?: string
           is_active?: boolean
           label?: string | null
+          recovery_enabled?: boolean
+          sleep_recommendation?: string | null
           time?: string
           tone?: string
           updated_at?: string
@@ -184,6 +208,68 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coach_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+          suggested_action: Json | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+          suggested_action?: Json | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          suggested_action?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "coach_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coach_notes: {
         Row: {
           consistency_score: number
@@ -249,9 +335,13 @@ export type Database = {
           blocked_apps: string[]
           coins_awarded: number
           created_at: string
+          ended_at: string | null
           id: string
+          intensity: string | null
           lock_mode: string
           minutes: number
+          session_token: string | null
+          started_at: string | null
           tier: string
           user_id: string
         }
@@ -259,9 +349,13 @@ export type Database = {
           blocked_apps?: string[]
           coins_awarded?: number
           created_at?: string
+          ended_at?: string | null
           id?: string
+          intensity?: string | null
           lock_mode?: string
           minutes: number
+          session_token?: string | null
+          started_at?: string | null
           tier: string
           user_id: string
         }
@@ -269,9 +363,13 @@ export type Database = {
           blocked_apps?: string[]
           coins_awarded?: number
           created_at?: string
+          ended_at?: string | null
           id?: string
+          intensity?: string | null
           lock_mode?: string
           minutes?: number
+          session_token?: string | null
+          started_at?: string | null
           tier?: string
           user_id?: string
         }
@@ -361,33 +459,63 @@ export type Database = {
           enabled: boolean
           goal_id: string | null
           id: string
+          last_scheduled_at: string | null
+          notification_id: number | null
           remind_at: string
+          repeat_mode: string
+          scheduling_error: string | null
+          scheduling_status: string
+          snooze_minutes: number
+          sound: string
           task_id: string | null
           timezone: string
+          title: string | null
           updated_at: string
           user_id: string
+          vibration: boolean
+          weekdays: number[]
         }
         Insert: {
           created_at?: string
           enabled?: boolean
           goal_id?: string | null
           id?: string
+          last_scheduled_at?: string | null
+          notification_id?: number | null
           remind_at?: string
+          repeat_mode?: string
+          scheduling_error?: string | null
+          scheduling_status?: string
+          snooze_minutes?: number
+          sound?: string
           task_id?: string | null
           timezone?: string
+          title?: string | null
           updated_at?: string
           user_id: string
+          vibration?: boolean
+          weekdays?: number[]
         }
         Update: {
           created_at?: string
           enabled?: boolean
           goal_id?: string | null
           id?: string
+          last_scheduled_at?: string | null
+          notification_id?: number | null
           remind_at?: string
+          repeat_mode?: string
+          scheduling_error?: string | null
+          scheduling_status?: string
+          snooze_minutes?: number
+          sound?: string
           task_id?: string | null
           timezone?: string
+          title?: string | null
           updated_at?: string
           user_id?: string
+          vibration?: boolean
+          weekdays?: number[]
         }
         Relationships: [
           {
@@ -490,11 +618,17 @@ export type Database = {
         Row: {
           acquisition_source: string | null
           active_subscription_id: string | null
+          age_range: string | null
           avatar_url: string | null
+          behavioral_tracking_allowed: boolean
+          biggest_distraction: string | null
           bio: string | null
           coins: number
+          commitment_milestone: number | null
+          consistency_days: number | null
           created_at: string
           display_name: string | null
+          first_habit: string | null
           gym_lat: number | null
           gym_lng: number | null
           gym_radius_m: number
@@ -506,26 +640,44 @@ export type Database = {
           onboarded: boolean
           onboarding_answered_at: string | null
           onboarding_blocker: string | null
+          onboarding_completed: boolean
+          onboarding_completed_at: string | null
           onboarding_goal: string | null
           onboarding_habit_count: number | null
+          onboarding_step: number
+          onboarding_version: number
+          preferred_focus_time: string | null
+          preferred_name: string | null
+          primary_goal: string | null
           referral_code: string | null
           referred_by: string | null
+          routine_breaker: string | null
+          safe_minor_mode: boolean
           shields: number
+          sleep_time: string | null
+          social_hours_daily: number | null
           streak: number
           subscription_platform: string | null
           trial_ends_at: string | null
           trial_started_at: string | null
           updated_at: string
           username: string | null
+          wake_time: string | null
         }
         Insert: {
           acquisition_source?: string | null
           active_subscription_id?: string | null
+          age_range?: string | null
           avatar_url?: string | null
+          behavioral_tracking_allowed?: boolean
+          biggest_distraction?: string | null
           bio?: string | null
           coins?: number
+          commitment_milestone?: number | null
+          consistency_days?: number | null
           created_at?: string
           display_name?: string | null
+          first_habit?: string | null
           gym_lat?: number | null
           gym_lng?: number | null
           gym_radius_m?: number
@@ -537,26 +689,44 @@ export type Database = {
           onboarded?: boolean
           onboarding_answered_at?: string | null
           onboarding_blocker?: string | null
+          onboarding_completed?: boolean
+          onboarding_completed_at?: string | null
           onboarding_goal?: string | null
           onboarding_habit_count?: number | null
+          onboarding_step?: number
+          onboarding_version?: number
+          preferred_focus_time?: string | null
+          preferred_name?: string | null
+          primary_goal?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          routine_breaker?: string | null
+          safe_minor_mode?: boolean
           shields?: number
+          sleep_time?: string | null
+          social_hours_daily?: number | null
           streak?: number
           subscription_platform?: string | null
           trial_ends_at?: string | null
           trial_started_at?: string | null
           updated_at?: string
           username?: string | null
+          wake_time?: string | null
         }
         Update: {
           acquisition_source?: string | null
           active_subscription_id?: string | null
+          age_range?: string | null
           avatar_url?: string | null
+          behavioral_tracking_allowed?: boolean
+          biggest_distraction?: string | null
           bio?: string | null
           coins?: number
+          commitment_milestone?: number | null
+          consistency_days?: number | null
           created_at?: string
           display_name?: string | null
+          first_habit?: string | null
           gym_lat?: number | null
           gym_lng?: number | null
           gym_radius_m?: number
@@ -568,17 +738,29 @@ export type Database = {
           onboarded?: boolean
           onboarding_answered_at?: string | null
           onboarding_blocker?: string | null
+          onboarding_completed?: boolean
+          onboarding_completed_at?: string | null
           onboarding_goal?: string | null
           onboarding_habit_count?: number | null
+          onboarding_step?: number
+          onboarding_version?: number
+          preferred_focus_time?: string | null
+          preferred_name?: string | null
+          primary_goal?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          routine_breaker?: string | null
+          safe_minor_mode?: boolean
           shields?: number
+          sleep_time?: string | null
+          social_hours_daily?: number | null
           streak?: number
           subscription_platform?: string | null
           trial_ends_at?: string | null
           trial_started_at?: string | null
           updated_at?: string
           username?: string | null
+          wake_time?: string | null
         }
         Relationships: []
       }
@@ -905,6 +1087,7 @@ export type Database = {
       }
     }
     Functions: {
+      activate_axen_plan: { Args: { _answers: Json }; Returns: undefined }
       apply_daily_penalty: {
         Args: never
         Returns: {
@@ -924,6 +1107,14 @@ export type Database = {
         Returns: {
           awarded: number
           coins: number
+        }[]
+      }
+      complete_focus_music_session: {
+        Args: { _intensity: string; _minutes: number; _session_token: string }
+        Returns: {
+          awarded: number
+          coins: number
+          minutes: number
         }[]
       }
       complete_focus_session: {
@@ -1055,6 +1246,10 @@ export type Database = {
           ok: boolean
           reason: string
         }[]
+      }
+      save_onboarding_step: {
+        Args: { _answers: Json; _step: number }
+        Returns: undefined
       }
       save_wake_plan: {
         Args: { _mode: string; _slot: string; _tone: string }
