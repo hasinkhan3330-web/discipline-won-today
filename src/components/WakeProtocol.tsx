@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Bell, BellOff, BedDouble, Check, ChevronDown, Clock3, MoonStar,
@@ -133,7 +133,7 @@ export function WakeProtocol({
     }
   };
 
-  const section = (id: Section, icon: React.ReactNode, title: string, summary: string, children: React.ReactNode) => {
+  const section = (id: Section, icon: ReactNode, title: string, summary: string, children: ReactNode) => {
     const expanded = open === id;
     return (
       <section className="wakep__section">

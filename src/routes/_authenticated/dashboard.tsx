@@ -44,8 +44,9 @@ import toneScariest from "@/assets/ringtones/The_Scariest_Alarm_256k.mp3.asset.j
 import toneRetro from "@/assets/ringtones/retro_emergency.wav.asset.json";
 import toneLoudEmergency from "@/assets/ringtones/loud_emergency.mp3.asset.json";
 import { WakeVerify } from "@/components/WakeVerify";
+import { WakeProtocol } from "@/components/WakeProtocol";
 import {
-  loadPlan, savePlan, todayKey, shouldFire, markFired, scheduleNativeAlarm, rearmWakePlan,
+  loadPlan, savePlan, todayKey, shouldFire, markFired, scheduleNativeAlarm, cancelNativeAlarm, rearmWakePlan,
   type WakePlan,
 } from "@/lib/wake-plan";
 
@@ -427,7 +428,7 @@ function App() {
   const [wakeSaved, setWakeSaved] = useState(false);
   const [wakeAlarm, setWakeAlarm] = useState<WakePlan | null>(null);
 
-  const saveWakePlan = (w: { time: string; pts: number; line: string }) => {
+  const saveWakePlan = async (w: { time: string; pts: number; line: string }, reminderEnabled = true, sleepGoal = "20:30") => {
     const plan: WakePlan = {
       date: todayKey(), tier: w.time, pts: w.pts, line: w.line, tone: ringtone, mode: wakeMode,
     };
@@ -435,15 +436,19 @@ function App() {
     savePlan(plan);
     setWakePlan(plan);
     setWakeSaved(true);
-    void scheduleNativeAlarm(plan);
+    if (reminderEnabled) await scheduleNativeAlarm(plan);
+    else await cancelNativeAlarm();
     // persist the plan on the account so it survives reinstall / new device
-    void (supabase as any)
-      .rpc("save_wake_plan", { _slot: plan.tier, _tone: plan.tone, _mode: plan.mode })
-      .then(({ error }: { error: { message: string } | null }) => {
-        if (error) console.error("save_wake_plan", error);
-      });
+    const { data: alarmId, error } = await (supabase as any)
+      .rpc("save_wake_plan", { _slot: plan.tier, _tone: plan.tone, _mode: plan.mode });
+    if (error) throw new Error(error.message);
+    const { error: updateError } = await supabase.from("alarms").update({
+      is_active: reminderEnabled,
+      sleep_recommendation: sleepGoal,
+    }).eq("id", alarmId);
+    if (updateError) throw new Error(updateError.message);
     toast.success(`${plan.tier} wake protocol armed`, { description: "The verification screen opens at that time." });
-    setTimeout(() => { setWakeSaved(false); setProof(null); }, 900);
+    setTimeout(() => setWakeSaved(false), 900);
   };
 
   // fires the full-screen takeover at the saved time while the app is open
@@ -571,7 +576,7 @@ function App() {
     if (error) {
       console.error(error);
       toast.error("Could not credit the wake protocol", { description: error.message });
-      return;
+      throw new Error(error.message);
     }
     const row = Array.isArray(data) ? data[0] : data;
     if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
@@ -589,6 +594,7 @@ function App() {
     } else {
       toast.success("Wake protocol already verified today");
     }
+    return awarded;
   };
 
   /** Logs a finished Zen session on the account and credits its coins. */
