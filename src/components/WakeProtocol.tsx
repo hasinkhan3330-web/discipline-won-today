@@ -48,7 +48,7 @@ export function WakeProtocol({
   onClose: () => void;
   onTone: (id: string) => void;
   onMode: (mode: "math" | "science") => void;
-  onSave: (option: WakeOption, reminderEnabled: boolean, sleepGoal: string) => Promise<void>;
+  onSave: (option: WakeOption, reminderEnabled: boolean, sleepGoal: string, tone: string, mode: "math" | "science") => Promise<void>;
   onCheckIn: (tier: string) => Promise<number>;
 }) {
   const reduceMotion = useReducedMotion();
@@ -82,7 +82,7 @@ export function WakeProtocol({
       const today = new Date().toISOString().slice(0, 10);
       const thirtyAgo = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
       const [{ data: alarm }, { data: sessions }] = await Promise.all([
-        supabase.from("alarms").select("time,tone,challenge_type,is_active,sleep_recommendation").eq("user_id", uid).eq("label", "AXEN Wake Protocol").maybeSingle(),
+        supabase.from("alarms").select("time,tone,challenge_type,recovery_enabled,sleep_recommendation").eq("user_id", uid).eq("label", "AXEN Wake Protocol").maybeSingle(),
         supabase.from("alarm_sessions").select("completed_on,status").eq("user_id", uid).gte("completed_on", thirtyAgo).order("completed_on", { ascending: true }),
       ]);
       if (!live) return;
@@ -91,7 +91,7 @@ export function WakeProtocol({
         if (hour >= 4 && hour <= 7) setTier(`${hour}AM`);
         setTone(alarm.tone || initialTone);
         setMode(alarm.challenge_type === "science" ? "science" : "math");
-        setReminderEnabled(alarm.is_active);
+        setReminderEnabled(alarm.recovery_enabled);
         setSleepGoal(alarm.sleep_recommendation?.slice(0, 5) || "20:30");
       }
       const completed = (sessions ?? []).filter(session => session.status === "completed" || session.status === "recovered");
@@ -108,7 +108,7 @@ export function WakeProtocol({
     try {
       onTone(tone);
       onMode(mode);
-      await onSave(selected, reminderEnabled, sleepGoal);
+      await onSave(selected, reminderEnabled, sleepGoal, tone, mode);
       setStatus("idle");
     } catch (reason) {
       setStatus("error");
@@ -123,7 +123,7 @@ export function WakeProtocol({
     try {
       onTone(tone);
       onMode(mode);
-      await onSave(selected, reminderEnabled, sleepGoal);
+      await onSave(selected, reminderEnabled, sleepGoal, tone, mode);
       const awarded = await onCheckIn(selected.time);
       setCheckedToday(true);
       setStatus(awarded > 0 ? "success" : "already");

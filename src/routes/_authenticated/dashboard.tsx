@@ -428,9 +428,9 @@ function App() {
   const [wakeSaved, setWakeSaved] = useState(false);
   const [wakeAlarm, setWakeAlarm] = useState<WakePlan | null>(null);
 
-  const saveWakePlan = async (w: { time: string; pts: number; line: string }, reminderEnabled = true, sleepGoal = "20:30") => {
+  const saveWakePlan = async (w: { time: string; pts: number; line: string }, reminderEnabled = true, sleepGoal = "20:30", selectedTone = ringtone, selectedMode = wakeMode) => {
     const plan: WakePlan = {
-      date: todayKey(), tier: w.time, pts: w.pts, line: w.line, tone: ringtone, mode: wakeMode,
+      date: todayKey(), tier: w.time, pts: w.pts, line: w.line, tone: selectedTone, mode: selectedMode,
     };
     stopPreview();
     savePlan(plan);
@@ -443,7 +443,7 @@ function App() {
       .rpc("save_wake_plan", { _slot: plan.tier, _tone: plan.tone, _mode: plan.mode });
     if (error) throw new Error(error.message);
     const { error: updateError } = await supabase.from("alarms").update({
-      is_active: reminderEnabled,
+      recovery_enabled: reminderEnabled,
       sleep_recommendation: sleepGoal,
     }).eq("id", alarmId);
     if (updateError) throw new Error(updateError.message);
