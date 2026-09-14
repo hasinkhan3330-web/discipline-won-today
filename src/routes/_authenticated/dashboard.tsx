@@ -10,9 +10,12 @@ import { Paywall } from "@/components/Paywall";
 import { PaywallGate } from "@/components/PaywallGate";
 import { TaskVerify, type VerifyKind } from "@/components/TaskVerify";
 import { useAccessControl } from "@/hooks/useAccessControl";
-import { useEntitlement } from "@/hooks/useEntitlement";
+import { useEntitlementContext, EntitlementProvider } from "@/components/EntitlementProvider";
+import { ProtectedFeatureGate } from "@/components/ProtectedFeatureGate";
+import { TrialBanner, TrialWelcome } from "@/components/TrialBanner";
 import { GateSkeleton } from "@/components/GateSkeleton";
 import { AiCoach } from "@/components/AiCoach";
+
 
 
 import { CropModal } from "@/components/CropModal";
@@ -80,8 +83,19 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       { property: "og:description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, legendary quotes, streaks." },
     ],
   }),
-  component: App,
+  component: DashboardShell,
 });
+
+/** One shared, server-authoritative entitlement verdict for the whole app. */
+function DashboardShell() {
+  const ctx = Route.useRouteContext() as { user?: { id: string } };
+  return (
+    <EntitlementProvider userId={ctx?.user?.id ?? null}>
+      <App />
+    </EntitlementProvider>
+  );
+}
+
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
 
