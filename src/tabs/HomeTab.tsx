@@ -60,13 +60,14 @@ function greeting() {
   return "Good evening";
 }
 
-export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan, onFocusComplete, onBuyShield, reminderTasks = [], wakeSet = true }: {
+export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan, onFocusComplete, onMusicReward, onBuyShield, reminderTasks = [], wakeSet = true }: {
   name: string;
   coins: number; streak: number; shields?: number;
   tasks: Task[];
   tick: (id: number) => void;
   onScan?: (id: number) => void;
   onFocusComplete: (tier: FocusTier, lockMode: "strict" | "flex", apps: string[]) => Promise<number | null>;
+  onMusicReward?: (coins: number, minutes: number) => void;
   onBuyShield?: () => Promise<void>;
   reminderTasks?: ReminderTask[];
   /** false when no wake tier/tone is saved for today — the row shows "Not set" */
@@ -78,6 +79,11 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
   const [popped, setPopped] = useState<number | null>(null);
   const pending = useRef<Set<number>>(new Set());
   const focusRef = useRef<DeepFocusHandle>(null);
+  useEffect(() => {
+    const open = () => focusRef.current?.openMusic();
+    window.addEventListener("axen:open-focus", open);
+    return () => window.removeEventListener("axen:open-focus", open);
+  }, []);
 
   const handleTick = (t: Task) => {
     if (t.done || pending.current.has(t.id)) return; // guard rapid double taps
@@ -145,10 +151,10 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
 
       {reminderTasks.length > 0 && <div className="home-command-block"><RemindersCard tasks={reminderTasks} /></div>}
 
-      <DeepFocus ref={focusRef} G={AX.cyan} G2={AX.accent} onComplete={onFocusComplete} />
+      <DeepFocus ref={focusRef} G={AX.cyan} G2={AX.accent} onComplete={onFocusComplete} onMusicReward={onMusicReward} />
 
       <button className="home-music-strip" onClick={() => focusRef.current?.openMusic()}>
-        <span><Music2 size={18} /></span><div><strong>Focus Music</strong><small>30:00 · 14Hz Beta · Study Melody</small></div><ChevronRight size={17} />
+        <span><Music2 size={18} /></span><div><strong>Focus Music</strong><small>25 min · 14Hz Beta · Study Melody</small></div><ChevronRight size={17} />
       </button>
     </main>
   );

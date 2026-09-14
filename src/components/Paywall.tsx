@@ -1,183 +1,23 @@
 import { useEffect, useState } from "react";
+import { Check, Minus, ShieldCheck, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PlatformCheckout } from "@/components/PlatformCheckout";
-
 import { isNativeBillingAvailable } from "@/lib/play-billing";
 import { PRICING, type Cycle } from "@/lib/pricing";
 
-const G = "#00d4ff";
-const G2 = "#a855f7";
-
-const PERKS = [
-  "Full Wake Protocol (4AM–7AM tiers + custom ringtones)",
-  "Zen Meditation (WHO 4-4-4-4 box breathing)",
-  "Full Daily Quotes library + rotating legends",
-  "All 9 Victory milestones (Day 1 → Day 360)",
-  "PRO badge on the Leaderboard",
-];
-
-export function Paywall({ userId, email }: { userId: string; email?: string | null }) {
-  const [cycle, setCycle] = useState<Cycle>("yearly");
-  const [native, setNative] = useState(false);
-
-  useEffect(() => {
-    isNativeBillingAvailable().then(setNative).catch(() => setNative(false));
-  }, []);
-
-  const signOut = async () => { await supabase.auth.signOut(); };
-
-
-  return (
-    <div style={{ minHeight: "100vh", background: "#000", color: "#e8e8e8", fontFamily: "monospace", backgroundImage: `radial-gradient(circle at 20% 20%, ${G2}22, transparent 50%), radial-gradient(circle at 80% 80%, ${G}22, transparent 50%)` }}>
-      <div style={{ maxWidth: 460, margin: "0 auto", padding: "40px 20px 60px" }}>
-        <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontSize: 32, fontWeight: 900, letterSpacing: 6, color: "#fff", textShadow: `0 0 20px ${G}` }}>AXEN PRO</h1>
-          <p style={{ letterSpacing: 3, fontSize: 10, color: G, marginTop: 4 }}>UNLOCK THE FULL SYSTEM</p>
-          <p style={{ marginTop: 14, fontSize: 12, color: "#aaa", letterSpacing: 1 }}>Choose a plan and unlock AXEN PRO instantly.</p>
-          <p style={{ marginTop: 6, fontSize: 9, color: "#666", letterSpacing: 2 }}>◈ SECURE STORE CHECKOUT</p>
-        </div>
-
-        <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 12 }}>
-          {(["yearly", "monthly"] as const).map(c => {
-            const active = cycle === c;
-            const p = PRICING[c];
-            return (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCycle(c)}
-                style={{
-                  textAlign: "left", padding: 16, cursor: "pointer",
-                  background: active ? `linear-gradient(135deg, ${G}22, ${G2}22)` : "rgba(10,10,25,0.7)",
-                  border: `2px solid ${active ? G : "#333"}`,
-                  borderRadius: 4, color: "#fff", fontFamily: "monospace",
-                  boxShadow: active ? `0 0 20px ${G}55` : "none",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ letterSpacing: 3, fontWeight: 900, fontSize: 13 }}>{c.toUpperCase()}</div>
-                  {p.save && <div style={{ background: G, color: "#000", fontSize: 9, fontWeight: 900, padding: "2px 8px", letterSpacing: 2, borderRadius: 2 }}>{p.save}</div>}
-                </div>
-                <div style={{ marginTop: 8, fontSize: 20, fontWeight: 900, color: G }}>{p.display}</div>
-                <div style={{ marginTop: 4, fontSize: 10, color: "#888", letterSpacing: 1 }}>{p.sub}</div>
-              </button>
-            );
-          })}
-        </div>
-
-        <ul style={{ marginTop: 24, listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-          {PERKS.map((t, i) => (
-            <li key={i} style={{ fontSize: 12, color: "#ccc", letterSpacing: 0.5, display: "flex", gap: 10 }}>
-              <span style={{ color: G }}>▸</span>{t}
-            </li>
-          ))}
-        </ul>
-
-        <PlatformCheckout userId={userId} cycle={cycle} email={email} />
-
-
-        <p style={{ marginTop: 12, fontSize: 10, color: "#666", letterSpacing: 1, textAlign: "center" }}>
-          {native
-            ? "Billed securely by the app store. Manage or cancel anytime in your store subscriptions."
-            : "AXEN PRO is purchased inside the AXEN mobile app via Google Play Billing or the Apple App Store."}
-        </p>
-
-
-
-        <button onClick={signOut} style={{ marginTop: 20, width: "100%", background: "transparent", border: "none", color: "#666", fontFamily: "monospace", fontSize: 10, letterSpacing: 2, cursor: "pointer" }}>
-          SIGN OUT
-        </button>
-      </div>
-    </div>
-  );
+const FEATURES=[{name:"Daily habits, streaks and coins",basic:true},{name:"Up to 3 active reminders",basic:true},{name:"Stats and personal journey",basic:true},{name:"4AM Wake Verification",basic:false},{name:"AI discipline coach",basic:false},{name:"Zen, Rank and premium themes",basic:false},{name:"Unlimited reminders",basic:false}];
+export function Paywall({userId,email}:{userId:string;email?:string|null}){
+  const[cycle,setCycle]=useState<Cycle>("yearly");const[native,setNative]=useState(false);
+  useEffect(()=>{isNativeBillingAvailable().then(setNative).catch(()=>setNative(false));},[]);
+  return <main className="membership-screen"><header><div><Sparkles size={22}/></div><span>AXEN MEMBERSHIP</span><h1>Choose your discipline system</h1><p>Start with the essentials. Unlock the complete AXEN system when you are ready.</p></header>
+    <div className="membership-plans"><section><span>BASIC</span><h2>Free</h2><p>Your daily discipline foundation.</p>{FEATURES.map(item=><div key={item.name} className={item.basic?"":"is-muted"}>{item.basic?<Check size={15}/>:<Minus size={15}/>}<span>{item.name}</span></div>)}</section><section className="is-pro"><span>AXEN PRO</span><h2>{PRICING[cycle].display}</h2><p>{PRICING[cycle].sub}</p>{FEATURES.map(item=><div key={item.name}><Check size={15}/><span>{item.name}</span></div>)}</section></div>
+    <div className="membership-cycle">{(["monthly","yearly"] as const).map(item=><button key={item} className={cycle===item?"is-active":""} onClick={()=>setCycle(item)}><span>{item}</span><b>{PRICING[item].display}</b>{PRICING[item].save&&<small>{PRICING[item].save}</small>}</button>)}</div>
+    <PlatformCheckout userId={userId} cycle={cycle} email={email}/>
+    <p className="membership-note"><ShieldCheck size={14}/>{native?"Secure store billing. Cancel anytime in your store subscriptions.":"Purchases are completed securely inside the AXEN mobile app."}</p>
+    <button className="membership-signout" onClick={()=>supabase.auth.signOut()}>Sign out</button>
+  </main>;
 }
-
-
-export function PaywallLoading() {
-  return (
-    <div style={{ minHeight: "100vh", background: "#000", color: G, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "monospace", letterSpacing: 4, fontSize: 12 }}>
-      LOADING...
-    </div>
-  );
-}
-
-type SubRow = { status: string; current_period_end: string | null };
-
-function isRowActive(s: SubRow): boolean {
-  const end = s.current_period_end ? new Date(s.current_period_end) : null;
-  const notExpired = !end || end > new Date();
-  if (["active", "past_due"].includes(s.status) && notExpired) return true;
-  if (s.status === "canceled" && end && end > new Date()) return true;
-  return false;
-}
-
-export function PaywallGate({ children }: { children: React.ReactNode }) {
-
-  const [userId, setUserId] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
-  const [sub, setSub] = useState<{ status: string; current_period_end: string | null } | null>(null);
-
-  const refresh = async (uid: string) => {
-    const { data } = await supabase
-      .from("subscriptions")
-      .select("status, current_period_end")
-      .eq("user_id", uid)
-      .order("created_at", { ascending: false })
-      .limit(20);
-    const rows = (data ?? []) as { status: string; current_period_end: string | null }[];
-    setSub(rows.find(isRowActive) ?? rows[0] ?? null);
-  };
-
-
-
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        setUserId(data.user.id);
-        setEmail(data.user.email ?? null);
-        await refresh(data.user.id);
-        // Inside the Android app, re-check Google Play on every launch so a
-        // reinstall or a renewal unlocks PRO without any user action.
-        if (await isNativeBillingAvailable().catch(() => false)) {
-          try {
-            const { initPlayBilling } = await import("@/lib/play-billing");
-            const { syncPlayEntitlement } = await import("@/utils/play-billing.functions");
-            await initPlayBilling(data.user.id);
-            await syncPlayEntitlement({ data: {} } as never);
-            await refresh(data.user.id);
-          } catch { /* offline or not configured yet */ }
-        }
-      }
-
-      setReady(true);
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (!userId) return;
-    const ch = supabase
-      .channel(`gate_${userId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${userId}` }, () => refresh(userId))
-      .subscribe();
-    const onFocus = () => refresh(userId);
-    const onRefresh = () => refresh(userId);
-    window.addEventListener("focus", onFocus);
-    window.addEventListener("subscription:refresh", onRefresh);
-    return () => {
-      supabase.removeChannel(ch);
-      window.removeEventListener("focus", onFocus);
-      window.removeEventListener("subscription:refresh", onRefresh);
-    };
-  }, [userId]);
-
-  if (!ready) return <PaywallLoading />;
-  if (!userId) return <PaywallLoading />;
-
-  const active = !!sub && isRowActive(sub);
-
-
-  if (!active) return <Paywall userId={userId} email={email} />;
-  return <>{children}</>;
-}
+export function PaywallLoading(){return <div className="membership-loading">Preparing AXEN…</div>}
+type SubRow={status:string;current_period_end:string|null};
+function isRowActive(row:SubRow){const end=row.current_period_end?new Date(row.current_period_end):null;const valid=!end||end>new Date();return (["active","past_due"].includes(row.status)&&valid)||(row.status==="canceled"&&!!end&&end>new Date());}
+export function PaywallGate({children}:{children:React.ReactNode}){const[userId,setUserId]=useState<string|null>(null);const[email,setEmail]=useState<string|null>(null);const[ready,setReady]=useState(false);const[sub,setSub]=useState<SubRow|null>(null);const refresh=async(uid:string)=>{const{data}=await supabase.from("subscriptions").select("status,current_period_end").eq("user_id",uid).order("created_at",{ascending:false}).limit(20);const rows=(data??[]) as SubRow[];setSub(rows.find(isRowActive)??rows[0]??null);};useEffect(()=>{void(async()=>{const{data}=await supabase.auth.getUser();if(data.user){setUserId(data.user.id);setEmail(data.user.email??null);await refresh(data.user.id);if(await isNativeBillingAvailable().catch(()=>false)){try{const{initPlayBilling}=await import("@/lib/play-billing");const{syncPlayEntitlement}=await import("@/utils/play-billing.functions");await initPlayBilling(data.user.id);await syncPlayEntitlement({data:{}} as never);await refresh(data.user.id);}catch{}}}setReady(true);})();},[]);useEffect(()=>{if(!userId)return;const channel=supabase.channel(`gate_${userId}`).on("postgres_changes",{event:"*",schema:"public",table:"subscriptions",filter:`user_id=eq.${userId}`},()=>refresh(userId)).subscribe();const update=()=>refresh(userId);window.addEventListener("focus",update);window.addEventListener("subscription:refresh",update);return()=>{void supabase.removeChannel(channel);window.removeEventListener("focus",update);window.removeEventListener("subscription:refresh",update);};},[userId]);if(!ready||!userId)return<PaywallLoading/>;if(!sub||!isRowActive(sub))return<Paywall userId={userId} email={email}/>;return<>{children}</>}

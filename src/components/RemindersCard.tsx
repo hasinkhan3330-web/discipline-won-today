@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { Bell, BellOff, ChevronDown } from "lucide-react";
+import { cancelLocalReminder, nextReminderAt, scheduleLocalReminder, stableNotificationId } from "@/lib/local-notifications";
 
 export type ReminderTask = { uuid: string; name: string; done: boolean };
 type Row = { task_id: string; remind_at: string; enabled: boolean; timezone: string };
@@ -40,7 +41,7 @@ export function RemindersCard({ tasks }: { tasks: ReminderTask[] }) {
   useEffect(() => {
     timers.current.forEach(t => window.clearTimeout(t));
     timers.current = [];
-    if (typeof window === "undefined" || !("Notification" in window) || Notification.permission !== "granted") return;
+    if (typeof window === "undefined") return;
 
     tasks.forEach(t => {
       const r = rows[t.uuid];
@@ -54,6 +55,7 @@ export function RemindersCard({ tasks }: { tasks: ReminderTask[] }) {
         try { new Notification("AXEN", { body: `${t.name} — still open today.` }); } catch { /* ignore */ }
       }, delay);
       timers.current.push(id);
+      void scheduleLocalReminder({ id: stableNotificationId(t.uuid), title: "AXEN reminder", body: `${t.name} — still open today.`, at: nextReminderAt(r.remind_at) });
     });
 
     return () => { timers.current.forEach(t => window.clearTimeout(t)); timers.current = []; };
@@ -87,6 +89,9 @@ export function RemindersCard({ tasks }: { tasks: ReminderTask[] }) {
     if (patch.enabled) {
       haptic("tap");
       if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") askPermission();
+      void scheduleLocalReminder({ id: stableNotificationId(taskId), title: "AXEN reminder", body: `${tasks.find(task => task.uuid === taskId)?.name ?? "Your habit"} — still open today.`, at: nextReminderAt(next.remind_at) });
+    } else if (patch.enabled === false) {
+      void cancelLocalReminder(stableNotificationId(taskId));
     }
   };
 

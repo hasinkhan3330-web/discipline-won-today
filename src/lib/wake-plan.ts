@@ -61,6 +61,12 @@ export function nextTrigger(p: WakePlan): number {
   return t + 24 * 60 * 60 * 1000;
 }
 
+export function rollPlanForward(p: WakePlan): WakePlan {
+  const next = new Date();
+  if (Date.now() >= triggerAt({ ...p, date: todayKey() })) next.setDate(next.getDate() + 1);
+  return { ...p, date: next.toISOString().slice(0, 10) };
+}
+
 /** True when the alarm time has arrived for this plan's date and it has not fired yet. */
 export function shouldFire(p: WakePlan): boolean {
   if (p.date !== todayKey()) return false;
@@ -106,4 +112,12 @@ export async function scheduleNativeAlarm(p: WakePlan) {
       await Notification.requestPermission();
     }
   } catch { /* ignore */ }
+}
+
+/** Re-arms a saved daily wake plan after verification or app resume. */
+export async function rearmWakePlan(p: WakePlan) {
+  const next = rollPlanForward(p);
+  savePlan(next);
+  await scheduleNativeAlarm(next);
+  return next;
 }

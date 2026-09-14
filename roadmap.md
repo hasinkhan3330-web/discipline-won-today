@@ -36,10 +36,10 @@
 - [ ] Rebuild Zen as the supplied animated Flow Chamber with synchronized timing, breathing, audio, and controls.
 
 ## AXEN production upgrade (active)
-- [ ] Build resumable 12-step onboarding and personalized blueprint with safe minor mode.
-- [ ] Replace the visible membership experience while preserving verified store billing.
-- [ ] Harden and complete the 4AM Protocol.
-- [ ] Add persistent, actionable AXEN Coach conversations.
-- [ ] Upgrade Focus Music with synchronized sessions and one-time rewards.
-- [ ] Upgrade reminders with reliable native/browser scheduling and complete controls.
-- [ ] Verify all six upgrades and regression-test completed AXEN pages.
+- [x] Build resumable 12-step onboarding and personalized blueprint with safe minor mode.
+- [x] Replace the visible membership experience while preserving verified store billing.
+- [x] Harden and complete the 4AM Protocol.
+- [x] Add persistent, actionable AXEN Coach conversations.
+- [x] Upgrade Focus Music with synchronized sessions and one-time rewards.
+- [x] Upgrade reminders with reliable native/browser scheduling and complete controls.
+- [x] Verify all six upgrades and regression-test completed AXEN pages.
