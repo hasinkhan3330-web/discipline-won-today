@@ -372,7 +372,8 @@ function App() {
 
   const openCropper = (file: File) => {
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) { alert("Image too large (max 10MB)"); return; }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) { alert("Use a JPG, PNG or WebP image"); return; }
+    if (file.size > 5 * 1024 * 1024) { alert("Image too large (max 5MB)"); return; }
     const reader = new FileReader();
     reader.onload = () => setCropSrc(reader.result as string);
     reader.readAsDataURL(file);
@@ -382,12 +383,12 @@ function App() {
     if (!myId) return;
     setUploading(true);
     try {
-      const path = `${myId}/avatar-${Date.now()}.jpg`;
-      const { error: upErr } = await supabase.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+      const path = `${myId}/profile.webp`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, blob, { upsert: true, contentType: "image/webp" });
       if (upErr) throw upErr;
       const { data: signed, error: sErr } = await supabase.storage.from("avatars").createSignedUrl(path, 60 * 60 * 24 * 365);
       if (sErr || !signed) throw sErr || new Error("signed url failed");
-      const url = signed.signedUrl;
+      const url = `${signed.signedUrl}&v=${Date.now()}`;
       const { error: updErr } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", myId);
       if (updErr) throw updErr;
       setMyAvatar(url);
@@ -399,6 +400,22 @@ function App() {
       setUploading(false);
     }
   };
+
+  const removeAvatar = async () => {
+    if (!myId) return;
+    setUploading(true);
+    try {
+      await supabase.storage.from("avatars").remove([`${myId}/profile.webp`]);
+      await supabase.from("profiles").update({ avatar_url: null }).eq("id", myId);
+      setMyAvatar("");
+      await refreshAll();
+    } catch (e: any) {
+      alert("Could not remove photo: " + (e?.message || "unknown"));
+    } finally {
+      setUploading(false);
+    }
+  };
+
 
   // 4AM proof-of-wakeup state
   const [proof, setProof] = useState<null | {
