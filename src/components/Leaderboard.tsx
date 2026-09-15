@@ -231,7 +231,7 @@ export function Leaderboard({
             <small>YOUR POSITION</small>
             <strong>{me.rank > 0 ? `#${me.rank}` : "Unranked"}</strong>
             <span>
-              {me.rank > 0 ? `Top ${100 - me.percentile}% · ${me.points.toLocaleString()} DP` : "Earn points to enter the board"}
+              {me.rank > 0 ? `Top ${Math.max(1, Math.ceil(me.rank / Math.max(1, me.total) * 100))}% of ${me.total.toLocaleString()} · ${me.points.toLocaleString()} DP` : "Earn points to enter the board"}
             </span>
             <em>{me.points_to_next.toLocaleString()} DP to {me.next_milestone.toLocaleString()}</em>
           </div>
