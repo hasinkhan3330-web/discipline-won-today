@@ -965,21 +965,33 @@ function App() {
               />
             )}
             {tab === "rank" && (!gateReady ? <GateSkeleton /> : (
-              <ProtectedFeatureGate featureName="Rank & Accountability" onUpgrade={() => setShowPaywall(true)} onContinueBasic={() => setTab("home")}>
-                <RankTab
-                  coins={coins}
-                  streak={streak}
-                  bestStreak={life?.bestStreak ?? 0}
-                  name={myName}
-                  avatar={myAvatar || fallbackAvatar(myName)}
-                  todayDone={tasks.filter(task => task.done).length}
-                  todayTotal={tasks.length}
-                  activeTheme={themeKey}
-                  onApplyTheme={setThemeKey}
-                  onNavigate={setTab}
-                />
-              </ProtectedFeatureGate>
+              <>
+                {myId && (
+                  <Leaderboard
+                    myId={myId}
+                    myName={myName}
+                    uploading={uploading}
+                    onEditPhoto={openCropper}
+                    onRemovePhoto={removeAvatar}
+                  />
+                )}
+                <ProtectedFeatureGate featureName="Rank & Accountability" onUpgrade={() => setShowPaywall(true)} onContinueBasic={() => setTab("home")}>
+                  <RankTab
+                    coins={coins}
+                    streak={streak}
+                    bestStreak={life?.bestStreak ?? 0}
+                    name={myName}
+                    avatar={myAvatar || fallbackAvatar(myName)}
+                    todayDone={tasks.filter(task => task.done).length}
+                    todayTotal={tasks.length}
+                    activeTheme={themeKey}
+                    onApplyTheme={setThemeKey}
+                    onNavigate={setTab}
+                  />
+                </ProtectedFeatureGate>
+              </>
             ))}
+
             {tab === "zen" && (!gateReady ? <GateSkeleton /> : (
               <ProtectedFeatureGate featureName="Zen Mode" onUpgrade={() => setShowPaywall(true)} onContinueBasic={() => setTab("home")}>
                 <ZenTab med={med} coins={coins} />
