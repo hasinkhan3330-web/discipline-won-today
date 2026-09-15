@@ -12,6 +12,8 @@ import { TaskVerify, type VerifyKind } from "@/components/TaskVerify";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { useEntitlementContext, EntitlementProvider } from "@/components/EntitlementProvider";
 import { ProtectedFeatureGate } from "@/components/ProtectedFeatureGate";
+import { Leaderboard } from "@/components/Leaderboard";
+
 import { TrialBanner, TrialWelcome } from "@/components/TrialBanner";
 import { GateSkeleton } from "@/components/GateSkeleton";
 import { AiCoach } from "@/components/AiCoach";

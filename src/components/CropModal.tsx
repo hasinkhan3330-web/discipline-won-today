@@ -50,7 +50,7 @@ export function CropModal({ src, accent, accent2, busy, onCancel, onConfirm }: {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, OUT, OUT);
     ctx.drawImage(img, srcX, srcY, srcSize, srcSize, 0, 0, OUT, OUT);
-    canvas.toBlob(b => { if (b) onConfirm(b); }, "image/jpeg", 0.9);
+    canvas.toBlob(b => { if (b) onConfirm(b); }, "image/webp", 0.85);
   };
 
   return (
