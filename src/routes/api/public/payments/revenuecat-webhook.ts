@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/public/payments/revenuecat-webhook")(
     handlers: {
       POST: async ({ request }) => {
         const secret = process.env["REVENUECAT_WEBHOOK_SECRET"];
-        if (!secret) return new Response("not configured", { status: 500 });
+        if (!secret) return new Response("Missing REVENUECAT_WEBHOOK_SECRET environment variable", { status: 500 });
 
         const auth = request.headers.get("authorization") ?? "";
         const provided = auth.replace(/^Bearer\s+/i, "");

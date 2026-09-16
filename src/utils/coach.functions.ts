@@ -33,7 +33,7 @@ export const getLatestCoachConversation=createServerFn({method:"GET"}).middlewar
   return{conversationId:conversation.id,messages:(messages??[]).map((item:any)=>({id:item.id,role:item.role,content:item.content,suggestedAction:item.suggested_action})) as CoachMessage[]};
 });
 
-export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator(data=>inputSchema.parse(data)).handler(async({data,context})=>{
+export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).validator(data=>inputSchema.parse(data)).handler(async({data,context})=>{
   const apiKey=process.env["LOVABLE_API_KEY"]; if(!apiKey)throw new Error("The coach is not configured yet.");
   const {data:premium}=await context.supabase.rpc("has_premium_access",{_user_id:context.userId}); if(!premium)throw new Error("AI Coach is part of AXEN PRO.");
   let conversationId=data.conversationId??null;
