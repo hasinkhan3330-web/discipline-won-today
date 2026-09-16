@@ -17,6 +17,7 @@ const ICON_RULES: { k: RegExp; I: LucideIcon }[] = [
   { k: /wake|alarm|4\s?am|morning/i, I: AlarmClock },
   { k: /workout|gym|train|exercise|push/i, I: Dumbbell },
   { k: /focus|read|study|book|learn/i, I: BookOpen },
+  { k: /top\s?3|top three|mission/i, I: Target },
   { k: /junk|food|diet|eat|sugar/i, I: Salad },
   { k: /shower|cold|water|hydrat/i, I: Droplets },
   { k: /sleep|night|bed/i, I: Moon },
