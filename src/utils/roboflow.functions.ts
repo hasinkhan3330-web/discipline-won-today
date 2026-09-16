@@ -15,7 +15,7 @@ export type DetectResult =
  */
 export const detectHabitEvidence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { imageBase64: string }) => {
+  .validator((input: { imageBase64: string }) => {
     const raw = typeof input?.imageBase64 === "string" ? input.imageBase64 : "";
     const base64 = raw.includes(",") ? raw.slice(raw.indexOf(",") + 1) : raw;
     if (!base64 || base64.length < 32) throw new Error("No image received");
@@ -25,7 +25,7 @@ export const detectHabitEvidence = createServerFn({ method: "POST" })
   })
   .handler(async ({ data }): Promise<DetectResult> => {
     const apiKey = process.env["ROBOFLOW_API_KEY"];
-    if (!apiKey) return { ok: false, error: "Photo checking is not configured yet (missing ROBOFLOW_API_KEY)." };
+    if (!apiKey) return { ok: false, error: "Photo verification requires ROBOFLOW_API_KEY in environment configuration." };
 
     // The private workspace project `habit-evidence` has no trained version yet,
     // so it answers 405. `coco/9` is a hosted model that covers the evidence

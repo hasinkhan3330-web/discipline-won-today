@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const completeFocusMusic = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data) => z.object({
+  .validator((data) => z.object({
     sessionToken: z.string().uuid(),
     minutes: z.union([z.literal(25), z.literal(45), z.literal(60), z.literal(90)]),
     intensity: z.enum(["calm", "steady", "intense"]),

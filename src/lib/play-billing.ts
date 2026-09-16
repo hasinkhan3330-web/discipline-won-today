@@ -15,7 +15,7 @@ import type { Cycle } from "@/lib/pricing";
 /** 1. RevenueCat Android PUBLIC SDK key (starts with `goog_...`).
  *     RevenueCat dashboard → Project → API keys → Android (public).
  *     Either paste it here, or set VITE_REVENUECAT_ANDROID_API_KEY. */
-export const REVENUECAT_ANDROID_PUBLIC_KEY = "test_xnCGAoUukcDaVpDzpJEpBxtDghu";
+export const REVENUECAT_ANDROID_PUBLIC_KEY = "";
 
 /** 2. Play Console subscription product IDs (Monetize → Subscriptions).
  *     These must match the products attached to your RevenueCat offering. */
@@ -35,20 +35,19 @@ export const PACKAGE_ID: Record<Cycle, string[]> = {
   yearly: ["$rc_annual", "annual", "yearly"],
 };
 
-const ANDROID_API_KEY =
-  (import.meta.env['VITE_REVENUECAT_ANDROID_API_KEY'] as string | undefined) ||
-  REVENUECAT_ANDROID_PUBLIC_KEY ||
-  undefined;
-
-/** RevenueCat iOS PUBLIC SDK key (starts with `appl_...`) for StoreKit billing. */
-const IOS_API_KEY = (import.meta.env['VITE_REVENUECAT_IOS_API_KEY'] as string | undefined) || undefined;
-
 async function storeApiKey(): Promise<string | undefined> {
+  const envAndroid = import.meta.env['VITE_REVENUECAT_ANDROID_API_KEY'] as string | undefined;
+  const envIos = import.meta.env['VITE_REVENUECAT_IOS_API_KEY'] as string | undefined;
+  const fallbackAndroid = REVENUECAT_ANDROID_PUBLIC_KEY || undefined;
+
   try {
     const { Capacitor } = await import("@capacitor/core");
-    return Capacitor.getPlatform() === "ios" ? (IOS_API_KEY ?? ANDROID_API_KEY) : ANDROID_API_KEY;
+    if (Capacitor.getPlatform() === "ios") {
+      return envIos || envAndroid || fallbackAndroid;
+    }
+    return envAndroid || fallbackAndroid;
   } catch {
-    return ANDROID_API_KEY;
+    return envAndroid || fallbackAndroid;
   }
 }
 
@@ -72,6 +71,8 @@ async function plugin() {
 
 /** Configure RevenueCat once, identified by the signed-in Supabase user id. */
 export async function initPlayBilling(appUserId: string): Promise<void> {
+  const apiKey = await storeApiKey();
+  if (!apiKey) throw new Error("Store billing is not configured yet (missing RevenueCat public SDK key).");
   if (!(await isNativeBillingAvailable())) throw new Error("In-app billing is only available inside the mobile app.");
   const { Purchases, LOG_LEVEL } = await plugin();
   if (initialised === appUserId) return;
@@ -79,7 +80,7 @@ export async function initPlayBilling(appUserId: string): Promise<void> {
     await Purchases.logIn({ appUserID: appUserId });
   } else {
     await Purchases.setLogLevel({ level: LOG_LEVEL.ERROR });
-    await Purchases.configure({ apiKey: (await storeApiKey())!, appUserID: appUserId });
+    await Purchases.configure({ apiKey, appUserID: appUserId });
   }
   initialised = appUserId;
 }
