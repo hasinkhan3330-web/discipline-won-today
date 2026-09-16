@@ -9,6 +9,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
 import { PaywallGate } from "@/components/PaywallGate";
 import { TaskVerify, type VerifyKind } from "@/components/TaskVerify";
+import { TopThreeModal } from "@/components/TopThreeModal";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { useEntitlementContext, EntitlementProvider } from "@/components/EntitlementProvider";
 import { ProtectedFeatureGate } from "@/components/ProtectedFeatureGate";
@@ -446,6 +447,7 @@ function App() {
   });
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [verify, setVerify] = useState<{ uuid: string; kind: VerifyKind; scan: boolean } | null>(null);
+  const [topThree, setTopThree] = useState<string | null>(null);
   const pickRingtone = (id: string) => {
     setRingtone(id);
     try { localStorage.setItem("dwt_ringtone", id); } catch { /* ignore */ }
@@ -766,6 +768,10 @@ function App() {
       setProof(p ? { mode: "time", wakeTime: p.tier, wakePts: p.pts, wakeLine: p.line } : { mode: "time" });
       return;
     }
+    if (/top\s?3|top three missions/i.test(t.name)) {
+      setTopThree((t as any)._uuid as string);
+      return;
+    }
     const kind = verifyKindFor(t.name);
     if (kind) { setVerify({ uuid: (t as any)._uuid as string, kind, scan: false }); return; }
     completeTaskRpc((t as any)._uuid);
@@ -946,6 +952,17 @@ function App() {
               startInScan={verify.scan}
               onClose={() => setVerify(null)}
               onVerified={() => { const id = verify.uuid; setVerify(null); completeTaskRpc(id); }}
+            />
+          )}
+
+          {topThree && (
+            <TopThreeModal
+              onClose={() => setTopThree(null)}
+              onCoins={c => setCoins(c)}
+              onAllDone={() => {
+                const id = topThree;
+                setTasks(p => p.map(t => ((t as any)._uuid === id ? { ...t, done: true } : t)));
+              }}
             />
           )}
 

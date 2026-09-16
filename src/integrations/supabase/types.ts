@@ -357,6 +357,42 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_top_tasks: {
+        Row: {
+          coins_awarded: number
+          created_at: string
+          day: string
+          done: boolean
+          id: string
+          slot: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coins_awarded?: number
+          created_at?: string
+          day: string
+          done?: boolean
+          id?: string
+          slot: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coins_awarded?: number
+          created_at?: string
+          day?: string
+          done?: boolean
+          id?: string
+          slot?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       entitlements: {
         Row: {
           product_id: string | null
@@ -1228,6 +1264,14 @@ export type Database = {
           coins: number
           longest_streak: number
           streak: number
+        }[]
+      }
+      complete_top_task: {
+        Args: { _slot: number }
+        Returns: {
+          all_done: boolean
+          awarded: number
+          coins: number
         }[]
       }
       complete_wake_protocol: {

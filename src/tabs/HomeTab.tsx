@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/EmptyState";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
   Flame, Footprints, PenLine, Circle, Check, ScanLine, Coins, Zap,
-  ChevronRight, Music2, type LucideIcon,
+  ChevronRight, Music2, Target, type LucideIcon,
 } from "lucide-react";
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
@@ -17,6 +17,7 @@ const ICON_RULES: { k: RegExp; I: LucideIcon }[] = [
   { k: /wake|alarm|4\s?am|morning/i, I: AlarmClock },
   { k: /workout|gym|train|exercise|push/i, I: Dumbbell },
   { k: /focus|read|study|book|learn/i, I: BookOpen },
+  { k: /top\s?3|top three|mission/i, I: Target },
   { k: /junk|food|diet|eat|sugar/i, I: Salad },
   { k: /shower|cold|water|hydrat/i, I: Droplets },
   { k: /sleep|night|bed/i, I: Moon },
