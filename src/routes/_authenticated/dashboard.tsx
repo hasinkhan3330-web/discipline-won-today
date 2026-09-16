@@ -446,6 +446,7 @@ function App() {
   });
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [verify, setVerify] = useState<{ uuid: string; kind: VerifyKind; scan: boolean } | null>(null);
+  const [topThree, setTopThree] = useState<string | null>(null);
   const pickRingtone = (id: string) => {
     setRingtone(id);
     try { localStorage.setItem("dwt_ringtone", id); } catch { /* ignore */ }
@@ -764,6 +765,10 @@ function App() {
     if (/wake/i.test(t.name)) {
       const p = wakePlan && wakePlan.date === todayKey() ? wakePlan : null;
       setProof(p ? { mode: "time", wakeTime: p.tier, wakePts: p.pts, wakeLine: p.line } : { mode: "time" });
+      return;
+    }
+    if (/top\s?3|top three missions/i.test(t.name)) {
+      setTopThree((t as any)._uuid as string);
       return;
     }
     const kind = verifyKindFor(t.name);
