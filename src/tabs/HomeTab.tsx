@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/EmptyState";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
   Flame, Footprints, PenLine, Circle, Check, ScanLine, Coins, Zap,
-  ChevronRight, Music2, type LucideIcon,
+  ChevronRight, Music2, Target, type LucideIcon,
 } from "lucide-react";
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
