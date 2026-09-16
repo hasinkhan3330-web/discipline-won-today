@@ -52,26 +52,29 @@ export const logVision = (kind: string, source: "camera" | "photo", detections: 
     .then(() => {}, () => {});
 };
 
-/** How many consecutive checks must find one of the classes. */
+/** Two consecutive confident frames end the scan instantly. */
 const REQUIRED_STREAK = 2;
-/** A single very confident hit is enough — no waiting for a streak. */
-const INSTANT_CONFIDENCE = 0.62;
-/** Minimum gap between frame checks (checks are otherwise back-to-back). */
-const CHECK_MS = 250;
+/** Confidence needed on each of those frames. */
+const PASS_CONFIDENCE = 0.6;
+/** Frame pacing ceiling (~8 fps) — inference itself is the real limiter. */
+const FRAME_GAP_MS = 120;
+/** Downscaled inference width: small frames keep round trips well under a second. */
+const FRAME_WIDTH = 320;
+/** Nudge the user again after this long without a confident hit. */
+const RETRY_HINT_MS = 5000;
 /** Give up after this long without a confirmed setup. */
 const TIMEOUT_MS = 90_000;
-/** If the API is this slow on average, accept the first plausible hit. */
-const SLOW_API_MS = 2200;
-const MIN_CONFIDENCE = 0.35;
+/** Consecutive failed round trips before showing a network error. */
+const MAX_TRANSIENT = 3;
 
 type Phase = "idle" | "starting" | "scanning" | "verified" | "error";
 
 /**
  * Live camera check for a habit's setup (study desk, shower, workout gear).
  *
- * Frames are captured locally and sent to the server, which calls the vision
- * model with the private key. Detections only describe what is visible, so
- * results are worded as "setup verified" — never as proof of the activity.
+ * Frames are downscaled locally and streamed to the server, which runs the
+ * Roboflow model with the private key and returns only labels. Detections
+ * describe what is visible, so results are worded as "setup verified".
  */
 export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind; onVerified: () => void }) {
   const cfg = VISION_CONFIG[visionKind];
@@ -81,6 +84,7 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
   const doneRef = useRef(false);
   const streakRef = useRef(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const warmedRef = useRef(false);
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -89,24 +93,40 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
   const [seen, setSeen] = useState<string[]>([]);
 
   const stopCamera = useCallback(() => {
-    streamRef.current?.getTracks().forEach(t => t.stop());
+    try {
+      streamRef.current?.getTracks().forEach(t => t.stop());
+    } catch { /* already released */ }
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
   }, []);
 
-  useEffect(() => stopCamera, [stopCamera]);
+  // Release the camera on every unmount path (close, back, navigation).
+  useEffect(() => () => { doneRef.current = true; stopCamera(); }, [stopCamera]);
+
+  /** Warm the detection route once so the first real frame is not a cold start. */
+  useEffect(() => {
+    if (warmedRef.current) return;
+    warmedRef.current = true;
+    const c = document.createElement("canvas");
+    c.width = 32; c.height = 32;
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = "#101010";
+    ctx.fillRect(0, 0, 32, 32);
+    void detect({ data: { imageBase64: c.toDataURL("image/jpeg", 0.5) } }).catch(() => undefined);
+  }, [detect]);
 
   const grabFrame = (): string | null => {
     const v = videoRef.current;
     if (!v || !v.videoWidth) return null;
-    const w = 416;
-    const h = Math.round((v.videoHeight / v.videoWidth) * w) || 480;
+    const w = FRAME_WIDTH;
+    const h = Math.round((v.videoHeight / v.videoWidth) * w) || 240;
     const canvas = canvasRef.current ?? (canvasRef.current = document.createElement("canvas"));
     canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return null;
     ctx.drawImage(v, 0, 0, w, h);
-    return canvas.toDataURL("image/jpeg", 0.6);
+    return canvas.toDataURL("image/jpeg", 0.5);
   };
 
   const start = async () => {
@@ -121,27 +141,35 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
       return;
     }
 
+    // Rear camera first; fall back to any camera rather than failing outright.
+    let stream: MediaStream | null = null;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 } },
         audio: false,
       });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play().catch(() => undefined);
-      }
     } catch (e) {
       const name = (e as { name?: string })?.name ?? "";
-      setPhase("error");
-      setError(
-        name === "NotAllowedError" || name === "SecurityError"
-          ? "Camera permission is blocked. Allow the camera for AXEN, then try again."
-          : name === "NotFoundError"
-            ? "No camera found on this device."
-            : "Could not start the camera. Try again in a moment.",
-      );
-      return;
+      if (name === "OverconstrainedError" || name === "NotReadableError") {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }).catch(() => null);
+      }
+      if (!stream) {
+        setPhase("error");
+        setError(
+          name === "NotAllowedError" || name === "SecurityError"
+            ? "Camera permission is blocked. Allow the camera for AXEN, then try again."
+            : name === "NotFoundError"
+              ? "No camera found on this device."
+              : "Could not start the camera. Try again in a moment.",
+        );
+        return;
+      }
+    }
+
+    streamRef.current = stream;
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play().catch(() => undefined);
     }
 
     setPhase("scanning");
@@ -151,9 +179,8 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
 
   const loop = async () => {
     const deadline = Date.now() + TIMEOUT_MS;
-    let calls = 0;
-    let totalMs = 0;
     let transient = 0;
+    let lastHint = Date.now();
 
     const succeed = (detections: Detection[]) => {
       doneRef.current = true;
@@ -174,69 +201,63 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
         return;
       }
 
+      const t0 = Date.now();
       const frame = grabFrame();
       if (frame) {
-        const t0 = Date.now();
         try {
           const res = await detect({ data: { imageBase64: frame } });
           if (doneRef.current) return;
-          calls += 1;
-          totalMs += Date.now() - t0;
 
           if (!res.ok) {
-            // One bad answer should not end the session — retry a couple of times.
             transient += 1;
-            if (transient >= 3) {
+            if (transient >= MAX_TRANSIENT) {
               stopCamera();
               setPhase("error");
               setError(res.error);
               return;
             }
-            await new Promise(r => setTimeout(r, CHECK_MS));
+            setStatus("Connection hiccup — retrying…");
+            await new Promise(r => setTimeout(r, 400));
             continue;
           }
           transient = 0;
 
-          const strong = res.detections.filter(d => d.confidence >= MIN_CONFIDENCE);
-          const labels = strong.map(d => d.label);
+          const labels = res.detections.map(d => d.label);
           setSeen(labels.slice(0, 4));
 
-          const hit = matchesEvidence(labels, visionKind);
-          const best = strong.find(d => matchesEvidence([d.label], visionKind));
-          const slow = calls >= 2 && totalMs / calls > SLOW_API_MS;
+          const best = res.detections.find(d => matchesEvidence([d.label], visionKind));
+          const confident = (best?.confidence ?? 0) >= PASS_CONFIDENCE;
 
-          if (hit) {
-            // Instant pass on a confident hit, or when the API is running slow.
-            if ((best?.confidence ?? 0) >= INSTANT_CONFIDENCE || slow) {
-              succeed(res.detections);
-              return;
-            }
+          if (confident) {
             streakRef.current += 1;
             setStreak(streakRef.current);
-            setStatus(`Setup seen (${streakRef.current}/${REQUIRED_STREAK} checks)…`);
+            if (streakRef.current >= REQUIRED_STREAK) { succeed(res.detections); return; }
+            setStatus("Setup detected — hold steady…");
           } else {
             streakRef.current = 0;
             setStreak(0);
-            setStatus(cfg.missing);
-          }
-
-          if (streakRef.current >= REQUIRED_STREAK) {
-            succeed(res.detections);
-            return;
+            if (Date.now() - lastHint > RETRY_HINT_MS) {
+              lastHint = Date.now();
+              setStatus(cfg.missing);
+            } else if (!status) {
+              setStatus(cfg.prompt);
+            }
           }
         } catch {
           if (doneRef.current) return;
           transient += 1;
-          if (transient >= 3) {
+          if (transient >= MAX_TRANSIENT) {
             stopCamera();
             setPhase("error");
-            setError("The check could not be completed. Please try again.");
+            setError("No connection to the check service. Check your internet and try again.");
             return;
           }
+          setStatus("Connection hiccup — retrying…");
         }
       }
 
-      await new Promise(r => setTimeout(r, CHECK_MS));
+      const spent = Date.now() - t0;
+      if (spent < FRAME_GAP_MS) await new Promise(r => setTimeout(r, FRAME_GAP_MS - spent));
     }
   };
 
