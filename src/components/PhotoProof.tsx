@@ -47,7 +47,7 @@ export function PhotoProof({ visionKind, acceptedClasses, onVerified }: { vision
         return;
       }
       const hits = res.detections.filter(
-        d => d.confidence >= MIN_CONFIDENCE && matchesEvidence([d.label], visionKind),
+        d => d.confidence >= MIN_CONFIDENCE && isAcceptedClass(d.label, accepted),
       );
       setMatched(hits);
       setChecked(true);
@@ -111,7 +111,7 @@ export function PhotoProof({ visionKind, acceptedClasses, onVerified }: { vision
             </>
           ) : (
             <div style={{ fontSize: 13, color: AX.muted, lineHeight: 1.5 }}>
-              That photo doesn't show the right evidence. {cfg.missing.charAt(0).toUpperCase() + cfg.missing.slice(1).replace(/^Nothing recognised yet — /, "")}
+              That photo doesn't show the right evidence. {cfg.missing.replace(/^Nothing accepted yet — /, "")}
             </div>
           )}
         </div>
