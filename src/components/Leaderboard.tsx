@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Camera, Crown, Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trash2, Trophy } from "lucide-react";
+import { Camera, Crown, Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trash2, Trophy, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type Scope = "india" | "global";
@@ -124,8 +124,10 @@ export function Leaderboard({
   return (
     <section className="lb">
       <header className="lb-head">
-        <div>
-          <h2><Trophy size={18} /> LEADERBOARD</h2>
+        <div className="lb-head__mark"><Trophy size={18} /></div>
+        <div className="lb-head__copy">
+          <span>AXEN // RANKING NETWORK</span>
+          <h2>LEADERBOARD</h2>
           <p>Discipline Points · earned, never bought</p>
         </div>
         <button className="lb-refresh" onClick={() => void load()} aria-label="Refresh leaderboard">
@@ -136,7 +138,9 @@ export function Leaderboard({
       <div className="lb-tabs" role="tablist" aria-label="Region">
         {(["india", "global"] as Scope[]).map(s => (
           <button key={s} role="tab" aria-selected={scope === s} className={scope === s ? "is-on" : ""} onClick={() => setScope(s)}>
-            {s === "india" ? <>🇮🇳 INDIA</> : <><Globe2 size={13} /> GLOBAL</>}
+            <span className="lb-tab-icon">{s === "india" ? "🇮🇳" : <Globe2 size={15} />}</span>
+            <span>{s === "india" ? "INDIA" : "GLOBAL"}</span>
+            <i aria-hidden />
           </button>
         ))}
       </div>
@@ -147,6 +151,10 @@ export function Leaderboard({
             {p === "weekly" ? "WEEKLY" : "ALL-TIME"}
           </button>
         ))}
+      </div>
+
+      <div className="lb-arena-label" aria-hidden>
+        <span>TOP 100 // LIVE STANDINGS</span><i /><Zap size={12} />
       </div>
 
       {state === "loading" && (
@@ -167,50 +175,68 @@ export function Leaderboard({
         </div>
       )}
 
-      {state === "ready" && podium.length > 0 && (
-        <div className="lb-podium">
-          {order.map(i => podium[i]).filter(Boolean).map(p => (
-            <motion.div
-              key={p.user_id}
-              className={`lb-pod lb-pod-${p.rank} ${p.is_me ? "is-me" : ""}`}
-              initial={reduce ? false : { opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.32, delay: reduce ? 0 : p.rank * 0.06 }}
-            >
-              <div className="lb-pod-avatar">
-                <img src={p.avatar_url || fallbackAvatar(p.username)} alt={p.username} loading="lazy" />
-                {p.rank === 1 && <Crown size={15} className="lb-pod-crown" />}
-                <b>{p.rank}</b>
+      <AnimatePresence mode="wait">
+        {state === "ready" && rows.length > 0 && (
+          <motion.div
+            key={`${scope}-${period}`}
+            className="lb-standings"
+            initial={reduce ? false : { opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={reduce ? undefined : { opacity: 0, x: -8 }}
+            transition={{ type: "spring", stiffness: 280, damping: 28 }}
+          >
+            {podium.length > 0 && (
+              <div className="lb-podium">
+                {order.map(i => podium[i]).filter(Boolean).map(p => (
+                  <motion.div
+                    key={p.user_id}
+                    className={`lb-pod lb-pod-${p.rank} ${p.is_me ? "is-me" : ""}`}
+                    initial={reduce ? false : { opacity: 0, y: 18, scale: .96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ type: "spring", stiffness: 240, damping: 20, delay: reduce ? 0 : p.rank * 0.06 }}
+                  >
+                    <div className="lb-pod-orbit" aria-hidden><i /><i /><i /></div>
+                    <div className="lb-pod-rank">0{p.rank}</div>
+                    <div className="lb-pod-avatar">
+                      <img src={p.avatar_url || fallbackAvatar(p.username)} alt={p.username} loading="lazy" />
+                      {p.rank === 1 && <Crown size={19} className="lb-pod-crown" />}
+                    </div>
+                    <strong>{p.username}</strong>
+                    <span>{flag(p.country)} {p.elite && <EliteCrest size={13} />}</span>
+                    <em><b>{p.points.toLocaleString()}</b> DP</em>
+                    <div className="lb-pod-base"><i /><span /></div>
+                  </motion.div>
+                ))}
               </div>
-              <strong>{p.username}</strong>
-              <span>{flag(p.country)} {p.elite && <EliteCrest size={13} />}</span>
-              <em>{p.points.toLocaleString()} DP</em>
-            </motion.div>
-          ))}
-        </div>
-      )}
+            )}
 
-      {state === "ready" && list.length > 0 && (
-        <ul className="lb-list">
-          {list.map((r, i) => (
-            <motion.li
-              key={r.user_id}
-              className={r.is_me ? "is-me" : ""}
-              initial={reduce ? false : { opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22, delay: reduce ? 0 : Math.min(i, 12) * 0.015 }}
-            >
-              <span className="lb-rank">{r.rank}</span>
-              <img src={r.avatar_url || fallbackAvatar(r.username)} alt={r.username} loading="lazy" />
-              <div className="lb-who">
-                <strong>{r.username} {r.elite && <EliteCrest size={12} />}</strong>
-                <small>{flag(r.country)} {r.consistency} day streak</small>
+            {list.length > 0 && (
+              <div className="lb-list-shell">
+                <header><span>RANK</span><span>CHALLENGER</span><span>DISCIPLINE</span></header>
+                <ul className="lb-list">
+                  {list.map((r, i) => (
+                    <motion.li
+                      key={r.user_id}
+                      className={r.is_me ? "is-me" : ""}
+                      initial={reduce ? false : { opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.22, delay: reduce ? 0 : Math.min(i, 12) * 0.015 }}
+                    >
+                      <span className="lb-rank">{String(r.rank).padStart(2, "0")}</span>
+                      <img src={r.avatar_url || fallbackAvatar(r.username)} alt={r.username} loading="lazy" />
+                      <div className="lb-who">
+                        <strong>{r.username} {r.elite && <EliteCrest size={12} />}</strong>
+                        <small>{flag(r.country)} {r.consistency} day streak</small>
+                      </div>
+                      <b className="lb-pts">{r.points.toLocaleString()}<i>DP</i></b>
+                    </motion.li>
+                  ))}
+                </ul>
               </div>
-              <b className="lb-pts">{r.points.toLocaleString()}<i>DP</i></b>
-            </motion.li>
-          ))}
-        </ul>
-      )}
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {state === "ready" && me && (
         <div className="lb-you">

@@ -51,3 +51,4 @@
 
 ## Current request
 - [x] Replace only the Deep Focus long app list with four quick-block apps and a compact searchable custom picker.
+- [x] Rebuild only the leaderboard header, selectors, Top 3 podium, and ranks 4–100 arena; preserve the personal position card and all following Rank content.
