@@ -50,4 +50,4 @@
 - [x] Redesign only Deep Focus app blocking, lock setup, and active lock visuals; preserve all behavior and audio.
 
 ## Current request
-- [ ] Replace only the Deep Focus long app list with four quick-block apps and a compact searchable custom picker.
+- [x] Replace only the Deep Focus long app list with four quick-block apps and a compact searchable custom picker.

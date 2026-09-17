@@ -1,5 +1,6 @@
 import { forwardRef, useState, useEffect, useRef, useCallback, useImperativeHandle } from "react";
-import { ChevronRight, Clock3, LockKeyhole, Music2, Plus, Repeat2, Shield, Volume2, X, Zap } from "lucide-react";
+import { ChevronRight, Clock3, LockKeyhole, Music2, Plus, Repeat2, Search, Shield, Volume2, X, Zap } from "lucide-react";
+import { siFacebook, siInstagram, siX, siYoutube } from "simple-icons/icons";
 import { cardStyle } from "@/tabs/styles";
 import { FocusMusicPanel } from "@/components/FocusMusicPanel";
 
@@ -11,12 +12,16 @@ export const FOCUS_TIERS: FocusTier[] = [
   { id: "f229", label: "3H 49M", sub: "MONK MODE", minutes: 229, reward: 40 },
 ];
 
-const APP_GROUPS: { group: string; icon: string; apps: string[] }[] = [
-  { group: "SOCIAL MEDIA", icon: "📱", apps: ["Instagram", "Snapchat", "X / Twitter", "Facebook", "Reddit"] },
-  { group: "GAMES", icon: "🎮", apps: ["BGMI / PUBG", "Free Fire", "Clash of Clans", "Candy Crush"] },
-  { group: "MESSAGING", icon: "💬", apps: ["WhatsApp", "Telegram", "Discord"] },
-  { group: "VIDEO STREAMING", icon: "📺", apps: ["YouTube", "Netflix", "Prime Video", "Hotstar"] },
-];
+const QUICK_BLOCK_APPS = [
+  { name: "YouTube", icon: siYoutube },
+  { name: "X", icon: siX },
+  { name: "Instagram", icon: siInstagram },
+  { name: "Facebook", icon: siFacebook },
+] as const;
+
+function BrandIcon({ path, title }: { path: string; title: string }) {
+  return <svg viewBox="0 0 24 24" role="img" aria-label={title}><path fill="currentColor" d={path} /></svg>;
+}
 
 import gamma40 from "@/assets/audio/gamma40.mp3.asset.json";
 import alpha8d from "@/assets/audio/alpha8d.mp3.asset.json";
@@ -68,9 +73,10 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
   const [phase, setPhase] = useState<Phase>("idle");
   const [tier, setTier] = useState<FocusTier | null>(null);
   const [lockMode, setLockMode] = useState<LockMode>("strict");
-  const [blocked, setBlocked] = useState<string[]>(APP_GROUPS.flatMap(g => g.apps));
+  const [blocked, setBlocked] = useState<string[]>(QUICK_BLOCK_APPS.map(app => app.name));
   const [custom, setCustom] = useState("");
   const [customApps, setCustomApps] = useState<string[]>([]);
+  const [showAppPicker, setShowAppPicker] = useState(false);
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [left, setLeft] = useState(0);
   const [result, setResult] = useState<{ awarded: number; coins: number | null; minutes: number } | null>(null);
@@ -138,7 +144,21 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
     setPhase("idle"); setEndsAt(null); setTier(null);
   };
 
-  const allApps = [...APP_GROUPS.flatMap(g => g.apps), ...customApps];
+  const allApps = [...QUICK_BLOCK_APPS.map(app => app.name), ...customApps];
+
+  const addCustomApp = () => {
+    const value = custom.trim();
+    if (!value || allApps.some(app => app.toLowerCase() === value.toLowerCase())) return;
+    setCustomApps(previous => [...previous, value]);
+    setBlocked(previous => [...previous, value]);
+    setCustom("");
+    setShowAppPicker(false);
+  };
+
+  const removeCustomApp = (app: string) => {
+    setCustomApps(previous => previous.filter(item => item !== app));
+    setBlocked(previous => previous.filter(item => item !== app));
+  };
 
   useImperativeHandle(ref, () => ({
     start: () => {
@@ -215,29 +235,46 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
             ))}
           </div>
 
-          <div className="df-block-heading"><div className="df-section-label"><span>03</span> APP BLOCK LIST</div><b>{blocked.length} LOCKED</b></div>
-          {APP_GROUPS.map(g => (
-            <section key={g.group} className="df-app-group">
-              <h3><span>{g.icon}</span>{g.group}</h3>
-              {g.apps.map(a => {
-                const on = blocked.includes(a);
-                return (
-                  <button key={a} className={`df-app-row ${on ? "is-on" : ""}`} onClick={() => toggleApp(a)} aria-pressed={on}>
-                    <span>{a}</span><small>{on ? "BLOCKED" : "ALLOWED"}</small><i><b /></i>
-                  </button>
-                );
-              })}
-            </section>
-          ))}
+          <div className="df-block-heading"><div className="df-section-label"><span>03</span> SELECT APPS TO BLOCK</div><b>{blocked.length} LOCKED</b></div>
+          <div className="df-quick-apps">
+            {QUICK_BLOCK_APPS.map(app => {
+              const on = blocked.includes(app.name);
+              return (
+                <button key={app.name} className={`df-quick-app ${on ? "is-on" : ""}`} onClick={() => toggleApp(app.name)} aria-pressed={on}>
+                  <span className="df-quick-app__icon"><BrandIcon path={app.icon.path} title={`${app.name} icon`} /></span>
+                  <strong>{app.name}</strong>
+                  <span className="df-toggle" aria-hidden="true"><i /></span>
+                </button>
+              );
+            })}
+          </div>
 
-          <section className="df-app-group df-app-group--custom"><h3><Plus size={13} />CUSTOM APPS</h3>
-            {customApps.map(a => { const on = blocked.includes(a); return <button key={a} className={`df-app-row ${on ? "is-on" : ""}`} onClick={() => toggleApp(a)} aria-pressed={on}><span>{a}</span><small>{on ? "BLOCKED" : "ALLOWED"}</small><i><b /></i></button>; })}
-            <div className="df-custom-input"><input value={custom} onChange={e => setCustom(e.target.value)} placeholder="App name…" /><button onClick={() => {
-              const v = custom.trim();
-              if (!v || allApps.includes(v)) return;
-              setCustomApps(p => [...p, v]); setBlocked(p => [...p, v]); setCustom("");
-            }}>ADD</button></div>
-          </section>
+          {customApps.length > 0 && (
+            <div className="df-selected-apps" aria-label="Selected extra apps">
+              {customApps.map(app => (
+                <span key={app} className="df-app-chip">
+                  <i aria-hidden="true">{app.slice(0, 1).toUpperCase()}</i>
+                  <b>{app}</b>
+                  <button aria-label={`Remove ${app}`} onClick={() => removeCustomApp(app)}><X size={12} /></button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          <button className="df-choose-apps" onClick={() => setShowAppPicker(true)}><Plus size={17} />Choose Apps or Games to Block</button>
+
+          {showAppPicker && (
+            <div className="df-picker-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setShowAppPicker(false); }}>
+              <section className="df-app-picker" role="dialog" aria-modal="true" aria-labelledby="df-app-picker-title">
+                <header><div><span>PERSONAL BLOCK LIST</span><h3 id="df-app-picker-title">Choose an app or game</h3></div><button aria-label="Close app picker" onClick={() => setShowAppPicker(false)}><X size={18} /></button></header>
+                <form onSubmit={event => { event.preventDefault(); addCustomApp(); }}>
+                  <label><Search size={17} /><input autoFocus value={custom} onChange={event => setCustom(event.target.value)} placeholder="Search or enter any app or game" aria-label="App or game name" /></label>
+                  <p>Type the exact app or game you want blocked for this session.</p>
+                  <button type="submit" disabled={!custom.trim()}><Plus size={16} />Add to block list</button>
+                </form>
+              </section>
+            </div>
+          )}
 
           <div className="df-block-summary"><Shield size={15} /><span><strong>{blocked.length} APPS</strong> shielded for {tier.label.toLowerCase()}</span><b>{lockMode === "strict" ? "NO EXIT" : "−5 EXIT"}</b></div>
           <button className="df-start-lock" onClick={confirmLock}><span><LockKeyhole size={18} /></span><strong>CONFIRM &amp; LOCK SESSION</strong><small>BIOMETRIC FOCUS SEAL</small></button>
