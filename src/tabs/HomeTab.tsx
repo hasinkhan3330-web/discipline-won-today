@@ -11,7 +11,7 @@ import {
   ChevronRight, Music2, Target, type LucideIcon,
 } from "lucide-react";
 
-type Task = { id: number; icon: string; name: string; pts: number; done: boolean };
+type Task = { id: number; icon: string; name: string; pts: number; done: boolean; requireScan?: boolean; scanClasses?: string[] };
 
 const ICON_RULES: { k: RegExp; I: LucideIcon }[] = [
   { k: /wake|alarm|4\s?am|morning/i, I: AlarmClock },
@@ -129,7 +129,10 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
           const Ico = taskIcon(t.name);
           const isWake = /wake|alarm|rise/i.test(t.name);
           const unset = isWake && !wakeSet && !t.done;
-          const scannable = !t.done && !!onScan && /workout|gym|train|exercise|shower|bath|cold|focus|study|read/i.test(t.name);
+          const scannable = !t.done && !!onScan && (
+            /workout|gym|train|exercise|shower|bath|cold|focus|study|read/i.test(t.name)
+            || (!!t.requireScan && (t.scanClasses?.length ?? 0) > 0)
+          );
           return (
             <div key={t.id} className={`home-mission ${t.done ? "is-done" : ""} ${unset ? "is-unset" : ""}`} onClick={() => handleTick(t)}>
               <span className="home-mission__icon"><Ico size={18} strokeWidth={1.7} /></span>
