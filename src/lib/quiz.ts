@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { QUIZ_KEY, QUIZ_DONE_KEY, type QuizAnswers } from "@/components/PreSignupQuiz";
+import { QUIZ_KEY, QUIZ_DONE_KEY, calculateAssessment, type QuizAnswers } from "@/components/PreSignupQuiz";
 
 /** Pre-signup quiz answers are cached locally, then written to the profile once an account exists. */
 
@@ -38,30 +38,15 @@ export async function flushQuizToProfile(userId: string): Promise<boolean> {
   const a = readQuiz();
   if (!a || !userId) return false;
 
-  const { data: existing } = await supabase
-    .from("profiles")
-    .select("onboarding_goal")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (!existing) return false; // profile row not created yet — retry on next boot
-
-  if ((existing as any).onboarding_goal) {
-    try { localStorage.removeItem(QUIZ_KEY); } catch { /* ignore */ }
-    return true;
-  }
-
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      onboarding_goal: a.goal || null,
-      onboarding_blocker: a.blocker || null,
-      onboarding_habit_count: a.habit_count || null,
-      acquisition_source: a.source || null,
-      onboarding_answered_at: new Date().toISOString(),
-      onboarded: true,
-    } as any)
-    .eq("id", userId);
+  const results = calculateAssessment(a);
+  const { error } = await supabase.from("first_launch_assessments").upsert({
+    user_id: userId,
+    answers: a,
+    baseline_score: results.baseline,
+    estimated_daily_lost_hours: results.dailyLost,
+    potential_daily_reclaim_hours: results.dailyReclaim,
+    completed_at: new Date().toISOString(),
+  }, { onConflict: "user_id" });
 
   if (error) return false;
   try { localStorage.removeItem(QUIZ_KEY); } catch { /* ignore */ }
