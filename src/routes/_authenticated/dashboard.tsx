@@ -201,7 +201,7 @@ function App() {
     const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
       supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url, shields, onboarded, referred_by, preferred_name, age_range, acquisition_source, primary_goal, first_habit, social_hours_daily, biggest_distraction, wake_time, sleep_time, consistency_days, routine_breaker, preferred_focus_time, commitment_milestone, onboarding_step").eq("id", uid).maybeSingle(),
 
-      supabase.from("tasks").select("id, icon, name, pts, sort_order, frequency, duration_days, started_on").eq("user_id", uid).eq("is_active", true).order("sort_order"),
+      supabase.from("tasks").select("id, icon, name, pts, sort_order, frequency, duration_days, started_on, require_scan, scan_classes").eq("user_id", uid).eq("is_active", true).order("sort_order"),
       supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
       supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20),
       supabase.from("task_completions").select("completed_on").eq("user_id", uid).gte("completed_on", sevenAgo),
@@ -248,6 +248,8 @@ function App() {
       frequency: r.frequency,
       durationDays: r.duration_days,
       startedOn: r.started_on,
+      requireScan: (r as any).require_scan ?? false,
+      scanClasses: ((r as any).scan_classes ?? []) as string[],
     }) as unknown as Task));
 
     setBoard((leaders || []).map(l => ({
