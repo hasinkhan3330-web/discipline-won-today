@@ -259,14 +259,20 @@ export function TaskVerify({ kind, startInScan = false, acceptedClasses, onVerif
 
         {step === "vision" && (
           <div style={{ display: "grid", gap: 10 }}>
-            <HabitVision visionKind={visionKind} onVerified={onVerified} />
+            <HabitVision
+              visionKind={visionKind}
+              acceptedClasses={acceptedClasses}
+              onVerified={onVerified}
+              onPhoto={() => setStep("photo")}
+              onTimer={() => { setLeft(SHOWER_TIMER_S); setStep("timer"); }}
+            />
             <button onClick={() => setStep("pick")} style={btn()}>Back</button>
           </div>
         )}
 
         {step === "photo" && (
           <div style={{ display: "grid", gap: 10 }}>
-            <PhotoProof visionKind={visionKind} onVerified={onVerified} />
+            <PhotoProof visionKind={visionKind} acceptedClasses={acceptedClasses} onVerified={onVerified} />
             <button onClick={() => setStep("pick")} style={btn()}>Back</button>
           </div>
         )}
