@@ -4,45 +4,12 @@ import { AX } from "@/tabs/styles";
 import { haptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import { detectHabitEvidence, type Detection } from "@/utils/roboflow.functions";
-import { Camera, Loader2, Check } from "lucide-react";
+import {
+  DEFAULT_SCAN_CLASSES, VISION_COPY, isAcceptedClass, unsupportedClasses, type VisionKind,
+} from "@/lib/vision";
+import { Camera, Loader2, Check, Timer, Image as ImageIcon } from "lucide-react";
 
-/** Live-camera vision kinds mapped to their evidence classes. */
-export type VisionKind = "focus" | "shower" | "workout";
-
-export const VISION_CONFIG: Record<
-  VisionKind,
-  { classes: string[]; prompt: string; missing: string; timeout: string; verified: string }
-> = {
-  focus: {
-    classes: ["book", "notebook", "laptop", "desk", "keyboard", "mouse", "tv", "monitor", "dining table"],
-    prompt: "Point at your desk — keep your book, notebook or laptop in view.",
-    missing: "Nothing recognised yet — show your book, notebook, laptop or desk.",
-    timeout: "Could not confirm a study setup. Move closer to your desk and try again.",
-    verified: "Study setup verified",
-  },
-  shower: {
-    classes: ["shower", "bathroom", "bathtub", "faucet", "sink", "tap", "toilet", "toothbrush", "hair drier"],
-    prompt: "Point the camera at your bathroom — show the shower, tap or sink.",
-    missing: "Nothing recognised yet — show your shower, tap, sink or bathroom.",
-    timeout: "Could not confirm a shower setup. Move closer and try again.",
-    verified: "Shower setup verified",
-  },
-  workout: {
-    classes: [
-      "dumbbell", "barbell", "gym", "treadmill", "kettlebell", "weight", "bench", "machine", "equipment",
-      "sports ball", "bicycle", "skateboard", "tennis racket", "frisbee",
-    ],
-    prompt: "Point the camera at your equipment — dumbbell, bench, ball or bike.",
-    missing: "Nothing recognised yet — show your dumbbell, bench, ball, bike or gym machine.",
-    timeout: "Could not confirm workout equipment. Move closer and try again.",
-    verified: "Workout setup verified",
-  },
-};
-
-export const matchesEvidence = (labels: string[], kind: VisionKind) => {
-  const cfg = VISION_CONFIG[kind];
-  return labels.some(l => cfg.classes.some(c => l.toLowerCase().includes(c)));
-};
+export type { VisionKind } from "@/lib/vision";
 
 /** Fire-and-forget record of what the vision model saw (best effort). */
 export const logVision = (kind: string, source: "camera" | "photo", detections: Detection[]) => {
@@ -52,50 +19,53 @@ export const logVision = (kind: string, source: "camera" | "photo", detections: 
     .then(() => {}, () => {});
 };
 
-/** Two consecutive confident frames end the scan instantly. */
-const REQUIRED_STREAK = 2;
-/** Confidence needed on each of those frames. */
-const PASS_CONFIDENCE = 0.6;
-/** Frame pacing ceiling (~8 fps) — inference itself is the real limiter. */
-const FRAME_GAP_MS = 120;
-/** Downscaled inference width: small frames keep round trips well under a second. */
-const FRAME_WIDTH = 320;
-/** Nudge the user again after this long without a confident hit. */
-const RETRY_HINT_MS = 5000;
-/** Give up after this long without a confirmed setup. */
-const TIMEOUT_MS = 90_000;
-/** Consecutive failed round trips before showing a network error. */
-const MAX_TRANSIENT = 3;
+/** Confidence an accepted class must clear on a frame. */
+const PASS_CONFIDENCE = 0.55;
+/** Accept when this many of the last WINDOW frames were hits. */
+const NEEDED_HITS = 2;
+const WINDOW = 3;
+/** ~6 fps ceiling; one request in flight at a time, stale frames are dropped. */
+const FRAME_GAP_MS = 160;
+/** Downscaled inference width. */
+const FRAME_WIDTH = 640;
+/** Stop scanning after this long without an accepted object. */
+const SCAN_TIMEOUT_MS = 8000;
 
 type Phase = "idle" | "starting" | "scanning" | "verified" | "error";
 
 /**
- * Live camera check for a habit's setup (study desk, shower, workout gear).
+ * Live camera object-detection check for a habit.
  *
  * Frames are downscaled locally and streamed to the server, which runs the
- * Roboflow model with the private key and returns only labels. Detections
- * describe what is visible, so results are worded as "setup verified".
+ * deployed Roboflow model with the private key and returns labels + boxes.
  */
-export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind; onVerified: () => void }) {
-  const cfg = VISION_CONFIG[visionKind];
+export function HabitVision({ visionKind, acceptedClasses, onVerified, onPhoto, onTimer }: {
+  visionKind: VisionKind;
+  acceptedClasses?: string[];
+  onVerified: () => void;
+  onPhoto?: () => void;
+  onTimer?: () => void;
+}) {
+  const copy = VISION_COPY[visionKind] ?? VISION_COPY.custom;
+  const accepted = (acceptedClasses?.length ? acceptedClasses : DEFAULT_SCAN_CLASSES[visionKind]) ?? [];
+  const unsupported = unsupportedClasses(accepted);
+  const configured = accepted.length > 0 && unsupported.length < accepted.length;
+
   const detect = useServerFn(detectHabitEvidence);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const doneRef = useRef(false);
-  const streakRef = useRef(0);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const warmedRef = useRef(false);
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState("");
-  const [streak, setStreak] = useState(0);
-  const [seen, setSeen] = useState<string[]>([]);
+  const [hits, setHits] = useState(0);
+  const [box, setBox] = useState<{ left: number; top: number; width: number; height: number; label: string; confidence: number } | null>(null);
 
   const stopCamera = useCallback(() => {
-    try {
-      streamRef.current?.getTracks().forEach(t => t.stop());
-    } catch { /* already released */ }
+    try { streamRef.current?.getTracks().forEach(t => t.stop()); } catch { /* released */ }
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
   }, []);
@@ -103,9 +73,9 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
   // Release the camera on every unmount path (close, back, navigation).
   useEffect(() => () => { doneRef.current = true; stopCamera(); }, [stopCamera]);
 
-  /** Warm the detection route once so the first real frame is not a cold start. */
+  /** Warm the detection route as soon as the modal opens. */
   useEffect(() => {
-    if (warmedRef.current) return;
+    if (warmedRef.current || !configured) return;
     warmedRef.current = true;
     const c = document.createElement("canvas");
     c.width = 32; c.height = 32;
@@ -114,34 +84,41 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
     ctx.fillStyle = "#101010";
     ctx.fillRect(0, 0, 32, 32);
     void detect({ data: { imageBase64: c.toDataURL("image/jpeg", 0.5) } }).catch(() => undefined);
-  }, [detect]);
+  }, [detect, configured]);
 
-  const grabFrame = (): string | null => {
+  const grabFrame = (): { data: string; w: number; h: number } | null => {
     const v = videoRef.current;
     if (!v || !v.videoWidth) return null;
     const w = FRAME_WIDTH;
-    const h = Math.round((v.videoHeight / v.videoWidth) * w) || 240;
+    const h = Math.round((v.videoHeight / v.videoWidth) * w) || 480;
     const canvas = canvasRef.current ?? (canvasRef.current = document.createElement("canvas"));
     canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return null;
     ctx.drawImage(v, 0, 0, w, h);
-    return canvas.toDataURL("image/jpeg", 0.5);
+    return { data: canvas.toDataURL("image/jpeg", 0.6), w, h };
+  };
+
+  const fail = (message: string) => {
+    doneRef.current = true;
+    stopCamera();
+    setBox(null);
+    setPhase("error");
+    setError(message);
   };
 
   const start = async () => {
-    setError(null); setSeen([]); setStreak(0);
-    streakRef.current = 0; doneRef.current = false;
+    if (!configured) return;
+    setError(null); setHits(0); setBox(null);
+    doneRef.current = false;
     setPhase("starting");
     setStatus("Opening the camera…");
 
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
-      setPhase("error");
-      setError("This device cannot open a camera here. Use the scanner or photo option instead.");
+      fail("This device cannot open a camera here (a secure https page is required). Use Take Photo instead.");
       return;
     }
 
-    // Rear camera first; fall back to any camera rather than failing outright.
     let stream: MediaStream | null = null;
     try {
       stream = await navigator.mediaDevices.getUserMedia({
@@ -154,13 +131,12 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false }).catch(() => null);
       }
       if (!stream) {
-        setPhase("error");
-        setError(
+        fail(
           name === "NotAllowedError" || name === "SecurityError"
-            ? "Camera permission is blocked. Allow the camera for AXEN, then try again."
+            ? "Camera permission is blocked. Allow the camera for AXEN in your browser settings, then retry."
             : name === "NotFoundError"
               ? "No camera found on this device."
-              : "Could not start the camera. Try again in a moment.",
+              : "Could not start the camera. Retry in a moment.",
         );
         return;
       }
@@ -173,31 +149,18 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
     }
 
     setPhase("scanning");
-    setStatus(cfg.prompt);
+    setStatus(copy.prompt);
     void loop();
   };
 
   const loop = async () => {
-    const deadline = Date.now() + TIMEOUT_MS;
-    let transient = 0;
-    let lastHint = Date.now();
-
-    const succeed = (detections: Detection[]) => {
-      doneRef.current = true;
-      // Credit first, everything else after — no delay before the reward.
-      onVerified();
-      stopCamera();
-      setPhase("verified");
-      setStatus(cfg.verified + ".");
-      haptic("success");
-      logVision(visionKind, "camera", detections);
-    };
+    const deadline = Date.now() + SCAN_TIMEOUT_MS;
+    const recent: boolean[] = [];
+    let networkFails = 0;
 
     while (!doneRef.current && streamRef.current) {
       if (Date.now() > deadline) {
-        stopCamera();
-        setPhase("error");
-        setError(cfg.timeout);
+        fail("No accepted object detected in 8 seconds. Retry, take a photo, or use the timer.");
         return;
       }
 
@@ -205,51 +168,64 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
       const frame = grabFrame();
       if (frame) {
         try {
-          const res = await detect({ data: { imageBase64: frame } });
+          // One request in flight — the next frame is only grabbed after this resolves.
+          const res = await detect({ data: { imageBase64: frame.data } });
           if (doneRef.current) return;
 
           if (!res.ok) {
-            transient += 1;
-            if (transient >= MAX_TRANSIENT) {
-              stopCamera();
-              setPhase("error");
-              setError(res.error);
-              return;
+            if (res.code === "network" || res.code === "timeout") {
+              networkFails += 1;
+              if (networkFails >= 3) { fail(res.error); return; }
+              setStatus("Slow connection — retrying…");
+              continue;
             }
-            setStatus("Connection hiccup — retrying…");
-            await new Promise(r => setTimeout(r, 400));
-            continue;
+            fail(res.error); // auth / model / rate / config: never scan forever
+            return;
           }
-          transient = 0;
+          networkFails = 0;
 
-          const labels = res.detections.map(d => d.label);
-          setSeen(labels.slice(0, 4));
+          const hit = res.detections.find(d => d.confidence >= PASS_CONFIDENCE && isAcceptedClass(d.label, accepted));
+          const marker = res.detections[0];
 
-          const best = res.detections.find(d => matchesEvidence([d.label], visionKind));
-          const confident = (best?.confidence ?? 0) >= PASS_CONFIDENCE;
+          // Bounding box over the live preview, in preview-relative percentages.
+          const iw = res.image.width || frame.w;
+          const ih = res.image.height || frame.h;
+          const draw = hit ?? marker;
+          setBox(draw && draw.width > 0
+            ? {
+                left: ((draw.x - draw.width / 2) / iw) * 100,
+                top: ((draw.y - draw.height / 2) / ih) * 100,
+                width: (draw.width / iw) * 100,
+                height: (draw.height / ih) * 100,
+                label: draw.label,
+                confidence: draw.confidence,
+              }
+            : null);
 
-          if (confident) {
-            streakRef.current += 1;
-            setStreak(streakRef.current);
-            if (streakRef.current >= REQUIRED_STREAK) { succeed(res.detections); return; }
-            setStatus("Setup detected — hold steady…");
-          } else {
-            streakRef.current = 0;
-            setStreak(0);
-            if (Date.now() - lastHint > RETRY_HINT_MS) {
-              lastHint = Date.now();
-              setStatus(cfg.missing);
-            } else if (!status) {
-              setStatus(cfg.prompt);
-            }
+          recent.push(!!hit);
+          if (recent.length > WINDOW) recent.shift();
+          const score = recent.filter(Boolean).length;
+          setHits(score);
+
+          if (hit) setStatus("Object detected — verifying…");
+          else if (res.detections.length === 0) setStatus(copy.missing);
+          else setStatus(`Seeing ${marker?.label ?? "something"} — that is not accepted for this habit.`);
+
+          if (score >= NEEDED_HITS) {
+            doneRef.current = true;
+            onVerified();                       // credit first — no delay before the reward
+            stopCamera();
+            setPhase("verified");
+            setStatus(copy.verified + ".");
+            haptic("success");
+            logVision(visionKind, "camera", res.detections);
+            return;
           }
         } catch {
           if (doneRef.current) return;
-          transient += 1;
-          if (transient >= MAX_TRANSIENT) {
-            stopCamera();
-            setPhase("error");
-            setError("No connection to the check service. Check your internet and try again.");
+          networkFails += 1;
+          if (networkFails >= 3) {
+            fail("No connection to the detection service. Check your internet and retry.");
             return;
           }
           setStatus("Connection hiccup — retrying…");
@@ -263,6 +239,15 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
 
   const scanning = phase === "scanning" || phase === "starting";
 
+  if (!configured) {
+    return (
+      <div style={{ fontSize: 13, color: AX.muted, lineHeight: 1.6 }}>
+        This object is not supported by the current model. Pick accepted objects for this habit in the habit builder,
+        or use the photo / timer options.
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "grid", gap: 10 }}>
       <div style={{
@@ -271,6 +256,24 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
         display: scanning || phase === "verified" ? "block" : "none",
       }}>
         <video ref={videoRef} playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+
+        {box && scanning && (
+          <div style={{
+            position: "absolute",
+            left: `${box.left}%`, top: `${box.top}%`, width: `${box.width}%`, height: `${box.height}%`,
+            border: `2px solid ${isAcceptedClass(box.label, accepted) ? AX.success : AX.muted}`,
+            borderRadius: 6, pointerEvents: "none",
+          }}>
+            <span style={{
+              position: "absolute", top: -20, left: 0, whiteSpace: "nowrap",
+              background: "rgba(10,10,15,0.8)", borderRadius: 4, padding: "1px 6px",
+              fontSize: 10, fontWeight: 700, color: isAcceptedClass(box.label, accepted) ? AX.success : AX.text,
+            }}>
+              {box.label} {Math.round(box.confidence * 100)}%
+            </span>
+          </div>
+        )}
+
         {scanning && (
           <div style={{
             position: "absolute", left: 10, bottom: 10, display: "flex", alignItems: "center", gap: 6,
@@ -278,7 +281,7 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
             fontSize: 11, fontWeight: 600, color: AX.text,
           }}>
             <Loader2 size={12} className="ax-spin" />
-            {streak}/{REQUIRED_STREAK} checks
+            {hits}/{NEEDED_HITS} frames
           </div>
         )}
       </div>
@@ -297,7 +300,7 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
           }}
         >
           {scanning ? <Loader2 size={16} className="ax-spin" /> : <Camera size={16} />}
-          {scanning ? "Checking your setup…" : phase === "error" ? "Try again" : "Start camera check"}
+          {scanning ? "Checking your setup…" : phase === "error" ? "Retry" : "Start camera check"}
         </button>
       )}
 
@@ -307,16 +310,31 @@ export function HabitVision({ visionKind, onVerified }: { visionKind: VisionKind
           minHeight: 46, borderRadius: 12, border: `1px solid ${AX.success}`, color: AX.success,
           fontSize: 14, fontWeight: 600,
         }}>
-          <Check size={16} />{cfg.verified}
+          <Check size={16} />{copy.verified}
+        </div>
+      )}
+
+      {phase === "error" && (onPhoto || onTimer) && (
+        <div style={{ display: "flex", gap: 10 }}>
+          {onPhoto && (
+            <button onClick={onPhoto} style={{
+              flex: 1, minHeight: 44, borderRadius: 12, cursor: "pointer", background: "transparent",
+              border: `1px solid ${AX.border}`, color: AX.text, fontFamily: AX.font, fontSize: 13, fontWeight: 600,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            }}><ImageIcon size={15} />Take Photo</button>
+          )}
+          {onTimer && (
+            <button onClick={onTimer} style={{
+              flex: 1, minHeight: 44, borderRadius: 12, cursor: "pointer", background: "transparent",
+              border: `1px solid ${AX.border}`, color: AX.text, fontFamily: AX.font, fontSize: 13, fontWeight: 600,
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+            }}><Timer size={15} />3-Minute Timer</button>
+          )}
         </div>
       )}
 
       {!!status && phase !== "error" && (
         <div style={{ fontSize: 12, color: AX.muted, lineHeight: 1.5 }}>{status}</div>
-      )}
-
-      {seen.length > 0 && phase === "scanning" && (
-        <div style={{ fontSize: 12, color: AX.muted }}>Seeing: {seen.join(", ")}</div>
       )}
 
       {error && <div style={{ fontSize: 12, color: AX.danger, lineHeight: 1.5 }}>{error}</div>}
