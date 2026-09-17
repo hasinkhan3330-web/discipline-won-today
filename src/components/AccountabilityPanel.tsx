@@ -1,3 +1,4 @@
+import { safeName } from "@/lib/display-name";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AX, cardStyle, titleStyle } from "@/tabs/styles";
@@ -155,7 +156,7 @@ export function AccountabilityPanel({ fallbackAvatar }: { fallbackAvatar: (n: st
             >
               <option value="">Choose a friend…</option>
               {friends.map(f => (
-                <option key={f.friend_id} value={f.friend_id}>{f.display_name || f.username || "User"}</option>
+                <option key={f.friend_id} value={f.friend_id}>{safeName(f.display_name || f.username, "User")}</option>
               ))}
             </select>
 
