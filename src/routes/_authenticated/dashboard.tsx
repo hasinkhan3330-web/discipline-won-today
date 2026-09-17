@@ -960,6 +960,7 @@ function App() {
           {verify && (
             <TaskVerify
               kind={verify.kind}
+              acceptedClasses={verify.classes}
               startInScan={verify.scan}
               onClose={() => setVerify(null)}
               onVerified={() => { const id = verify.uuid; setVerify(null); completeTaskRpc(id); }}
