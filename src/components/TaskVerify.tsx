@@ -6,11 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCoords, distanceM, type Coords } from "@/lib/geo";
 import { CodeScanner } from "@/components/CodeScanner";
 import { PhotoProof } from "@/components/PhotoProof";
-import { HabitVision, type VisionKind } from "@/components/HabitVision";
+import { HabitVision } from "@/components/HabitVision";
+import type { VisionKind } from "@/lib/vision";
 import { ScanEye } from "lucide-react";
 import { Dumbbell, Droplets, BookOpen, Home, MapPin, QrCode, Timer, X, Check, Camera, type LucideIcon } from "lucide-react";
 
-export type VerifyKind = "gym" | "shower" | "focus";
+export type VerifyKind = "gym" | "shower" | "focus" | "custom";
 
 const MODE_KEY = "axen_workout_mode";
 const HOME_TIMER_S = 15 * 60;
