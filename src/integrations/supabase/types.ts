@@ -429,6 +429,39 @@ export type Database = {
         }
         Relationships: []
       }
+      first_launch_assessments: {
+        Row: {
+          answers: Json
+          baseline_score: number
+          completed_at: string
+          created_at: string
+          estimated_daily_lost_hours: number
+          potential_daily_reclaim_hours: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          baseline_score: number
+          completed_at?: string
+          created_at?: string
+          estimated_daily_lost_hours: number
+          potential_daily_reclaim_hours: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          baseline_score?: number
+          completed_at?: string
+          created_at?: string
+          estimated_daily_lost_hours?: number
+          potential_daily_reclaim_hours?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       focus_sessions: {
         Row: {
           blocked_apps: string[]
