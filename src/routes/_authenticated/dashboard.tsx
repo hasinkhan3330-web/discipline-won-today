@@ -210,14 +210,14 @@ function App() {
     if (prof) {
       setCoins(prof.coins ?? 0);
       setStreak(prof.streak ?? 0);
-      setMyName(prof.display_name || "YOU");
+      setMyName(safeName(prof.display_name, "YOU"));
       setMyAvatar(prof.avatar_url || "");
       setShields((prof as any).shields ?? 0);
       setOnboarded(!!(prof as any).onboarded);
       setReferredBy((prof as any).referred_by ?? null);
       setOnboardingStep(Number((prof as any).onboarding_step ?? 1));
       setOnboardingAnswers({
-        preferred_name: (prof as any).preferred_name ?? prof.display_name ?? "",
+        preferred_name: (prof as any).preferred_name ?? safeName(prof.display_name, "") ?? "",
         age_range: (prof as any).age_range ?? undefined,
         acquisition_source: (prof as any).acquisition_source ?? undefined,
         primary_goal: (prof as any).primary_goal ?? undefined,
