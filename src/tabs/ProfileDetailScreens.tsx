@@ -6,6 +6,7 @@ import {
   Coins, Flame, Medal, Pencil, Plus, Sparkles, Trash2,
 } from "lucide-react";
 import { cancelLocalReminder, nextReminderAt, scheduleLocalReminder, stableNotificationId } from "@/lib/local-notifications";
+import { MODEL_CLASSES } from "@/lib/vision";
 
 export type ProfileView = "dashboard" | "habits" | "journey" | "achievements" | "goals" | "reminders" | "account";
 export type ProfileHabit = {
@@ -128,6 +129,32 @@ export function HabitsView({ habits, userId, onBack, onComplete, onChanged }: {
           <label>Duration<select value={duration} onChange={event => setDuration(Number(event.target.value))}><option value={21}>21 days</option><option value={30}>30 days</option><option value={60}>60 days</option><option value={90}>90 days</option></select></label>
         </div>
         <label>Reward <input type="range" min="5" max="25" step="5" value={points} onChange={event => setPoints(Number(event.target.value))} /><span className="you-range-value">{points} coins</span></label>
+        <label className="you-toggle-row">
+          <span>Require Scan Proof</span>
+          <input type="checkbox" checked={requireScan} onChange={event => setRequireScan(event.target.checked)} />
+        </label>
+        {requireScan && (
+          <div className="you-scan-picker">
+            <input value={classQuery} onChange={event => setClassQuery(event.target.value)} placeholder="Search accepted objects (e.g. book, sink, bicycle)" />
+            {scanClasses.length > 0 && (
+              <div className="you-scan-chosen">
+                {scanClasses.map(c => (
+                  <button type="button" key={c} onClick={() => setScanClasses(list => list.filter(x => x !== c))}>{c} ✕</button>
+                ))}
+              </div>
+            )}
+            <div className="you-scan-options">
+              {classMatches.map(c => (
+                <button
+                  type="button" key={c}
+                  className={scanClasses.includes(c) ? "is-on" : ""}
+                  onClick={() => setScanClasses(list => list.includes(c) ? list.filter(x => x !== c) : [...list, c])}
+                >{c}</button>
+              ))}
+              {classMatches.length === 0 && <span className="you-scan-empty">This object is not supported by the current model.</span>}
+            </div>
+          </div>
+        )}
         <button className="you-save-button" disabled={busy || !name.trim()} onClick={saveHabit}>{busy ? "Saving…" : "Start habit"}</button>
       </section>}
     </div>
