@@ -46,3 +46,5 @@
 - [x] Verify all six upgrades and regression-test completed AXEN pages.
 
 - [x] 3-day AXEN Pro trial (entitlements table, initialize_trial, get_entitlement, EntitlementProvider, ProtectedFeatureGate, trial banner/welcome, billing mirror + RTDN idempotency)
+
+- [ ] Redesign only Deep Focus app blocking, lock setup, and active lock visuals; preserve all behavior and audio.
