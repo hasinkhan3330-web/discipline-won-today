@@ -35,6 +35,21 @@ export const PACKAGE_ID: Record<Cycle, string[]> = {
   yearly: ["$rc_annual", "annual", "yearly"],
 };
 
+let cachedAndroidKey: string | null = null;
+
+/** Fetches the public SDK key from the server's encrypted store (cached). */
+async function fetchAndroidPublicKey(): Promise<string | undefined> {
+  if (cachedAndroidKey !== null) return cachedAndroidKey || undefined;
+  try {
+    const { getBillingConfig } = await import("@/lib/billing-config.functions");
+    const cfg = await getBillingConfig();
+    cachedAndroidKey = cfg.androidPublicKey || "";
+    return cachedAndroidKey || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 async function storeApiKey(): Promise<string | undefined> {
   const envAndroid = import.meta.env['VITE_REVENUECAT_ANDROID_API_KEY'] as string | undefined;
   const envIos = import.meta.env['VITE_REVENUECAT_IOS_API_KEY'] as string | undefined;
@@ -43,11 +58,11 @@ async function storeApiKey(): Promise<string | undefined> {
   try {
     const { Capacitor } = await import("@capacitor/core");
     if (Capacitor.getPlatform() === "ios") {
-      return envIos || envAndroid || fallbackAndroid;
+      return envIos || envAndroid || fallbackAndroid || (await fetchAndroidPublicKey());
     }
-    return envAndroid || fallbackAndroid;
+    return envAndroid || fallbackAndroid || (await fetchAndroidPublicKey());
   } catch {
-    return envAndroid || fallbackAndroid;
+    return envAndroid || fallbackAndroid || (await fetchAndroidPublicKey());
   }
 }
 
