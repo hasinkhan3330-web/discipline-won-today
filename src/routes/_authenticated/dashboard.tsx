@@ -49,6 +49,7 @@ import toneSuperLoud from "@/assets/ringtones/the_cutie_pie-super-loud-ahh-alarm
 import toneScariest from "@/assets/ringtones/The_Scariest_Alarm_256k.mp3.asset.json";
 import toneRetro from "@/assets/ringtones/retro_emergency.wav.asset.json";
 import toneLoudEmergency from "@/assets/ringtones/loud_emergency.mp3.asset.json";
+import { safeName } from "@/lib/display-name";
 import { WakeVerify } from "@/components/WakeVerify";
 import { WakeProtocol } from "@/components/WakeProtocol";
 import {
@@ -210,14 +211,14 @@ function App() {
     if (prof) {
       setCoins(prof.coins ?? 0);
       setStreak(prof.streak ?? 0);
-      setMyName(prof.display_name || "YOU");
+      setMyName(safeName(prof.display_name, "YOU"));
       setMyAvatar(prof.avatar_url || "");
       setShields((prof as any).shields ?? 0);
       setOnboarded(!!(prof as any).onboarded);
       setReferredBy((prof as any).referred_by ?? null);
       setOnboardingStep(Number((prof as any).onboarding_step ?? 1));
       setOnboardingAnswers({
-        preferred_name: (prof as any).preferred_name ?? prof.display_name ?? "",
+        preferred_name: (prof as any).preferred_name ?? safeName(prof.display_name, "") ?? "",
         age_range: (prof as any).age_range ?? undefined,
         acquisition_source: (prof as any).acquisition_source ?? undefined,
         primary_goal: (prof as any).primary_goal ?? undefined,
@@ -253,10 +254,10 @@ function App() {
     }) as unknown as Task));
 
     setBoard((leaders || []).map(l => ({
-      n: (l.display_name || l.username || "USER").toUpperCase().replace(/\s+/g, "_"),
+      n: safeName(l.display_name || l.username, "USER").toUpperCase().replace(/\s+/g, "_"),
       c: l.coins ?? 0,
       s: l.streak ?? 0,
-      img: l.avatar_url || fallbackAvatar(l.display_name || l.username || "U"),
+      img: l.avatar_url || fallbackAvatar(safeName(l.display_name || l.username, "U")),
       you: l.id === uid,
     })));
 
@@ -596,9 +597,9 @@ function App() {
     supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
       if (!leaders) return;
       setBoard(leaders.map(l => ({
-        n: (l.display_name || l.username || "USER").toUpperCase().replace(/\s+/g, "_"),
+        n: safeName(l.display_name || l.username, "USER").toUpperCase().replace(/\s+/g, "_"),
         c: l.coins ?? 0, s: l.streak ?? 0,
-        img: l.avatar_url || fallbackAvatar(l.display_name || l.username || "U"),
+        img: l.avatar_url || fallbackAvatar(safeName(l.display_name || l.username, "U")),
         you: l.id === myId,
       })));
     });
@@ -689,9 +690,9 @@ function App() {
     supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
       if (!leaders) return;
       setBoard(leaders.map(l => ({
-        n: (l.display_name || l.username || "USER").toUpperCase().replace(/\s+/g, "_"),
+        n: safeName(l.display_name || l.username, "USER").toUpperCase().replace(/\s+/g, "_"),
         c: l.coins ?? 0, s: l.streak ?? 0,
-        img: l.avatar_url || fallbackAvatar(l.display_name || l.username || "U"),
+        img: l.avatar_url || fallbackAvatar(safeName(l.display_name || l.username, "U")),
         you: l.id === myId,
       })));
     });

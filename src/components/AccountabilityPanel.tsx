@@ -1,3 +1,4 @@
+import { safeName } from "@/lib/display-name";
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AX, cardStyle, titleStyle } from "@/tabs/styles";
@@ -114,7 +115,7 @@ export function AccountabilityPanel({ fallbackAvatar }: { fallbackAvatar: (n: st
       } as never);
       if (error) throw error;
       haptic("success");
-      toast.success(`Nudge sent to ${status.partner_name}`);
+      toast.success(`Nudge sent to ${safeName(status.partner_name, "Partner")}`);
     } catch (e: any) {
       toast.error("Could not send the nudge", { description: e?.message });
     } finally { setBusy(false); }
@@ -155,7 +156,7 @@ export function AccountabilityPanel({ fallbackAvatar }: { fallbackAvatar: (n: st
             >
               <option value="">Choose a friend…</option>
               {friends.map(f => (
-                <option key={f.friend_id} value={f.friend_id}>{f.display_name || f.username || "User"}</option>
+                <option key={f.friend_id} value={f.friend_id}>{safeName(f.display_name || f.username, "User")}</option>
               ))}
             </select>
 
@@ -254,8 +255,8 @@ export function AccountabilityPanel({ fallbackAvatar }: { fallbackAvatar: (n: st
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
         <Side you name="You" img={fallbackAvatar("You")} done={status.me_done_today} total={status.me_total_today} streak={status.me_streak} hit={meHit} />
         <Side
-          name={status.partner_name}
-          img={status.partner_avatar || fallbackAvatar(status.partner_name)}
+          name={safeName(status.partner_name, "Partner")}
+          img={status.partner_avatar || fallbackAvatar(safeName(status.partner_name, "Partner"))}
           done={status.partner_done_today}
           total={status.partner_total_today}
           streak={status.partner_streak}
@@ -275,7 +276,7 @@ export function AccountabilityPanel({ fallbackAvatar }: { fallbackAvatar: (n: st
           padding: "11px 13px", background: "#181820", border: `1px solid ${AX.accent}55`,
           borderRadius: 14, marginBottom: 12, fontSize: 13, color: AX.text, lineHeight: 1.5,
         }}>
-          <span style={{ color: AX.accent, fontWeight: 600 }}>{status.partner_name}: </span>
+          <span style={{ color: AX.accent, fontWeight: 600 }}>{safeName(status.partner_name, "Partner")}: </span>
           {status.last_nudge}
         </div>
       )}

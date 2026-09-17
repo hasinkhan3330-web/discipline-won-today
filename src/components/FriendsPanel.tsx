@@ -1,3 +1,4 @@
+import { safeName } from "@/lib/display-name";
 import { useCallback, useEffect, useState } from "react";
 import { AX, cardStyle, titleStyle } from "@/tabs/styles";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,7 +85,7 @@ export function FriendsPanel({ myStreak, myCoins, fallbackAvatar }: {
   const outgoing = (rows || []).filter(r => r.status === "pending" && r.direction === "outgoing");
   const friends = (rows || []).filter(r => r.status === "accepted");
 
-  const label = (f: Friend) => f.display_name || f.username || "User";
+  const label = (f: Friend) => safeName(f.display_name || f.username, "User");
 
   return (
     <div style={CARD}>
