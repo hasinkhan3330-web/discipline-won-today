@@ -22,6 +22,7 @@ const META: Record<VerifyKind, { title: string; Icon: LucideIcon; hint: string }
   gym: { title: "Verify your workout", Icon: Dumbbell, hint: "Prove you showed up — gym GPS check or a gym-tag scan." },
   shower: { title: "Verify your cold shower", Icon: Droplets, hint: "Scan your bathroom QR / barcode to prove you physically moved there." },
   focus: { title: "Verify deep focus", Icon: BookOpen, hint: "Point the camera at your desk to verify your study setup, or scan a tag and hold a strict focus timer." },
+  custom: { title: "Verify this habit", Icon: ScanEye, hint: "Point the camera at the object you chose as proof for this habit." },
 };
 
 const btn = (primary?: boolean): React.CSSProperties => ({
@@ -48,9 +49,11 @@ type Step = "pick" | "scan" | "timer" | "photo" | "vision";
  * Unified anti-cheat verification sheet for Gym, Cold Shower and Deep Focus.
  * Gym: Supabase-saved geofence OR gym-tag scan. Shower: scan. Focus: scan + strict timer.
  */
-export function TaskVerify({ kind, startInScan = false, onVerified, onClose }: {
+export function TaskVerify({ kind, startInScan = false, acceptedClasses, onVerified, onClose }: {
   kind: VerifyKind;
   startInScan?: boolean;
+  /** Accepted model classes saved on the task (falls back to the kind defaults). */
+  acceptedClasses?: string[];
   onVerified: () => void;
   onClose: () => void;
 }) {
