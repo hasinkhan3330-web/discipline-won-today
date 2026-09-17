@@ -448,7 +448,7 @@ function App() {
     return saved && RINGTONES.some(r => r.id === saved) ? saved : "superloud";
   });
   const [previewId, setPreviewId] = useState<string | null>(null);
-  const [verify, setVerify] = useState<{ uuid: string; kind: VerifyKind; scan: boolean } | null>(null);
+  const [verify, setVerify] = useState<{ uuid: string; kind: VerifyKind; classes: string[]; scan: boolean } | null>(null);
   const [topThree, setTopThree] = useState<string | null>(null);
   const pickRingtone = (id: string) => {
     setRingtone(id);
@@ -783,17 +783,17 @@ function App() {
       setTopThree((t as any)._uuid as string);
       return;
     }
-    const kind = verifyKindFor(t.name);
-    if (kind) { setVerify({ uuid: (t as any)._uuid as string, kind, scan: false }); return; }
+    const target = scanTargetFor(t);
+    if (target) { setVerify({ uuid: (t as any)._uuid as string, kind: target.kind, classes: target.classes, scan: false }); return; }
     completeTaskRpc((t as any)._uuid);
   };
 
   const scanTask = (id: number) => {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
-    const kind = verifyKindFor(t.name);
-    if (!kind) return;
-    setVerify({ uuid: (t as any)._uuid as string, kind, scan: true });
+    const target = scanTargetFor(t);
+    if (!target) return;
+    setVerify({ uuid: (t as any)._uuid as string, kind: target.kind, classes: target.classes, scan: true });
   };
 
   // get_entitlement() (database clock: verified subscription OR unexpired 3-day
