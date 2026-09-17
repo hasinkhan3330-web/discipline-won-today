@@ -60,7 +60,8 @@ export function TaskVerify({ kind, startInScan = false, acceptedClasses, onVerif
   const { title, Icon, hint } = META[kind];
   const visionKind: VisionKind = kind === "gym" ? "workout" : kind;
   const [mode, setMode] = useState<"gym" | "home" | null>(kind === "gym" ? null : "home");
-  const [step, setStep] = useState<Step>(startInScan ? "scan" : "pick");
+  // The scan icon means AI object detection, not barcode decoding.
+  const [step, setStep] = useState<Step>(startInScan ? "vision" : "pick");
   const [gym, setGym] = useState<Coords | null>(null);
   const [radius, setRadius] = useState(150);
   const [busy, setBusy] = useState(false);
