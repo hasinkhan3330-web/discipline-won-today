@@ -3,7 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { AX } from "@/tabs/styles";
 import { haptic } from "@/lib/haptics";
 import { detectHabitEvidence, type Detection } from "@/utils/roboflow.functions";
-import { matchesEvidence, VISION_CONFIG, logVision, type VisionKind } from "@/components/HabitVision";
+import { logVision } from "@/components/HabitVision";
+import { DEFAULT_SCAN_CLASSES, VISION_COPY, isAcceptedClass, type VisionKind } from "@/lib/vision";
 import { Camera, Loader2, Check } from "lucide-react";
 
 const fileToDataUrl = (file: File) =>
@@ -20,8 +21,9 @@ const MIN_CONFIDENCE = 0.4;
  * Photo evidence for a habit: the user picks/takes a picture, it is checked by
  * the image model on the server, and only the matching evidence labels count.
  */
-export function PhotoProof({ visionKind, onVerified }: { visionKind: VisionKind; onVerified: () => void }) {
-  const cfg = VISION_CONFIG[visionKind];
+export function PhotoProof({ visionKind, acceptedClasses, onVerified }: { visionKind: VisionKind; acceptedClasses?: string[]; onVerified: () => void }) {
+  const cfg = VISION_COPY[visionKind] ?? VISION_COPY.custom;
+  const accepted = (acceptedClasses?.length ? acceptedClasses : DEFAULT_SCAN_CLASSES[visionKind]) ?? [];
   const detect = useServerFn(detectHabitEvidence);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
