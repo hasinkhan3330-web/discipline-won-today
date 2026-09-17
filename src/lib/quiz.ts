@@ -16,7 +16,11 @@ export function skipQuizLocal() {
 }
 
 export function quizSeen(): boolean {
-  try { return localStorage.getItem(QUIZ_DONE_KEY) === "1"; } catch { return false; }
+  try {
+    return localStorage.getItem(QUIZ_DONE_KEY) === "1" || localStorage.getItem("axen.quiz.v1.done") === "1";
+  } catch {
+    return false;
+  }
 }
 
 function readQuiz(): QuizAnswers | null {
