@@ -77,14 +77,25 @@ export function HabitsView({ habits, userId, onBack, onComplete, onChanged }: {
   const [frequency, setFrequency] = useState("daily");
   const [duration, setDuration] = useState(21);
   const [points, setPoints] = useState(10);
+  const [requireScan, setRequireScan] = useState(false);
+  const [classQuery, setClassQuery] = useState("");
+  const [scanClasses, setScanClasses] = useState<string[]>([]);
+  const classMatches = useMemo(() => {
+    const q = classQuery.trim().toLowerCase();
+    return MODEL_CLASSES.filter(c => !q || c.includes(q)).slice(0, 24);
+  }, [classQuery]);
   const priority = habits.slice(0, 3);
   const saveHabit = async () => {
     if (!userId || !name.trim() || busy) return;
+    if (requireScan && scanClasses.length === 0) {
+      return void toast.error("Pick at least one object the camera should accept");
+    }
     setBusy(true);
     const nextOrder = habits.length ? habits.length + 1 : 1;
     const { error } = await supabase.from("tasks").insert({
       user_id: userId, name: name.trim(), icon: "◎", pts: points,
       sort_order: nextOrder, frequency, duration_days: duration,
+      require_scan: requireScan, scan_classes: requireScan ? scanClasses : [],
     });
     setBusy(false);
     if (error) return void toast.error("Could not build that habit", { description: error.message });
