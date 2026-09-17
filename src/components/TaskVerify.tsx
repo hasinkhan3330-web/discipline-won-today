@@ -6,11 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCoords, distanceM, type Coords } from "@/lib/geo";
 import { CodeScanner } from "@/components/CodeScanner";
 import { PhotoProof } from "@/components/PhotoProof";
-import { HabitVision, type VisionKind } from "@/components/HabitVision";
+import { HabitVision } from "@/components/HabitVision";
+import type { VisionKind } from "@/lib/vision";
 import { ScanEye } from "lucide-react";
 import { Dumbbell, Droplets, BookOpen, Home, MapPin, QrCode, Timer, X, Check, Camera, type LucideIcon } from "lucide-react";
 
-export type VerifyKind = "gym" | "shower" | "focus";
+export type VerifyKind = "gym" | "shower" | "focus" | "custom";
 
 const MODE_KEY = "axen_workout_mode";
 const HOME_TIMER_S = 15 * 60;
@@ -21,6 +22,7 @@ const META: Record<VerifyKind, { title: string; Icon: LucideIcon; hint: string }
   gym: { title: "Verify your workout", Icon: Dumbbell, hint: "Prove you showed up — gym GPS check or a gym-tag scan." },
   shower: { title: "Verify your cold shower", Icon: Droplets, hint: "Scan your bathroom QR / barcode to prove you physically moved there." },
   focus: { title: "Verify deep focus", Icon: BookOpen, hint: "Point the camera at your desk to verify your study setup, or scan a tag and hold a strict focus timer." },
+  custom: { title: "Verify this habit", Icon: ScanEye, hint: "Point the camera at the object you chose as proof for this habit." },
 };
 
 const btn = (primary?: boolean): React.CSSProperties => ({
@@ -47,16 +49,19 @@ type Step = "pick" | "scan" | "timer" | "photo" | "vision";
  * Unified anti-cheat verification sheet for Gym, Cold Shower and Deep Focus.
  * Gym: Supabase-saved geofence OR gym-tag scan. Shower: scan. Focus: scan + strict timer.
  */
-export function TaskVerify({ kind, startInScan = false, onVerified, onClose }: {
+export function TaskVerify({ kind, startInScan = false, acceptedClasses, onVerified, onClose }: {
   kind: VerifyKind;
   startInScan?: boolean;
+  /** Accepted model classes saved on the task (falls back to the kind defaults). */
+  acceptedClasses?: string[];
   onVerified: () => void;
   onClose: () => void;
 }) {
   const { title, Icon, hint } = META[kind];
   const visionKind: VisionKind = kind === "gym" ? "workout" : kind;
   const [mode, setMode] = useState<"gym" | "home" | null>(kind === "gym" ? null : "home");
-  const [step, setStep] = useState<Step>(startInScan ? "scan" : "pick");
+  // The scan icon means AI object detection, not barcode decoding.
+  const [step, setStep] = useState<Step>(startInScan ? "vision" : "pick");
   const [gym, setGym] = useState<Coords | null>(null);
   const [radius, setRadius] = useState(150);
   const [busy, setBusy] = useState(false);
@@ -255,14 +260,20 @@ export function TaskVerify({ kind, startInScan = false, onVerified, onClose }: {
 
         {step === "vision" && (
           <div style={{ display: "grid", gap: 10 }}>
-            <HabitVision visionKind={visionKind} onVerified={onVerified} />
+            <HabitVision
+              visionKind={visionKind}
+              acceptedClasses={acceptedClasses}
+              onVerified={onVerified}
+              onPhoto={() => setStep("photo")}
+              onTimer={() => { setLeft(SHOWER_TIMER_S); setStep("timer"); }}
+            />
             <button onClick={() => setStep("pick")} style={btn()}>Back</button>
           </div>
         )}
 
         {step === "photo" && (
           <div style={{ display: "grid", gap: 10 }}>
-            <PhotoProof visionKind={visionKind} onVerified={onVerified} />
+            <PhotoProof visionKind={visionKind} acceptedClasses={acceptedClasses} onVerified={onVerified} />
             <button onClick={() => setStep("pick")} style={btn()}>Back</button>
           </div>
         )}

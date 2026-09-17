@@ -201,7 +201,7 @@ function App() {
     const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
       supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url, shields, onboarded, referred_by, preferred_name, age_range, acquisition_source, primary_goal, first_habit, social_hours_daily, biggest_distraction, wake_time, sleep_time, consistency_days, routine_breaker, preferred_focus_time, commitment_milestone, onboarding_step").eq("id", uid).maybeSingle(),
 
-      supabase.from("tasks").select("id, icon, name, pts, sort_order, frequency, duration_days, started_on").eq("user_id", uid).eq("is_active", true).order("sort_order"),
+      supabase.from("tasks").select("id, icon, name, pts, sort_order, frequency, duration_days, started_on, require_scan, scan_classes").eq("user_id", uid).eq("is_active", true).order("sort_order"),
       supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
       supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20),
       supabase.from("task_completions").select("completed_on").eq("user_id", uid).gte("completed_on", sevenAgo),
@@ -248,6 +248,8 @@ function App() {
       frequency: r.frequency,
       durationDays: r.duration_days,
       startedOn: r.started_on,
+      requireScan: (r as any).require_scan ?? false,
+      scanClasses: ((r as any).scan_classes ?? []) as string[],
     }) as unknown as Task));
 
     setBoard((leaders || []).map(l => ({
@@ -446,7 +448,7 @@ function App() {
     return saved && RINGTONES.some(r => r.id === saved) ? saved : "superloud";
   });
   const [previewId, setPreviewId] = useState<string | null>(null);
-  const [verify, setVerify] = useState<{ uuid: string; kind: VerifyKind; scan: boolean } | null>(null);
+  const [verify, setVerify] = useState<{ uuid: string; kind: VerifyKind; classes: string[]; scan: boolean } | null>(null);
   const [topThree, setTopThree] = useState<string | null>(null);
   const pickRingtone = (id: string) => {
     setRingtone(id);
@@ -760,6 +762,15 @@ function App() {
     return null;
   };
 
+  /** Scan proof applies to the three built-ins AND any habit with saved accepted classes. */
+  const scanTargetFor = (t: any): { kind: VerifyKind; classes: string[] } | null => {
+    const classes: string[] = Array.isArray(t?.scanClasses) ? t.scanClasses : [];
+    const kind = verifyKindFor(t?.name ?? "");
+    if (kind) return { kind, classes };
+    if (t?.requireScan && classes.length) return { kind: "custom", classes };
+    return null;
+  };
+
   const tick = (id: number) => {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
@@ -772,17 +783,17 @@ function App() {
       setTopThree((t as any)._uuid as string);
       return;
     }
-    const kind = verifyKindFor(t.name);
-    if (kind) { setVerify({ uuid: (t as any)._uuid as string, kind, scan: false }); return; }
+    const target = scanTargetFor(t);
+    if (target) { setVerify({ uuid: (t as any)._uuid as string, kind: target.kind, classes: target.classes, scan: false }); return; }
     completeTaskRpc((t as any)._uuid);
   };
 
   const scanTask = (id: number) => {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
-    const kind = verifyKindFor(t.name);
-    if (!kind) return;
-    setVerify({ uuid: (t as any)._uuid as string, kind, scan: true });
+    const target = scanTargetFor(t);
+    if (!target) return;
+    setVerify({ uuid: (t as any)._uuid as string, kind: target.kind, classes: target.classes, scan: true });
   };
 
   // get_entitlement() (database clock: verified subscription OR unexpired 3-day
@@ -949,6 +960,7 @@ function App() {
           {verify && (
             <TaskVerify
               kind={verify.kind}
+              acceptedClasses={verify.classes}
               startInScan={verify.scan}
               onClose={() => setVerify(null)}
               onVerified={() => { const id = verify.uuid; setVerify(null); completeTaskRpc(id); }}

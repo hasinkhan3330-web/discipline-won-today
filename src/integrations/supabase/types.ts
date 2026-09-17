@@ -1093,6 +1093,8 @@ export type Database = {
           is_active: boolean
           name: string
           pts: number
+          require_scan: boolean
+          scan_classes: string[]
           sort_order: number
           started_on: string
           updated_at: string
@@ -1107,6 +1109,8 @@ export type Database = {
           is_active?: boolean
           name: string
           pts?: number
+          require_scan?: boolean
+          scan_classes?: string[]
           sort_order?: number
           started_on?: string
           updated_at?: string
@@ -1121,6 +1125,8 @@ export type Database = {
           is_active?: boolean
           name?: string
           pts?: number
+          require_scan?: boolean
+          scan_classes?: string[]
           sort_order?: number
           started_on?: string
           updated_at?: string
