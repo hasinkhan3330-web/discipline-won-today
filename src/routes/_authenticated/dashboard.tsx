@@ -762,6 +762,15 @@ function App() {
     return null;
   };
 
+  /** Scan proof applies to the three built-ins AND any habit with saved accepted classes. */
+  const scanTargetFor = (t: any): { kind: VerifyKind; classes: string[] } | null => {
+    const classes: string[] = Array.isArray(t?.scanClasses) ? t.scanClasses : [];
+    const kind = verifyKindFor(t?.name ?? "");
+    if (kind) return { kind, classes };
+    if (t?.requireScan && classes.length) return { kind: "custom", classes };
+    return null;
+  };
+
   const tick = (id: number) => {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
