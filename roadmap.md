@@ -48,3 +48,6 @@
 - [x] 3-day AXEN Pro trial (entitlements table, initialize_trial, get_entitlement, EntitlementProvider, ProtectedFeatureGate, trial banner/welcome, billing mirror + RTDN idempotency)
 
 - [x] Redesign only Deep Focus app blocking, lock setup, and active lock visuals; preserve all behavior and audio.
+
+## Current request
+- [ ] Replace only the Deep Focus long app list with four quick-block apps and a compact searchable custom picker.
