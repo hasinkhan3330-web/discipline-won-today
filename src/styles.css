@@ -406,7 +406,7 @@
 @keyframes fl-scan { from { transform: translateY(-10dvh); } to { transform: translateY(110dvh); } }
 @keyframes fl-orbit { to { transform: rotate(360deg); } }
 @keyframes fl-pulse { 50% { transform: scale(1.08); opacity: 0.68; } }
-@keyframes fl-ring-in { from { opacity: 0; transform: rotate(-80deg) scale(0.82); } to { opacity: 1; transform: rotate(0) scale(1); } }
+@keyframes fl-ring-in { from { opacity: 0; transform: scale(0.82); } to { opacity: 1; transform: scale(1); } }
 @keyframes fl-draw { from { stroke-dashoffset: 360; } to { stroke-dashoffset: 0; } }
 
 @media (max-height: 700px) {
