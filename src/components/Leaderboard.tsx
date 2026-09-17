@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Camera, Crown, Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trash2, Trophy, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { safeName } from "@/lib/display-name";
 
 type Scope = "india" | "global";
 type Period = "weekly" | "alltime";
@@ -90,7 +91,7 @@ export function Leaderboard({
       supabase.from("profiles").select("country").eq("id", myId).maybeSingle(),
     ]);
     if (top.error || pos.error) { setState("error"); return; }
-    const list = ((top.data ?? []) as unknown as Row[]);
+    const list = ((top.data ?? []) as unknown as Row[]).map(r => ({ ...r, username: safeName(r.username) }));
     const position = ((pos.data ?? []) as unknown as Position[])[0] ?? null;
     setRows(list);
     setMe(position);
