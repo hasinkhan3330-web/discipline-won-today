@@ -1,5 +1,5 @@
 import { forwardRef, useState, useEffect, useRef, useCallback, useImperativeHandle } from "react";
-import { ChevronRight, Clock3, LockKeyhole, Music2 } from "lucide-react";
+import { ChevronRight, Clock3, LockKeyhole, Music2, Plus, Repeat2, Shield, Volume2, X, Zap } from "lucide-react";
 import { cardStyle } from "@/tabs/styles";
 import { FocusMusicPanel } from "@/components/FocusMusicPanel";
 
@@ -189,92 +189,59 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
   /* ---------------- SETUP: app locking modal ---------------- */
   if (phase === "setup" && tier) {
     return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(3,3,10,0.9)", backdropFilter: "blur(8px)", overflowY: "auto", padding: "calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))" }}>
-        <div style={{ maxWidth: 400, margin: "0 auto", background: "rgba(10,10,25,0.95)", border: `1px solid ${G}`, boxShadow: `0 0 40px ${G}55`, padding: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-            <div style={{ fontSize: 13, fontWeight: 900, letterSpacing: 3, color: "#fff" }}>LOCK SETUP</div>
-            <button onClick={() => { setPhase("idle"); setTier(null); }} style={{ background: "none", border: "none", color: "#666", fontSize: 18, cursor: "pointer" }}>✕</button>
-          </div>
-          <div style={{ fontSize: 10, color: G, letterSpacing: 2, marginBottom: 14 }}>{tier.label} · +{tier.reward} COINS · +{tier.reward} LEADERBOARD PTS</div>
+      <div className="df-overlay df-grid">
+        <section className="df-setup" aria-label="Lock setup">
+          <header className="df-setup__header">
+            <div><span>DEEP FOCUS PROTOCOL</span><h2>LOCK SETUP</h2></div>
+            <button className="df-icon-button" aria-label="Close lock setup" onClick={() => { setPhase("idle"); setTier(null); }}><X size={18} /></button>
+          </header>
+          <div className="df-reward-rail"><Zap size={13} /><strong>{tier.label}</strong><i />+{tier.reward} COINS<i />+{tier.reward} LEADERBOARD PTS</div>
 
-          {/* mode */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
+          <div className="df-section-label"><span>01</span> SELECT DURATION</div>
+          <div className="df-duration-tabs">
+            {FOCUS_TIERS.map(option => <button key={option.id} className={option.id === tier.id ? "is-active" : ""} onClick={() => setTier(option)}><strong>{option.label}</strong><small>{option.sub}</small></button>)}
+          </div>
+
+          <div className="df-section-label"><span>02</span> LOCK MODE</div>
+          <div className="df-mode-grid">
             {([
               { id: "strict" as LockMode, t: "PERMANENT STRICT", d: "No exit. Zero mercy." },
               { id: "flex" as LockMode, t: "FLEXIBLE FOCUS", d: "Emergency exit · -5 pts" },
             ]).map(m => (
-              <button key={m.id} onClick={() => setLockMode(m.id)} style={{
-                padding: "10px 8px", cursor: "pointer", textAlign: "left", fontFamily: "monospace",
-                background: lockMode === m.id ? `linear-gradient(135deg, ${G}22, transparent)` : "rgba(0,0,0,0.4)",
-                border: `1px solid ${lockMode === m.id ? G : "#282838"}`,
-                boxShadow: lockMode === m.id ? `0 0 14px ${G}44` : "none", color: "#e8e8e8",
-              }}>
-                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: 1.5, color: lockMode === m.id ? G : "#aaa" }}>{m.t}</div>
-                <div style={{ fontSize: 8, color: "#666", marginTop: 4, letterSpacing: 1 }}>{m.d}</div>
+              <button key={m.id} className={lockMode === m.id ? "is-active" : ""} onClick={() => setLockMode(m.id)}>
+                <span><Shield size={15} />{lockMode === m.id ? "SELECTED" : "AVAILABLE"}</span>
+                <strong>{m.t}</strong><small>{m.d}</small>
               </button>
             ))}
           </div>
 
-          {/* app checklist */}
-          <div style={{ fontSize: 9, color: "#888", letterSpacing: 2, marginBottom: 8 }}>SELECT APPS TO BLOCK · {blocked.length} LOCKED</div>
+          <div className="df-block-heading"><div className="df-section-label"><span>03</span> APP BLOCK LIST</div><b>{blocked.length} LOCKED</b></div>
           {APP_GROUPS.map(g => (
-            <div key={g.group} style={{ marginBottom: 10 }}>
-              <div style={{ fontSize: 9, color: G, letterSpacing: 2, marginBottom: 5 }}>{g.icon} {g.group}</div>
+            <section key={g.group} className="df-app-group">
+              <h3><span>{g.icon}</span>{g.group}</h3>
               {g.apps.map(a => {
                 const on = blocked.includes(a);
                 return (
-                  <div key={a} onClick={() => toggleApp(a)} style={{
-                    display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", marginBottom: 4, cursor: "pointer",
-                    background: on ? `linear-gradient(90deg, ${G}12, transparent)` : "rgba(0,0,0,0.3)",
-                    border: `1px solid ${on ? G + "44" : "#222"}`, borderLeft: `3px solid ${on ? G : "#333"}`,
-                  }}>
-                    <div style={{ flex: 1, fontSize: 11, letterSpacing: 1, color: on ? "#e8e8e8" : "#777" }}>{a}</div>
-                    <div style={{
-                      width: 34, height: 18, borderRadius: 10, background: on ? G : "#1c1c28",
-                      border: `1px solid ${on ? G : "#333"}`, position: "relative", transition: "all .2s",
-                      boxShadow: on ? `0 0 10px ${G}88` : "none",
-                    }}>
-                      <div style={{ position: "absolute", top: 2, left: on ? 18 : 2, width: 12, height: 12, borderRadius: "50%", background: on ? "#03030a" : "#555", transition: "all .2s" }} />
-                    </div>
-                  </div>
+                  <button key={a} className={`df-app-row ${on ? "is-on" : ""}`} onClick={() => toggleApp(a)} aria-pressed={on}>
+                    <span>{a}</span><small>{on ? "BLOCKED" : "ALLOWED"}</small><i><b /></i>
+                  </button>
                 );
               })}
-            </div>
+            </section>
           ))}
 
-          {/* custom apps */}
-          <div style={{ fontSize: 9, color: G, letterSpacing: 2, marginBottom: 5 }}>➕ CUSTOM APPS</div>
-          {customApps.map(a => {
-            const on = blocked.includes(a);
-            return (
-              <div key={a} onClick={() => toggleApp(a)} style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", marginBottom: 4, cursor: "pointer",
-                background: on ? `linear-gradient(90deg, ${G}12, transparent)` : "rgba(0,0,0,0.3)",
-                border: `1px solid ${on ? G + "44" : "#222"}`, borderLeft: `3px solid ${on ? G : "#333"}`,
-              }}>
-                <div style={{ flex: 1, fontSize: 11, letterSpacing: 1, color: on ? "#e8e8e8" : "#777" }}>{a}</div>
-                <div style={{ fontSize: 9, color: on ? G : "#555", letterSpacing: 1 }}>{on ? "LOCKED" : "OPEN"}</div>
-              </div>
-            );
-          })}
-          <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
-            <input value={custom} onChange={e => setCustom(e.target.value)} placeholder="App name…" style={{
-              flex: 1, background: "rgba(0,0,0,0.5)", border: `1px solid ${G}33`, color: "#e8e8e8",
-              padding: "8px 10px", fontSize: 11, fontFamily: "monospace", letterSpacing: 1, outline: "none",
-            }} />
-            <button onClick={() => {
+          <section className="df-app-group df-app-group--custom"><h3><Plus size={13} />CUSTOM APPS</h3>
+            {customApps.map(a => { const on = blocked.includes(a); return <button key={a} className={`df-app-row ${on ? "is-on" : ""}`} onClick={() => toggleApp(a)} aria-pressed={on}><span>{a}</span><small>{on ? "BLOCKED" : "ALLOWED"}</small><i><b /></i></button>; })}
+            <div className="df-custom-input"><input value={custom} onChange={e => setCustom(e.target.value)} placeholder="App name…" /><button onClick={() => {
               const v = custom.trim();
               if (!v || allApps.includes(v)) return;
               setCustomApps(p => [...p, v]); setBlocked(p => [...p, v]); setCustom("");
-            }} style={{ background: `${G}22`, border: `1px solid ${G}`, color: G, padding: "0 14px", fontSize: 11, cursor: "pointer", fontFamily: "monospace" }}>ADD</button>
-          </div>
+            }}>ADD</button></div>
+          </section>
 
-          <button onClick={confirmLock} style={{
-            width: "100%", padding: "13px", cursor: "pointer", fontFamily: "monospace",
-            background: `linear-gradient(90deg, ${G}, ${G2})`, border: "none", color: "#03030a",
-            fontSize: 12, fontWeight: 900, letterSpacing: 3, boxShadow: `0 0 24px ${G}88`,
-          }}>🔒 CONFIRM &amp; LOCK SESSION</button>
-        </div>
+          <div className="df-block-summary"><Shield size={15} /><span><strong>{blocked.length} APPS</strong> shielded for {tier.label.toLowerCase()}</span><b>{lockMode === "strict" ? "NO EXIT" : "−5 EXIT"}</b></div>
+          <button className="df-start-lock" onClick={confirmLock}><span><LockKeyhole size={18} /></span><strong>CONFIRM &amp; LOCK SESSION</strong><small>BIOMETRIC FOCUS SEAL</small></button>
+        </section>
       </div>
     );
   }
@@ -286,80 +253,36 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
     const R = 74, C = 2 * Math.PI * R;
     const track = TRACKS[trackIdx]!;
     return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "radial-gradient(circle at 50% 35%, #0a0a1e 0%, #03030a 70%)", overflowY: "auto", padding: "calc(24px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px))", fontFamily: "monospace" }}>
-        <div style={{ maxWidth: 400, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ fontSize: 10, letterSpacing: 4, color: G, animation: "pulse 2s infinite" }}>
-            ◉ {lockMode === "strict" ? "STRICT APP LOCK ENFORCED" : "FLEXIBLE FOCUS ACTIVE"}
-          </div>
-          <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, marginTop: 6 }}>{blocked.length} APPS BLOCKED · {tier.sub}</div>
+      <div className="df-overlay df-active df-grid">
+        <main className="df-active__inner">
+          <div className={`df-status-bar ${lockMode === "strict" ? "is-strict" : ""}`}><Shield size={14} /><span>{lockMode === "strict" ? "STRICT APP LOCK ENFORCED" : "FLEXIBLE FOCUS ACTIVE"}</span><b>LIVE</b></div>
+          <div className="df-active__meta">{blocked.length} APPS BLOCKED <i /> {tier.sub}</div>
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, flexWrap: "wrap", margin: "14px 0" }}>
-            <div style={{ position: "relative", width: 180, height: 180 }}>
-              <svg width="180" height="180" style={{ transform: "rotate(-90deg)" }}>
-                <circle cx="90" cy="90" r={R} fill="none" stroke="#15152a" strokeWidth="8" />
-                <circle cx="90" cy="90" r={R} fill="none" stroke={G} strokeWidth="8" strokeLinecap="round"
-                  strokeDasharray={C} strokeDashoffset={C * (1 - pct)} style={{ filter: `drop-shadow(0 0 10px ${G})`, transition: "stroke-dashoffset .3s linear" }} />
+          <div className="df-focus-core">
+            <div className="df-timer-ring">
+              <svg viewBox="0 0 180 180">
+                <circle cx="90" cy="90" r={R} className="df-timer-ring__track" />
+                <circle cx="90" cy="90" r={R} className="df-timer-ring__progress" strokeDasharray={C} strokeDashoffset={C * (1 - pct)} />
               </svg>
-              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", textShadow: `0 0 18px ${G}`, letterSpacing: 2 }}>{fmt(left)}</div>
-                <div style={{ fontSize: 9, color: "#777", letterSpacing: 3, marginTop: 6 }}>{Math.round(pct * 100)}% COMPLETE</div>
-              </div>
+              <div className="df-timer-ring__center"><span>TIME REMAINING</span><strong>{fmt(left)}</strong><small>{Math.round(pct * 100)}% COMPLETE</small></div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-              <div style={{
-                width: 132, height: 186, borderRadius: 14, overflow: "hidden",
-                border: "1px solid rgba(212,175,55,0.55)",
-                boxShadow: `0 0 26px rgba(212,175,55,0.25), 0 0 40px ${G}33, inset 0 0 40px rgba(0,0,0,0.8)`,
-                background: "#000", position: "relative",
-              }}>
-                <img src={eagleMentor.url} alt="Eagle mentor watching your focus session" style={{ width: "100%", height: "100%", objectFit: "cover", filter: "contrast(1.15) saturate(1.05) brightness(1.02)" }} />
-                <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 38%, transparent 30%, rgba(0,0,0,0.78) 100%)" }} />
-                <div style={{ position: "absolute", left: 0, right: 0, height: 40, background: `linear-gradient(180deg, transparent, ${G}22, transparent)`, animation: "scan-sweep 3.6s linear infinite" }} />
-                <div style={{ position: "absolute", bottom: 6, left: 0, right: 0, textAlign: "center", fontSize: 7.5, letterSpacing: 2, color: "#d4af37", textShadow: "0 0 10px rgba(212,175,55,0.8)" }}>MENTOR MODE</div>
-              </div>
-              <div style={{ fontSize: 8, letterSpacing: 2.5, color: G, textShadow: `0 0 8px ${G}` }}>◉ EYES ON YOU</div>
-              <div style={{ fontSize: 7.5, color: "#8a8a8a", letterSpacing: 1.2, maxWidth: 134, textAlign: "center", lineHeight: 1.5 }}>
-                {MENTOR_LINES[Math.floor(left / 15) % MENTOR_LINES.length]}
-              </div>
+            <div className="df-mentor"><div className="df-mentor__image"><img src={eagleMentor.url} alt="Eagle mentor watching your focus session" /><i /><span>MENTOR MODE</span></div><strong>◉ EYES ON YOU</strong><p>{MENTOR_LINES[Math.floor(left / 15) % MENTOR_LINES.length]}</p></div>
             </div>
 
+          <div className="df-reward-grid">
+            <div><span>SESSION REWARD</span><strong>+{tier.reward}</strong><small>COINS PENDING</small></div>
+            <div><span>DISCIPLINE SCORE</span><strong>+{tier.reward}</strong><small>LEADERBOARD PTS</small></div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
-            <div style={{ border: `1px solid ${G}33`, padding: "10px", background: `linear-gradient(135deg, ${G}12, transparent)` }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: G }}>+{tier.reward}</div>
-              <div style={{ fontSize: 8, color: "#777", letterSpacing: 2 }}>COINS PENDING</div>
-            </div>
-            <div style={{ border: `1px solid ${G}33`, padding: "10px", background: `linear-gradient(135deg, ${G}12, transparent)` }}>
-              <div style={{ fontSize: 18, fontWeight: 800, color: G }}>+{tier.reward}</div>
-              <div style={{ fontSize: 8, color: "#777", letterSpacing: 2 }}>LEADERBOARD PTS</div>
-            </div>
-          </div>
-
-          {/* audio hub */}
-          <div style={{ border: `1px solid ${G}33`, background: "rgba(10,10,25,0.7)", textAlign: "left" }}>
-            <button onClick={() => setShowAudio(s => !s)} style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", background: "none", border: "none", color: "#e8e8e8", cursor: "pointer", fontFamily: "monospace" }}>
-              <span style={{ fontSize: 10, letterSpacing: 3 }}>🎧 FREQUENCY HUB</span>
-              <span style={{ fontSize: 10, color: G }}>{showAudio ? "▾" : "▸"}</span>
+          <section className="df-frequency">
+            <button className="df-frequency__header" onClick={() => setShowAudio(s => !s)}>
+              <span><Music2 size={16} /><i><strong>FREQUENCY HUB</strong><small>CURRENT SONG · {track.name}</small></i></span><b>{showAudio ? "−" : "+"}</b>
             </button>
             {showAudio && (
-              <div style={{ padding: "0 12px 12px", maxHeight: 190, overflowY: "auto" }}>
+              <div className="df-frequency__body">
                 {TRACKS.map((t, i) => (
-                  <div key={t.id} onClick={() => setTrackIdx(i)} style={{
-                    display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", marginBottom: 4, cursor: "pointer",
-                    background: i === trackIdx ? `linear-gradient(90deg, ${G}18, transparent)` : "rgba(0,0,0,0.3)",
-                    border: `1px solid ${i === trackIdx ? G + "55" : "#222"}`, borderLeft: `3px solid ${i === trackIdx ? G : "#333"}`,
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 10, letterSpacing: 1.5, color: i === trackIdx ? "#fff" : "#999" }}>{t.name}</div>
-                      <div style={{ fontSize: 8, color: missing[t.id] ? "#ff5566" : "#666", letterSpacing: 1, marginTop: 2 }}>
-                        {missing[t.id] ? "TRACK UNAVAILABLE" : t.tag}
-                      </div>
-
-                    </div>
-                    {i === trackIdx && <span style={{ fontSize: 10, color: G }}>◉</span>}
-                  </div>
+                  <button key={t.id} className={`df-track ${i === trackIdx ? "is-active" : ""}`} onClick={() => setTrackIdx(i)}><span><strong>{t.name}</strong><small className={missing[t.id] ? "is-error" : ""}>{missing[t.id] ? "TRACK UNAVAILABLE" : t.tag}</small></span><i>{i === trackIdx ? "PLAYING" : two(i + 1)}</i></button>
                 ))}
                 <audio
                   ref={audioRef}
@@ -370,33 +293,24 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
                   autoPlay
                   onError={() => setMissing(m => ({ ...m, [track.id]: true }))}
                   onCanPlay={() => setMissing(m => ({ ...m, [track.id]: false }))}
-                  style={{ width: "100%", marginTop: 6, filter: "invert(1) hue-rotate(180deg)", opacity: 0.85 }}
+                  className="df-audio"
                 />
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 8 }}>
-                  <button onClick={() => setLoop(l => !l)} style={{
-                    background: loop ? `${G}22` : "rgba(0,0,0,0.4)", border: `1px solid ${loop ? G : "#333"}`,
-                    color: loop ? G : "#777", fontSize: 9, letterSpacing: 2, padding: "6px 10px", cursor: "pointer", fontFamily: "monospace",
-                  }}>🔁 LOOP {loop ? "ON" : "OFF"}</button>
-                  <span style={{ fontSize: 9, color: "#777", letterSpacing: 1 }}>VOL</span>
-                  <input type="range" min={0} max={1} step={0.01} value={vol} onChange={e => setVol(Number(e.target.value))} style={{ flex: 1, accentColor: G }} />
+                <div className="df-audio-controls">
+                  <button className={loop ? "is-active" : ""} onClick={() => setLoop(l => !l)}><Repeat2 size={14} /> LOOP {loop ? "ON" : "OFF"}</button>
+                  <Volume2 size={14} /><span>VOL</span><input aria-label="Frequency Hub volume" type="range" min={0} max={1} step={0.01} value={vol} onChange={e => setVol(Number(e.target.value))} />
                 </div>
               </div>
             )}
-          </div>
+          </section>
 
-          <div style={{ marginTop: 16 }}>
+          <footer className="df-lock-footer">
             {lockMode === "strict" ? (
-              <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, lineHeight: 1.7 }}>
-                🔒 STRICT LOCK — NO EXIT UNTIL 00:00:00.<br />DISCIPLINE IS DOING IT WHEN YOU DON'T FEEL LIKE IT.
-              </div>
+              <div><LockKeyhole size={15} /><span><strong>STRICT LOCK — NO EXIT</strong><small>DISCIPLINE IS DOING IT WHEN YOU DON'T FEEL LIKE IT.</small></span></div>
             ) : (
-              <button onClick={abandon} style={{
-                background: "rgba(255,60,90,0.08)", border: "1px solid #ff556644", color: "#ff5566",
-                fontSize: 9, letterSpacing: 2, padding: "10px 16px", cursor: "pointer", fontFamily: "monospace",
-              }}>⚠ EMERGENCY OVERRIDE · -5 PTS</button>
+              <button onClick={abandon}>⚠ EMERGENCY OVERRIDE · -5 PTS</button>
             )}
-          </div>
-        </div>
+          </footer>
+        </main>
       </div>
     );
   }
