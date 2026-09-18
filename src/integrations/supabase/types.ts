@@ -330,6 +330,51 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_sessions: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          model: string | null
+          next_check_in_at: string | null
+          provider: string
+          quality: Json
+          session_id: string | null
+          short_session_summary: string | null
+          started_at: string
+          user_agreed_next_action: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          model?: string | null
+          next_check_in_at?: string | null
+          provider?: string
+          quality?: Json
+          session_id?: string | null
+          short_session_summary?: string | null
+          started_at?: string
+          user_agreed_next_action?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          model?: string | null
+          next_check_in_at?: string | null
+          provider?: string
+          quality?: Json
+          session_id?: string | null
+          short_session_summary?: string | null
+          started_at?: string
+          user_agreed_next_action?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       coin_transactions: {
         Row: {
           amount: number
