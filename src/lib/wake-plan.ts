@@ -74,16 +74,23 @@ export function nextTrigger(p: WakePlan): number {
 }
 
 export function rollPlanForward(p: WakePlan): WakePlan {
-  const next = new Date();
-  if (Date.now() >= triggerAt({ ...p, date: todayKey() })) next.setDate(next.getDate() + 1);
-  return { ...p, date: next.toISOString().slice(0, 10) };
+  return { ...p, date: nextPlanDate(p.tier) };
 }
+
+/** A plan whose alarm time is more than an hour past is missed, not due. */
+const GRACE_MS = 60 * 60 * 1000;
 
 /** True when the alarm time has arrived for this plan's date and it has not fired yet. */
 export function shouldFire(p: WakePlan): boolean {
   if (p.date !== todayKey()) return false;
   if (alreadyFired(p)) return false;
-  return Date.now() >= triggerAt(p);
+  const at = triggerAt(p);
+  return Date.now() >= at && Date.now() < at + GRACE_MS;
+}
+
+/** True when the plan's slot is in the past, so it must be re-armed for the next day. */
+export function isStalePlan(p: WakePlan): boolean {
+  return Date.now() >= triggerAt(p) + GRACE_MS;
 }
 
 export function alreadyFired(p: WakePlan): boolean {
