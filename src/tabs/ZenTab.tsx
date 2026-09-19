@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ChevronRight,
   Coins,
   Gauge,
   HeartPulse,
@@ -76,7 +75,8 @@ export function ZenTab({ med, coins }: {
   const sessionProgress = Math.min(1, elapsedMs / (medMin * 60_000));
   const phaseIndex = PHASES.findIndex(item => item.key === medPhase);
   const breathScale = medPhase === "inhale" ? 0.76 + phaseProgress * 0.24 : medPhase === "holdFull" ? 1 : medPhase === "exhale" ? 1 - phaseProgress * 0.24 : 0.76;
-  const phaseLabel = medPhase === "inhale" ? "BREATHE IN" : medPhase === "exhale" ? "BREATHE OUT" : "HOLD";
+  const phaseLabel = medPhase === "inhale" ? "INHALE" : medPhase === "exhale" ? "EXHALE" : "HOLD";
+  const phaseInstruction = medPhase === "inhale" ? "Breathe in slowly" : medPhase === "exhale" ? "Release slowly" : medPhase === "holdFull" ? "Rest in the stillness" : "Be completely still";
   const quote = useMemo(() => ["Let the noise pass through.", "Return to the quiet center.", "Follow the current within."][new Date().getDate() % 3], []);
 
   useEffect(() => {
@@ -146,17 +146,13 @@ export function ZenTab({ med, coins }: {
         <Button variant="ghost" size="icon" aria-label="Open Zen settings" onClick={() => setSettingsSheet(true)}><Settings /></Button>
       </div>
 
-      <div className="zen-flow__phase-row">
-        {PHASES.map((item, index) => <div key={item.key} className={`zen-flow__phase zen-flow__phase--${item.tone}`} data-active={phaseIndex === index}><i /><span>{item.label}</span><strong>4s</strong></div>)}
-      </div>
-
-      <div className="zen-chamber">
+      <div className="zen-chamber" data-phase={medPhase}>
         <NeuralWaveCanvas running={medRun} elapsed={getElapsedMs} phase={medPhase} phaseProgress={phaseProgress} intensity={intensity / 100} preset={preset} />
         <motion.div className="zen-breath-core" animate={{ scale: breathScale }} transition={{ duration: medRun ? 0.08 : 0.35, ease: "linear" }}>
           <i className="zen-breath-core__pearl" />
           <span>{medStatus === "complete" ? "SESSION COMPLETE" : medStatus === "idle" ? "READY" : phaseLabel}</span>
           <strong>{medStatus === "idle" ? String(medMin).padStart(2, "0") : medStatus === "complete" ? "✓" : String(phaseCountdown).padStart(2, "0")}</strong>
-          <small>{medStatus === "idle" ? "tap play to begin" : medStatus === "complete" ? "flow recorded" : "follow the current"}</small>
+          <small>{medStatus === "idle" ? "Tap play to begin" : medStatus === "complete" ? "Flow recorded" : phaseInstruction}</small>
           <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46" pathLength="1" style={{ strokeDashoffset: 1 - sessionProgress }} /></svg>
         </motion.div>
       </div>
@@ -179,22 +175,6 @@ export function ZenTab({ med, coins }: {
         <Button variant="ghost" className="zen-flow__side-control" aria-pressed={soundEnabled} onClick={() => setSoundSheet(true)}><Volume2 /><span>SOUND</span></Button>
       </div>
 
-      <div className="zen-flow__field">
-        <label htmlFor="zen-intensity">FIELD INTENSITY</label>
-        <Slider id="zen-intensity" value={[intensity]} min={20} max={100} step={1} onValueChange={value => setIntensity(value[0] ?? 68)} aria-label="Field intensity" />
-        <output>{intensity}%</output>
-      </div>
-      <div className="zen-flow__cue-row"><span>Eyes closed cues</span><Switch checked={cues} onCheckedChange={setCues} aria-label="Eyes closed cues" /></div>
-      <div className="zen-flow__status-row"><span><i /> HAPTIC SYNC</span><span><i /> SPATIAL AUDIO</span><span><i /> ADAPTIVE FLOW</span></div>
-
-      <Button variant="ghost" className="zen-flow__soundscape" onClick={() => setSoundSheet(true)}>
-        <div className={`zen-equalizer${medRun && soundEnabled ? " is-playing" : ""}`} aria-hidden="true">{[1,2,3,4,5].map(n => <i key={n} />)}</div>
-        <div><span>CURRENT SOUNDSCAPE</span><strong>{track.title}</strong><small>{track.subtitle}</small></div>
-        <div className={`zen-equalizer zen-equalizer--wide${medRun && soundEnabled ? " is-playing" : ""}`} aria-hidden="true">{[1,2,3,4,5,6,7,8,9].map(n => <i key={n} />)}</div>
-        <ChevronRight />
-      </Button>
-      <div className="zen-flow__ledger"><span><b>Today</b> {medTotal} min</span><span><b>{medSessions}</b> sessions</span><span><b>+{medMin * 2}</b> XP</span></div>
-
       <Sheet open={soundSheet} onOpenChange={setSoundSheet}>
         <SheetContent side="bottom" className="zen-sheet">
           <SheetHeader><SheetTitle>Sound chamber</SheetTitle><SheetDescription>Choose an existing AXEN soundscape.</SheetDescription></SheetHeader>
@@ -210,6 +190,10 @@ export function ZenTab({ med, coins }: {
           <div className="zen-sheet__durations">{[5,10,15,20].map(minutes => <Button key={minutes} variant="ghost" disabled={medRun} aria-pressed={medMin === minutes} onClick={() => pickMed(minutes)}>{minutes}<small>MIN</small></Button>)}</div>
           <h3>Visual wave preset</h3>
           <div className="zen-sheet__presets">{PRESETS.map(item => <Button key={item.key} variant="ghost" aria-pressed={preset === item.key} onClick={() => setPreset(item.key)}><Gauge />{item.label}</Button>)}</div>
+          <h3>Field intensity</h3>
+          <div className="zen-sheet__volume"><Waves /><Slider value={[intensity]} min={20} max={100} step={1} onValueChange={value => setIntensity(value[0] ?? 68)} aria-label="Field intensity" /><span>{intensity}%</span></div>
+          <div className="zen-sheet__toggle"><span>Eyes closed cues</span><Switch checked={cues} onCheckedChange={setCues} aria-label="Eyes closed cues" /></div>
+          <div className="zen-flow__ledger"><span><b>Today</b> {medTotal} min</span><span><b>{medSessions}</b> sessions</span><span><b>+{medMin * 2}</b> XP</span></div>
           <Button variant="outline" className="zen-sheet__restart" onClick={() => { resetSession(); setSettingsSheet(false); }}><RotateCcw /> Restart session</Button>
         </SheetContent>
       </Sheet>

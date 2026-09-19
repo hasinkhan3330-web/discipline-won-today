@@ -114,7 +114,14 @@ export function NeuralWaveCanvas({
       for (let i = 0; i < particleCount; i += 1) {
         const seed = seeded(i + 201);
         const speed = 0.015 + seeded(i + 301) * 0.022;
-        const u = reduced ? seed : (seed + time * speed) % 1;
+        const travel = reduced ? seed : (seed + time * speed) % 1;
+        const inward = currentPhase === "inhale";
+        const outward = currentPhase === "exhale";
+        const u = inward
+          ? (seed < 0.5 ? travel * 0.5 : 1 - travel * 0.5)
+          : outward
+            ? (seed < 0.5 ? 0.5 - travel * 0.5 : 0.5 + travel * 0.5)
+            : seed;
         const x = u * width;
         const side = x < cx ? -1 : 1;
         const distance = Math.abs(x - cx) / Math.max(1, cx);
