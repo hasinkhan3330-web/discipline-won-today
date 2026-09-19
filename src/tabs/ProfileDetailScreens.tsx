@@ -254,7 +254,8 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
     const { error: saveError } = await supabase.rpc("save_goal", {
       _goal_id: editing, _title: title.trim(), _category: category.trim() || null,
       _target_date: date || null, _task_ids: picked,
-    });
+    } as never);
+
     setBusy(false);
     if (saveError) { setError(saveError.message); return void toast.error("Could not save that goal", { description: saveError.message }); }
     reset(); await load(); onChanged?.();
