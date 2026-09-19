@@ -151,7 +151,7 @@ async function loadLeaderboard(supabase: Client, userId: string) {
   } satisfies CoachContext["leaderboard"];
 }
 
-async function buildContext(supabase: Client, userId: string): Promise<CoachContext> {
+export async function buildCoachContext(supabase: any, userId: string): Promise<CoachContext> {
   const since = dayKey(new Date(Date.now() - 29 * DAY_MS));
   const [{ data: profile }, todayPart, { data: history }, { data: lastSession }] =
     await Promise.all([
@@ -274,7 +274,7 @@ export const getCoachContext = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await requirePremium(context.supabase as unknown as Client, context.userId);
-    return buildContext(context.supabase as unknown as Client, context.userId);
+    return buildCoachContext(context.supabase as unknown as Client, context.userId);
   });
 
 /** Lightweight refresh of today's tasks and coins. */
