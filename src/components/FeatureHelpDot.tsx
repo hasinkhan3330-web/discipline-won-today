@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export type HelpContent = { title: string; lines: string[]; question: string };
 
@@ -28,7 +29,7 @@ export function FeatureHelpDot({ label, content }: { label: string; content: Hel
       >
         •
       </button>
-      {open && (
+      {open && typeof document !== "undefined" && createPortal(
         <div className="axh-scrim" role="presentation" onClick={() => setOpen(false)}>
           <div className="axh-sheet" role="dialog" aria-modal="true" aria-label={`How ${label} works`} onClick={event => event.stopPropagation()}>
             <i className="axh-grip" />
@@ -40,7 +41,8 @@ export function FeatureHelpDot({ label, content }: { label: string; content: Hel
               <button type="button" className="axh-close" onClick={() => setOpen(false)}>Close</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );
