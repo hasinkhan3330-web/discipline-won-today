@@ -57,4 +57,4 @@
 - [x] Hide the published Lovable badge; fix authenticated onboarding name persistence; bound the cinematic startup to five seconds; redesign only AXEN Pro pricing while preserving purchases.
 - [x] Goals linked to real habits with verified coin targets, readiness score and celebration; My Journey and Goals both carry a help dot that hands off to the AI Coach with real data.
 
-- [ ] Remove only the Rank “Your Position” card; make the existing leaderboard user cards horizontally swipeable with snap, momentum, depth/parallax, and subtle cyan-gold glow.
+- [x] Remove only the Rank “Your Position” card; make the existing leaderboard user cards horizontally swipeable with snap, momentum, depth/parallax, and subtle cyan-gold glow.

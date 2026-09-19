@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Camera, Crown, Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trash2, Trophy, Zap } from "lucide-react";
+import { Crown, Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trophy, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { safeName } from "@/lib/display-name";
 
@@ -59,13 +59,7 @@ function EliteCrest({ size = 16 }: { size?: number }) {
   );
 }
 
-export function Leaderboard({
-  myId,
-  myName,
-  onEditPhoto,
-  onRemovePhoto,
-  uploading = false,
-}: {
+export function Leaderboard({ myId }: {
   myId: string;
   myName: string;
   onEditPhoto?: (file: File) => void;
@@ -77,25 +71,23 @@ export function Leaderboard({
   const [period, setPeriod] = useState<Period>("weekly");
   const [rows, setRows] = useState<Row[]>([]);
   const [me, setMe] = useState<Position | null>(null);
-  const [country, setCountry] = useState("IN");
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [rankUp, setRankUp] = useState<number | null>(null);
   const prevRank = useRef<number | null>(null);
-  const fileRef = useRef<HTMLInputElement | null>(null);
+  const podiumRef = useRef<HTMLDivElement | null>(null);
+  const podiumFrameRef = useRef<number | null>(null);
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setState("loading");
-    const [top, pos, prof] = await Promise.all([
+    const [top, pos] = await Promise.all([
       supabase.rpc("leaderboard_top" as never, { _scope: scope, _period: period, _limit: 100, _offset: 0 } as never),
       supabase.rpc("my_leaderboard_position" as never, { _scope: scope, _period: period } as never),
-      supabase.from("profiles").select("country").eq("id", myId).maybeSingle(),
     ]);
     if (top.error || pos.error) { setState("error"); return; }
     const list = ((top.data ?? []) as unknown as Row[]).map(r => ({ ...r, username: safeName(r.username) }));
     const position = ((pos.data ?? []) as unknown as Position[])[0] ?? null;
     setRows(list);
     setMe(position);
-    if (prof.data?.country) setCountry(String(prof.data.country).toUpperCase());
     setState("ready");
     if (position && position.rank > 0) {
       const before = prevRank.current;
@@ -114,13 +106,39 @@ export function Leaderboard({
   const podium = useMemo(() => rows.filter(r => r.rank <= 3).slice(0, 3), [rows]);
   const list = useMemo(() => rows.filter(r => r.rank >= 4 && r.rank <= 100), [rows]);
 
-  const saveCountry = async (cc: string) => {
-    setCountry(cc);
-    await supabase.from("profiles").update({ country: cc }).eq("id", myId);
-    void load(true);
-  };
-
   const order = [1, 0, 2]; // visual podium order: 2nd, 1st, 3rd
+
+  const updatePodiumDepth = useCallback(() => {
+    const track = podiumRef.current;
+    if (!track) return;
+    const center = track.scrollLeft + track.clientWidth / 2;
+    track.querySelectorAll<HTMLElement>(".lb-pod").forEach(card => {
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+      const distance = Math.max(-1, Math.min(1, (cardCenter - center) / Math.max(card.offsetWidth, 1)));
+      card.style.setProperty("--swipe-depth", String(Math.abs(distance)));
+      card.style.setProperty("--swipe-shift", String(distance));
+    });
+  }, []);
+
+  const handlePodiumScroll = useCallback(() => {
+    if (reduce || podiumFrameRef.current !== null) return;
+    podiumFrameRef.current = requestAnimationFrame(() => {
+      podiumFrameRef.current = null;
+      updatePodiumDepth();
+    });
+  }, [reduce, updatePodiumDepth]);
+
+  useEffect(() => {
+    const track = podiumRef.current;
+    if (!track || podium.length === 0) return;
+    const champion = track.querySelector<HTMLElement>(".lb-pod-1");
+    if (champion) track.scrollLeft = champion.offsetLeft - (track.clientWidth - champion.offsetWidth) / 2;
+    updatePodiumDepth();
+    return () => {
+      if (podiumFrameRef.current !== null) cancelAnimationFrame(podiumFrameRef.current);
+      podiumFrameRef.current = null;
+    };
+  }, [podium, updatePodiumDepth]);
 
   return (
     <section className="lb">
@@ -187,7 +205,7 @@ export function Leaderboard({
             transition={{ type: "spring", stiffness: 280, damping: 28 }}
           >
             {podium.length > 0 && (
-              <div className="lb-podium">
+              <div ref={podiumRef} className="lb-podium" onScroll={handlePodiumScroll} aria-label="Top ranked members. Swipe left or right.">
                 {order.map(i => podium[i]).filter(Boolean).map(p => (
                   <motion.div
                     key={p.user_id}
@@ -238,35 +256,6 @@ export function Leaderboard({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {state === "ready" && me && (
-        <div className="lb-you">
-          <div className="lb-you-photo">
-            <img src={fallbackAvatar(myName)} alt="" aria-hidden className="lb-you-ghost" />
-            <button onClick={() => fileRef.current?.click()} disabled={uploading} aria-label="Change profile photo">
-              {uploading ? <Loader2 className="lb-spin" size={15} /> : <Camera size={15} />}
-            </button>
-            {onRemovePhoto && (
-              <button onClick={onRemovePhoto} disabled={uploading} aria-label="Remove profile photo"><Trash2 size={15} /></button>
-            )}
-            <input
-              ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden
-              onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) onEditPhoto?.(f); }}
-            />
-          </div>
-          <div className="lb-you-main">
-            <small>YOUR POSITION</small>
-            <strong>{me.rank > 0 ? `#${me.rank}` : "Unranked"}</strong>
-            <span>
-              {me.rank > 0 ? `Top ${Math.max(1, Math.ceil(me.rank / Math.max(1, me.total) * 100))}% of ${me.total.toLocaleString()} · ${me.points.toLocaleString()} DP` : "Earn points to enter the board"}
-            </span>
-            <em>{me.points_to_next.toLocaleString()} DP to {me.next_milestone.toLocaleString()}</em>
-          </div>
-          <select className="lb-country" value={country} onChange={e => void saveCountry(e.target.value)} aria-label="Your country">
-            {COUNTRIES.map(([cc, label]) => <option key={cc} value={cc}>{flag(cc)} {label}</option>)}
-          </select>
-        </div>
-      )}
 
       <AnimatePresence>
         {rankUp !== null && (
