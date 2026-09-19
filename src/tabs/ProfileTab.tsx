@@ -47,7 +47,7 @@ export function ProfileTab(props: Props) {
   if (view === "habits") return <HabitsView habits={props.habits} userId={props.userId} onBack={back} onComplete={props.onCompleteHabit} onChanged={props.onRefresh} />;
   if (view === "journey") return <JourneyView life={props.life} streak={props.streak} onBack={back} />;
   if (view === "achievements") return <AchievementsView bestStreak={props.life?.bestStreak ?? props.streak} onBack={back} />;
-  if (view === "goals") return <GoalsView userId={props.userId} onBack={back} />;
+  if (view === "goals") return <GoalsView userId={props.userId} habits={props.habits} onBack={back} onChanged={props.onRefresh} />;
   if (view === "reminders") return <RemindersView habits={props.habits} userId={props.userId} onBack={back} />;
   if (view === "account") return <div className="you-detail animate-fade-in"><header className="you-detail-header"><button className="you-icon-button" onClick={back} aria-label="Back to profile">←</button><div><h1>Account</h1><p>Identity, membership and invitations.</p></div></header><ReferralCard referredBy={props.referredBy ?? null} onCoins={props.onCoins} /><ManageSubscriptionCard /><SubscriptionTimeline />{props.onSignOut && <button className="you-signout" onClick={props.onSignOut}><LogOut size={17} /> Sign out</button>}</div>;
 

@@ -198,6 +198,8 @@ export function JourneyView({ life, streak, onBack }: { life?: ProfileLife; stre
   const activeDates = (life?.heat ?? []).filter(day => day.count > 0).slice(-8).reverse();
   return <div className="you-detail animate-fade-in">
     <DetailHeader title="My Journey" subtitle="Every completed action leaves a signal." onBack={onBack} />
+    <div className="axh-dot-row"><FeatureHelpDot label="My Journey" content={JOURNEY_HELP} /></div>
+
     <section className="you-journey-orbit"><div><Flame size={23} /><strong>{streak}</strong><span>day current streak</span></div><p>{life?.completionCount ?? 0} habits completed across your discipline journey.</p></section>
     <div className="you-journey-metrics"><div><b>{life?.bestStreak ?? 0}</b><span>Best streak</span></div><div><b>{life?.lifetimeCoins ?? 0}</b><span>Coins earned</span></div><div><b>{Math.floor((life?.focusMinutes ?? 0) / 60)}h</b><span>Deep focus</span></div></div>
     <h2 className="you-detail-title">Progress timeline</h2>
