@@ -29,8 +29,8 @@ export const Route = createFileRoute("/")({
 const G = "#00d4ff";
 const G2 = "#a855f7";
 const INTRO_FADE_MS = 650;
-const INTRO_FADE_AT_MS = 4_300;
-const INTRO_MAX_MS = 4_950;
+const INTRO_FADE_AT_MS = 3_900;
+const INTRO_MAX_MS = 4_600;
 
 const schema = z.object({
   email: z.string().trim().email("Enter a valid email").max(255),
@@ -47,7 +47,7 @@ function Intro({ done, onGone }: { done: boolean; onGone: () => void }) {
         position: "fixed", inset: 0, zIndex: 60, background: "#000",
         display: "flex", alignItems: "center", justifyContent: "center",
         overflow: "hidden", pointerEvents: done ? "none" : "auto",
-        animation: done ? `axen-boot-out ${INTRO_FADE_MS}ms ease forwards` : undefined,
+        animation: done ? `axen-boot-out ${INTRO_FADE_MS}ms ease forwards` : `axen-boot-force-out ${INTRO_MAX_MS}ms linear forwards`,
       }}
     >
       <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle at 50% 45%, ${G}22, transparent 55%), radial-gradient(circle at 80% 90%, ${G2}22, transparent 55%)`, animation: "axen-nebula 4s ease-in-out infinite" }} />
