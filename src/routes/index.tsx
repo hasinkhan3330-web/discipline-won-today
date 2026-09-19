@@ -116,7 +116,6 @@ function Landing() {
       setSessionUserId(session.user.id);
       setQuizDone(true);
       void flushQuizToProfile(session.user.id);
-      void navigate({ to: "/dashboard", replace: true });
     };
     void supabase.auth.getSession().then(({ data }) => apply(data.session)).catch(error => {
       console.error("AXEN session initialization failed", error instanceof Error ? error.message : "Unknown session error");
@@ -124,6 +123,10 @@ function Landing() {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => apply(session));
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (introGone && authed) void navigate({ to: "/dashboard", replace: true });
+  }, [authed, introGone, navigate]);
 
   const signInWithGoogle = async () => {
     setMsg(null);
