@@ -326,11 +326,14 @@ function App() {
       const question = (event as CustomEvent<{ question?: string }>).detail?.question;
       if (!question) return;
       setTab("coach");
+      // Coach is a Pro feature: locked users see the paywall instead of a failed request.
+      if (!ent.premiumAccess) return;
       window.setTimeout(() => window.dispatchEvent(new CustomEvent("axen:coach-question", { detail: { question } })), 420);
     };
     window.addEventListener("axen:ask-coach", handler);
     return () => window.removeEventListener("axen:ask-coach", handler);
-  }, []);
+  }, [ent.premiumAccess]);
+
 
 
   const buyShield = async () => {
