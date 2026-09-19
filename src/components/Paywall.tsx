@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PlatformCheckout } from "@/components/PlatformCheckout";
+import { isNativeBillingAvailable } from "@/lib/play-billing";
 import { type Cycle } from "@/lib/pricing";
 import { PricingSelector } from "@/components/PricingSelector";
 
