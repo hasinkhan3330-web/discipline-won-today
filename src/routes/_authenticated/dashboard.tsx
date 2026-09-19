@@ -468,7 +468,8 @@ function App() {
 
   const saveWakePlan = async (w: { time: string; pts: number; line: string }, reminderEnabled = true, sleepGoal = "20:30", selectedTone = ringtone, selectedMode = wakeMode) => {
     const plan: WakePlan = {
-      date: todayKey(), tier: w.time, pts: w.pts, line: w.line, tone: selectedTone, mode: selectedMode,
+      // the plan targets the NEXT occurrence of that hour, never a time already past today
+      date: nextPlanDate(w.time), tier: w.time, pts: w.pts, line: w.line, tone: selectedTone, mode: selectedMode,
     };
     stopPreview();
     savePlan(plan);
@@ -493,6 +494,7 @@ function App() {
   useEffect(() => {
     if (!wakePlan || wakeAlarm) return;
     const check = () => {
+      if (isStalePlan(wakePlan)) { void rearmWakePlan(wakePlan).then(setWakePlan); return; }
       if (shouldFire(wakePlan)) {
         markFired(wakePlan);
         setProof(null);
