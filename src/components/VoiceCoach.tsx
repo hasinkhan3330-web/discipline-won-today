@@ -128,6 +128,7 @@ export function VoiceCoach() {
   const loudStartedRef = useRef<number | null>(null);
   const greetedRef = useRef(false);
   const resumeRef = useRef<string | null>(null);
+  const retriedRef = useRef(false);
 
   const sendActivity = (socket: WebSocket, active: boolean) => {
     if (socket.readyState !== WebSocket.OPEN || activityRef.current === active) return;
