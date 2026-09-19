@@ -392,7 +392,19 @@ export function VoiceCoach() {
         if (controller.signal.aborted || session !== sessionRef.current) return;
         if (wsRef.current !== ws) return;
         if (event.code !== 1000) {
-          setError(event.reason || "The voice session ended unexpectedly.");
+          const failedBeforeStart = !greetedRef.current;
+          // Credential problems never reach the user as raw Google wording.
+          const friendly = /api key|unregistered|unauthenticated|permission/i.test(event.reason)
+            ? "Couldn’t start a secure coach session. Tap to retry."
+            : event.reason || "The voice session ended unexpectedly.";
+          if (failedBeforeStart && !retriedRef.current) {
+            // One clean retry with a freshly minted credential, never a loop.
+            retriedRef.current = true;
+            release("connecting");
+            void start(true);
+            return;
+          }
+          setError(friendly);
           release("error");
           return;
         }
@@ -400,12 +412,15 @@ export function VoiceCoach() {
       };
     } catch (cause) {
       if (controller.signal.aborted || session !== sessionRef.current) return;
+      const raw = cause instanceof Error ? cause.message : "";
       const message =
         cause instanceof DOMException && cause.name === "NotAllowedError"
-          ? "Microphone access was blocked. Allow the mic and try again."
-          : cause instanceof Error
-            ? cause.message
-            : "The voice coach could not start.";
+          ? "Microphone permission is required for live coaching."
+          : /unauthorized|401|sign in|session/i.test(raw)
+            ? "Please sign in again to start your coach."
+            : /api key|not configured|temporarily unavailable/i.test(raw)
+              ? "AI Coach is temporarily unavailable. Please try again shortly."
+              : raw || "Couldn’t start a secure coach session. Tap to retry.";
       setError(message);
       release("error");
     }
