@@ -6,7 +6,40 @@ import {
   Coins, Flame, Medal, Pencil, Plus, Sparkles, Trash2,
 } from "lucide-react";
 import { cancelLocalReminder, nextReminderAt, scheduleLocalReminder, stableNotificationId } from "@/lib/local-notifications";
+import { FeatureHelpDot, type HelpContent } from "@/components/FeatureHelpDot";
 import { MODEL_CLASSES } from "@/lib/vision";
+
+type GoalRow = {
+  id: string; title: string; category: string | null; target_date: string | null; started_on: string;
+  progress: number; completed: boolean; celebrated: boolean; target_coins: number; earned_coins: number;
+  readiness: number; habits: { id: string; name: string; icon: string; pts: number }[];
+};
+
+const GOALS_HELP: HelpContent = {
+  title: "How Goals work",
+  lines: [
+    "A goal is powered by the habits you link to it — pick one or more when you create or edit it.",
+    "Your coin target is the total coins those habits can earn between the goal start and its target date.",
+    "Every verified habit completion adds its normal coin reward once, so progress only moves with real actions.",
+    "Missing a day never removes progress — it simply stops growing until you complete a habit again.",
+    "Goal Readiness = 50% completion consistency + 20% current streak + 20% plan adherence + 10% recent momentum.",
+    "Readiness describes your behaviour so far. It cannot promise an exam result, a body change, or any outcome.",
+  ],
+  question: "Using my real AXEN goals, linked habits, target dates and verified progress, tell me exactly where I stand and one realistic next action.",
+};
+
+const JOURNEY_HELP: HelpContent = {
+  title: "How My Journey works",
+  lines: [
+    "Everything here is read live from your own account — streaks, coins, deep-focus minutes and your timeline.",
+    "Your current streak counts consecutive days with at least one verified completion; the best streak is your record.",
+    "Coins earned is the sum of every reward your verified actions have paid out.",
+    "Deep focus hours come from completed focus and lock sessions only.",
+    "The timeline lists the days you actually completed habits — nothing is estimated or shared between users.",
+  ],
+  question: "Look at my real AXEN journey data — streak, coins, deep focus and recent completions — and tell me what my pattern shows and one action for today.",
+};
+
 
 export type ProfileView = "dashboard" | "habits" | "journey" | "achievements" | "goals" | "reminders" | "account";
 export type ProfileHabit = {
