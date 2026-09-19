@@ -128,6 +128,7 @@ export function VoiceCoach() {
   const loudStartedRef = useRef<number | null>(null);
   const greetedRef = useRef(false);
   const resumeRef = useRef<string | null>(null);
+  const retriedRef = useRef(false);
 
   const sendActivity = (socket: WebSocket, active: boolean) => {
     if (socket.readyState !== WebSocket.OPEN || activityRef.current === active) return;
@@ -202,8 +203,9 @@ export function VoiceCoach() {
     throw new Error("unknown tool");
   };
 
-  const start = async () => {
+  const start = async (isRetry = false) => {
     release();
+    if (!isRetry) retriedRef.current = false;
     const session = sessionRef.current;
     const controller = new AbortController();
     abortRef.current = controller;
@@ -219,10 +221,20 @@ export function VoiceCoach() {
         return;
       }
       streamRef.current = stream;
-      const { apiKey, model, context: snapshot } = await getSession({});
+      const {
+        apiKey,
+        credentialParam,
+        ephemeral,
+        model,
+        context: snapshot,
+      } = await getSession({});
       if (controller.signal.aborted || session !== sessionRef.current) return;
+      if (typeof apiKey !== "string" || apiKey.length === 0) {
+        throw new Error("Couldn’t start a secure coach session. Tap to retry.");
+      }
+      const apiVersion = ephemeral ? "v1alpha" : "v1beta";
       const ws = new WebSocket(
-        `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${encodeURIComponent(apiKey)}`,
+        `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.${apiVersion}.GenerativeService.BidiGenerateContent?${credentialParam}=${encodeURIComponent(apiKey)}`,
       );
       wsRef.current = ws;
       playerRef.current = new PcmPlayer(24000);
@@ -382,7 +394,19 @@ export function VoiceCoach() {
         if (controller.signal.aborted || session !== sessionRef.current) return;
         if (wsRef.current !== ws) return;
         if (event.code !== 1000) {
-          setError(event.reason || "The voice session ended unexpectedly.");
+          const failedBeforeStart = !greetedRef.current;
+          // Credential problems never reach the user as raw Google wording.
+          const friendly = /api key|unregistered|unauthenticated|permission/i.test(event.reason)
+            ? "Couldn’t start a secure coach session. Tap to retry."
+            : event.reason || "The voice session ended unexpectedly.";
+          if (failedBeforeStart && !retriedRef.current) {
+            // One clean retry with a freshly minted credential, never a loop.
+            retriedRef.current = true;
+            release("connecting");
+            void start(true);
+            return;
+          }
+          setError(friendly);
           release("error");
           return;
         }
@@ -390,12 +414,15 @@ export function VoiceCoach() {
       };
     } catch (cause) {
       if (controller.signal.aborted || session !== sessionRef.current) return;
+      const raw = cause instanceof Error ? cause.message : "";
       const message =
         cause instanceof DOMException && cause.name === "NotAllowedError"
-          ? "Microphone access was blocked. Allow the mic and try again."
-          : cause instanceof Error
-            ? cause.message
-            : "The voice coach could not start.";
+          ? "Microphone permission is required for live coaching."
+          : /unauthorized|401|sign in|session/i.test(raw)
+            ? "Please sign in again to start your coach."
+            : /api key|not configured|temporarily unavailable/i.test(raw)
+              ? "AI Coach is temporarily unavailable. Please try again shortly."
+              : raw || "Couldn’t start a secure coach session. Tap to retry.";
       setError(message);
       release("error");
     }
