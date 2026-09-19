@@ -50,6 +50,7 @@
 - [x] Redesign only Deep Focus app blocking, lock setup, and active lock visuals; preserve all behavior and audio.
 
 ## Current request
+- [x] Remove only the authenticated “Initializing System” splash; preserve the existing first-launch AXEN splash and all app features.
 - [x] Replace only the Deep Focus long app list with four quick-block apps and a compact searchable custom picker.
 - [x] Rebuild only the leaderboard header, selectors, Top 3 podium, and ranks 4–100 arena; preserve the personal position card and all following Rank content.
 - [x] Replace only the pre-signup quiz with the 10-question first-launch assessment, calculated analysis, trajectory, AXEN projection, profile, and unchanged login handoff.
