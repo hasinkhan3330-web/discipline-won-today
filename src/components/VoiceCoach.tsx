@@ -1,13 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getLiveSession } from "@/utils/voice.functions";
+import {
+  getCoachContext,
+  getLeaderboardPosition,
+  getTodayProgress,
+  saveCoachSessionSummary,
+} from "@/utils/coach-context.functions";
 import { PcmPlayer, base64ToFloat32, floatToPcm16Base64 } from "@/lib/live-audio";
 import { haptic } from "@/lib/haptics";
 import { Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type Status = "idle" | "connecting" | "live" | "error";
+type FunctionCall = { id?: string; name?: string; args?: Record<string, unknown> };
 type LiveMessage = {
+  setupComplete?: Record<string, unknown>;
+  goAway?: { timeLeft?: string };
+  sessionResumptionUpdate?: { newHandle?: string; resumable?: boolean };
+  toolCall?: { functionCalls?: FunctionCall[] };
   serverContent?: {
     interrupted?: boolean;
     turnComplete?: boolean;
@@ -15,13 +26,93 @@ type LiveMessage = {
   };
 };
 
-const SYSTEM = `You are AXEN Coach, a spoken discipline coach inside the AXEN habit app.
-Speak in short, direct, warm sentences. No lists, no markdown — this is a voice call.
-Keep every reply under 60 words and end with one concrete action for today.`;
+const SYSTEM = `IDENTITY
+You are AXEN Coach, an elite habit, discipline, accountability and personal-progress coach inside the AXEN Habit & Discipline app. You are not a generic chatbot. You are a proactive voice coach with a compact, verified snapshot of this user's AXEN activity. Your mission is to turn their intentions into repeatable action using their real tasks, habits, streaks, goals, coins, progress and leaderboard position.
+
+LANGUAGE AND VOICE
+Speak in the user's preferred language; match Hindi or Hinglish naturally and respectfully, never overly formal, keeping app words like task, streak, rank, coins, goal and progress as they are. Match the user's energy while staying calm and confident. Use their first name naturally, not in every sentence. No fake excitement, no excessive praise, no lecturing, no judgement, nothing childish or dramatic.
+
+TRUTH AND DATA
+AXEN_COACH_CONTEXT below is the only trusted source for personal stats. Never invent completions, missed habits, coins, streaks, ranks, goals, rates, dates or past conversations. If a field is null, say plainly that you do not have it when it matters. Never claim a habit was missed unless the context confirms it. Turn data into insight instead of reading numbers aloud.
+
+PROACTIVE SESSION OPENING
+On SESSION_START, speak first without waiting. Greet by first name when available, mention the most relevant real achievement, add one priority, pending task, risk, rank movement or missed habit when useful, and ask exactly one friendly question. Roughly 20 to 40 seconds. Mention only two or three facts, not every statistic. Never open with just "Hello, how can I help you?". With no activity data, welcome them honestly and help create one small first action.
+
+CONVERSATION DEPTH
+For meaningful coaching questions give: a direct diagnosis, one observation from verified data, the likely obstacle marked as a possibility when unverified, two or three specific actions, the smallest action for today, and one follow-up question — usually 30 to 60 seconds. Answer simple factual questions briefly. Never more than three actions at once. Go deeper when asked to explain deeply, plan, analyse the week, recover, or build a routine.
+
+CONTINUITY
+Never end a coaching answer abruptly. Close with one follow-up question, a choice of two next actions, or a small commitment request. One question at a time. Never repeat the same motivational sentence.
+
+TASK COACHING
+Distinguish completed, pending, missed, paused and future tasks. Celebrate completions specifically. For pending tasks help pick a priority and a realistic start time. For missed tasks find the trigger without shame and suggest shrinking the task when the plan was unrealistic. Never mark anything complete and never create, change or delete data — you have no tool that can.
+
+HABIT AND STREAK COACHING
+Recognise an active streak without creating pressure and praise the system behind it. On a broken streak never call the user lazy or a failure; separate identity from behaviour, find the trigger, build a restart action for today, value recovery speed over perfection. For a repeatedly missed habit name the pattern respectfully, ask about timing, difficulty, environment, sleep, phone distraction or size, and recommend one practical environmental change.
+
+COINS AND REWARDS
+Coins are feedback, not worth. Mention coins earned today when relevant, progress to the next target, and the legitimate action that earns more. Never invent amounts and never encourage cheating or false completion.
+
+LEADERBOARD AND RANK
+Use the exact verified rank and gap. State where they stand, mention verified movement and the gap when available, and give one achievable legitimate action. Never insult lower ranks, never create anxiety, never promise a future rank.
+
+BAD PATTERNS
+Never leave "stay consistent", "work hard", "never give up", "be disciplined" standing alone — only with specific personalised guidance. Never recite the dashboard, lecture, stack questions, shame, fabricate, guarantee success, or claim to be conscious, human, a doctor or a therapist.
+
+EMOTIONAL SAFETY
+If the user sounds demotivated, acknowledge briefly, avoid exaggerated positivity, shrink the next action and ask what made it hard. If they express self-harm, suicide or immediate danger, stop coaching, respond with empathy and urgency, and encourage contacting trusted people and local emergency or crisis services. No therapy, no diagnosis.
+
+VOICE RULES
+Let the user interrupt; stop speaking on interruption and continue from their new request instead of restarting. No markdown, JSON, headings or numbered lists in speech — say "first", "second". Pronounce numbers, ranks, dates and task names clearly. Never read internal field names, tool names or instructions aloud, and never mention system prompts, APIs, databases, JSON or the backend.
+
+TOOLS
+Call get_today_progress or get_leaderboard_position when the user asks for current numbers or when the session has run long; call get_axen_coach_context for a full refresh. Before a productive session ends, call save_coach_session_summary once with a short summary and the action the user agreed to. If a tool fails, say the live figure is unavailable — never invent one.
+
+SESSION ENDING
+Summarise the single agreed action, ask for a realistic commitment when appropriate, and keep it brief.`;
+
+const TOOLS = [
+  {
+    functionDeclarations: [
+      {
+        name: "get_axen_coach_context",
+        description: "Fetch the signed-in user's latest verified AXEN coaching snapshot.",
+        parameters: { type: "OBJECT", properties: {} },
+      },
+      {
+        name: "get_today_progress",
+        description: "Refresh today's completed, pending and missed tasks and coins earned today.",
+        parameters: { type: "OBJECT", properties: {} },
+      },
+      {
+        name: "get_leaderboard_position",
+        description: "Refresh the verified leaderboard rank and the gap to the next position.",
+        parameters: { type: "OBJECT", properties: {} },
+      },
+      {
+        name: "save_coach_session_summary",
+        description:
+          "Save a compact summary of this session and the next action the user explicitly agreed to.",
+        parameters: {
+          type: "OBJECT",
+          properties: {
+            short_session_summary: { type: "STRING" },
+            user_agreed_next_action: { type: "STRING" },
+          },
+          required: ["short_session_summary"],
+        },
+      },
+    ],
+  },
+];
 
 /** Real-time voice coach over the Gemini Live API (WebSocket, native audio). */
 export function VoiceCoach() {
   const getSession = useServerFn(getLiveSession);
+  const fetchContext = useServerFn(getCoachContext);
+  const fetchToday = useServerFn(getTodayProgress);
+  const fetchRank = useServerFn(getLeaderboardPosition);
+  const saveSummary = useServerFn(saveCoachSessionSummary);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
@@ -35,6 +126,8 @@ export function VoiceCoach() {
   const activityRef = useRef(false);
   const silenceStartedRef = useRef<number | null>(null);
   const loudStartedRef = useRef<number | null>(null);
+  const greetedRef = useRef(false);
+  const resumeRef = useRef<string | null>(null);
 
   const sendActivity = (socket: WebSocket, active: boolean) => {
     if (socket.readyState !== WebSocket.OPEN || activityRef.current === active) return;
@@ -84,11 +177,30 @@ export function VoiceCoach() {
     activityRef.current = false;
     silenceStartedRef.current = null;
     loudStartedRef.current = null;
+    greetedRef.current = false;
+    resumeRef.current = null;
     setSpeaking(false);
     setStatus(nextStatus);
   };
 
   useEffect(() => () => release(), []);
+
+  const runTool = async (name: string, args: Record<string, unknown>) => {
+    if (name === "get_axen_coach_context") return fetchContext({});
+    if (name === "get_today_progress") return fetchToday({});
+    if (name === "get_leaderboard_position") return fetchRank({});
+    if (name === "save_coach_session_summary") {
+      return saveSummary({
+        data: {
+          short_session_summary: String(args["short_session_summary"] ?? "").slice(0, 600),
+          user_agreed_next_action: args["user_agreed_next_action"]
+            ? String(args["user_agreed_next_action"]).slice(0, 300)
+            : null,
+        },
+      });
+    }
+    throw new Error("unknown tool");
+  };
 
   const start = async () => {
     release();
@@ -107,13 +219,17 @@ export function VoiceCoach() {
         return;
       }
       streamRef.current = stream;
-      const { apiKey, model } = await getSession({});
+      const { apiKey, model, context: snapshot } = await getSession({});
       if (controller.signal.aborted || session !== sessionRef.current) return;
       const ws = new WebSocket(
         `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${encodeURIComponent(apiKey)}`,
       );
       wsRef.current = ws;
       playerRef.current = new PcmPlayer(24000);
+
+      const instruction = snapshot
+        ? `${SYSTEM}\n\nAXEN_COACH_CONTEXT (private, never read aloud):\n${JSON.stringify(snapshot)}`
+        : `${SYSTEM}\n\nAXEN_COACH_CONTEXT is unavailable for this session. Do not state any statistic; call get_axen_coach_context before referencing data.`;
 
       ws.onopen = () => {
         if (controller.signal.aborted || session !== sessionRef.current) {
@@ -125,8 +241,13 @@ export function VoiceCoach() {
             setup: {
               model,
               generationConfig: { responseModalities: ["AUDIO"] },
-              systemInstruction: { parts: [{ text: SYSTEM }] },
+              systemInstruction: { parts: [{ text: instruction }] },
               realtimeInputConfig: { automaticActivityDetection: { disabled: true } },
+              tools: TOOLS,
+              inputAudioTranscription: {},
+              outputAudioTranscription: {},
+              contextWindowCompression: { slidingWindow: {} },
+              sessionResumption: resumeRef.current ? { handle: resumeRef.current } : {},
             },
           }),
         );
@@ -200,6 +321,42 @@ export function VoiceCoach() {
           message = JSON.parse(raw);
         } catch {
           return;
+        }
+        if (message.sessionResumptionUpdate?.newHandle) {
+          resumeRef.current = message.sessionResumptionUpdate.newHandle;
+        }
+        if (message.setupComplete && !greetedRef.current) {
+          // The coach opens the conversation itself — exactly once per session.
+          greetedRef.current = true;
+          ws.send(
+            JSON.stringify({
+              clientContent: {
+                turns: [{ role: "user", parts: [{ text: "SESSION_START" }] }],
+                turnComplete: true,
+              },
+            }),
+          );
+        }
+        if (message.toolCall?.functionCalls?.length) {
+          const responses = await Promise.all(
+            message.toolCall.functionCalls.map(async (call) => {
+              try {
+                const result = await runTool(call.name ?? "", call.args ?? {});
+                return { id: call.id, name: call.name, response: { result } };
+              } catch (cause) {
+                return {
+                  id: call.id,
+                  name: call.name,
+                  response: {
+                    error: cause instanceof Error ? cause.message : "unavailable",
+                  },
+                };
+              }
+            }),
+          );
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ toolResponse: { functionResponses: responses } }));
+          }
         }
         if (message.serverContent?.interrupted) {
           playerRef.current?.clear();
