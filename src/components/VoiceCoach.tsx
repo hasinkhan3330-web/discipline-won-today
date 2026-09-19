@@ -203,8 +203,9 @@ export function VoiceCoach() {
     throw new Error("unknown tool");
   };
 
-  const start = async () => {
+  const start = async (isRetry = false) => {
     release();
+    if (!isRetry) retriedRef.current = false;
     const session = sessionRef.current;
     const controller = new AbortController();
     abortRef.current = controller;
