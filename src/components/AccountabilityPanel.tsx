@@ -90,13 +90,11 @@ export function AccountabilityPanel({ fallbackAvatar }: { fallbackAvatar: (n: st
     if (!status || busy) return;
     setBusy(true);
     try {
-      const { error } = await supabase
-        .from("accountability_pacts")
-        .update({ status: "ended" } as never)
-        .eq("id", status.pact_id);
+      // either participant may end the pact — the server checks membership
+      const { error } = await (supabase.rpc as any)("leave_pact", { _pact_id: status.pact_id });
       if (error) throw error;
       haptic("warn");
-      toast.success("Pact ended");
+      toast.success(status.role === "owner" ? "Pact ended" : "You left the pact");
       await load();
     } catch (e: any) {
       toast.error("Could not end the pact", { description: e?.message });
@@ -243,13 +241,11 @@ export function AccountabilityPanel({ fallbackAvatar }: { fallbackAvatar: (n: st
           <HeartHandshake size={16} strokeWidth={1.8} color={AX.accent} />
           Accountability Mode
         </span>
-        {status.role === "owner" && (
-          <button onClick={end} aria-label="End pact" style={{
-            width: 32, height: 32, borderRadius: 10, cursor: "pointer",
-            background: "transparent", border: `1px solid ${AX.border}`, color: AX.muted,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}><X size={15} strokeWidth={2} /></button>
-        )}
+        <button onClick={end} aria-label={status.role === "owner" ? "End pact" : "Leave pact"} style={{
+          width: 32, height: 32, borderRadius: 10, cursor: "pointer",
+          background: "transparent", border: `1px solid ${AX.border}`, color: AX.muted,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}><X size={15} strokeWidth={2} /></button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>

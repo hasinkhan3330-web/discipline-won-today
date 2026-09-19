@@ -21,7 +21,19 @@ export type WakePlan = {
 const KEY = "axen_wake_plan";
 const FIRED = "axen_wake_fired";
 
-export const todayKey = () => new Date().toISOString().slice(0, 10);
+/** Local calendar day key — the alarm hour is local, so the date must be too. */
+const dayKey = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+export const todayKey = () => dayKey(new Date());
+
+/** Calendar day of the NEXT occurrence of this tier hour (today if still ahead, else tomorrow). */
+export function nextPlanDate(tier: string): string {
+  const now = new Date();
+  const at = new Date(now.getFullYear(), now.getMonth(), now.getDate(), tierHour(tier), 0, 0, 0);
+  if (at.getTime() <= now.getTime()) at.setDate(at.getDate() + 1);
+  return dayKey(at);
+}
 
 export function loadPlan(): WakePlan | null {
   if (typeof window === "undefined") return null;
@@ -62,16 +74,23 @@ export function nextTrigger(p: WakePlan): number {
 }
 
 export function rollPlanForward(p: WakePlan): WakePlan {
-  const next = new Date();
-  if (Date.now() >= triggerAt({ ...p, date: todayKey() })) next.setDate(next.getDate() + 1);
-  return { ...p, date: next.toISOString().slice(0, 10) };
+  return { ...p, date: nextPlanDate(p.tier) };
 }
+
+/** A plan whose alarm time is more than an hour past is missed, not due. */
+const GRACE_MS = 60 * 60 * 1000;
 
 /** True when the alarm time has arrived for this plan's date and it has not fired yet. */
 export function shouldFire(p: WakePlan): boolean {
   if (p.date !== todayKey()) return false;
   if (alreadyFired(p)) return false;
-  return Date.now() >= triggerAt(p);
+  const at = triggerAt(p);
+  return Date.now() >= at && Date.now() < at + GRACE_MS;
+}
+
+/** True when the plan's slot is in the past, so it must be re-armed for the next day. */
+export function isStalePlan(p: WakePlan): boolean {
+  return Date.now() >= triggerAt(p) + GRACE_MS;
 }
 
 export function alreadyFired(p: WakePlan): boolean {
