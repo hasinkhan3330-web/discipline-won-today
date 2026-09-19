@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { cancelLocalReminder, nextReminderAt, scheduleLocalReminder, stableNotificationId } from "@/lib/local-notifications";
 import { FeatureHelpDot, type HelpContent } from "@/components/FeatureHelpDot";
+import { GoalHabitPicker, type GoalHabit } from "@/components/GoalHabitPicker";
 import { MODEL_CLASSES } from "@/lib/vision";
 
 type GoalRow = {
