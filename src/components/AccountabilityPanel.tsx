@@ -90,13 +90,11 @@ export function AccountabilityPanel({ fallbackAvatar }: { fallbackAvatar: (n: st
     if (!status || busy) return;
     setBusy(true);
     try {
-      const { error } = await supabase
-        .from("accountability_pacts")
-        .update({ status: "ended" } as never)
-        .eq("id", status.pact_id);
+      // either participant may end the pact — the server checks membership
+      const { error } = await (supabase.rpc as any)("leave_pact", { _pact_id: status.pact_id });
       if (error) throw error;
       haptic("warn");
-      toast.success("Pact ended");
+      toast.success(status.role === "owner" ? "Pact ended" : "You left the pact");
       await load();
     } catch (e: any) {
       toast.error("Could not end the pact", { description: e?.message });

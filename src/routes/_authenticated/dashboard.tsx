@@ -54,6 +54,7 @@ import { WakeVerify } from "@/components/WakeVerify";
 import { WakeProtocol } from "@/components/WakeProtocol";
 import {
   loadPlan, savePlan, todayKey, shouldFire, markFired, scheduleNativeAlarm, cancelNativeAlarm, rearmWakePlan,
+  nextPlanDate, isStalePlan,
   type WakePlan,
 } from "@/lib/wake-plan";
 
