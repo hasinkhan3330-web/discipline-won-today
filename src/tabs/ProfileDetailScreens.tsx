@@ -232,7 +232,16 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [celebrating, setCelebrating] = useState<string | null>(null);
-  const available = habits ?? [];
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pool, setPool] = useState<GoalHabit[]>(
+    (habits ?? []).map(h => ({ id: h.uuid, name: h.name, icon: h.icon, pts: h.pts, frequency: h.frequency ?? "daily" })),
+  );
+
+  const loadPool = async () => {
+    const { data } = await supabase.from("tasks").select("id,name,icon,pts,frequency").eq("is_active", true).order("sort_order");
+    if (data) setPool(data as GoalHabit[]);
+  };
+  useEffect(() => { void loadPool(); }, []);
 
   const load = async () => {
     const { data, error: loadError } = await supabase.rpc("goal_overview");
