@@ -219,10 +219,20 @@ export function VoiceCoach() {
         return;
       }
       streamRef.current = stream;
-      const { apiKey, model, context: snapshot } = await getSession({});
+      const {
+        apiKey,
+        credentialParam,
+        ephemeral,
+        model,
+        context: snapshot,
+      } = await getSession({});
       if (controller.signal.aborted || session !== sessionRef.current) return;
+      if (typeof apiKey !== "string" || apiKey.length === 0) {
+        throw new Error("Couldn’t start a secure coach session. Tap to retry.");
+      }
+      const apiVersion = ephemeral ? "v1alpha" : "v1beta";
       const ws = new WebSocket(
-        `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${encodeURIComponent(apiKey)}`,
+        `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.${apiVersion}.GenerativeService.BidiGenerateContent?${credentialParam}=${encodeURIComponent(apiKey)}`,
       );
       wsRef.current = ws;
       playerRef.current = new PcmPlayer(24000);
