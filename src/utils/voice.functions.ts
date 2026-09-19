@@ -66,32 +66,43 @@ let probedAt = 0;
 async function ephemeralTokenAccepted(token: string): Promise<boolean> {
   const SocketClass = (globalThis as { WebSocket?: typeof WebSocket }).WebSocket;
   if (!SocketClass) return false;
-  return await new Promise<boolean>((resolve) => {
-    let settled = false;
-    const done = (value: boolean) => {
-      if (settled) return;
-      settled = true;
-      resolve(value);
+  try {
+    return await new Promise<boolean>((resolve) => {
+      let settled = false;
+      let socket: WebSocket | null = null;
+      const done = (value: boolean) => {
+        if (settled) return;
+        settled = true;
+        resolve(value);
+        try {
+          socket?.close();
+        } catch {
+          /* already closed */
+        }
+      };
       try {
-        socket.close();
+        socket = new SocketClass(
+          `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?access_token=${encodeURIComponent(token)}`,
+        );
       } catch {
-        /* already closed */
+        // Runtime does not allow outbound client sockets — keep the working path.
+        done(false);
+        return;
       }
-    };
-    const socket = new SocketClass(
-      `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?access_token=${encodeURIComponent(token)}`,
-    );
-    socket.onopen = () =>
-      socket.send(
-        JSON.stringify({
-          setup: { model: LIVE_MODEL, generationConfig: { responseModalities: ["AUDIO"] } },
-        }),
-      );
-    socket.onmessage = () => done(true);
-    socket.onerror = () => done(false);
-    socket.onclose = () => done(false);
-    setTimeout(() => done(false), 8_000);
-  });
+      socket.onopen = () =>
+        socket?.send(
+          JSON.stringify({
+            setup: { model: LIVE_MODEL, generationConfig: { responseModalities: ["AUDIO"] } },
+          }),
+        );
+      socket.onmessage = () => done(true);
+      socket.onerror = () => done(false);
+      socket.onclose = () => done(false);
+      setTimeout(() => done(false), 8_000);
+    });
+  } catch {
+    return false;
+  }
 }
 
 /**
