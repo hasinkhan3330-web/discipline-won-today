@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { cancelLocalReminder, nextReminderAt, scheduleLocalReminder, stableNotificationId } from "@/lib/local-notifications";
 import { FeatureHelpDot, type HelpContent } from "@/components/FeatureHelpDot";
+import { GoalHabitPicker, type GoalHabit } from "@/components/GoalHabitPicker";
 import { MODEL_CLASSES } from "@/lib/vision";
 
 type GoalRow = {
@@ -231,7 +232,16 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [celebrating, setCelebrating] = useState<string | null>(null);
-  const available = habits ?? [];
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pool, setPool] = useState<GoalHabit[]>(
+    (habits ?? []).map(h => ({ id: h.uuid, name: h.name, icon: h.icon, pts: h.pts, frequency: h.frequency ?? "daily" })),
+  );
+
+  const loadPool = async () => {
+    const { data } = await supabase.from("tasks").select("id,name,icon,pts,frequency").eq("is_active", true).order("sort_order");
+    if (data) setPool(data as GoalHabit[]);
+  };
+  useEffect(() => { void loadPool(); }, []);
 
   const load = async () => {
     const { data, error: loadError } = await supabase.rpc("goal_overview");
@@ -287,16 +297,29 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
       <label>What do you want to achieve?<input value={title} maxLength={120} onChange={event => setTitle(event.target.value)} placeholder="Clear my exam" /></label>
       <label>Category (optional)<input value={category} maxLength={40} onChange={event => setCategory(event.target.value)} placeholder="Exam · Fitness · Business · Meditation" /></label>
       <label>Target date<input type="date" value={date} onChange={event => setDate(event.target.value)} /></label>
-      <label>Linked habits</label>
-      <div className="you-scan-options">
-        {available.map(habit => (
-          <button type="button" key={habit.uuid} className={picked.includes(habit.uuid) ? "is-on" : ""}
-            onClick={() => setPicked(list => list.includes(habit.uuid) ? list.filter(id => id !== habit.uuid) : [...list, habit.uuid])}>
-            {habit.name} +{habit.pts}
-          </button>
-        ))}
-        {!available.length && <span className="you-scan-empty">Create a habit first, then link it to this goal.</span>}
+      <div className="gh-label-row">
+        <label>Linked habits</label>
+        <button type="button" className="gh-edit-dot" onClick={() => setPickerOpen(true)} aria-label="Choose linked habits"><Pencil size={13} /></button>
       </div>
+      <div className="you-scan-options">
+        {picked.map(id => {
+          const habit = pool.find(item => item.id === id);
+          if (!habit) return null;
+          return (
+            <button type="button" key={id} className="is-on"
+              onClick={() => setPicked(list => list.filter(item => item !== id))}>
+              {habit.name} +{habit.pts} ✕
+            </button>
+          );
+        })}
+        {!picked.length && <span className="you-scan-empty">Tap the pencil to choose or create your own habits for this goal.</span>}
+      </div>
+      <GoalHabitPicker
+        userId={userId} open={pickerOpen} picked={picked}
+        onClose={() => setPickerOpen(false)}
+        onPickedChange={setPicked}
+        onHabitsChanged={() => { void loadPool(); onChanged?.(); }}
+      />
       <button className="you-save-button" disabled={!title.trim() || busy} onClick={save}>{busy ? "Saving…" : editing ? "Update goal" : "Add goal"}</button>
       {editing && <button className="you-ghost-button" type="button" onClick={reset}>Cancel edit</button>}
     </section>
