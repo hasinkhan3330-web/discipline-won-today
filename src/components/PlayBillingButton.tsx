@@ -13,7 +13,7 @@ const G = "#00d4ff";
 export function PlayBillingButton({
   userId,
   cycle,
-  label = "SUBSCRIBE WITH GOOGLE PLAY",
+  label = "UNLOCK AXEN PRO",
   onSuccess,
 }: {
   userId: string;
@@ -29,7 +29,7 @@ export function PlayBillingButton({
     if ("error" in result) throw new Error(result.error);
     if (!result.active) {
       toast.message(via === "restore" ? "No active purchase found" : "Purchase not active yet", {
-        description: "Google Play may take a few seconds to confirm. Try Restore Purchase shortly.",
+        description: "Confirmation may take a few seconds. Try Restore Purchase shortly.",
       });
       return;
     }
@@ -90,7 +90,7 @@ export function PlayBillingButton({
           boxShadow: disabled ? "none" : `0 0 28px ${G}77`,
         }}
       >
-        {busy ? "◌ OPENING GOOGLE PLAY…" : label}
+        {busy ? "◌ OPENING SECURE CHECKOUT…" : label}
       </button>
 
       <button

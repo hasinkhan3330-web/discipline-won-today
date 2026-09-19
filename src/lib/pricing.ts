@@ -11,14 +11,14 @@ export type Cycle = "monthly" | "yearly";
 export const PRICING: Record<Cycle, { priceKey: string; display: string; sub: string; save?: string }> = {
   monthly: {
     priceKey: "dwt_pro_monthly_play",
-    display: "₹99 / month",
-    sub: "Billed ₹99 monthly by the app store",
+    display: "₹99/month",
+    sub: "Monthly AXEN Pro access",
   },
   yearly: {
     priceKey: "dwt_pro_yearly_play",
-    display: "₹499 / year",
-    sub: "Billed ₹499 yearly by the app store",
-    save: "SAVE 58%",
+    display: "₹499/year",
+    sub: "Best Value",
+    save: "Save 58%",
   },
 };
 

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { PlatformCheckout } from "@/components/PlatformCheckout";
-import { usePlatform } from "@/hooks/usePlatform";
+import { PricingSelector } from "@/components/PricingSelector";
 import { PreSignupQuiz, type QuizAnswers } from "@/components/PreSignupQuiz";
 import { saveQuizLocal, skipQuizLocal, quizSeen, flushQuizToProfile } from "@/lib/quiz";
 import { type Cycle } from "@/lib/pricing";
@@ -28,28 +28,14 @@ export const Route = createFileRoute("/")({
 
 const G = "#00d4ff";
 const G2 = "#a855f7";
-const INTRO_MS = 5000;
+const INTRO_FADE_MS = 650;
+const INTRO_FADE_AT_MS = 3_900;
+const INTRO_MAX_MS = 4_600;
 
 const schema = z.object({
   email: z.string().trim().email("Enter a valid email").max(255),
   password: z.string().min(6, "Password must be at least 6 characters").max(72),
 });
-
-const PLAN_COPY: Record<Cycle, { title: string; price: string; per: string; note: string; save?: string }> = {
-  monthly: {
-    title: "MONTHLY",
-    price: "₹99",
-    per: "/month",
-    note: "₹99/month via the app store",
-  },
-  yearly: {
-    title: "YEARLY",
-    price: "₹499",
-    per: "/year",
-    note: "₹499/year via the app store",
-    save: "SAVE 58%",
-  },
-};
 
 /** 5-second cinematic AXEN boot sequence. */
 function Intro({ done, onGone }: { done: boolean; onGone: () => void }) {
@@ -61,7 +47,7 @@ function Intro({ done, onGone }: { done: boolean; onGone: () => void }) {
         position: "fixed", inset: 0, zIndex: 60, background: "#000",
         display: "flex", alignItems: "center", justifyContent: "center",
         overflow: "hidden", pointerEvents: done ? "none" : "auto",
-        animation: done ? "axen-boot-out 700ms ease forwards" : undefined,
+        animation: done ? `axen-boot-out ${INTRO_FADE_MS}ms ease forwards` : `axen-boot-force-out ${INTRO_MAX_MS}ms linear forwards`,
       }}
     >
       <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle at 50% 45%, ${G}22, transparent 55%), radial-gradient(circle at 80% 90%, ${G2}22, transparent 55%)`, animation: "axen-nebula 4s ease-in-out infinite" }} />
@@ -84,7 +70,7 @@ function Intro({ done, onGone }: { done: boolean; onGone: () => void }) {
           HABIT &amp; DISCIPLINE
         </div>
         <div style={{ position: "relative", marginTop: 26, height: 2, background: "#0e1a26", overflow: "hidden", borderRadius: 2 }}>
-          <div style={{ height: "100%", background: `linear-gradient(90deg, ${G}, ${G2})`, boxShadow: `0 0 14px ${G}`, animation: `axen-bar ${INTRO_MS - 600}ms cubic-bezier(0.4,0,0.2,1) forwards` }} />
+          <div style={{ height: "100%", background: `linear-gradient(90deg, ${G}, ${G2})`, boxShadow: `0 0 14px ${G}`, animation: `axen-bar ${INTRO_FADE_AT_MS}ms cubic-bezier(0.4,0,0.2,1) forwards` }} />
         </div>
         <div style={{ position: "relative", marginTop: 10, fontFamily: "monospace", fontSize: 8, letterSpacing: 4, color: "#4d6478" }}>
           INITIALIZING DISCIPLINE CORE…
@@ -96,7 +82,6 @@ function Intro({ done, onGone }: { done: boolean; onGone: () => void }) {
 
 function Landing() {
   const navigate = useNavigate();
-  const { platform: billingPlatform } = usePlatform();
   const [intro, setIntro] = useState(true);
   const [introGone, setIntroGone] = useState(false);
   const [cycle, setCycle] = useState<Cycle>("yearly");
@@ -112,8 +97,8 @@ function Landing() {
   const [quizDone, setQuizDone] = useState(true); // assume done until localStorage is read (SSR-safe)
 
   useEffect(() => {
-    const t1 = setTimeout(() => setIntro(false), INTRO_MS);
-    const t2 = setTimeout(() => setIntroGone(true), INTRO_MS + 750);
+    const t1 = window.setTimeout(() => setIntro(false), INTRO_FADE_AT_MS);
+    const t2 = window.setTimeout(() => setIntroGone(true), INTRO_MAX_MS);
     setQuizDone(quizSeen());
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
@@ -131,8 +116,11 @@ function Landing() {
       setSessionUserId(session.user.id);
       setQuizDone(true);
       void flushQuizToProfile(session.user.id);
+      void navigate({ to: "/dashboard", replace: true });
     };
-    supabase.auth.getSession().then(({ data }) => apply(data.session));
+    void supabase.auth.getSession().then(({ data }) => apply(data.session)).catch(error => {
+      console.error("AXEN session initialization failed", error instanceof Error ? error.message : "Unknown session error");
+    });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => apply(session));
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -222,36 +210,7 @@ function Landing() {
 
         {authed ? (
           <div style={{ marginTop: 30, animation: "axen-float-up 600ms ease both" }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {(["yearly", "monthly"] as const).map((c) => {
-                const p = PLAN_COPY[c];
-                const active = cycle === c;
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setCycle(c)}
-                    className="axen-btn"
-                    style={{
-                      textAlign: "left", padding: 16, cursor: "pointer",
-                      background: active ? `linear-gradient(135deg, ${G}22, ${G2}22)` : "rgba(8,12,26,0.72)",
-                      border: `1px solid ${active ? G : "#22303f"}`, borderRadius: 4,
-                      color: "#fff", fontFamily: "inherit",
-                      boxShadow: active ? `0 0 26px ${G}44` : "none",
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div className="axen-display" style={{ letterSpacing: 3, fontWeight: 800, fontSize: 12 }}>{p.title}</div>
-                      {p.save && <div style={{ background: G, color: "#000", fontSize: 9, fontWeight: 900, padding: "2px 8px", letterSpacing: 2, borderRadius: 2 }}>{p.save}</div>}
-                    </div>
-                    <div style={{ marginTop: 8, fontSize: 24, fontWeight: 900, color: G }}>
-                      {p.price}<span style={{ fontSize: 12, color: "#6f8296" }}>{p.per}</span>
-                    </div>
-                    <div style={{ marginTop: 4, fontSize: 10, color: "#7c8ea0", letterSpacing: 1 }}>{p.note}</div>
-                  </button>
-                );
-              })}
-            </div>
+            <PricingSelector cycle={cycle} onChange={setCycle} />
 
             <PlatformCheckout cycle={cycle} email={sessionEmail} userId={sessionUserId} />
 
@@ -327,20 +286,6 @@ function Landing() {
           </div>
         )}
 
-        <p style={{ position: "relative", marginTop: 22, fontSize: 9, color: "#46586a", letterSpacing: 1, textAlign: "center", lineHeight: 1.9 }}>
-          ₹99/month · ₹499/year · billed securely by the app store
-          {billingPlatform === "web" && (
-            <>
-              <br />Purchases are handled in the AXEN mobile app by Google Play or the App Store.
-            </>
-          )}
-          {billingPlatform === "android" && (
-            <><br />Billed securely through Google Play. Manage or cancel in Play Store → Subscriptions.</>
-          )}
-          {billingPlatform === "ios" && (
-            <><br />Billed securely through the App Store. Manage or cancel in Settings → Subscriptions.</>
-          )}
-        </p>
       </div>
     </div>
   );

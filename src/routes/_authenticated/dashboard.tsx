@@ -319,7 +319,19 @@ function App() {
   useEffect(() => {
     if (booted.current) return;
     booted.current = true;
-    refreshAll();
+    let alive = true;
+    const startedAt = Date.now();
+    const reveal = () => {
+      const remaining = Math.max(0, 1_800 - (Date.now() - startedAt));
+      window.setTimeout(() => { if (alive) setScreen("app"); }, remaining);
+    };
+    const hardStop = window.setTimeout(() => {
+      if (alive) setScreen("app");
+    }, 4_800);
+    void refreshAll()
+      .catch(error => console.error("AXEN dashboard initialization failed", error instanceof Error ? error.message : "Unknown initialization error"))
+      .finally(reveal);
+    return () => { alive = false; window.clearTimeout(hardStop); };
   }, []);
 
   const buyShield = async () => {
@@ -510,11 +522,6 @@ function App() {
   }, [wakePlan, wakeAlarm]);
 
 
-
-  useEffect(() => {
-    const t = setTimeout(() => setScreen("app"), 2500);
-    return () => clearTimeout(t);
-  }, []);
 
   const theme = THEMES[themeKey];
   const G = theme.accent;

@@ -1,8 +1,6 @@
 import { PlayBillingButton } from "@/components/PlayBillingButton";
 import { usePlatform } from "@/hooks/usePlatform";
-import { PRICING, type Cycle } from "@/lib/pricing";
-
-const G = "#00d4ff";
+import { type Cycle } from "@/lib/pricing";
 
 /**
  * Store-only checkout.
@@ -26,51 +24,25 @@ export function PlatformCheckout({
   const { platform, isNative } = usePlatform();
 
   if (!platform) {
-    return (
-      <div style={{ marginTop: 24, fontSize: 10, letterSpacing: 3, color: "#666", textAlign: "center" }}>
-        ◌ PREPARING CHECKOUT…
-      </div>
-    );
+    return <div className="ax-checkout-state">PREPARING…</div>;
   }
 
   if (!isNative) {
-    return (
-      <div
-        style={{
-          marginTop: 24, padding: 16, border: "1px solid #23232E", borderRadius: 6,
-          background: "rgba(10,10,25,0.7)", color: "#9fb3c4", fontFamily: "monospace",
-          fontSize: 11, letterSpacing: 1, lineHeight: 1.8, textAlign: "center",
-        }}
-      >
-        <div style={{ color: G, letterSpacing: 3, fontSize: 10, fontWeight: 900 }}>◈ SUBSCRIBE IN THE AXEN APP</div>
-        AXEN PRO is purchased inside the AXEN mobile app through Google Play Billing or the Apple App Store.
-        Open AXEN on your phone to subscribe.
-      </div>
-    );
+    return <div className="ax-checkout-state">OPEN AXEN ON YOUR PHONE TO UNLOCK PRO</div>;
   }
 
-  const apple = platform === "ios";
-  const store = apple ? "the App Store" : "Google Play";
-
   return (
-    <div style={{ marginTop: 20 }}>
-      <div style={{ fontSize: 10, letterSpacing: 3, color: "#777" }}>
-        ◈ SECURE IN-APP PURCHASE · {apple ? "APP STORE" : "GOOGLE PLAY"}
-      </div>
+    <div className="ax-checkout">
       {userId ? (
         <PlayBillingButton
           userId={userId}
           cycle={cycle}
-          label={`PAY ${PRICING[cycle].display.toUpperCase()}`}
+          label="UNLOCK AXEN PRO"
           onSuccess={onSuccess}
         />
       ) : (
-        <div style={{ marginTop: 12, fontSize: 11, color: G, letterSpacing: 2 }}>SIGN IN TO CONTINUE</div>
+        <div className="ax-checkout-state">SIGN IN TO CONTINUE</div>
       )}
-      <p style={{ marginTop: 10, fontSize: 9, color: "#666", letterSpacing: 1, textAlign: "center", lineHeight: 1.7 }}>
-        {PRICING[cycle].display} billed by {store}. A payment method on your{" "}
-        {apple ? "Apple ID" : "Google account"} is required. Manage or cancel anytime in {store} → Subscriptions.
-      </p>
     </div>
   );
 }

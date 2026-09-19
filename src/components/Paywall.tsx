@@ -1,19 +1,16 @@
 import { useEffect, useState } from "react";
-import { Check, Minus, ShieldCheck, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { PlatformCheckout } from "@/components/PlatformCheckout";
 import { isNativeBillingAvailable } from "@/lib/play-billing";
-import { PRICING, type Cycle } from "@/lib/pricing";
+import { type Cycle } from "@/lib/pricing";
+import { PricingSelector } from "@/components/PricingSelector";
 
-const FEATURES=[{name:"Daily habits, streaks and coins",basic:true},{name:"Up to 3 active reminders",basic:true},{name:"Stats and personal journey",basic:true},{name:"4AM Wake Verification",basic:false},{name:"AI discipline coach",basic:false},{name:"Zen, Rank and premium themes",basic:false},{name:"Unlimited reminders",basic:false}];
 export function Paywall({userId,email}:{userId:string;email?:string|null}){
-  const[cycle,setCycle]=useState<Cycle>("yearly");const[native,setNative]=useState(false);
-  useEffect(()=>{isNativeBillingAvailable().then(setNative).catch(()=>setNative(false));},[]);
-  return <main className="membership-screen"><header><div><Sparkles size={22}/></div><span>AXEN MEMBERSHIP</span><h1>Choose your discipline system</h1><p>Start with the essentials. Unlock the complete AXEN system when you are ready.</p></header>
-    <div className="membership-plans"><section><span>BASIC</span><h2>Free</h2><p>Your daily discipline foundation.</p>{FEATURES.map(item=><div key={item.name} className={item.basic?"":"is-muted"}>{item.basic?<Check size={15}/>:<Minus size={15}/>}<span>{item.name}</span></div>)}</section><section className="is-pro"><span>AXEN PRO</span><h2>{PRICING[cycle].display}</h2><p>{PRICING[cycle].sub}</p>{FEATURES.map(item=><div key={item.name}><Check size={15}/><span>{item.name}</span></div>)}</section></div>
-    <div className="membership-cycle">{(["monthly","yearly"] as const).map(item=><button key={item} className={cycle===item?"is-active":""} onClick={()=>setCycle(item)}><span>{item}</span><b>{PRICING[item].display}</b>{PRICING[item].save&&<small>{PRICING[item].save}</small>}</button>)}</div>
+  const[cycle,setCycle]=useState<Cycle>("yearly");
+  return <main className="membership-screen"><div className="membership-aurora" aria-hidden="true"/><header><div><Sparkles size={22}/></div><span>AXEN PRO</span><h1>Unlock your full potential</h1></header>
+    <PricingSelector cycle={cycle} onChange={setCycle}/>
     <PlatformCheckout userId={userId} cycle={cycle} email={email}/>
-    <p className="membership-note"><ShieldCheck size={14}/>{native?"Secure store billing. Cancel anytime in your store subscriptions.":"Purchases are completed securely inside the AXEN mobile app."}</p>
     <button className="membership-signout" onClick={()=>supabase.auth.signOut()}>Sign out</button>
   </main>;
 }
