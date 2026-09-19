@@ -27,7 +27,6 @@ import { flushQuizToProfile } from "@/lib/quiz";
 import { THEMES, MILESTONES, THEME_PHOTO, THEME_VIDEO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
 import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
 import axenLogo from "@/assets/axen-logo.png";
-import habitLogo from "@/assets/habit-discipline-logo.png";
 
 import { useMeditation } from "@/hooks/useMeditation";
 import { AX, cardStyle, titleStyle } from "@/tabs/styles";
@@ -110,7 +109,6 @@ function App() {
     await supabase.auth.signOut();
     navigate({ to: "/", replace: true });
   };
-  const [screen, setScreen] = useState<"splash" | "app">("splash");
   const [tab, setTab] = useState("home");
   const [themeKey, setThemeKeyState] = useState<ThemeKey>("hourglass");
   const setThemeKey = (k: ThemeKey) => {
@@ -313,25 +311,14 @@ function App() {
   };
 
 
-  // Single boot fetch — guarded so React's double-mount (and fast remounts)
-  // never fire the whole dashboard query set twice.
+  // Single background boot fetch — guarded so React's double-mount (and fast
+  // remounts) never fire the whole dashboard query set twice.
   const booted = useRef(false);
   useEffect(() => {
     if (booted.current) return;
     booted.current = true;
-    let alive = true;
-    const startedAt = Date.now();
-    const reveal = () => {
-      const remaining = Math.max(0, 1_800 - (Date.now() - startedAt));
-      window.setTimeout(() => { if (alive) setScreen("app"); }, remaining);
-    };
-    const hardStop = window.setTimeout(() => {
-      if (alive) setScreen("app");
-    }, 4_800);
     void refreshAll()
-      .catch(error => console.error("AXEN dashboard initialization failed", error instanceof Error ? error.message : "Unknown initialization error"))
-      .finally(reveal);
-    return () => { alive = false; window.clearTimeout(hardStop); };
+      .catch(error => console.error("AXEN dashboard initialization failed", error instanceof Error ? error.message : "Unknown initialization error"));
   }, []);
 
   const buyShield = async () => {
@@ -839,24 +826,6 @@ function App() {
     @keyframes press-burst { 0%{transform:scale(0.95);box-shadow:0 0 0 ${G}ff} 100%{transform:scale(1);box-shadow:0 0 0 8px transparent} }
     @keyframes shimmer-sweep { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
   `;
-
-  if (screen === "splash") {
-    return (
-      <div style={{ width: "100%", height: "100vh", background: AX.bg, position: "relative", overflow: "hidden", fontFamily: AX.font }}>
-        <style>{keyframes}</style>
-        <div style={{ position: "relative", zIndex: 2, width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ position: "absolute", width: 260, height: 260, borderRadius: "50%", border: `1px solid ${G}44`, animation: "orbit 8s linear infinite" }}>
-            <div style={{ position: "absolute", top: -4, left: "50%", width: 8, height: 8, borderRadius: "50%", background: G, boxShadow: `0 0 20px ${G}` }} />
-          </div>
-          <div style={{ position: "absolute", width: 340, height: 340, borderRadius: "50%", border: `1px solid ${G2}33`, animation: "orbit 14s linear infinite reverse" }} />
-          <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ width: "min(58vw, 260px)", height: "auto", zIndex: 3, filter: `drop-shadow(0 0 22px ${G})`, animation: "glow 2.5s ease-in-out infinite" }} />
-          <div style={{ width: 120, height: 2, background: `linear-gradient(90deg,transparent,${G},transparent)`, margin: "22px auto", zIndex: 3 }} />
-          <img src={habitLogo} alt="Habit & Discipline" style={{ width: "min(46vw, 210px)", height: "auto", zIndex: 3, opacity: 0.95, filter: `drop-shadow(0 0 14px ${G}aa)`, animation: "pulse 2s ease-in-out infinite" }} />
-          <div style={{ marginTop: 40, fontSize: 9, letterSpacing: 3, color: "#555", zIndex: 3 }}>[ INITIALIZING SYSTEM ]</div>
-        </div>
-      </div>
-    );
-  }
 
   const CARD = cardStyle(G);
   const TITLE = titleStyle;
