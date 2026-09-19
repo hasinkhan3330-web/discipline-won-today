@@ -42,10 +42,11 @@ async function saveStep(stepNumber: number, answers: OnboardingAnswers) {
     if (retryDelay) await delay(retryDelay);
     try {
       const request = (supabase.rpc as any)("save_onboarding_step", { _step: stepNumber, _answers: answers });
+      let timeoutId = 0;
       const timeout = new Promise<never>((_, reject) => {
-        window.setTimeout(() => reject(new Error("Onboarding save timed out")), SAVE_TIMEOUT_MS);
+        timeoutId = window.setTimeout(() => reject(new Error("Onboarding save timed out")), SAVE_TIMEOUT_MS);
       });
-      const { error: saveError } = await Promise.race([request, timeout]);
+      const { error: saveError } = await Promise.race([request, timeout]).finally(() => window.clearTimeout(timeoutId));
       if (!saveError) return;
       lastError = saveError;
       if (!/fetch|network|timeout|connection/i.test(saveError.message ?? "")) break;
@@ -98,8 +99,9 @@ export function Onboarding({ initialStep = 1, initialAnswers = {}, onFinish }: P
     setBusy(true); setError("");
     try {
       const request = (supabase.rpc as any)("activate_axen_plan", { _answers: answers });
-      const timeout = new Promise<never>((_, reject) => window.setTimeout(() => reject(new Error("Activation timed out")), SAVE_TIMEOUT_MS));
-      const { error: activationError } = await Promise.race([request, timeout]);
+      let timeoutId = 0;
+      const timeout = new Promise<never>((_, reject) => { timeoutId = window.setTimeout(() => reject(new Error("Activation timed out")), SAVE_TIMEOUT_MS); });
+      const { error: activationError } = await Promise.race([request, timeout]).finally(() => window.clearTimeout(timeoutId));
       if (activationError) throw activationError;
       haptic("success"); onFinish();
     } catch (activationError) {

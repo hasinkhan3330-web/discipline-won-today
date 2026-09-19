@@ -29,7 +29,10 @@ function ProPage() {
 
   useEffect(() => {
     let alive = true;
-    void supabase.auth.getUser()
+    const timeout = new Promise<never>((_, reject) => {
+      window.setTimeout(() => reject(new Error("Membership session check timed out")), 4_000);
+    });
+    void Promise.race([supabase.auth.getUser(), timeout])
       .then(({ data }) => { if (alive) setUserId(data.user?.id ?? null); })
       .catch(error => console.error("AXEN membership session check failed", error instanceof Error ? error.message : "Unknown session error"))
       .finally(() => { if (alive) setReady(true); });
