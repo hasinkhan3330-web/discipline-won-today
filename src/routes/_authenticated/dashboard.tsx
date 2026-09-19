@@ -321,6 +321,18 @@ function App() {
       .catch(error => console.error("AXEN dashboard initialization failed", error instanceof Error ? error.message : "Unknown initialization error"));
   }, []);
 
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const question = (event as CustomEvent<{ question?: string }>).detail?.question;
+      if (!question) return;
+      setTab("coach");
+      window.setTimeout(() => window.dispatchEvent(new CustomEvent("axen:coach-question", { detail: { question } })), 420);
+    };
+    window.addEventListener("axen:ask-coach", handler);
+    return () => window.removeEventListener("axen:ask-coach", handler);
+  }, []);
+
+
   const buyShield = async () => {
     const { data, error } = await (supabase.rpc as any)("buy_streak_shield");
     if (error) {

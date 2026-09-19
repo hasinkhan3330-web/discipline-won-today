@@ -6,7 +6,40 @@ import {
   Coins, Flame, Medal, Pencil, Plus, Sparkles, Trash2,
 } from "lucide-react";
 import { cancelLocalReminder, nextReminderAt, scheduleLocalReminder, stableNotificationId } from "@/lib/local-notifications";
+import { FeatureHelpDot, type HelpContent } from "@/components/FeatureHelpDot";
 import { MODEL_CLASSES } from "@/lib/vision";
+
+type GoalRow = {
+  id: string; title: string; category: string | null; target_date: string | null; started_on: string;
+  progress: number; completed: boolean; celebrated: boolean; target_coins: number; earned_coins: number;
+  readiness: number; habits: { id: string; name: string; icon: string; pts: number }[];
+};
+
+const GOALS_HELP: HelpContent = {
+  title: "How Goals work",
+  lines: [
+    "A goal is powered by the habits you link to it — pick one or more when you create or edit it.",
+    "Your coin target is the total coins those habits can earn between the goal start and its target date.",
+    "Every verified habit completion adds its normal coin reward once, so progress only moves with real actions.",
+    "Missing a day never removes progress — it simply stops growing until you complete a habit again.",
+    "Goal Readiness = 50% completion consistency + 20% current streak + 20% plan adherence + 10% recent momentum.",
+    "Readiness describes your behaviour so far. It cannot promise an exam result, a body change, or any outcome.",
+  ],
+  question: "Using my real AXEN goals, linked habits, target dates and verified progress, tell me exactly where I stand and one realistic next action.",
+};
+
+const JOURNEY_HELP: HelpContent = {
+  title: "How My Journey works",
+  lines: [
+    "Everything here is read live from your own account — streaks, coins, deep-focus minutes and your timeline.",
+    "Your current streak counts consecutive days with at least one verified completion; the best streak is your record.",
+    "Coins earned is the sum of every reward your verified actions have paid out.",
+    "Deep focus hours come from completed focus and lock sessions only.",
+    "The timeline lists the days you actually completed habits — nothing is estimated or shared between users.",
+  ],
+  question: "Look at my real AXEN journey data — streak, coins, deep focus and recent completions — and tell me what my pattern shows and one action for today.",
+};
+
 
 export type ProfileView = "dashboard" | "habits" | "journey" | "achievements" | "goals" | "reminders" | "account";
 export type ProfileHabit = {
@@ -165,6 +198,8 @@ export function JourneyView({ life, streak, onBack }: { life?: ProfileLife; stre
   const activeDates = (life?.heat ?? []).filter(day => day.count > 0).slice(-8).reverse();
   return <div className="you-detail animate-fade-in">
     <DetailHeader title="My Journey" subtitle="Every completed action leaves a signal." onBack={onBack} />
+    <div className="axh-dot-row"><FeatureHelpDot label="My Journey" content={JOURNEY_HELP} /></div>
+
     <section className="you-journey-orbit"><div><Flame size={23} /><strong>{streak}</strong><span>day current streak</span></div><p>{life?.completionCount ?? 0} habits completed across your discipline journey.</p></section>
     <div className="you-journey-metrics"><div><b>{life?.bestStreak ?? 0}</b><span>Best streak</span></div><div><b>{life?.lifetimeCoins ?? 0}</b><span>Coins earned</span></div><div><b>{Math.floor((life?.focusMinutes ?? 0) / 60)}h</b><span>Deep focus</span></div></div>
     <h2 className="you-detail-title">Progress timeline</h2>
@@ -186,29 +221,118 @@ export function AchievementsView({ bestStreak, onBack }: { bestStreak: number; o
   </div>;
 }
 
-export function GoalsView({ userId, onBack, onChanged }: { userId: string | null; onBack: () => void; onChanged?: () => void }) {
-  const [goals, setGoals] = useState<Goal[]>([]);
+export function GoalsView({ userId, habits, onBack, onChanged }: { userId: string | null; habits?: ProfileHabit[]; onBack: () => void; onChanged?: () => void }) {
+  const [goals, setGoals] = useState<GoalRow[]>([]);
   const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
+  const [picked, setPicked] = useState<string[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
-  const load = async () => { const { data } = await supabase.from("goals").select("id,title,description,progress,target_date,completed").order("created_at", { ascending: false }); setGoals(data ?? []); };
-  useEffect(() => { load(); }, []);
-  const save = async () => {
-    if (!userId || !title.trim()) return;
-    const payload = { title: title.trim(), target_date: date || null };
-    const result = editing ? await supabase.from("goals").update(payload).eq("id", editing) : await supabase.from("goals").insert({ ...payload, user_id: userId });
-    if (result.error) return void toast.error("Could not save that goal", { description: result.error.message });
-    setTitle(""); setDate(""); setEditing(null); await load(); onChanged?.();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [celebrating, setCelebrating] = useState<string | null>(null);
+  const available = habits ?? [];
+
+  const load = async () => {
+    const { data, error: loadError } = await supabase.rpc("goal_overview");
+    if (loadError) { setError("Could not load your goals. Check your connection and retry."); return; }
+    setError(null);
+    const rows = (Array.isArray(data) ? data : []) as unknown as GoalRow[];
+    setGoals(rows);
+    const fresh = rows.find(goal => goal.completed && !goal.celebrated && (goal.target_coins ?? 0) > 0);
+    if (fresh) {
+      setCelebrating(fresh.id);
+      await supabase.rpc("mark_goal_celebrated", { _goal_id: fresh.id });
+      window.setTimeout(() => setCelebrating(null), 3200);
+    }
   };
-  const updateProgress = async (goal: Goal, progress: number) => { await supabase.from("goals").update({ progress, completed: progress === 100 }).eq("id", goal.id); await load(); onChanged?.(); };
-  const remove = async (id: string) => { await supabase.from("goals").delete().eq("id", id); await load(); onChanged?.(); };
+  useEffect(() => { load(); }, []);
+
+  const reset = () => { setTitle(""); setCategory(""); setDate(""); setPicked([]); setEditing(null); };
+
+  const save = async () => {
+    if (!userId || !title.trim() || busy) return;
+    setBusy(true);
+    const { error: saveError } = await supabase.rpc("save_goal", {
+      _goal_id: editing, _title: title.trim(), _category: category.trim() || null,
+      _target_date: date || null, _task_ids: picked,
+    } as never);
+
+    setBusy(false);
+    if (saveError) { setError(saveError.message); return void toast.error("Could not save that goal", { description: saveError.message }); }
+    reset(); await load(); onChanged?.();
+  };
+
+  const startEdit = (goal: GoalRow) => {
+    setEditing(goal.id); setTitle(goal.title); setCategory(goal.category ?? "");
+    setDate(goal.target_date ?? ""); setPicked(goal.habits.map(item => item.id));
+  };
+
+  const updateProgress = async (goal: GoalRow, progress: number) => {
+    await supabase.from("goals").update({ progress, completed: progress === 100 }).eq("id", goal.id);
+    await load(); onChanged?.();
+  };
+  const remove = async (id: string) => {
+    const { error: deleteError } = await supabase.from("goals").delete().eq("id", id);
+    if (deleteError) return void toast.error("Could not delete that goal", { description: deleteError.message });
+    if (editing === id) reset();
+    await load(); onChanged?.();
+  };
+
   return <div className="you-detail animate-fade-in">
     <DetailHeader title="Goals" subtitle="Aim clearly. Advance deliberately." onBack={onBack} />
-    <section className="you-form-panel you-goal-form"><label>What do you want to achieve?<input value={title} maxLength={120} onChange={event => setTitle(event.target.value)} placeholder="Run my first 10K" /></label><label>Target date<input type="date" value={date} onChange={event => setDate(event.target.value)} /></label><button className="you-save-button" disabled={!title.trim()} onClick={save}>{editing ? "Update goal" : "Add goal"}</button></section>
-    <div className="you-goal-list">{goals.map(goal => <article key={goal.id} className={goal.completed ? "is-complete" : ""}><div className="you-goal-head"><div><strong>{goal.title}</strong><span>{goal.target_date ? `Target ${new Date(`${goal.target_date}T00:00:00`).toLocaleDateString()}` : "No deadline"}</span></div><div><button onClick={() => { setEditing(goal.id); setTitle(goal.title); setDate(goal.target_date ?? ""); }} aria-label={`Edit ${goal.title}`}><Pencil size={15} /></button><button onClick={() => remove(goal.id)} aria-label={`Delete ${goal.title}`}><Trash2 size={15} /></button></div></div><Progress value={goal.progress} /><div className="you-goal-controls"><span>{goal.progress}% complete</span><input aria-label={`Progress for ${goal.title}`} type="range" min="0" max="100" step="5" value={goal.progress} onChange={event => updateProgress(goal, Number(event.target.value))} /></div></article>)}</div>
-    {!goals.length && <div className="you-empty">Your first goal begins with a clear finish line.</div>}
+    <div className="axh-dot-row"><FeatureHelpDot label="Goals" content={GOALS_HELP} /></div>
+    {error && <div className="you-empty you-error-row">{error} <button type="button" onClick={load}>Retry</button></div>}
+    <section className="you-form-panel you-goal-form">
+      <label>What do you want to achieve?<input value={title} maxLength={120} onChange={event => setTitle(event.target.value)} placeholder="Clear my exam" /></label>
+      <label>Category (optional)<input value={category} maxLength={40} onChange={event => setCategory(event.target.value)} placeholder="Exam · Fitness · Business · Meditation" /></label>
+      <label>Target date<input type="date" value={date} onChange={event => setDate(event.target.value)} /></label>
+      <label>Linked habits</label>
+      <div className="you-scan-options">
+        {available.map(habit => (
+          <button type="button" key={habit.uuid} className={picked.includes(habit.uuid) ? "is-on" : ""}
+            onClick={() => setPicked(list => list.includes(habit.uuid) ? list.filter(id => id !== habit.uuid) : [...list, habit.uuid])}>
+            {habit.name} +{habit.pts}
+          </button>
+        ))}
+        {!available.length && <span className="you-scan-empty">Create a habit first, then link it to this goal.</span>}
+      </div>
+      <button className="you-save-button" disabled={!title.trim() || busy} onClick={save}>{busy ? "Saving…" : editing ? "Update goal" : "Add goal"}</button>
+      {editing && <button className="you-ghost-button" type="button" onClick={reset}>Cancel edit</button>}
+    </section>
+    <div className="you-goal-list">{goals.map(goal => {
+      const linked = goal.habits.length > 0 && (goal.target_coins ?? 0) > 0;
+      const status = goal.completed ? "Goal Completed" : (goal.readiness ?? 0) >= 60 ? "On Track" : "Needs Attention";
+      return <article key={goal.id} className={goal.completed ? "is-complete" : ""}>
+        <div className="you-goal-head">
+          <div>
+            <strong>{goal.title}</strong>
+            <span>{goal.category ? `${goal.category} · ` : ""}{goal.target_date ? `Target ${new Date(`${goal.target_date}T00:00:00`).toLocaleDateString()}` : "No deadline"}</span>
+          </div>
+          <div>
+            <button onClick={() => startEdit(goal)} aria-label={`Edit ${goal.title}`}><Pencil size={15} /></button>
+            <button onClick={() => remove(goal.id)} aria-label={`Delete ${goal.title}`}><Trash2 size={15} /></button>
+          </div>
+        </div>
+        {linked && <div className="you-goal-habits">{goal.habits.map(item => <span key={item.id}>{item.name}</span>)}</div>}
+        <Progress value={goal.progress} />
+        {linked ? <div className="you-goal-controls">
+          <span>{goal.progress}% · {goal.earned_coins}/{goal.target_coins} coins</span>
+          <b className={goal.completed ? "is-complete" : (goal.readiness ?? 0) >= 60 ? "is-ok" : "is-warn"}>{goal.readiness ?? 0}% Goal Readiness — {status}</b>
+        </div> : <div className="you-goal-controls">
+          <span>{goal.progress}% complete</span>
+          <input aria-label={`Progress for ${goal.title}`} type="range" min="0" max="100" step="5" value={goal.progress} onChange={event => updateProgress(goal, Number(event.target.value))} />
+        </div>}
+      </article>;
+    })}</div>
+    {!goals.length && !error && <div className="you-empty">Your first goal begins with a clear finish line.</div>}
+    {celebrating && <div className="axh-celebrate" role="status" onClick={() => setCelebrating(null)}>
+      {Array.from({ length: 24 }, (_, index) => <i key={index} style={{ left: `${(index * 97) % 100}%`, animationDelay: `${(index % 10) * 0.18}s` }} />)}
+      <div className="axh-celebrate__card"><strong>GOAL COMPLETED</strong><span>Every coin came from a verified action.</span></div>
+    </div>}
   </div>;
 }
+
 
 export function RemindersView({ habits, userId, onBack }: { habits: ProfileHabit[]; userId: string | null; onBack: () => void }) {
   const [goals, setGoals] = useState<Goal[]>([]);

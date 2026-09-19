@@ -55,3 +55,4 @@
 - [x] Rebuild only the leaderboard header, selectors, Top 3 podium, and ranks 4–100 arena; preserve the personal position card and all following Rank content.
 - [x] Replace only the pre-signup quiz with the 10-question first-launch assessment, calculated analysis, trajectory, AXEN projection, profile, and unchanged login handoff.
 - [x] Hide the published Lovable badge; fix authenticated onboarding name persistence; bound the cinematic startup to five seconds; redesign only AXEN Pro pricing while preserving purchases.
+- [x] Goals linked to real habits with verified coin targets, readiness score and celebration; My Journey and Goals both carry a help dot that hands off to the AI Coach with real data.

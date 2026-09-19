@@ -1,0 +1,1 @@
+revoke all on function public.sync_goals_from_completion() from public, anon, authenticated;

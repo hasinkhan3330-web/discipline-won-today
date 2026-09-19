@@ -579,35 +579,92 @@ export type Database = {
         }
         Relationships: []
       }
+      goal_habits: {
+        Row: {
+          created_at: string
+          goal_id: string
+          id: string
+          task_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          goal_id: string
+          id?: string
+          task_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          goal_id?: string
+          id?: string
+          task_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_habits_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_habits_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goals: {
         Row: {
+          category: string | null
+          celebrated: boolean
           completed: boolean
+          completed_at: string | null
           created_at: string
           description: string | null
+          earned_coins: number
           id: string
           progress: number
+          started_on: string
+          target_coins: number
           target_date: string | null
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          category?: string | null
+          celebrated?: boolean
           completed?: boolean
+          completed_at?: string | null
           created_at?: string
           description?: string | null
+          earned_coins?: number
           id?: string
           progress?: number
+          started_on?: string
+          target_coins?: number
           target_date?: string | null
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          category?: string | null
+          celebrated?: boolean
           completed?: boolean
+          completed_at?: string | null
           created_at?: string
           description?: string | null
+          earned_coins?: number
           id?: string
           progress?: number
+          started_on?: string
+          target_coins?: number
           target_date?: string | null
           title?: string
           updated_at?: string
@@ -1420,6 +1477,11 @@ export type Database = {
           stake_coins: number
         }[]
       }
+      goal_overview: { Args: never; Returns: Json }
+      goal_scheduled_count: {
+        Args: { _frequency: string; _from: string; _to: string }
+        Returns: number
+      }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
@@ -1476,6 +1538,7 @@ export type Database = {
           username: string
         }[]
       }
+      mark_goal_celebrated: { Args: { _goal_id: string }; Returns: undefined }
       my_leaderboard_position: {
         Args: { _period?: string; _scope?: string }
         Returns: {
@@ -1510,6 +1573,7 @@ export type Database = {
           weakest_habit_rate: number
         }[]
       }
+      recalc_goal: { Args: { _goal_id: string }; Returns: undefined }
       redeem_referral_code: {
         Args: { _code: string }
         Returns: {
@@ -1524,6 +1588,16 @@ export type Database = {
           ok: boolean
           reason: string
         }[]
+      }
+      save_goal: {
+        Args: {
+          _category: string
+          _goal_id: string
+          _target_date: string
+          _task_ids: string[]
+          _title: string
+        }
+        Returns: string
       }
       save_onboarding_step: {
         Args: { _answers: Json; _step: number }
