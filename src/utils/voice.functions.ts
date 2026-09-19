@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getCoachContext } from "@/utils/coach-context.functions";
+import { buildCoachContext, type CoachContext } from "@/utils/coach-context.functions";
 
 /**
  * Live-audio model. The requested "gemini-2.5-flash-native-audio-preview" alias
@@ -62,7 +62,7 @@ async function mintEphemeralToken(apiKey: string): Promise<string | null> {
  */
 export const getLiveSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context, ...rest }) => {
+  .handler(async ({ context }) => {
     const apiKey = process.env["GEMINI_API_KEY"];
     if (!apiKey) throw new Error("Voice coach is not configured yet.");
 
@@ -75,10 +75,9 @@ export const getLiveSession = createServerFn({ method: "POST" })
 
     const [ephemeral, coachContext] = await Promise.all([
       mintEphemeralToken(apiKey),
-      (getCoachContext as unknown as (options: unknown) => Promise<unknown>)({
-        ...rest,
-        data: undefined,
-      }).catch(() => null),
+      buildCoachContext(context.supabase, context.userId).catch(
+        () => null as CoachContext | null,
+      ),
     ]);
 
     return {
