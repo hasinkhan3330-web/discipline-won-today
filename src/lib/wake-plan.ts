@@ -21,7 +21,19 @@ export type WakePlan = {
 const KEY = "axen_wake_plan";
 const FIRED = "axen_wake_fired";
 
-export const todayKey = () => new Date().toISOString().slice(0, 10);
+/** Local calendar day key — the alarm hour is local, so the date must be too. */
+const dayKey = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+export const todayKey = () => dayKey(new Date());
+
+/** Calendar day of the NEXT occurrence of this tier hour (today if still ahead, else tomorrow). */
+export function nextPlanDate(tier: string): string {
+  const now = new Date();
+  const at = new Date(now.getFullYear(), now.getMonth(), now.getDate(), tierHour(tier), 0, 0, 0);
+  if (at.getTime() <= now.getTime()) at.setDate(at.getDate() + 1);
+  return dayKey(at);
+}
 
 export function loadPlan(): WakePlan | null {
   if (typeof window === "undefined") return null;
