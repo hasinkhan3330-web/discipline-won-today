@@ -241,13 +241,11 @@ export function AccountabilityPanel({ fallbackAvatar }: { fallbackAvatar: (n: st
           <HeartHandshake size={16} strokeWidth={1.8} color={AX.accent} />
           Accountability Mode
         </span>
-        {status.role === "owner" && (
-          <button onClick={end} aria-label="End pact" style={{
-            width: 32, height: 32, borderRadius: 10, cursor: "pointer",
-            background: "transparent", border: `1px solid ${AX.border}`, color: AX.muted,
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}><X size={15} strokeWidth={2} /></button>
-        )}
+        <button onClick={end} aria-label={status.role === "owner" ? "End pact" : "Leave pact"} style={{
+          width: 32, height: 32, borderRadius: 10, cursor: "pointer",
+          background: "transparent", border: `1px solid ${AX.border}`, color: AX.muted,
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}><X size={15} strokeWidth={2} /></button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>

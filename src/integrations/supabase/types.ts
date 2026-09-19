@@ -1460,6 +1460,7 @@ export type Database = {
           username: string
         }[]
       }
+      leave_pact: { Args: { _pact_id: string }; Returns: boolean }
       list_friends: {
         Args: never
         Returns: {
