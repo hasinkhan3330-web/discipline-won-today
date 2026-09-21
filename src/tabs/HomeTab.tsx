@@ -73,6 +73,8 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
   reminderTasks?: ReminderTask[];
   /** false when no wake tier/tone is saved for today — the row shows "Not set" */
   wakeSet?: boolean;
+  hasPaidFocus: boolean;
+  onUnlockFocus: () => void;
 }) {
   const done = tasks.filter(t => t.done).length;
   const pct = tasks.length ? Math.round(done / tasks.length * 100) : 0;

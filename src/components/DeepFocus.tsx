@@ -7,9 +7,9 @@ import { FocusMusicPanel } from "@/components/FocusMusicPanel";
 export type FocusTier = { id: "f49" | "f120" | "f229"; label: string; sub: string; minutes: number; reward: number };
 
 export const FOCUS_TIERS: FocusTier[] = [
-  { id: "f49", label: "49 MIN", sub: "IGNITION", minutes: 49, reward: 15 },
-  { id: "f120", label: "2 HOURS", sub: "DEEP DIVE", minutes: 120, reward: 25 },
-  { id: "f229", label: "3 HOURS", sub: "MONK MODE", minutes: 180, reward: 40 },
+  { id: "f49", label: "49 MIN", sub: "IGNITION", minutes: 49, reward: 5 },
+  { id: "f120", label: "2 HOURS", sub: "DEEP DIVE", minutes: 120, reward: 10 },
+  { id: "f229", label: "3 HOURS", sub: "MONK MODE", minutes: 180, reward: 15 },
 ];
 
 const QUICK_BLOCK_APPS = [
@@ -68,7 +68,9 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
   G: string; G2: string;
   onComplete: (tier: FocusTier, lockMode: LockMode, apps: string[]) => Promise<number | null>;
   onMusicReward?: (coins: number, minutes: number) => void;
-}>(function DeepFocus({ G, G2, onComplete, onMusicReward }, ref) {
+  hasPaidAccess: boolean;
+  onLocked: () => void;
+}>(function DeepFocus({ G, G2, onComplete, onMusicReward, hasPaidAccess, onLocked }, ref) {
   const CARD = cardStyle(G);
   const [phase, setPhase] = useState<Phase>("idle");
   const [tier, setTier] = useState<FocusTier | null>(null);
@@ -162,13 +164,14 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
 
   useImperativeHandle(ref, () => ({
     start: () => {
+      if (!hasPaidAccess) { onLocked(); return; }
       const defaultTier = FOCUS_TIERS[0];
       if (!defaultTier) return;
       setTier(defaultTier);
       setPhase("setup");
     },
     openMusic: () => setShowMusic(true),
-  }), []);
+  }), [hasPaidAccess, onLocked]);
 
   /* ---------------- IDLE: tier picker ---------------- */
   if (phase === "idle") {
@@ -181,7 +184,7 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
         {showMusic && <FocusMusicPanel onClose={() => setShowMusic(false)} onReward={onMusicReward} />}
         <div className="home-focus-tiers">
           {FOCUS_TIERS.map(t => (
-            <button key={t.id} onClick={() => { setTier(t); setPhase("setup"); }}>
+            <button key={t.id} onClick={() => { if (!hasPaidAccess) { onLocked(); return; } setTier(t); setPhase("setup"); }}>
               <Clock3 size={16} strokeWidth={1.8} />
               <strong>{t.label}</strong>
               <span>{t.sub}</span>
@@ -192,6 +195,7 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
         </div>
         {penalty > 0 && <div className="home-focus-penalty">Last session abandoned · −{penalty} pts</div>}
         <button className="home-focus-configure" onClick={() => {
+          if (!hasPaidAccess) { onLocked(); return; }
           const defaultTier = FOCUS_TIERS[0];
           if (!defaultTier) return;
           setTier(defaultTier);
