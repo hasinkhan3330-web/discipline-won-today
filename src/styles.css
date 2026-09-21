@@ -1816,7 +1816,7 @@ select {
 .stats-score__track { stroke: oklch(0.2 0.027 225); }
 .stats-score__progress { stroke: var(--stats-violet); stroke-linecap: round; animation: stats-ring-in 950ms ease-out both; }
 .stats-score__copy { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.stats-score__copy svg { width: 16px; height: 16px; color: var(--stats-violet); filter: none; }
+.stats-score__copy svg { position: absolute; top: 11px; left: 50%; width: 16px; height: 16px; color: var(--stats-violet); filter: none; transform: translateX(-50%); }
 .stats-score__copy span { margin-top: 4px; color: var(--stats-muted); font-size: 7px; }
 .stats-score__copy strong { margin-top: 1px; font-size: 24px; line-height: 1; }
 .stats-score__copy strong small { font-size: 11px; }

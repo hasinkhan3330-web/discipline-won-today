@@ -61,7 +61,7 @@ function greeting() {
   return "Good evening";
 }
 
-export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan, onFocusComplete, onMusicReward, onBuyShield, reminderTasks = [], wakeSet = true }: {
+export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan, onFocusComplete, onMusicReward, onBuyShield, reminderTasks = [], wakeSet = true, hasPaidFocus, onUnlockFocus }: {
   name: string;
   coins: number; streak: number; shields?: number;
   tasks: Task[];
@@ -157,7 +157,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
 
       {reminderTasks.length > 0 && <div className="home-command-block"><RemindersCard tasks={reminderTasks} /></div>}
 
-      <DeepFocus ref={focusRef} G={AX.cyan} G2={AX.accent} onComplete={onFocusComplete} onMusicReward={onMusicReward} />
+      <DeepFocus ref={focusRef} G={AX.cyan} G2={AX.accent} onComplete={onFocusComplete} onMusicReward={onMusicReward} hasPaidAccess={hasPaidFocus} onLocked={onUnlockFocus} />
 
       <button className="home-music-strip" onClick={() => focusRef.current?.openMusic()}>
         <span><Music2 size={18} /></span><div><strong>Focus Music</strong><small>25 min · 14Hz Beta · Study Melody</small></div><ChevronRight size={17} />

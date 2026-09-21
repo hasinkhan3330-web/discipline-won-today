@@ -988,6 +988,8 @@ function App() {
                 onBuyShield={buyShield}
                 reminderTasks={tasks.map(t => ({ uuid: (t as any)._uuid as string, name: t.name, done: t.done }))}
                 wakeSet={!!wakePlan && wakePlan.date === todayKey()}
+                hasPaidFocus={ent.isPremium}
+                onUnlockFocus={() => setShowPaywall(true)}
               />
             )}
             {tab === "rank" && (!gateReady ? <GateSkeleton /> : (
