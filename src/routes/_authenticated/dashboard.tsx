@@ -695,10 +695,11 @@ function App() {
     }
     const row = Array.isArray(data) ? data[0] : data;
     const newCoins = row?.coins ?? null;
+    const awarded = Number(row?.awarded ?? 0);
     if (typeof newCoins === "number") setCoins(newCoins);
-    setLife(prev => prev ? { ...prev, lifetimeCoins: prev.lifetimeCoins + tier.reward, focusMinutes: prev.focusMinutes + Number(row?.minutes ?? 0) } : prev);
+    setLife(prev => prev ? { ...prev, lifetimeCoins: prev.lifetimeCoins + awarded, focusMinutes: prev.focusMinutes + Number(row?.minutes ?? 0) } : prev);
 
-    toast.success(`+${tier.reward} coins · focus session logged`);
+    toast.success(`+${awarded} coins · focus session logged`);
     supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
       if (!leaders) return;
       setBoard(leaders.map(l => ({

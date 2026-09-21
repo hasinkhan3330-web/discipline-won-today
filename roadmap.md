@@ -58,4 +58,4 @@
 - [x] Goals linked to real habits with verified coin targets, readiness score and celebration; My Journey and Goals both carry a help dot that hands off to the AI Coach with real data.
 
 - [x] Remove only the Rank “Your Position” card; make the existing leaderboard user cards horizontally swipeable with snap, momentum, depth/parallax, and subtle cyan-gold glow.
-- [ ] Move only the Stats discipline crown upward; set Zen to 5 coins, Workout/Gym to 10 coins, and Deep Focus rewards to 5/10/15 with paid-only access.
+- [x] Move only the Stats discipline crown upward; set Zen to 5 coins, Workout/Gym to 10 coins, and Deep Focus rewards to 5/10/15 with paid-only access.
