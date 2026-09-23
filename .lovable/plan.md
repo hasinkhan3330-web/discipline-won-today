@@ -779,6 +779,8 @@ begin
   if p_outcome not in ('completed','ended','abandoned') then
     raise exception 'invalid outcome';
   end if;
+  -- server path: enables finalization fields through the guard triggers
+  perform set_config('app.economy_write', 'on', true);
   select contract_id into v_contract from public.contract_sessions
    where id = p_session_id and user_id = auth.uid() and session_status = 'active';
   if not found then raise exception 'active session not found'; end if;
@@ -786,7 +788,8 @@ begin
      set ended_at = now(), exit_reason = p_exit_reason,
          elapsed_seconds = greatest(elapsed_seconds, p_elapsed_seconds),
          pause_seconds   = greatest(pause_seconds,  p_pause_seconds),
-         session_status  = case p_outcome when 'completed' then 'ended' else p_outcome end
+         session_status  = case p_outcome when 'completed' then 'ended' else p_outcome end,
+         server_finalized = true
    where id = p_session_id;
   v_status := case p_outcome
     when 'completed' then 'proof_pending'
@@ -1137,6 +1140,7 @@ drop table if exists public.daily_contracts;
 
 drop function if exists public.guard_accountability_event();
 drop function if exists public.guard_contract_event_owner();
+drop function if exists public.guard_session_fields();
 drop function if exists public.guard_session_contract_owner();
 drop function if exists public.guard_recovery_owner();
 drop function if exists public.guard_proof_submission_owner();
@@ -1171,7 +1175,7 @@ Phase 1 remains: apply corrected migration → run T1–T23 + linter delta → r
 
 Nothing is applied now. On your explicit approval I run this exact migration, then deliver the Phase 1 verification report (test results T1–T20 + linter delta) before any Phase 2 work.
 
-## 8. Requested follow-on scope (explicitly scoped by you — NOT part of this migration)
+## 9. Requested follow-on scope (explicitly scoped by you — NOT part of this migration)
 
 These are later-phase items you asked for now; they change nothing in this migration and will not be started until Phase 1 is applied and verified:
 
