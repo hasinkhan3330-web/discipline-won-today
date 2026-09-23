@@ -51,6 +51,17 @@ declare
     'completed','rewarded','recovered','recovery_available']::public.contract_status[];
   allowed public.contract_status[];
 begin
+  -- client path hardening (both INSERT and UPDATE):
+  -- local_day is recomputed server-side from scheduled_at + timezone so the
+  -- one-primary-per-day rule cannot be bypassed by forging local_day
+  if not srv then
+    new.local_day := (new.scheduled_at at time zone coalesce(nullif(new.timezone,''),'UTC'))::date;
+    -- a linked goal must belong to the contract owner
+    if new.goal_id is not null and not exists (
+         select 1 from public.goals g where g.id = new.goal_id and g.user_id = new.user_id)
+    then raise exception 'linked goal must belong to the contract owner'; end if;
+  end if;
+
   if tg_op = 'INSERT' then
     if not srv then
       -- clients may only create plain, unrewarded, non-recovery contracts
@@ -667,6 +678,13 @@ begin
   end if;
   if v_c.status not in ('verified','recovered') then
     raise exception 'contract is not verified for reward';
+  end if;
+  -- forged session evidence check: reward requires a session that the server
+  -- itself finalized through end_contract_session
+  if not exists (select 1 from public.contract_sessions s
+                 where s.contract_id = v_c.id and s.user_id = v_c.user_id
+                   and s.server_finalized and s.session_status = 'ended') then
+    raise exception 'no server-finalized session for this contract';
   end if;
   -- server-controlled XP: base = clamp(round(planned_minutes/5)*2, 5, 60)
   -- difficulty multiplier; recovery = ceil(full * 0.3) measured against the
