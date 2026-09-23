@@ -46,18 +46,77 @@ create or replace function public.guard_contract_fields() returns trigger
 language plpgsql security definer set search_path = public as $$
 declare
   srv boolean := coalesce(current_setting('app.economy_write', true), 'off') = 'on';
+  server_only public.contract_status[] := array[
+    'verified','needs_review','retry_requested','rejected',
+    'completed','rewarded','recovered','recovery_available']::public.contract_status[];
+  allowed public.contract_status[];
 begin
-  if tg_op = 'UPDATE' and not srv then
-    if new.xp_awarded    is distinct from old.xp_awarded
-       or new.coins_awarded is distinct from old.coins_awarded
-       or new.rewarded_at   is distinct from old.rewarded_at
-       or (new.status is distinct from old.status and new.status in (
-            'verified','needs_review','retry_requested','rejected',
-            'completed','rewarded','recovered','recovery_available'))
+  if tg_op = 'INSERT' then
+    if not srv then
+      -- clients may only create plain, unrewarded, non-recovery contracts
+      if new.status not in ('draft','scheduled')
+         or new.is_recovery is true or new.recovery_of_id is not null
+         or coalesce(new.xp_awarded,0) <> 0 or coalesce(new.coins_awarded,0) <> 0
+         or new.rewarded_at is not null or new.completed_at is not null
+         or new.started_at is not null
+      then
+        raise exception 'reward, recovery and completion fields can only be set by the server';
+      end if;
+    end if;
+    return new;
+  end if;
+
+  if not srv then
+    -- columns a client may never change
+    if new.user_id          is distinct from old.user_id
+       or new.is_recovery    is distinct from old.is_recovery
+       or new.recovery_of_id is distinct from old.recovery_of_id
+       or new.xp_awarded     is distinct from old.xp_awarded
+       or new.coins_awarded  is distinct from old.coins_awarded
+       or new.rewarded_at    is distinct from old.rewarded_at
+       or new.completed_at   is distinct from old.completed_at
     then
-      raise exception 'reward fields can only be set by the server';
+      raise exception 'reward, recovery and completion fields can only be set by the server';
+    end if;
+    if new.status is distinct from old.status and new.status = any(server_only) then
+      raise exception 'this status can only be set by the server';
     end if;
   end if;
+
+  -- a primary contract can never become a recovery contract (or vice versa),
+  -- for clients AND for the server
+  if new.is_recovery is distinct from old.is_recovery
+     or (old.recovery_of_id is not null and new.recovery_of_id is distinct from old.recovery_of_id)
+  then
+    raise exception 'contract type (primary/recovery) is immutable';
+  end if;
+
+  -- strict state machine: only declared transitions are possible
+  if new.status is distinct from old.status then
+    allowed := case old.status
+      when 'draft'              then array['scheduled','cancelled']
+      when 'scheduled'          then array['active','rescheduled','missed','cancelled']
+      when 'rescheduled'        then array['scheduled','active','missed','cancelled']
+      when 'active'             then array['proof_pending','interrupted','missed','cancelled']
+      when 'interrupted'        then array['active','proof_pending','missed','cancelled']
+      when 'proof_pending'      then array['verified','needs_review','retry_requested','rejected','missed']
+      when 'needs_review'       then array['verified','rejected','retry_requested']
+      when 'retry_requested'    then array['proof_pending','verified','rejected','missed']
+      when 'verified'           then array['completed']
+      when 'completed'          then array['rewarded']
+      when 'rewarded'           then array[]::text[]
+      when 'rejected'           then array['recovery_available','missed']
+      when 'missed'             then array['recovery_available']
+      when 'recovery_available' then array['recovered','missed']
+      when 'recovered'          then array['rewarded']
+      when 'cancelled'          then array[]::text[]
+      else array[]::text[]
+    end::public.contract_status[];
+    if not (new.status = any(allowed)) then
+      raise exception 'invalid contract status transition % -> %', old.status, new.status;
+    end if;
+  end if;
+
   new.updated_at := now();
   return new;
 end $$;
@@ -78,6 +137,23 @@ begin
   else
     raise exception 'proof verification status can only be changed by the server';
   end if;
+  return new;
+end $$;
+
+-- proof ownership guard: the contract (and the session, when supplied) must
+-- belong to the submitting user, and the session must belong to that contract
+create or replace function public.guard_proof_submission_owner() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from public.daily_contracts c
+                 where c.id = new.contract_id and c.user_id = new.user_id)
+  then raise exception 'proof must reference the submitting user''s own contract'; end if;
+  if new.session_id is not null and not exists (
+       select 1 from public.contract_sessions s
+       where s.id = new.session_id
+         and s.user_id = new.user_id
+         and s.contract_id = new.contract_id)
+  then raise exception 'session must belong to the same user and the same contract'; end if;
   return new;
 end $$;
 
@@ -180,6 +256,7 @@ create index daily_contracts_user_sched  on public.daily_contracts (user_id, sch
 create index daily_contracts_user_status on public.daily_contracts (user_id, status);
 create index daily_contracts_goal_idx    on public.daily_contracts (goal_id);
 
+revoke all on public.daily_contracts from anon, authenticated;
 grant select, insert, update on public.daily_contracts to authenticated;
 grant all on public.daily_contracts to service_role;
 -- (no grant to anon: anon is denied before RLS is even consulted)
@@ -225,6 +302,8 @@ create unique index contract_sessions_one_active
   on public.contract_sessions (contract_id) where session_status = 'active';
 create index contract_sessions_user_idx  on public.contract_sessions (user_id, contract_id);
 
+revoke all on public.contract_sessions from anon, authenticated;
+-- no DELETE grant: sessions are append-only audit records
 grant select, insert, update on public.contract_sessions to authenticated;
 grant all on public.contract_sessions to service_role;
 alter table public.contract_sessions enable row level security;
@@ -236,8 +315,8 @@ create policy cs_insert on public.contract_sessions for insert to authenticated
     and ended_at is null and elapsed_seconds = 0);
 create policy cs_update on public.contract_sessions for update to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
-create policy cs_delete on public.contract_sessions for delete to authenticated
-  using (user_id = auth.uid() and session_status <> 'active');
+-- (intentionally NO delete policy and NO delete grant: sessions must remain
+--  append-only for audit and reward verification)
 
 create trigger trg_session_owner
   before insert or update on public.contract_sessions
@@ -276,6 +355,7 @@ create index proof_submissions_status_idx   on public.proof_submissions (status,
 
 -- users get SELECT + INSERT only. No UPDATE grant and no UPDATE policy exist,
 -- so a client UPDATE is rejected with a permission error before any trigger.
+revoke all on public.proof_submissions from anon, authenticated;
 grant select, insert on public.proof_submissions to authenticated;
 grant all on public.proof_submissions to service_role;
 alter table public.proof_submissions enable row level security;
@@ -291,6 +371,9 @@ create policy ps_insert on public.proof_submissions for insert to authenticated
 create trigger trg_guard_proof
   before insert or update on public.proof_submissions
   for each row execute function public.guard_proof_submission_fields();
+create trigger trg_guard_proof_owner
+  before insert or update on public.proof_submissions
+  for each row execute function public.guard_proof_submission_owner();
 create trigger trg_touch_proof_submissions
   before update on public.proof_submissions
   for each row execute function public.touch_updated_at();
@@ -313,6 +396,7 @@ create table public.recovery_events (
 create index recovery_events_user_idx on public.recovery_events (user_id);
 
 -- users get SELECT only; rows are created by the server RPC
+revoke all on public.recovery_events from anon, authenticated;
 grant select on public.recovery_events to authenticated;
 grant all on public.recovery_events to service_role;
 alter table public.recovery_events enable row level security;
@@ -356,6 +440,7 @@ create index accountability_connections_partner_idx
 -- users may read connections they participate in and create pending invites.
 -- NO update grant: every status transition (accept/revoke/block) goes through
 -- the server RPCs, so nobody can self-activate a partnership.
+revoke all on public.accountability_connections from anon, authenticated;
 grant select, insert on public.accountability_connections to authenticated;
 grant all on public.accountability_connections to service_role;
 alter table public.accountability_connections enable row level security;
@@ -389,6 +474,7 @@ create table public.accountability_invites (
 create index accountability_invites_inviter_idx on public.accountability_invites (inviter_user_id, created_at);
 
 -- users may list only their own invites; creation/acceptance via RPC only
+revoke all on public.accountability_invites from anon, authenticated;
 grant select on public.accountability_invites to authenticated;
 grant all on public.accountability_invites to service_role;
 alter table public.accountability_invites enable row level security;
@@ -417,6 +503,7 @@ create table public.accountability_events (
 create index accountability_events_connection_idx
   on public.accountability_events (connection_id, created_at);
 
+revoke all on public.accountability_events from anon, authenticated;
 grant select, insert on public.accountability_events to authenticated;
 grant all on public.accountability_events to service_role;
 alter table public.accountability_events enable row level security;
@@ -455,6 +542,7 @@ create table public.contract_events (
 create index contract_events_contract_idx on public.contract_events (contract_id, created_at);
 
 -- append-only: SELECT + INSERT for the owner; no update/delete ever
+revoke all on public.contract_events from anon, authenticated;
 grant select, insert on public.contract_events to authenticated;
 grant all on public.contract_events to service_role;
 alter table public.contract_events enable row level security;
@@ -901,7 +989,7 @@ grant execute on function public.partner_contracts() to authenticated, service_r
 | Table | authenticated (owner/party) | authenticated (other user / partner) | anonymous | service_role |
 |---|---|---|---|---|
 | `daily_contracts` | SELECT / INSERT (draft|scheduled, zeroed rewards) / UPDATE own rows | **nothing** — no policy matches | **nothing** (no grant, no policy) | ALL (bypasses RLS) |
-| `contract_sessions` | SELECT/INSERT/UPDATE own; DELETE own non-active | nothing | nothing | ALL |
+| `contract_sessions` | SELECT/INSERT/UPDATE own; **no DELETE** (append-only) | nothing | nothing | ALL |
 | `proof_submissions` | SELECT / INSERT own (pending-only fields) | nothing | nothing | ALL (status changes only here) |
 | `recovery_events` | SELECT own only | nothing | nothing | ALL |
 | `accountability_connections` | SELECT (if party), INSERT pending (as owner) | SELECT only if they are the partner of that row | nothing | ALL |
@@ -948,6 +1036,9 @@ Test harness pattern: `begin; set local role authenticated; set local "request.j
 | T18 | User A inserts recovery_event linking User B's contracts | trigger exception "recovery must link two contracts of the same user" |
 | T19 | Recovery contract started twice for the same original | "recovery already used" (unique constraint) |
 | T20 | User writes contract_event referencing another user's contract | trigger exception |
+| T21 | User A DELETEs one of their own ended sessions | permission denied (no DELETE grant, no policy) |
+| T22 | User A submits a proof with User B's `session_id`, or a session from a different contract | trigger exception "session must belong to the same user and the same contract" |
+| T23 | User A updates own contract `is_recovery=true` / `recovery_of_id=<id>`, or jumps `scheduled → rewarded` | exceptions: "contract type is immutable" / "invalid contract status transition" |
 
 ## 5. Risks and mitigations
 
