@@ -30,6 +30,8 @@ Add the user's own Supabase staging project as a second backend. The current Lov
    - Note: staging must have the AXEN schema (migrations) applied on your side; Phase 1 SQL can then run against staging.
 
 ## What this does NOT do
-- Does not modify, disable, or migrate the current Lovable Cloud backend.
-- Does not affect the published app or its users.
-- Does not apply any Phase 1 migration yet (that comes after, against staging).
+- Does not modify, delete, rename, reset, or overwrite the existing production backend or its data — all work targets only your AXEN Staging project.
+- Does not modify GitHub main/production configuration or the published app.
+- Does not request or expose service_role keys, database passwords, or access tokens — only the publishable anon key, which is safe for frontend use by design.
+- All staging database changes (later phases) will be forward-only, reversible, and tested on staging first.
+- Does not apply any Phase 1 migration yet (that comes after, against staging only).
