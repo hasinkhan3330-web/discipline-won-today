@@ -1,37 +1,27 @@
-# Connect Supabase Staging Alongside (Preview Uses Staging)
+# Phase 1 on AXEN Staging: apply the migration and run security tests
 
-## Goal
-Add the user's own Supabase staging project as a second backend. The current Lovable Cloud backend stays untouched and production keeps using it. The preview app gets a safe way to run against staging for Verified Discipline testing.
+## Important limit
+My database migration tool only connects to the backend this project already uses, and that is your live one. It cannot reach an outside staging project. A publishable (anon) key also cannot create tables or change security rules, by design. So I cannot apply the migration to staging myself without touching production, and I will not ask for a service_role key or database password.
 
-## Key constraints (checked against the project)
-- `src/integrations/supabase/client.ts` and `.env` are auto-generated — they will NOT be edited. Production stays on the current backend automatically.
-- Publishable/anon keys are safe in frontend code; still stored via env, never hardcoded.
-- Additive only: no changes to existing UI, theme, routes, auth flows, or business logic.
-
-## Steps
-
-1. **Collect credentials securely (one at a time, as requested)**
-   - `secrets--add_secret` for `STAGING_SUPABASE_URL`, then separately for `STAGING_SUPABASE_ANON_KEY` — values go straight into the encrypted store, never through chat.
-
-2. **Frontend env vars (preview only)**
-   - Add `VITE_STAGING_SUPABASE_URL` and `VITE_STAGING_SUPABASE_ANON_KEY` to `.env.development` (preview builds only; `.env.production` and auto-gen `.env` untouched, so the published app cannot see staging).
-
-3. **New staging client module (additive)**
-   - `src/integrations/supabase/staging-client.ts`: creates its own Supabase client from the staging env vars, with its own auth storage key so staging and Cloud sessions never mix.
-   - Existing `client.ts` remains the default everywhere.
-
-4. **Staging switch**
-   - A small helper (`src/lib/staging.ts`): staging activates only in the preview when explicitly enabled (e.g. `?staging=1` URL flag, remembered in sessionStorage). Without the flag, everything behaves exactly as today — zero regression.
-   - A tiny badge/banner shows "STAGING BACKEND" when active so you always know which backend you're on.
-
-5. **Verification**
-   - Confirm production/preview default path unchanged (flag off → current backend).
-   - Flag on → auth + data reads hit the staging project.
-   - Note: staging must have the AXEN schema (migrations) applied on your side; Phase 1 SQL can then run against staging.
+## Plan
+1. **Connect staging (preview only).** Collect the staging URL and anon key through secure forms. Add a staging client that only runs in preview when you turn it on (`?staging=1`), with a "STAGING BACKEND" badge. Production stays untouched.
+2. **Verify the target.** Confirm that the staging project ref is different from the live one (`nfmgiczlthezfwgsazfc`). If they match, STOP.
+3. **Hand over the migration.** Save the corrected, forward-only Phase 1 SQL as one complete file, plus a separate rollback file. You paste the migration into the SQL editor of your staging project and run it there.
+4. **Run the real security tests against staging** (anon key plus two test accounts you sign up on staging):
+   - Anon users can't read or write any Phase 1 table.
+   - User A can't read, update or delete User B's contracts, sessions, proofs, recovery records or partner links.
+   - Clients can't set reward, completion, recovery or server-only fields, can't skip states, and can't forge session evidence.
+   - Sessions can't be deleted (they're append-only), and each user gets one contract per local day.
+   - You can't link a goal you don't own, and repeat reward calls don't pay out twice.
+   - Privileged functions can't be run by anon or PUBLIC.
+   - Existing AXEN features still work: profile, tasks, coins and leaderboard reads.
+5. **Report PASS or BLOCKED** with the real results. Save Phase 1 as its own checkpoint and stop before Phase 2.
 
 ## What this does NOT do
-- Does not modify, delete, rename, reset, or overwrite the existing production backend or its data — all work targets only your AXEN Staging project.
-- Does not modify GitHub main/production configuration or the published app.
-- Does not request or expose service_role keys, database passwords, or access tokens — only the publishable anon key, which is safe for frontend use by design.
-- All staging database changes (later phases) will be forward-only, reversible, and tested on staging first.
-- Does not apply any Phase 1 migration yet (that comes after, against staging only).
+- It never runs a migration on the live backend or changes production data.
+- It never requests a service_role key, database password or access token.
+- It makes no UI or theme changes, and doesn't touch main or production settings.
+
+## Needs from you
+- Your staging project must already have the existing AXEN schema. Phase 1 depends on profiles, goals, score_events and coin_transactions.
+- You run step 3 in staging yourself.
