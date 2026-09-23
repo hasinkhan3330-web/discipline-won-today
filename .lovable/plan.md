@@ -1095,7 +1095,23 @@ commit;
 
 Phase 2+ rollback remains frontend-revert only.
 
-## 7. Gate
+## 7. Environment verification + blocker resolutions (your final execution rule)
+
+**Environment — verified, with your "proceed with safeguards" decision recorded.** Git: this workspace runs on Lovable's managed editing branch; a `feature/verified-discipline` branch exists on the remote but I cannot switch branches (git state is platform-managed). Backend: this project has ONE Lovable Cloud instance serving both preview and published app — no separate staging instance exists. Per your decision, I proceed on the current backend with maximum safety: corrected forward-only migration only (never editing an applied migration), T1–T23 tests run immediately after applying, rollback SQL on standby, PASS/BLOCKED report per phase, STOP on any failure, and no production publish without your separate explicit approval.
+
+**Your seven blockers — how the corrected SQL resolves each:**
+
+1. **Broad client UPDATE on contracts** → `guard_contract_fields` trigger: clients can edit only schedule/text/preference fields; reward/completion/type columns and server-only statuses are rejected; a strict transition matrix rejects impossible jumps (e.g. `scheduled → rewarded`).
+2. **Broad client UPDATE on sessions** → sessions are append-only (no DELETE), and a new `guard_session_fields` trigger restricts client UPDATEs to checkpoint fields (`elapsed_seconds`, `pause_seconds`) while `session_status='active'`; ending a session and setting `ended_at`/`exit_reason`/`server_finalized` happens only inside the `end_contract_session` RPC (server path).
+3. **Forgeable session evidence** → `contract_sessions.server_finalized boolean not null default false`; only the server RPC can set it (economy-gated). `award_contract` requires a `server_finalized` session matching the contract before any reward — a purely client-inserted "completed" session awards nothing.
+4. **Goal ownership** → `guard_contract_goal_owner` trigger: when `goal_id` is set, the goal must belong to `new.user_id`; otherwise the insert/update is rejected.
+5. **Local-day uniqueness** → the unique index stays, and `guard_contract_fields` now recomputes `local_day` server-side from `scheduled_at` + `timezone` on every client INSERT/UPDATE — a client cannot forge `local_day` to bypass the one-primary-per-day rule.
+6. **Server-only field protection / app.economy_write reliance** → protection is layered: RLS policies require zeroed reward fields on INSERT and grant no UPDATE to proofs/sessions rewards; triggers independently reject forbidden changes; `app.economy_write` is only honored when set transaction-locally inside SECURITY DEFINER RPCs (the same production pattern as Top 3 Missions). Residual risk documented: if this ever proves insufficient, the next hardening step is moving awards behind service-role-only functions with no authenticated EXECUTE at all.
+7. **SECURITY DEFINER search_path / EXECUTE grants** → every function declares `set search_path = public` and uses schema-qualified references. Explicit grants: `revoke all on function ... from public, anon, authenticated;` then `grant execute to authenticated` ONLY for user-facing RPCs (`start/checkpoint/end_contract_session`, `submit_contract_proof`, `reschedule_contract`, `start_recovery_contract`, accountability invite/accept/revoke/block/nudge, `partner_contracts`); `verify_contract_proof` and `award_contract` get `grant execute to service_role` ONLY.
+
+Phase 1 remains: apply corrected migration → run T1–T23 + linter delta → report PASS/BLOCKED → then Phase 2 server functions, in order, smallest additive change, stopping on any failure.
+
+## 8. Gate
 
 Nothing is applied now. On your explicit approval I run this exact migration, then deliver the Phase 1 verification report (test results T1–T20 + linter delta) before any Phase 2 work.
 
