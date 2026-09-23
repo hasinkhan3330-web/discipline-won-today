@@ -140,6 +140,39 @@ begin
   return new;
 end $$;
 
+-- session field guard: clients may only append checkpoints to their own ACTIVE
+-- session; ending/finalizing is server-only. Blocks forged session evidence.
+create or replace function public.guard_session_fields() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  srv boolean := coalesce(current_setting('app.economy_write', true), 'off') = 'on';
+begin
+  if not srv then
+    if tg_op = 'INSERT' then
+      if new.session_status <> 'active' or new.ended_at is not null
+         or new.server_finalized is true or coalesce(new.elapsed_seconds,0) <> 0
+      then raise exception 'sessions can only be created active by the client'; end if;
+    else
+      if new.user_id          is distinct from old.user_id
+         or new.contract_id    is distinct from old.contract_id
+         or new.started_at     is distinct from old.started_at
+         or new.expected_end_at is distinct from old.expected_end_at
+         or new.ended_at       is distinct from old.ended_at
+         or new.exit_reason    is distinct from old.exit_reason
+         or new.session_status is distinct from old.session_status
+         or new.server_finalized is distinct from old.server_finalized
+      then raise exception 'session finalization fields are server-only'; end if;
+      -- monotonic, bounded checkpoints only
+      if new.elapsed_seconds < old.elapsed_seconds
+         or new.pause_seconds < old.pause_seconds
+         or new.elapsed_seconds > 86400 or new.pause_seconds > 86400
+      then raise exception 'invalid session checkpoint'; end if;
+    end if;
+  end if;
+  new.updated_at := now();
+  return new;
+end $$;
+
 -- proof ownership guard: the contract (and the session, when supplied) must
 -- belong to the submitting user, and the session must belong to that contract
 create or replace function public.guard_proof_submission_owner() returns trigger
@@ -292,6 +325,7 @@ create table public.contract_sessions (
   session_status text not null default 'active'
     check (session_status in ('active','ended','abandoned')),
   client_instance_id uuid,
+  server_finalized boolean not null default false,
   checkpoint_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -312,15 +346,19 @@ create policy cs_select on public.contract_sessions for select to authenticated
   using (user_id = auth.uid());
 create policy cs_insert on public.contract_sessions for insert to authenticated
   with check (user_id = auth.uid() and session_status = 'active'
-    and ended_at is null and elapsed_seconds = 0);
+    and ended_at is null and elapsed_seconds = 0 and server_finalized = false);
 create policy cs_update on public.contract_sessions for update to authenticated
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = auth.uid() and session_status = 'active')
+  with check (user_id = auth.uid());
 -- (intentionally NO delete policy and NO delete grant: sessions must remain
 --  append-only for audit and reward verification)
 
 create trigger trg_session_owner
   before insert or update on public.contract_sessions
   for each row execute function public.guard_session_contract_owner();
+create trigger trg_session_fields
+  before insert or update on public.contract_sessions
+  for each row execute function public.guard_session_fields();
 create trigger trg_touch_contract_sessions
   before update on public.contract_sessions
   for each row execute function public.touch_updated_at();
