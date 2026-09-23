@@ -1051,7 +1051,49 @@ Test harness pattern: `begin; set local role authenticated; set local "request.j
 
 ## 6. Rollback
 
-Single reversible migration, invisible to the app until Phase 3 mounts UI. Rollback = drop the new tables (none hold data yet at Phase 1), the guard functions, the RPCs, the `contract_status` type, and `alter table public.score_events drop column metadata`. No existing row is ever written, so a rollback cannot lose user data, XP, or coins. Phase 2+ rollback remains frontend-revert only.
+Single reversible migration, invisible to the app until Phase 3 mounts UI. No existing row is ever written, so rollback cannot lose user data, XP, or coins. Exact rollback SQL:
+
+```sql
+begin;
+drop function if exists public.partner_contracts();
+drop function if exists public.send_accountability_nudge(uuid, text, uuid);
+drop function if exists public.block_accountability(uuid);
+drop function if exists public.revoke_accountability(uuid);
+drop function if exists public.accept_accountability_invite(text);
+drop function if exists public.create_accountability_invite();
+drop function if exists public.reschedule_contract(uuid, timestamptz, text);
+drop function if exists public.start_recovery_contract(uuid, text, timestamptz, text);
+drop function if exists public.submit_contract_proof(uuid, uuid, text, text, text);
+drop function if exists public.end_contract_session(uuid, text, text, int, int);
+drop function if exists public.checkpoint_contract_session(uuid, int, int);
+drop function if exists public.start_contract_session(uuid, uuid, timestamptz);
+drop function if exists public.verify_contract_proof(uuid, text, numeric, text, text, text);
+drop function if exists public.award_contract(uuid, text);
+
+drop table if exists public.accountability_events;
+drop table if exists public.accountability_invites;
+drop table if exists public.accountability_connections;
+drop table if exists public.contract_events;
+drop table if exists public.recovery_events;
+drop table if exists public.proof_submissions;
+drop table if exists public.contract_sessions;
+drop table if exists public.daily_contracts;
+
+drop function if exists public.guard_accountability_event();
+drop function if exists public.guard_contract_event_owner();
+drop function if exists public.guard_session_contract_owner();
+drop function if exists public.guard_recovery_owner();
+drop function if exists public.guard_proof_submission_owner();
+drop function if exists public.guard_proof_submission_fields();
+drop function if exists public.guard_contract_fields();
+-- public.touch_updated_at() is left in place (harmless, may be reused)
+
+drop type if exists public.contract_status;
+alter table public.score_events drop column if exists metadata;
+commit;
+```
+
+Phase 2+ rollback remains frontend-revert only.
 
 ## 7. Gate
 
