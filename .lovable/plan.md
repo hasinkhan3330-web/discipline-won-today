@@ -965,3 +965,12 @@ Single reversible migration, invisible to the app until Phase 3 mounts UI. Rollb
 ## 7. Gate
 
 Nothing is applied now. On your explicit approval I run this exact migration, then deliver the Phase 1 verification report (test results T1–T20 + linter delta) before any Phase 2 work.
+
+## 8. Requested follow-on scope (explicitly scoped by you — NOT part of this migration)
+
+These are later-phase items you asked for now; they change nothing in this migration and will not be started until Phase 1 is applied and verified:
+
+1. **Wire the SUBMIT PROOF button** (Phase 6): the "Today's Contract" card's SUBMIT PROOF state calls the authenticated server function `submitContractProof` → `submit_contract_proof(...)` RPC (inserts into `proof_submissions` with status `pending`, rate-limited, storage-path validated), then the server-side verification function `verifyContractProof` → `verify_contract_proof(...)` (deterministic checks + existing server-side Roboflow pattern, strict structured JSON, outage → "Verification pending" with retry, never loses the proof, no duplicate award). On `verified`, `award_contract(...)` grants Verified XP + coins server-side with a unique idempotency key.
+2. **Verified XP on the Stats screen** (Phase 6, additive, explicitly scoped by you — an approved exception to "do not change existing screens"): one small read-only "Verified XP" figure on the existing Stats tab, sourced from `score_events` where `kind in ('contract_verified','contract_recovery')` via a read-only server function. No layout, theme, color, or existing stat is altered; if no contract XP exists it shows 0. Nothing else on Stats changes.
+
+Both items stay behind the same zero-regression rules: additive components, scoped styles, existing economy untouched.
