@@ -51,6 +51,17 @@ declare
     'completed','rewarded','recovered','recovery_available']::public.contract_status[];
   allowed public.contract_status[];
 begin
+  -- client path hardening (both INSERT and UPDATE):
+  -- local_day is recomputed server-side from scheduled_at + timezone so the
+  -- one-primary-per-day rule cannot be bypassed by forging local_day
+  if not srv then
+    new.local_day := (new.scheduled_at at time zone coalesce(nullif(new.timezone,''),'UTC'))::date;
+    -- a linked goal must belong to the contract owner
+    if new.goal_id is not null and not exists (
+         select 1 from public.goals g where g.id = new.goal_id and g.user_id = new.user_id)
+    then raise exception 'linked goal must belong to the contract owner'; end if;
+  end if;
+
   if tg_op = 'INSERT' then
     if not srv then
       -- clients may only create plain, unrewarded, non-recovery contracts
@@ -137,6 +148,39 @@ begin
   else
     raise exception 'proof verification status can only be changed by the server';
   end if;
+  return new;
+end $$;
+
+-- session field guard: clients may only append checkpoints to their own ACTIVE
+-- session; ending/finalizing is server-only. Blocks forged session evidence.
+create or replace function public.guard_session_fields() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare
+  srv boolean := coalesce(current_setting('app.economy_write', true), 'off') = 'on';
+begin
+  if not srv then
+    if tg_op = 'INSERT' then
+      if new.session_status <> 'active' or new.ended_at is not null
+         or new.server_finalized is true or coalesce(new.elapsed_seconds,0) <> 0
+      then raise exception 'sessions can only be created active by the client'; end if;
+    else
+      if new.user_id          is distinct from old.user_id
+         or new.contract_id    is distinct from old.contract_id
+         or new.started_at     is distinct from old.started_at
+         or new.expected_end_at is distinct from old.expected_end_at
+         or new.ended_at       is distinct from old.ended_at
+         or new.exit_reason    is distinct from old.exit_reason
+         or new.session_status is distinct from old.session_status
+         or new.server_finalized is distinct from old.server_finalized
+      then raise exception 'session finalization fields are server-only'; end if;
+      -- monotonic, bounded checkpoints only
+      if new.elapsed_seconds < old.elapsed_seconds
+         or new.pause_seconds < old.pause_seconds
+         or new.elapsed_seconds > 86400 or new.pause_seconds > 86400
+      then raise exception 'invalid session checkpoint'; end if;
+    end if;
+  end if;
+  new.updated_at := now();
   return new;
 end $$;
 
@@ -292,6 +336,7 @@ create table public.contract_sessions (
   session_status text not null default 'active'
     check (session_status in ('active','ended','abandoned')),
   client_instance_id uuid,
+  server_finalized boolean not null default false,
   checkpoint_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -312,15 +357,19 @@ create policy cs_select on public.contract_sessions for select to authenticated
   using (user_id = auth.uid());
 create policy cs_insert on public.contract_sessions for insert to authenticated
   with check (user_id = auth.uid() and session_status = 'active'
-    and ended_at is null and elapsed_seconds = 0);
+    and ended_at is null and elapsed_seconds = 0 and server_finalized = false);
 create policy cs_update on public.contract_sessions for update to authenticated
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = auth.uid() and session_status = 'active')
+  with check (user_id = auth.uid());
 -- (intentionally NO delete policy and NO delete grant: sessions must remain
 --  append-only for audit and reward verification)
 
 create trigger trg_session_owner
   before insert or update on public.contract_sessions
   for each row execute function public.guard_session_contract_owner();
+create trigger trg_session_fields
+  before insert or update on public.contract_sessions
+  for each row execute function public.guard_session_fields();
 create trigger trg_touch_contract_sessions
   before update on public.contract_sessions
   for each row execute function public.touch_updated_at();
@@ -630,6 +679,13 @@ begin
   if v_c.status not in ('verified','recovered') then
     raise exception 'contract is not verified for reward';
   end if;
+  -- forged session evidence check: reward requires a session that the server
+  -- itself finalized through end_contract_session
+  if not exists (select 1 from public.contract_sessions s
+                 where s.contract_id = v_c.id and s.user_id = v_c.user_id
+                   and s.server_finalized and s.session_status = 'ended') then
+    raise exception 'no server-finalized session for this contract';
+  end if;
   -- server-controlled XP: base = clamp(round(planned_minutes/5)*2, 5, 60)
   -- difficulty multiplier; recovery = ceil(full * 0.3) measured against the
   -- ORIGINAL duration (never the shortened rescue duration)
@@ -723,6 +779,8 @@ begin
   if p_outcome not in ('completed','ended','abandoned') then
     raise exception 'invalid outcome';
   end if;
+  -- server path: enables finalization fields through the guard triggers
+  perform set_config('app.economy_write', 'on', true);
   select contract_id into v_contract from public.contract_sessions
    where id = p_session_id and user_id = auth.uid() and session_status = 'active';
   if not found then raise exception 'active session not found'; end if;
@@ -730,7 +788,8 @@ begin
      set ended_at = now(), exit_reason = p_exit_reason,
          elapsed_seconds = greatest(elapsed_seconds, p_elapsed_seconds),
          pause_seconds   = greatest(pause_seconds,  p_pause_seconds),
-         session_status  = case p_outcome when 'completed' then 'ended' else p_outcome end
+         session_status  = case p_outcome when 'completed' then 'ended' else p_outcome end,
+         server_finalized = true
    where id = p_session_id;
   v_status := case p_outcome
     when 'completed' then 'proof_pending'
@@ -1081,6 +1140,7 @@ drop table if exists public.daily_contracts;
 
 drop function if exists public.guard_accountability_event();
 drop function if exists public.guard_contract_event_owner();
+drop function if exists public.guard_session_fields();
 drop function if exists public.guard_session_contract_owner();
 drop function if exists public.guard_recovery_owner();
 drop function if exists public.guard_proof_submission_owner();
@@ -1095,11 +1155,27 @@ commit;
 
 Phase 2+ rollback remains frontend-revert only.
 
-## 7. Gate
+## 7. Environment verification + blocker resolutions (your final execution rule)
+
+**Environment — verified, with your "proceed with safeguards" decision recorded.** Git: this workspace runs on Lovable's managed editing branch; a `feature/verified-discipline` branch exists on the remote but I cannot switch branches (git state is platform-managed). Backend: this project has ONE Lovable Cloud instance serving both preview and published app — no separate staging instance exists. Per your decision, I proceed on the current backend with maximum safety: corrected forward-only migration only (never editing an applied migration), T1–T23 tests run immediately after applying, rollback SQL on standby, PASS/BLOCKED report per phase, STOP on any failure, and no production publish without your separate explicit approval.
+
+**Your seven blockers — how the corrected SQL resolves each:**
+
+1. **Broad client UPDATE on contracts** → `guard_contract_fields` trigger: clients can edit only schedule/text/preference fields; reward/completion/type columns and server-only statuses are rejected; a strict transition matrix rejects impossible jumps (e.g. `scheduled → rewarded`).
+2. **Broad client UPDATE on sessions** → sessions are append-only (no DELETE), and a new `guard_session_fields` trigger restricts client UPDATEs to checkpoint fields (`elapsed_seconds`, `pause_seconds`) while `session_status='active'`; ending a session and setting `ended_at`/`exit_reason`/`server_finalized` happens only inside the `end_contract_session` RPC (server path).
+3. **Forgeable session evidence** → `contract_sessions.server_finalized boolean not null default false`; only the server RPC can set it (economy-gated). `award_contract` requires a `server_finalized` session matching the contract before any reward — a purely client-inserted "completed" session awards nothing.
+4. **Goal ownership** → `guard_contract_goal_owner` trigger: when `goal_id` is set, the goal must belong to `new.user_id`; otherwise the insert/update is rejected.
+5. **Local-day uniqueness** → the unique index stays, and `guard_contract_fields` now recomputes `local_day` server-side from `scheduled_at` + `timezone` on every client INSERT/UPDATE — a client cannot forge `local_day` to bypass the one-primary-per-day rule.
+6. **Server-only field protection / app.economy_write reliance** → protection is layered: RLS policies require zeroed reward fields on INSERT and grant no UPDATE to proofs/sessions rewards; triggers independently reject forbidden changes; `app.economy_write` is only honored when set transaction-locally inside SECURITY DEFINER RPCs (the same production pattern as Top 3 Missions). Residual risk documented: if this ever proves insufficient, the next hardening step is moving awards behind service-role-only functions with no authenticated EXECUTE at all.
+7. **SECURITY DEFINER search_path / EXECUTE grants** → every function declares `set search_path = public` and uses schema-qualified references. Explicit grants: `revoke all on function ... from public, anon, authenticated;` then `grant execute to authenticated` ONLY for user-facing RPCs (`start/checkpoint/end_contract_session`, `submit_contract_proof`, `reschedule_contract`, `start_recovery_contract`, accountability invite/accept/revoke/block/nudge, `partner_contracts`); `verify_contract_proof` and `award_contract` get `grant execute to service_role` ONLY.
+
+Phase 1 remains: apply corrected migration → run T1–T23 + linter delta → report PASS/BLOCKED → then Phase 2 server functions, in order, smallest additive change, stopping on any failure.
+
+## 8. Gate
 
 Nothing is applied now. On your explicit approval I run this exact migration, then deliver the Phase 1 verification report (test results T1–T20 + linter delta) before any Phase 2 work.
 
-## 8. Requested follow-on scope (explicitly scoped by you — NOT part of this migration)
+## 9. Requested follow-on scope (explicitly scoped by you — NOT part of this migration)
 
 These are later-phase items you asked for now; they change nothing in this migration and will not be started until Phase 1 is applied and verified:
 
