@@ -12,7 +12,7 @@ You run this yourself in your staging project's SQL Editor. I cannot run it — 
 
 1. In the staging project, open **SQL Editor** (left sidebar).
 2. Click **New query**.
-3. Download `AXEN_STAGING_BASELINE_FORWARD.sql` from the files I gave you (the artifact in this chat), open it in a text editor, and copy the **entire** contents.
+3. Open `AXEN_STAGING_BASELINE_FORWARD.sql` from the Files I gave you (the artifact in this chat — 4,247 lines, verified intact from the profiles table through the final 20260921013902 section), select **all** of it, and copy.
 4. Paste into the SQL Editor and click **Run** (or Ctrl/Cmd + Enter). It should run once, as-is — do not edit, split, or re-run pieces.
 
 **If it succeeds:** you'll see a success notice. Continue to Step 3.
