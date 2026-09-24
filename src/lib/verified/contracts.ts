@@ -107,6 +107,7 @@ export function friendlyError(err: any): string {
   const code = err?.code as string | undefined;
   const msg = String(err?.message ?? "");
   if (code === "23505" || /dc_one_primary_per_day/.test(msg)) return "You already have a contract for that day.";
+  if (code === "23514") return "One of the values is outside the allowed range. Check the form.";
   if (/scheduled_at in the past/.test(msg)) return "That time has already passed.";
   if (/invalid timezone/.test(msg)) return "Your device timezone isn't recognised.";
   if (/goal does not belong/.test(msg)) return "That goal isn't available.";
