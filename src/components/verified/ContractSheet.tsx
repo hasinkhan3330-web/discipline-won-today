@@ -88,7 +88,7 @@ export function ContractSheet({ title, initial, goals, busy, serverError, onClos
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1 }}>
                 <label style={label} htmlFor="c-dur">Duration (min)</label>
-                <input id="c-dur" type="number" inputMode="numeric" min={5} max={360} style={field} value={f.planned_min} onChange={e => set("planned_min", parseInt(e.target.value || "0", 10))} />
+                <input id="c-dur" type="number" inputMode="numeric" min={5} max={240} style={field} value={f.planned_min} onChange={e => set("planned_min", parseInt(e.target.value || "0", 10))} />
                 {errors.planned_min && <div style={err}>{errors.planned_min}</div>}
               </div>
               <div style={{ flex: 1 }}>
@@ -107,7 +107,7 @@ export function ContractSheet({ title, initial, goals, busy, serverError, onClos
               <div style={{ flex: 1 }}>
                 <label style={label} htmlFor="c-diff">Difficulty</label>
                 <select id="c-diff" style={field} value={f.difficulty} onChange={e => set("difficulty", Number(e.target.value))}>
-                  {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n}</option>)}
+                  {[1, 2, 3].map(n => <option key={n} value={n}>{n}</option>)}
                 </select>
               </div>
               <div style={{ flex: 1.4 }}>
@@ -136,7 +136,7 @@ export function ContractSheet({ title, initial, goals, busy, serverError, onClos
               <dt style={{ color: AX.muted }}>When</dt><dd style={{ margin: 0 }}>{new Date(f.local).toLocaleString()} · {tz}</dd>
               <dt style={{ color: AX.muted }}>Duration</dt><dd style={{ margin: 0 }}>{f.planned_min} min · rescue {f.rescue_min} min</dd>
               <dt style={{ color: AX.muted }}>Proof</dt><dd style={{ margin: 0 }}>{PROOF_METHODS.find(p => p.id === f.proof_method)?.label}</dd>
-              <dt style={{ color: AX.muted }}>Difficulty</dt><dd style={{ margin: 0 }}>{f.difficulty}/5</dd>
+              <dt style={{ color: AX.muted }}>Difficulty</dt><dd style={{ margin: 0 }}>{f.difficulty}/3</dd>
               <dt style={{ color: AX.muted }}>Reminder</dt><dd style={{ margin: 0 }}>{REMINDER_PREFS.find(p => p.id === f.reminder_pref)?.label}</dd>
             </dl>
             {serverError && <div role="alert" style={{ ...err, fontSize: 13, margin: "8px 0" }}>{serverError}</div>}

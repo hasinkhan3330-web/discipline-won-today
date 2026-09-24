@@ -60,7 +60,7 @@ export function ContractCard() {
       } else {
         const { data: u } = await supabase.auth.getUser();
         if (!u.user) throw { code: "42501", message: "JWT" };
-        const { error } = await supabase.from("daily_contracts").insert({ ...payload, user_id: u.user.id });
+        const { error } = await supabase.from("daily_contracts").insert({ ...payload, user_id: u.user.id, local_day: f.local.slice(0, 10) /* server recomputes */ });
         if (error) throw error;
       }
       haptic("success");
@@ -108,7 +108,7 @@ export function ContractCard() {
     const details = (
       <div style={{ ...subText, marginTop: 6 }}>
         {fmtWhen(row)} · {Math.round(row.planned_seconds / 60)} min · {PROOF_METHODS.find(p => p.id === row.proof_method)?.label ?? row.proof_method}
-        {" · "}Difficulty {row.difficulty}/5 · {REMINDER_PREFS.find(p => p.id === row.reminder_pref)?.label}
+        {" · "}Difficulty {row.difficulty}/3 · {REMINDER_PREFS.find(p => p.id === row.reminder_pref)?.label}
         {goal && <div>Goal: {goal}</div>}
       </div>
     );

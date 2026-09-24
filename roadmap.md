@@ -19,3 +19,5 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - Additive-only; never touch existing UI/theme/routes/auth/economy.
 - XP ledger = score_events (kinds: contract_verified / contract_recovery); coins via existing pattern.
 - Soft Shield only (no fake app blocking); Android only; no iOS.
+- [x] Phase 2 — Today's Contract card + create/review/confirm sheet, reschedule, cancel (live; 33 DB checks + preview flow pass)
+- [ ] Phase 3 — Focus session wiring (awaiting go-ahead)
