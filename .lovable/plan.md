@@ -1,22 +1,18 @@
-# Phase 1 of 8: BLOCKED (environment not verified)
+# Phase 1 of 8: hand-run on AXEN Staging
 
-**BLOCKED — ENVIRONMENT NOT VERIFIED.** No SQL was run and nothing was changed.
+This workspace can't pass the gate by itself. It's on Lovable's editing branch `edit/edt-c1f3d75e-…`, and the only database I can change is the LIVE one, `nfmgiczlthezfwgsazfc`. So you run all SQL in your staging SQL Editor, and I review every result. I never run SQL on live.
 
-## Verified targets (read-only check, 24 Sep 2026)
-- **Git branch:** `edit/edt-c1f3d75e-6775-4f8a-a5bc-8d6cb078e636`. This is Lovable's own editing branch. It is not `feature/verified-discipline`, and I can't switch branches.
-- **Database I can run changes on:** `nfmgiczlthezfwgsazfc`. This is the **LIVE** app.
-- **Saved AXEN Staging connection:** it only has the public key. That key can't read the database structure, create objects, or run tests. The last check found staging empty: profiles, goals, score_events and coin_transactions all returned "not found".
+## Steps
+1. **Check the target.** In the staging dashboard, make sure the project ref is **not** `nfmgiczlthezfwgsazfc`. If it is, stop.
+2. **Baseline.** Run `AXEN_STAGING_BASELINE_FORWARD.sql` once, then `AXEN_STAGING_BASELINE_VERIFICATION.sql`. Send me both outputs. If anything errors, stop and paste the error. Don't retry and don't run the rollback.
+3. **Step A: reconciliation (my side).** From the verification output, I sort each required object into one of five groups: exists and compatible, needs an additive fix, missing, duplicate or conflicting, or can't verify. The objects are the 8 Phase 1 tables, the `contract_status` type, score_events and its idempotency key, coin_transactions, profiles, goals, and the reward and privileged functions. I also check the grants, access rules, indexes, triggers and links on each one. I confirm that score_events and coin_transactions are reused, with no new ledger. If anything is a duplicate, a conflict, or can't be verified, I stop.
+4. **Step B: review.** I show you the one forward-only Phase 1 migration (already prepared, with your corrections), updated for anything step 3 finds, along with its rollback file. **You approve before it's run.**
+5. **Apply and test on staging.** You run the Phase 1 forward file, then the tests file, then a read-only schema check. The tests use two test accounts on staging and cover the 16 required cases. Send me the outputs.
+6. **Report.** I give the full final report: branch and ref, what was reused and created, the fixes, filenames, the access and privilege matrix, test results, schema check, regression check, and rollback. Then I give the verdict: **PHASE 1 PASSED** or **PHASE 1 BLOCKED**.
+7. **Commit.** The Phase 1 files and the regenerated types are saved as one commit on Lovable's editing branch. You bring it into `feature/verified-discipline` on GitHub yourself. I don't merge or deploy anything.
 
-Neither target passes the non-production gate, so Steps A and B, the tests, and the commit can't run here.
+## Limits
+- I can't regenerate types from staging. They get updated by hand from the staging schema output, and I'll flag that in the report.
+- Nothing touches production, main, the UI, or Phase 2.
 
-## What's already prepared (not applied)
-- Staging baseline files: forward, rollback, verification and audit.
-- Phase 1 SQL files: forward, tests and rollback. They include your five corrections: field and state guards, proof ownership checks, no session deletes, REVOKE-first grants, and the complete accountability and event SQL.
-
-## Ways to unblock (you choose)
-1. **Hand-run staging (recommended).** In your staging SQL Editor, make sure the ref is not `nfmgiczlthezfwgsazfc`. Run the baseline forward file, then the verification file, and send me the output. I'll read it and write the Step A reconciliation report against staging. Next you run the Phase 1 forward file, then the tests file, and send me the results. I report PASS or BLOCKED. The commit is saved on Lovable's editing branch. From there, you move it to `feature/verified-discipline` yourself on GitHub.
-2. **Move the staging backend into this workspace.** Only possible if Lovable support can attach your staging project as this workspace's database. Nothing I can do from here.
-3. **Proceed on the live backend with safeguards.** You ruled this out, so it's only listed for completeness.
-
-## Nothing done in this turn
-No migration, no data changes, no code changes, no switching branches or databases, no deploy.
+Next action once you approve: step 1. You run the baseline and send me the verification output.
