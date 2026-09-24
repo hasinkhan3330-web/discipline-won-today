@@ -5,6 +5,7 @@ import { haptic } from "@/lib/haptics";
 import { ShieldCard } from "@/components/ShieldCard";
 import { RemindersCard, type ReminderTask } from "@/components/RemindersCard";
 import { EmptyState } from "@/components/EmptyState";
+import { ContractCard } from "@/components/verified/ContractCard";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
   Flame, Footprints, PenLine, Circle, Check, ScanLine, Coins, Zap,
@@ -115,6 +116,8 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
         </div>
         <button className="home-primary-action" onClick={() => focusRef.current?.start()}><Zap size={18} fill="currentColor" /> Start Deep Focus</button>
       </section>
+
+      <ContractCard />
 
       <section className="home-missions">
         <div className="home-section-heading home-section-heading--plain"><div><h2>Today Missions</h2><p>Execute the plan. No negotiation.</p></div><span>{done}/{tasks.length}</span></div>
