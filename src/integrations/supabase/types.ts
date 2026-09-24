@@ -635,6 +635,7 @@ export type Database = {
           private_note: string | null
           proof_method: string
           recovery_of_id: string | null
+          reminder_pref: string
           rescue_seconds: number
           rewarded_at: string | null
           scheduled_at: string
@@ -664,6 +665,7 @@ export type Database = {
           private_note?: string | null
           proof_method: string
           recovery_of_id?: string | null
+          reminder_pref?: string
           rescue_seconds: number
           rewarded_at?: string | null
           scheduled_at: string
@@ -693,6 +695,7 @@ export type Database = {
           private_note?: string | null
           proof_method?: string
           recovery_of_id?: string | null
+          reminder_pref?: string
           rescue_seconds?: number
           rewarded_at?: string | null
           scheduled_at?: string
@@ -2149,6 +2152,7 @@ export type Database = {
           private_note: string | null
           proof_method: string
           recovery_of_id: string | null
+          reminder_pref: string
           rescue_seconds: number
           rewarded_at: string | null
           scheduled_at: string
