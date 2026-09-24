@@ -2,12 +2,13 @@ import type { Database } from "@/integrations/supabase/types";
 
 export type ContractRow = Database["public"]["Tables"]["daily_contracts"]["Row"];
 
-export const CATEGORIES = ["study", "work", "workout", "meditation", "reading", "other"] as const;
+export const CATEGORIES = ["study", "work", "workout", "meditation", "reading", "creative", "other"] as const;
 export const PROOF_METHODS = [
   { id: "timer", label: "Timer" },
-  { id: "recall", label: "Recall note" },
+  { id: "timer_recall", label: "Timer + recall note" },
   { id: "checklist", label: "Checklist" },
   { id: "photo", label: "Photo" },
+  { id: "zen_session", label: "Zen session" },
 ] as const;
 export const REMINDER_PREFS = [
   { id: "none", label: "No reminder" },
@@ -31,11 +32,12 @@ export type ContractForm = {
 
 /** Deterministic suggestion templates — editable, never touch the linked goal. */
 export const TEMPLATES: Record<string, { title: string; planned: number; proof: string }> = {
-  study: { title: "Study one chapter with notes", planned: 45, proof: "recall" },
+  study: { title: "Study one chapter with notes", planned: 45, proof: "timer_recall" },
   work: { title: "Ship one focused work block", planned: 60, proof: "timer" },
   workout: { title: "Complete a 30-minute workout", planned: 30, proof: "checklist" },
-  meditation: { title: "Meditate for 10 minutes", planned: 10, proof: "timer" },
-  reading: { title: "Read 20 pages", planned: 30, proof: "recall" },
+  meditation: { title: "Meditate for 10 minutes", planned: 10, proof: "zen_session" },
+  reading: { title: "Read 20 pages", planned: 30, proof: "timer_recall" },
+  creative: { title: "Create for 30 focused minutes", planned: 30, proof: "timer" },
   other: { title: "Finish one important task", planned: 30, proof: "checklist" },
 };
 
@@ -56,7 +58,7 @@ export function defaultStart(): string {
 export function emptyForm(): ContractForm {
   return {
     goal_id: null, title: "", category: "study", local: defaultStart(), planned_min: 45, rescue_min: 10,
-    trigger_text: "", proof_method: "recall", difficulty: 3, reminder_pref: "standard", private_note: "",
+    trigger_text: "", proof_method: "timer_recall", difficulty: 2, reminder_pref: "standard", private_note: "",
   };
 }
 
@@ -69,7 +71,7 @@ export function formFromRow(r: ContractRow): ContractForm {
   };
 }
 
-export const rescueMax = (planned: number) => Math.max(1, Math.min(60, planned));
+export const rescueMax = (planned: number) => Math.max(1, Math.min(60, planned - 1));
 
 export function validate(f: ContractForm): Record<string, string> {
   const e: Record<string, string> = {};
@@ -79,10 +81,10 @@ export function validate(f: ContractForm): Record<string, string> {
   const when = new Date(f.local);
   if (isNaN(when.getTime())) e.local = "Pick a date and time.";
   else if (when.getTime() < Date.now() - 60_000) e.local = "Pick a time in the future.";
-  if (!Number.isInteger(f.planned_min) || f.planned_min < 5 || f.planned_min > 360) e.planned_min = "5–360 minutes.";
+  if (!Number.isInteger(f.planned_min) || f.planned_min < 5 || f.planned_min > 240) e.planned_min = "5–240 minutes.";
   if (!Number.isInteger(f.rescue_min) || f.rescue_min < 1 || f.rescue_min > rescueMax(f.planned_min)) e.rescue_min = `1–${rescueMax(f.planned_min)} minutes.`;
   if (!PROOF_METHODS.some(p => p.id === f.proof_method)) e.proof_method = "Pick a proof method.";
-  if (f.difficulty < 1 || f.difficulty > 5) e.difficulty = "1–5.";
+  if (f.difficulty < 1 || f.difficulty > 3) e.difficulty = "1–3.";
   if (f.trigger_text.length > 200) e.trigger_text = "Max 200 characters.";
   if (f.private_note.length > 500) e.private_note = "Max 500 characters.";
   return e;
