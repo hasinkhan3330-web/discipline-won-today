@@ -4,7 +4,8 @@ Approved plan: `.lovable/plan/axen-verified-discipline-system-implementation-pla
 Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHECK.
 
 ## Phases
-- [ ] Staging connection — collect STAGING_SUPABASE_URL + STAGING_SUPABASE_ANON_KEY securely; runtime staging client + preview-only `?staging=1` toggle; verify production path unchanged
+- [ ] Staging connection — collect STAGING_SUPABASE_URL + STAGING_SUPABASE_ANON_KEY securely; runtime staging client + preview-only `?staging=1` toggle; verify production path unchanged (saved URL confirmed = staging ref pfjsskutkoibvputlqpj; built-in backend cannot be swapped)
+- [ ] Staging baseline V2 — BLOCKED on user: run AXEN_STAGING_INVENTORY.sql in staging SQL Editor and paste output; then generate AXEN_STAGING_BASELINE_FORWARD_V2.sql
 - [ ] Phase 1 — Database foundation: daily_contracts, contract_sessions, proof_submissions, recovery_events, accountability_connections/invites/events, contract_events (GRANT + RLS + triggers + indexes)
 - [ ] Phase 2 — Server functions: src/lib/verified/contracts.functions.ts (create/start/pause/end/checkpoint, submitProof/verifyProof, finalizeContractAndAward, startRecovery, reschedule, accountability invite/accept/revoke/nudge)
 - [ ] Phase 3 — Home "Today's Contract" card (src/components/verified/ContractCard.tsx, mounted in HomeTab)
