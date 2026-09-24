@@ -1,5 +1,10 @@
 # Fix: make the staging baseline re-runnable on a non-empty staging database
 
+## About switching to staging project `pfjsskutkoibvputlqpj`
+- This project's built-in backend can't be swapped for another project or disconnected, so my database tool will keep pointing at the live project (`nfmgiczlthezfwgsazfc`). "Build mode on staging" therefore can't run database changes from here.
+- What does work: the staging web address and public key are already saved. After approval I'll check that they point to `pfjsskutkoibvputlqpj`. I can use them for read-only checks and, later, for the preview-only staging switch (`?staging=1`). Database structure changes still go through you in the staging SQL Editor, following the steps below.
+- I won't run any SQL on live.
+
 ## What happened
 - The FORWARD file's safety guard stopped because `public.profiles` already exists in staging, so staging already has some or all of the AXEN schema.
 - Adding `CREATE TABLE IF NOT EXISTS` alone is not enough: the file also has `CREATE POLICY`, `CREATE TRIGGER`, `CREATE INDEX` and `ALTER TABLE ... ADD COLUMN`, which fail on re-run, and `IF NOT EXISTS` can hide a table whose columns differ.
