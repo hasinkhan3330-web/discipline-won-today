@@ -14,6 +14,131 @@ export type Database = {
   }
   public: {
     Tables: {
+      accountability_connections: {
+        Row: {
+          created_at: string
+          ended_at: string | null
+          id: string
+          invite_id: string | null
+          partner_id: string
+          share_status: boolean
+          share_streak: boolean
+          status: Database["public"]["Enums"]["accountability_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          invite_id?: string | null
+          partner_id: string
+          share_status?: boolean
+          share_streak?: boolean
+          status?: Database["public"]["Enums"]["accountability_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          invite_id?: string | null
+          partner_id?: string
+          share_status?: boolean
+          share_streak?: boolean
+          status?: Database["public"]["Enums"]["accountability_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accountability_connections_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "accountability_invites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accountability_events: {
+        Row: {
+          actor_id: string
+          connection_id: string
+          contract_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          message: string | null
+          recipient_id: string
+        }
+        Insert: {
+          actor_id: string
+          connection_id: string
+          contract_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          message?: string | null
+          recipient_id: string
+        }
+        Update: {
+          actor_id?: string
+          connection_id?: string
+          contract_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string | null
+          recipient_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accountability_events_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "accountability_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "accountability_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "daily_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      accountability_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          inviter_id: string
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          inviter_id: string
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          inviter_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: []
+      }
       accountability_pacts: {
         Row: {
           created_at: string
@@ -401,6 +526,202 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      contract_events: {
+        Row: {
+          contract_id: string
+          created_at: string
+          from_status: Database["public"]["Enums"]["contract_status"] | null
+          id: number
+          kind: string
+          meta: Json
+          to_status: Database["public"]["Enums"]["contract_status"] | null
+          user_id: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["contract_status"] | null
+          id?: never
+          kind: string
+          meta?: Json
+          to_status?: Database["public"]["Enums"]["contract_status"] | null
+          user_id: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          from_status?: Database["public"]["Enums"]["contract_status"] | null
+          id?: never
+          kind?: string
+          meta?: Json
+          to_status?: Database["public"]["Enums"]["contract_status"] | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_events_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "daily_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_sessions: {
+        Row: {
+          client_instance_id: string | null
+          contract_id: string
+          created_at: string
+          elapsed_seconds: number | null
+          ended_at: string | null
+          exit_reason: string | null
+          expected_end_at: string
+          id: string
+          session_status: Database["public"]["Enums"]["contract_session_status"]
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          client_instance_id?: string | null
+          contract_id: string
+          created_at?: string
+          elapsed_seconds?: number | null
+          ended_at?: string | null
+          exit_reason?: string | null
+          expected_end_at: string
+          id?: string
+          session_status?: Database["public"]["Enums"]["contract_session_status"]
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          client_instance_id?: string | null
+          contract_id?: string
+          created_at?: string
+          elapsed_seconds?: number | null
+          ended_at?: string | null
+          exit_reason?: string | null
+          expected_end_at?: string
+          id?: string
+          session_status?: Database["public"]["Enums"]["contract_session_status"]
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_sessions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "daily_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_contracts: {
+        Row: {
+          accountability_enabled: boolean
+          category: string
+          coins_awarded: number
+          completed_at: string | null
+          created_at: string
+          difficulty: number
+          expires_at: string | null
+          goal_id: string | null
+          id: string
+          is_recovery: boolean
+          local_day: string
+          planned_seconds: number
+          private_note: string | null
+          proof_method: string
+          recovery_of_id: string | null
+          rescue_seconds: number
+          rewarded_at: string | null
+          scheduled_at: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["contract_status"]
+          timezone: string
+          title: string
+          trigger_text: string | null
+          updated_at: string
+          user_id: string
+          version: number
+          xp_awarded: number
+        }
+        Insert: {
+          accountability_enabled?: boolean
+          category: string
+          coins_awarded?: number
+          completed_at?: string | null
+          created_at?: string
+          difficulty?: number
+          expires_at?: string | null
+          goal_id?: string | null
+          id?: string
+          is_recovery?: boolean
+          local_day: string
+          planned_seconds: number
+          private_note?: string | null
+          proof_method: string
+          recovery_of_id?: string | null
+          rescue_seconds: number
+          rewarded_at?: string | null
+          scheduled_at: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          timezone: string
+          title: string
+          trigger_text?: string | null
+          updated_at?: string
+          user_id: string
+          version?: number
+          xp_awarded?: number
+        }
+        Update: {
+          accountability_enabled?: boolean
+          category?: string
+          coins_awarded?: number
+          completed_at?: string | null
+          created_at?: string
+          difficulty?: number
+          expires_at?: string | null
+          goal_id?: string | null
+          id?: string
+          is_recovery?: boolean
+          local_day?: string
+          planned_seconds?: number
+          private_note?: string | null
+          proof_method?: string
+          recovery_of_id?: string | null
+          rescue_seconds?: number
+          rewarded_at?: string | null
+          scheduled_at?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          timezone?: string
+          title?: string
+          trigger_text?: string | null
+          updated_at?: string
+          user_id?: string
+          version?: number
+          xp_awarded?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_contracts_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_contracts_recovery_of_id_fkey"
+            columns: ["recovery_of_id"]
+            isOneToOne: false
+            referencedRelation: "daily_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       daily_top_tasks: {
         Row: {
@@ -1001,6 +1322,72 @@ export type Database = {
         }
         Relationships: []
       }
+      proof_submissions: {
+        Row: {
+          confidence: number | null
+          contract_id: string
+          created_at: string
+          id: string
+          private_storage_path: string | null
+          proof_type: string
+          reason_code: string | null
+          retry_count: number
+          session_id: string | null
+          status: Database["public"]["Enums"]["proof_status"]
+          text_evidence: string | null
+          user_id: string
+          verified_at: string | null
+          verifier_version: string | null
+        }
+        Insert: {
+          confidence?: number | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          private_storage_path?: string | null
+          proof_type: string
+          reason_code?: string | null
+          retry_count?: number
+          session_id?: string | null
+          status?: Database["public"]["Enums"]["proof_status"]
+          text_evidence?: string | null
+          user_id: string
+          verified_at?: string | null
+          verifier_version?: string | null
+        }
+        Update: {
+          confidence?: number | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          private_storage_path?: string | null
+          proof_type?: string
+          reason_code?: string | null
+          retry_count?: number
+          session_id?: string | null
+          status?: Database["public"]["Enums"]["proof_status"]
+          text_evidence?: string | null
+          user_id?: string
+          verified_at?: string | null
+          verifier_version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proof_submissions_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "daily_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proof_submissions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "contract_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quiz_attempts: {
         Row: {
           alarm_id: string | null
@@ -1077,6 +1464,48 @@ export type Database = {
           subject?: string
         }
         Relationships: []
+      }
+      recovery_events: {
+        Row: {
+          created_at: string
+          id: string
+          original_contract_id: string
+          reason: string | null
+          recovery_contract_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          original_contract_id: string
+          reason?: string | null
+          recovery_contract_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          original_contract_id?: string
+          reason?: string | null
+          recovery_contract_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recovery_events_original_contract_id_fkey"
+            columns: ["original_contract_id"]
+            isOneToOne: true
+            referencedRelation: "daily_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recovery_events_recovery_contract_id_fkey"
+            columns: ["recovery_contract_id"]
+            isOneToOne: true
+            referencedRelation: "daily_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       score_events: {
         Row: {
@@ -1360,6 +1789,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_accountability_invite: {
+        Args: { _token_hash: string }
+        Returns: string
+      }
       activate_axen_plan: { Args: { _answers: Json }; Returns: undefined }
       apply_daily_penalty: {
         Args: never
@@ -1368,6 +1801,15 @@ export type Database = {
           penalized: boolean
         }[]
       }
+      award_contract: {
+        Args: { _contract_id: string }
+        Returns: {
+          already_awarded: boolean
+          coins: number
+          xp: number
+        }[]
+      }
+      axen_is_server_write: { Args: never; Returns: boolean }
       buy_streak_shield: {
         Args: never
         Returns: {
@@ -1432,6 +1874,32 @@ export type Database = {
           minutes: number
         }[]
       }
+      create_accountability_invite: {
+        Args: { _token_hash: string }
+        Returns: string
+      }
+      end_contract_session: {
+        Args: { _reason: string; _session_id: string }
+        Returns: {
+          client_instance_id: string | null
+          contract_id: string
+          created_at: string
+          elapsed_seconds: number | null
+          ended_at: string | null
+          exit_reason: string | null
+          expected_end_at: string
+          id: string
+          session_status: Database["public"]["Enums"]["contract_session_status"]
+          started_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contract_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       ensure_app_trial: {
         Args: never
         Returns: {
@@ -1475,6 +1943,14 @@ export type Database = {
           partner_total_today: number
           role: string
           stake_coins: number
+        }[]
+      }
+      get_partner_today: {
+        Args: never
+        Returns: {
+          local_day: string
+          partner_id: string
+          status: Database["public"]["Enums"]["contract_status"]
         }[]
       }
       goal_overview: { Args: never; Returns: Json }
@@ -1538,6 +2014,17 @@ export type Database = {
           username: string
         }[]
       }
+      log_contract_event: {
+        Args: {
+          _contract: string
+          _from: Database["public"]["Enums"]["contract_status"]
+          _kind: string
+          _meta?: Json
+          _to: Database["public"]["Enums"]["contract_status"]
+          _user: string
+        }
+        Returns: undefined
+      }
       mark_goal_celebrated: { Args: { _goal_id: string }; Returns: undefined }
       my_leaderboard_position: {
         Args: { _period?: string; _scope?: string }
@@ -1589,6 +2076,10 @@ export type Database = {
           reason: string
         }[]
       }
+      revoke_accountability_connection: {
+        Args: { _block?: boolean; _connection_id: string }
+        Returns: undefined
+      }
       save_goal: {
         Args: {
           _category: string
@@ -1607,12 +2098,76 @@ export type Database = {
         Args: { _mode: string; _slot: string; _tone: string }
         Returns: string
       }
+      send_accountability_nudge: {
+        Args: { _connection_id: string; _kind: string; _message?: string }
+        Returns: undefined
+      }
       send_friend_request: {
         Args: { _username: string }
         Returns: {
           ok: boolean
           reason: string
         }[]
+      }
+      start_contract_session: {
+        Args: { _client_instance?: string; _contract_id: string }
+        Returns: {
+          client_instance_id: string | null
+          contract_id: string
+          created_at: string
+          elapsed_seconds: number | null
+          ended_at: string | null
+          exit_reason: string | null
+          expected_end_at: string
+          id: string
+          session_status: Database["public"]["Enums"]["contract_session_status"]
+          started_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contract_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      start_recovery: {
+        Args: { _original_id: string; _reason?: string }
+        Returns: {
+          accountability_enabled: boolean
+          category: string
+          coins_awarded: number
+          completed_at: string | null
+          created_at: string
+          difficulty: number
+          expires_at: string | null
+          goal_id: string | null
+          id: string
+          is_recovery: boolean
+          local_day: string
+          planned_seconds: number
+          private_note: string | null
+          proof_method: string
+          recovery_of_id: string | null
+          rescue_seconds: number
+          rewarded_at: string | null
+          scheduled_at: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["contract_status"]
+          timezone: string
+          title: string
+          trigger_text: string | null
+          updated_at: string
+          user_id: string
+          version: number
+          xp_awarded: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "daily_contracts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       use_streak_shield: {
         Args: never
@@ -1622,10 +2177,57 @@ export type Database = {
           shields: number
         }[]
       }
+      verify_contract_proof: {
+        Args: {
+          _confidence: number
+          _proof_id: string
+          _reason: string
+          _status: Database["public"]["Enums"]["proof_status"]
+          _verifier: string
+        }
+        Returns: {
+          confidence: number | null
+          contract_id: string
+          created_at: string
+          id: string
+          private_storage_path: string | null
+          proof_type: string
+          reason_code: string | null
+          retry_count: number
+          session_id: string | null
+          status: Database["public"]["Enums"]["proof_status"]
+          text_evidence: string | null
+          user_id: string
+          verified_at: string | null
+          verifier_version: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "proof_submissions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       wake_slot_reward: { Args: { _slot: string }; Returns: number }
     }
     Enums: {
-      [_ in never]: never
+      accountability_status: "active" | "revoked" | "blocked"
+      contract_session_status: "active" | "completed" | "abandoned" | "expired"
+      contract_status:
+        | "draft"
+        | "scheduled"
+        | "active"
+        | "proof_pending"
+        | "verified"
+        | "rewarded"
+        | "missed"
+      proof_status:
+        | "submitted"
+        | "verified"
+        | "needs_review"
+        | "retry_requested"
+        | "rejected"
+        | "unavailable"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1752,6 +2354,26 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      accountability_status: ["active", "revoked", "blocked"],
+      contract_session_status: ["active", "completed", "abandoned", "expired"],
+      contract_status: [
+        "draft",
+        "scheduled",
+        "active",
+        "proof_pending",
+        "verified",
+        "rewarded",
+        "missed",
+      ],
+      proof_status: [
+        "submitted",
+        "verified",
+        "needs_review",
+        "retry_requested",
+        "rejected",
+        "unavailable",
+      ],
+    },
   },
 } as const
