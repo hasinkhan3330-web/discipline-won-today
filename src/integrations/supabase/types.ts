@@ -2221,6 +2221,7 @@ export type Database = {
         | "verified"
         | "rewarded"
         | "missed"
+        | "cancelled"
       proof_status:
         | "submitted"
         | "verified"
@@ -2365,6 +2366,7 @@ export const Constants = {
         "verified",
         "rewarded",
         "missed",
+        "cancelled",
       ],
       proof_status: [
         "submitted",
