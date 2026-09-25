@@ -16,7 +16,7 @@ const field: CSSProperties = {
 const label: CSSProperties = { display: "block", fontSize: 12, color: AX.muted, margin: "12px 0 6px" };
 const err: CSSProperties = { fontSize: 12, color: AX.danger, marginTop: 4 };
 
-export function ContractSheet({ title, initial, goals, busy, serverError, onClose, onConfirm }: {
+export function ContractSheet({ title, initial, goals, busy, serverError, onClose, onConfirm, hasPartner = false }: {
   title: string;
   initial: ContractForm;
   goals: Goal[];
@@ -24,6 +24,7 @@ export function ContractSheet({ title, initial, goals, busy, serverError, onClos
   serverError: string | null;
   onClose: () => void;
   onConfirm: (f: ContractForm, asDraft: boolean) => void;
+  hasPartner?: boolean;
 }) {
   const [f, setF] = useState<ContractForm>(initial);
   const [step, setStep] = useState<"edit" | "review">("edit");
@@ -124,7 +125,12 @@ export function ContractSheet({ title, initial, goals, busy, serverError, onClos
             <label style={label} htmlFor="c-note">Private note (optional)</label>
             <textarea id="c-note" style={{ ...field, minHeight: 64 }} maxLength={500} value={f.private_note} onChange={e => set("private_note", e.target.value)} />
 
-            <div style={{ ...subText, marginTop: 12 }}>Accountability partner — coming soon.</div>
+            {hasPartner ? (
+              <label style={{ ...subText, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 12 }}>
+                Share with my accountability partner
+                <input type="checkbox" aria-label="Share with my accountability partner" checked={!!f.accountability} onChange={e => setF(p => ({ ...p, accountability: e.target.checked }))} />
+              </label>
+            ) : <div style={{ ...subText, marginTop: 12 }}>Add an accountability partner in Profile to share progress.</div>}
 
             <button onClick={review} style={{ ...buttonStyle(), width: "100%", marginTop: 16, minHeight: 48 }}>Review</button>
           </>
