@@ -22,3 +22,4 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Phase 2 — Today's Contract card + create/review/confirm sheet, reschedule, cancel (live; 33 DB checks + preview flow pass)
 - [x] Phase 3 — Reminders + focus session (PASSED)
 - [x] Phase 4 — Proof step (PASSED by owner decision, Option B: all proof tests pass; intermittent "state update on unmounted component" warning on Home load logged as known pre-existing issue, not investigated)
+- [ ] Phase 7 — Accountability + Soft Shield (SQL applied; screen changes awaiting approval; then 31 tests)
