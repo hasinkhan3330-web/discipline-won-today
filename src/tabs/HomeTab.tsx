@@ -6,6 +6,14 @@ import { ShieldCard } from "@/components/ShieldCard";
 import { RemindersCard, type ReminderTask } from "@/components/RemindersCard";
 import { EmptyState } from "@/components/EmptyState";
 import { ContractCard } from "@/components/verified/ContractCard";
+import { ContractFocusSession } from "@/components/verified/ContractFocusSession";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  clearCheckpoint, endContractSession, findActiveSession, readCheckpoint,
+  reconcileCheckpoint, startContractSession, type SessionSnapshot,
+} from "@/lib/verified/contract-session";
+import type { ContractRow } from "@/lib/verified/contracts";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
   Flame, Footprints, PenLine, Circle, Check, ScanLine, Coins, Zap,
