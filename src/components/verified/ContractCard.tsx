@@ -5,13 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { AX, buttonStyle, cardStyle, subText, titleStyle } from "@/tabs/styles";
 import { haptic } from "@/lib/haptics";
 import { ContractSheet } from "./ContractSheet";
+import { cancelContractReminders, scheduleContractReminders } from "@/lib/verified/contract-reminders";
 import {
   PROOF_METHODS, REMINDER_PREFS, deviceTimezone, emptyForm, fmtWhen, formFromRow, friendlyError, toPayload,
   type ContractForm, type ContractRow,
 } from "@/lib/verified/contracts";
 
 const READ_ONLY: Record<string, string> = {
-  active: "In progress", proof_pending: "Awaiting proof", verified: "Verified",
+  proof_pending: "Session done — proof step comes next", verified: "Verified",
   rewarded: "Completed", missed: "Missed",
 };
 
@@ -19,7 +20,10 @@ function localToday(tz: string) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(new Date());
 }
 
-export function ContractCard() {
+export function ContractCard({ onStart, onResume }: {
+  onStart?: (row: ContractRow) => Promise<void> | void;
+  onResume?: (row: ContractRow) => void;
+} = {}) {
   const tz = deviceTimezone();
   const [row, setRow] = useState<ContractRow | null | undefined>(undefined);
   const [loadErr, setLoadErr] = useState<string | null>(null);
@@ -29,23 +33,28 @@ export function ContractCard() {
   const [saveErr, setSaveErr] = useState<string | null>(null);
   const lock = useRef(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<ContractRow | null> => {
     setLoadErr(null);
     const today = localToday(tz);
     const { data, error } = await supabase.from("daily_contracts")
       .select("*").eq("is_recovery", false).gte("local_day", today).neq("status", "cancelled")
       .order("scheduled_at", { ascending: true }).limit(1);
-    if (error) { setLoadErr(friendlyError(error)); return; }
-    setRow(data?.[0] ?? null);
+    if (error) { setLoadErr(friendlyError(error)); return null; }
+    const fresh = (data?.[0] ?? null) as ContractRow | null;
+    setRow(fresh);
+    // reminders only make sense for a scheduled contract — clean up anything stale
+    if (fresh && fresh.status !== "scheduled") void cancelContractReminders(fresh.id);
+    return fresh;
   }, [tz]);
 
   useEffect(() => {
     load();
     supabase.from("goals").select("id,title").eq("completed", false).order("created_at")
       .then(({ data }) => setGoals((data ?? []) as any));
-    const on = () => load();
+    const on = () => { void load(); };
     window.addEventListener("online", on);
-    return () => window.removeEventListener("online", on);
+    window.addEventListener("axen:contract-changed", on);
+    return () => { window.removeEventListener("online", on); window.removeEventListener("axen:contract-changed", on); };
   }, [load]);
 
   const save = async (f: ContractForm, asDraft: boolean) => {
@@ -66,7 +75,13 @@ export function ContractCard() {
       haptic("success");
       toast.success(asDraft ? "Draft saved" : "Contract set");
       setSheet(null);
-      await load();
+      const fresh = await load();
+      if (fresh && fresh.status === "scheduled" && !asDraft) {
+        const r = await scheduleContractReminders(fresh);
+        if (r === "denied" || r === "unsupported" || r === "browser") {
+          toast.info("Reminders are off here — we'll keep your contract visible in the app.");
+        }
+      }
     } catch (e) {
       setSaveErr(friendlyError(e));
     } finally {
@@ -82,6 +97,7 @@ export function ContractCard() {
       const { data, error } = await supabase.from("daily_contracts").update({ status: "cancelled" }).eq("id", row.id).select("id").maybeSingle();
       if (error) throw error;
       if (!data) throw { code: "42501", message: "not owner" };
+      await cancelContractReminders(row.id);
       toast.success("Contract cancelled");
       await load();
     } catch (e) {
@@ -89,6 +105,13 @@ export function ContractCard() {
     } finally {
       lock.current = false; setBusy(false);
     }
+  };
+
+  const start = async () => {
+    if (!row || !onStart || lock.current) return;
+    lock.current = true; setBusy(true);
+    try { await onStart(row); await load(); }
+    finally { lock.current = false; setBusy(false); }
   };
 
   const CARD = cardStyle();
@@ -119,12 +142,14 @@ export function ContractCard() {
         <button style={{ ...buttonStyle("ghost"), width: "100%", marginTop: 8 }} onClick={cancel} disabled={busy}>Cancel</button></>;
     } else if (row.status === "scheduled") {
       body = <>{title}{details}
-        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48, opacity: 0.5, cursor: "not-allowed" }} disabled aria-describedby="c-start-note">START CONTRACT</button>
-        <div id="c-start-note" style={{ fontSize: 12, color: AX.muted, marginTop: 6, textAlign: "center" }}>Focus integration arrives next phase.</div>
+        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => void start()} disabled={busy || !onStart}>{busy ? "STARTING…" : "START CONTRACT"}</button>
         <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
           <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={() => { setSaveErr(null); setSheet("edit"); }} disabled={busy}>Reschedule</button>
           <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={cancel} disabled={busy}>Cancel</button>
         </div></>;
+    } else if (row.status === "active") {
+      body = <>{title}<div style={{ fontSize: 12, color: AX.success, marginTop: 4 }}>In progress</div>{details}
+        {onResume && <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => onResume(row)} disabled={busy}>RETURN TO SESSION</button>}</>;
     } else {
       body = <>{title}<div style={{ fontSize: 12, color: row.status === "missed" ? AX.danger : AX.success, marginTop: 4 }}>{READ_ONLY[row.status] ?? row.status}</div>{details}</>;
     }

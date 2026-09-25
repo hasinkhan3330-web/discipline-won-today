@@ -6,6 +6,14 @@ import { ShieldCard } from "@/components/ShieldCard";
 import { RemindersCard, type ReminderTask } from "@/components/RemindersCard";
 import { EmptyState } from "@/components/EmptyState";
 import { ContractCard } from "@/components/verified/ContractCard";
+import { ContractFocusSession } from "@/components/verified/ContractFocusSession";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  clearCheckpoint, endContractSession, findActiveSession, readCheckpoint,
+  reconcileCheckpoint, startContractSession, type SessionSnapshot,
+} from "@/lib/verified/contract-session";
+import type { ContractRow } from "@/lib/verified/contracts";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
   Flame, Footprints, PenLine, Circle, Check, ScanLine, Coins, Zap,
@@ -89,6 +97,56 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
     return () => window.removeEventListener("axen:open-focus", open);
   }, []);
 
+  // --- Contract focus session (Phase 3; Deep Focus itself untouched) ---
+  const [contractSession, setContractSession] = useState<{ contract: ContractRow; session: SessionSnapshot } | null>(null);
+  const startingRef = useRef(false);
+
+  const closeContractSession = (outcome?: "completed" | "ended" | "abandoned") => {
+    setContractSession(null);
+    if (outcome === "completed") toast.success("Session complete — your contract is awaiting proof.");
+    window.dispatchEvent(new Event("axen:contract-changed"));
+  };
+
+  const handleContractStart = async (row: ContractRow) => {
+    if (startingRef.current) return; // double-tap protection
+    startingRef.current = true;
+    try {
+      const res = await startContractSession(row);
+      if (!res.ok) { toast.error(res.error); return; }
+      haptic("success");
+      setContractSession({ contract: row, session: res.session });
+    } finally { startingRef.current = false; }
+  };
+
+  const handleContractResume = (row: ContractRow) => {
+    const cp = readCheckpoint();
+    if (cp && cp.contractId === row.id) { setContractSession({ contract: row, session: cp }); return; }
+    void (async () => {
+      const s = await findActiveSession(row.id);
+      if (s) setContractSession({ contract: row, session: s });
+      else { toast.info("That session has already ended."); window.dispatchEvent(new Event("axen:contract-changed")); }
+    })();
+  };
+
+  // Recover a session after reload/background; finalize it if time ran out while away.
+  useEffect(() => {
+    let cancelled = false;
+    const reconcile = async () => {
+      const hit = reconcileCheckpoint();
+      if (!hit) return;
+      if (hit.kind === "finish") { await endContractSession(hit.session.sessionId, "completed"); closeContractSession(); return; }
+      const { data } = await supabase.from("daily_contracts").select("*").eq("id", hit.session.contractId).maybeSingle();
+      if (cancelled) return;
+      if (data && data.status === "active") setContractSession({ contract: data, session: hit.session });
+      else clearCheckpoint();
+    };
+    void reconcile();
+    const onVis = () => { if (document.visibilityState === "visible") void reconcile(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { cancelled = true; document.removeEventListener("visibilitychange", onVis); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleTick = (t: Task) => {
     if (t.done || pending.current.has(t.id)) return; // guard rapid double taps
     pending.current.add(t.id);
@@ -117,7 +175,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
         <button className="home-primary-action" onClick={() => focusRef.current?.start()}><Zap size={18} fill="currentColor" /> Start Deep Focus</button>
       </section>
 
-      <ContractCard />
+      <ContractCard onStart={handleContractStart} onResume={handleContractResume} />
 
       <section className="home-missions">
         <div className="home-section-heading home-section-heading--plain"><div><h2>Today Missions</h2><p>Execute the plan. No negotiation.</p></div><span>{done}/{tasks.length}</span></div>
@@ -161,6 +219,14 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
       {reminderTasks.length > 0 && <div className="home-command-block"><RemindersCard tasks={reminderTasks} /></div>}
 
       <DeepFocus ref={focusRef} G={AX.cyan} G2={AX.accent} onComplete={onFocusComplete} onMusicReward={onMusicReward} hasPaidAccess={hasPaidFocus} onLocked={onUnlockFocus} />
+
+      {contractSession && (
+        <ContractFocusSession
+          contract={contractSession.contract}
+          session={contractSession.session}
+          onClose={closeContractSession}
+        />
+      )}
 
       <button className="home-music-strip" onClick={() => focusRef.current?.openMusic()}>
         <span><Music2 size={18} /></span><div><strong>Focus Music</strong><small>25 min · 14Hz Beta · Study Melody</small></div><ChevronRight size={17} />

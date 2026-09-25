@@ -3,6 +3,10 @@ export type LocalReminder = {
   title: string;
   body: string;
   at: Date;
+  /** Native Android action type (registered separately by the caller). */
+  actionsId?: string;
+  /** Extra payload delivered back with the notification. */
+  extra?: Record<string, unknown>;
 };
 
 export function stableNotificationId(value: string, offset = 5000) {
@@ -42,6 +46,8 @@ export async function scheduleLocalReminder(reminder: LocalReminder) {
         title: reminder.title,
         body: reminder.body,
         schedule: { at: reminder.at, allowWhileIdle: true },
+        ...(reminder.actionsId ? { actionTypeId: reminder.actionsId } : {}),
+        ...(reminder.extra ? { extra: reminder.extra } : {}),
       }] });
       return "scheduled" as const;
     }
