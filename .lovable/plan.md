@@ -1,81 +1,191 @@
-# Phase 6 — Same-Day Recovery: Step 0 Audit (read-only, zero code)
+# Phase 6: Same-Day Recovery. Step 1: full SQL for your approval
 
-Nothing has been changed. Everything below was read from the live database and the app code.
+Nothing has been applied yet. Your decisions are folded in: round to the nearest minute, exact same title, a clear `already_exists` error, a strict reason list, and expiry checks.
 
-## Key finding
+## Execute permissions (confirmed live)
 
-The recovery function you asked for **already exists** from Phase 1: `start_recovery(_original_id, _reason)`. Under the no-duplicates rule I will not create a second `create_recovery_contract`. I'll reuse `start_recovery` and only fix the gaps listed in section B.
+| Function | Signed-in users | Signed-out visitors |
+|---|---|---|
+| start_recovery | allowed | blocked |
+| start_contract_session | allowed | blocked |
+| end_contract_session | allowed | blocked |
 
-## A) Existing structures
+These stay as they are. The SQL re-states them as a safety net.
 
-### 1. recovery_events
-- Columns: id uuid, user_id uuid, original_contract_id uuid, recovery_contract_id uuid, reason text (at most 200 characters), created_at timestamptz
-- Unique rules: **UNIQUE(original_contract_id)** already exists (`recovery_events_original_contract_id_key`), plus UNIQUE(recovery_contract_id)
-- Index: `re_user_idx` (user_id, created_at desc)
-- Access rules: only `re_select_own` (users read their own rows). The app can't add, change or delete rows.
-- A second safety rule on daily_contracts: `dc_one_recovery_per_original` (unique recovery_of_id). So Rule 1 is already enforced twice. It also holds when a recovery is cancelled, because rows are never deleted.
+## What the SQL changes
 
-### 2. daily_contracts: the "missed" status
-- Only the server sets it, inside `end_contract_session`: a session ended before the rescue time turns the contract `missed`. For a recovery contract, the bar is its full planned time.
-- The guard also allows the server to move scheduled → missed and proof_pending → missed, but **nothing currently does this automatically**. A contract whose time passes without being started stays "scheduled". There is no timestamp sweep.
-- The column is `rescue_seconds`, not `rescue_duration_seconds`. It allows 60–3600 and must be less than `planned_seconds`, which allows 300–14400. Duration is stored in `planned_seconds`.
+- There are no new tables, columns or indexes. There are three `CREATE OR REPLACE` edits to existing functions.
+- **start_recovery**:
+  - Recovery length is 20% of the original, rounded to the nearest minute, with a 5-minute minimum. It is never longer than the original.
+  - It keeps the exact original title.
+  - It rejects any reason outside the six allowed values, but "no reason" is fine.
+  - A second attempt gets a clear `already_exists` error. If two taps race, the existing unique rules pick one winner, and the loser also gets `already_exists`.
+- **start_contract_session**: a recovery can't be started once its end-of-day expiry has passed.
+- **end_contract_session**: if a recovery session ends after the expiry, it doesn't count as complete. The recovery is marked missed, so a late or offline sync is rejected.
+- Proof submitted after expiry is rejected in the app's server proof step. That is a one-line check, shown with the card changes.
+- `award_contract`, `finalize_contract_and_award`, `score_events` and `coin_transactions` are untouched.
 
-### 3. award_contract (unchanged in this phase)
-- It already handles recovery: `is_recovery` gives **8 XP + 2 coins**, and a normal contract gives 20 XP + 5 coins.
-- It tells them apart by the server-set `is_recovery` column. The guard makes that column immutable and client-proof.
-- Its duplicate-protection key is `contract:<id>` on score_events (unique). The original and the recovery are separate rows, so:
-  - The original can't be rewarded: `missed` is final for it, and the guard allows no path from missed to verified.
-  - The recovery can be rewarded only once.
+## Full SQL
 
-### 4. Local day and time zone
-- The IANA time zone is stored per contract in `daily_contracts.timezone`. The server checks it against `pg_timezone_names`.
-- `local_day` is always recomputed on the server as `(scheduled_at AT TIME ZONE timezone)::date`.
-- `start_recovery` checks `(now() AT TIME ZONE tz)::date = local_day` and sets `expires_at = (local_day + 1)::timestamp AT TIME ZONE tz`. That is the true end of the local day, and it is safe across daylight-saving changes.
-- On the app side, `localToday(tz)` in ContractCard and `deviceTimezone()` in `src/lib/verified/contracts.ts` are used for display and filtering only.
+```sql
+-- ===== 1. start_recovery =====
+CREATE OR REPLACE FUNCTION public.start_recovery(_original_id uuid, _reason text DEFAULT NULL::text)
+ RETURNS public.daily_contracts
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+DECLARE
+  _uid uuid := auth.uid();
+  _o   public.daily_contracts;
+  _r   public.daily_contracts;
+  _secs integer;
+  _why  text := NULLIF(btrim(_reason), '');
+BEGIN
+  IF _uid IS NULL THEN RAISE EXCEPTION 'not authenticated' USING ERRCODE = '42501'; END IF;
+  IF _why IS NOT NULL AND _why NOT IN
+     ('time_conflict','task_too_large','low_energy','forgot','distraction','other') THEN
+    RAISE EXCEPTION 'invalid reason' USING ERRCODE = '22023';
+  END IF;
 
-### 5. ContractCard.tsx: missed branch
-- Line 17: `READ_ONLY` map, `rewarded: "Completed", missed: "Missed"`
-- Lines 41–43: the loader filters **`.eq("is_recovery", false)`**, so a recovery contract would never appear on the card today.
-- Lines 187–189: the final else branch renders missed as red "Missed" text with **no button**.
+  SELECT * INTO _o FROM public.daily_contracts
+   WHERE id = _original_id AND user_id = _uid FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'contract not found' USING ERRCODE = '42501'; END IF;
+  IF _o.is_recovery THEN RAISE EXCEPTION 'cannot recover a recovery' USING ERRCODE = '22023'; END IF;
 
-### 6. Files that touch contract status, recovery or local day
-- Server: `start_contract_session`, `end_contract_session`, `verify_contract_proof`, `award_contract`, `finalize_contract_and_award`, `start_recovery`, `guard_contract_fields`
-- App: `src/components/verified/ContractCard.tsx`, `ContractSheet.tsx`, `ContractFocusSession.tsx`, `ContractProofSheet.tsx`, `src/lib/verified/contracts.ts`, `contract-session.ts`, `contract-reminders.ts`, `contract-proof.functions.ts`
-- No other app code has recovery logic.
+  IF EXISTS (SELECT 1 FROM public.recovery_events WHERE original_contract_id = _o.id)
+     OR EXISTS (SELECT 1 FROM public.daily_contracts WHERE recovery_of_id = _o.id) THEN
+    RAISE EXCEPTION 'already_exists' USING ERRCODE = '23505';
+  END IF;
 
-## B) Gaps between `start_recovery` and your rules (need your decision)
+  IF _o.status <> 'missed' THEN
+    RAISE EXCEPTION 'only missed contracts can be recovered' USING ERRCODE = '22023';
+  END IF;
+  IF (now() AT TIME ZONE _o.timezone)::date <> _o.local_day THEN
+    RAISE EXCEPTION 'recovery window closed' USING ERRCODE = '22023';
+  END IF;
 
-1. **Rounding.** Today it uses 20% of the seconds, at least 300. For 45 minutes that gives 540 s (9 minutes), which is already a whole minute. Your example says "9 → 10". Pick one:
-   - (a) Round to the nearest minute: 45 min → 9 min.
-   - (b) Round up to the next 5 minutes: 45 min → 10 min.
-   Either way the result is capped at the original length. **Fix:** `CREATE OR REPLACE start_recovery` with the chosen formula.
-2. **"already_exists".** A second attempt today fails with a raw unique-violation error. **Fix:** check first and raise a clear `already_exists` error. The unique rule still settles a race between two taps.
-3. **Title.** Today the recovery's title is "Recovery: <title>". Your rule says "same title". Pick one: keep the prefix, or use the exact same title.
-4. **Reason.** It is stored as free text. **Fix:** accept only time_conflict, task_too_large, low_energy, forgot, distraction or other (or none).
-5. **Expiry after the day ends (Rule 4).** Still to verify before the SQL step: whether `start_contract_session`, `end_contract_session` and proof submission reject a recovery after `expires_at`. If they don't, I'll add an `expires_at` check. This is shown as SQL first.
-6. **Execute permission.** Before the SQL step I'll confirm that signed-in users can run `start_recovery` and signed-out visitors can't.
+  -- 20% rounded to nearest minute, min 5 min, never above original
+  _secs := LEAST(_o.planned_seconds,
+                 GREATEST(300, (round(_o.planned_seconds * 0.2 / 60.0) * 60)::integer));
 
-All of these are edits to the one existing function (`CREATE OR REPLACE`), plus at most small expiry checks in the session functions. **No new tables, columns or indexes.**
+  PERFORM pg_catalog.set_config('axen.contract_write', 'on', true);
+  BEGIN
+    INSERT INTO public.daily_contracts(user_id, goal_id, title, category, scheduled_at, timezone, local_day,
+        planned_seconds, rescue_seconds, trigger_text, proof_method, difficulty, status,
+        is_recovery, recovery_of_id, expires_at)
+    VALUES (_uid, _o.goal_id, _o.title, _o.category, now(), _o.timezone, _o.local_day,
+        _secs, LEAST(_secs - 60, 240), _o.trigger_text, _o.proof_method, _o.difficulty, 'scheduled',
+        true, _o.id, ((_o.local_day + 1)::timestamp AT TIME ZONE _o.timezone))
+    RETURNING * INTO _r;
 
-## Proposed file changes (exact lines shown at the card step)
+    INSERT INTO public.recovery_events(user_id, original_contract_id, recovery_contract_id, reason)
+    VALUES (_uid, _o.id, _r.id, _why);
+  EXCEPTION WHEN unique_violation THEN
+    RAISE EXCEPTION 'already_exists' USING ERRCODE = '23505';
+  END;
 
-- **New:** none, except possibly `src/lib/verified/recovery.ts` (a thin `supabase.rpc("start_recovery")` wrapper plus reason labels).
-- **Change: `src/components/verified/ContractCard.tsx` only**
-  - Loader (lines 41–43): if today's primary contract is missed and a recovery row exists, show the recovery contract instead.
-  - Missed branch (lines 187–189): the copy becomes "You still have today. Start your rescue version." It gets an optional reason picker and a **START X-MINUTE RECOVERY** button. The server makes the recovery contract, then the existing START / session / proof / CLAIM flow runs as-is.
-  - Rewarded branch: a recovery shows a **"Recovered"** badge with "8 XP · 2 coins". A normal contract keeps "Completed".
-  - No shame words anywhere.
+  PERFORM public.log_contract_event(_o.id, _uid, 'recovery_started', 'missed', 'missed',
+    pg_catalog.jsonb_build_object('recovery_id', _r.id, 'reason', _why));
+  RETURN _r;
+END;
+$function$;
 
-## C) Confirmed untouched
+-- ===== 2. start_contract_session (adds expiry check only) =====
+CREATE OR REPLACE FUNCTION public.start_contract_session(_contract_id uuid, _client_instance text DEFAULT NULL::text)
+ RETURNS public.contract_sessions
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+DECLARE
+  _uid uuid := auth.uid();
+  _c   public.daily_contracts;
+  _s   public.contract_sessions;
+BEGIN
+  IF _uid IS NULL THEN RAISE EXCEPTION 'not authenticated' USING ERRCODE = '42501'; END IF;
+  SELECT * INTO _c FROM public.daily_contracts WHERE id = _contract_id AND user_id = _uid FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'contract not found' USING ERRCODE = '42501'; END IF;
+  IF _c.status <> 'scheduled' THEN RAISE EXCEPTION 'contract not startable (%)', _c.status USING ERRCODE = '22023'; END IF;
+  IF (now() AT TIME ZONE _c.timezone)::date <> _c.local_day THEN
+    RAISE EXCEPTION 'contract is for another local day' USING ERRCODE = '22023';
+  END IF;
+  IF _c.expires_at IS NOT NULL AND now() >= _c.expires_at THEN            -- NEW
+    RAISE EXCEPTION 'recovery window closed' USING ERRCODE = '22023';
+  END IF;
 
-- `award_contract`, `finalize_contract_and_award`, `score_events`, `coin_transactions`: unchanged
-- Phase 1–5 tables, rules and screens (sheet, focus session, proof sheet): unchanged
-- DeepFocus.tsx, Zen files, navigation, all other Home sections: unchanged
-- Accountability: untouched. Phase 7: not started. Nothing merged or published.
+  PERFORM pg_catalog.set_config('axen.contract_write', 'on', true);
+  INSERT INTO public.contract_sessions(contract_id, user_id, started_at, expected_end_at, client_instance_id)
+  VALUES (_c.id, _uid, now(), now() + pg_catalog.make_interval(secs => _c.planned_seconds), left(_client_instance, 64))
+  RETURNING * INTO _s;
 
-## Next steps after your approval
+  UPDATE public.daily_contracts SET status = 'active', started_at = now() WHERE id = _c.id;
+  PERFORM public.log_contract_event(_c.id, _uid, 'started', 'scheduled', 'active',
+                                    pg_catalog.jsonb_build_object('session_id', _s.id));
+  RETURN _s;
+END;
+$function$;
 
-1. You answer B1 (rounding) and B3 (title).
-2. I show the full SQL for `start_recovery` plus any expiry checks, and wait.
-3. I show the exact card line changes, and wait.
-4. I implement, run all 25 tests, stop on any failure, and report PHASE 6 PASSED or BLOCKED.
+-- ===== 3. end_contract_session (adds expiry rule only) =====
+CREATE OR REPLACE FUNCTION public.end_contract_session(_session_id uuid, _reason text)
+ RETURNS public.contract_sessions
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+DECLARE
+  _uid uuid := auth.uid();
+  _s   public.contract_sessions;
+  _c   public.daily_contracts;
+  _elapsed integer;
+  _ok boolean;
+BEGIN
+  IF _uid IS NULL THEN RAISE EXCEPTION 'not authenticated' USING ERRCODE = '42501'; END IF;
+  IF _reason NOT IN ('completed','stuck','emergency','user_ended') THEN
+    RAISE EXCEPTION 'invalid reason' USING ERRCODE = '22023';
+  END IF;
+  SELECT * INTO _s FROM public.contract_sessions WHERE id = _session_id AND user_id = _uid FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'session not found' USING ERRCODE = '42501'; END IF;
+  IF _s.session_status <> 'active' THEN RETURN _s; END IF;
+  SELECT * INTO _c FROM public.daily_contracts WHERE id = _s.contract_id FOR UPDATE;
+
+  _elapsed := LEAST(EXTRACT(EPOCH FROM (now() - _s.started_at))::integer, _c.planned_seconds + 3600);
+  _ok := _elapsed >= (CASE WHEN _c.is_recovery THEN _c.planned_seconds ELSE _c.rescue_seconds END);
+  IF _c.expires_at IS NOT NULL AND now() > _c.expires_at THEN _ok := false; END IF;   -- NEW
+
+  PERFORM pg_catalog.set_config('axen.contract_write', 'on', true);
+  UPDATE public.contract_sessions
+     SET ended_at = now(), elapsed_seconds = _elapsed, exit_reason = _reason,
+         session_status = CASE WHEN _ok THEN 'completed'::public.contract_session_status
+                               ELSE 'abandoned'::public.contract_session_status END
+   WHERE id = _s.id RETURNING * INTO _s;
+
+  IF _ok AND _c.status = 'active' THEN
+    UPDATE public.daily_contracts SET status = 'proof_pending' WHERE id = _c.id;
+    PERFORM public.log_contract_event(_c.id, _uid, 'ended', 'active', 'proof_pending',
+      pg_catalog.jsonb_build_object('session_id', _s.id, 'elapsed', _elapsed, 'reason', _reason));
+  ELSIF _c.status = 'active' THEN
+    UPDATE public.daily_contracts SET status = 'missed' WHERE id = _c.id;
+    PERFORM public.log_contract_event(_c.id, _uid, 'missed', 'active', 'missed',
+      pg_catalog.jsonb_build_object('session_id', _s.id, 'elapsed', _elapsed, 'reason', _reason));
+  END IF;
+  RETURN _s;
+END;
+$function$;
+
+-- ===== 4. Permissions (unchanged, restated) =====
+REVOKE ALL ON FUNCTION public.start_recovery(uuid, text) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.start_contract_session(uuid, text) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.end_contract_session(uuid, text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.start_recovery(uuid, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.start_contract_session(uuid, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.end_contract_session(uuid, text) TO authenticated;
+```
+
+## Rollback
+
+Re-run the three previous function bodies, which were captured in the audit. No data is affected.
+
+## Next
+
+After you approve, I apply this SQL. Then I show the exact card line changes and the one-line proof expiry check, and wait for your approval again. After that I implement, run all 25 tests, stop on any failure, and report PHASE 6 PASSED or BLOCKED. Phase 7 won't start.
