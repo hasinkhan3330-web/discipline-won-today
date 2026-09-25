@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AX, buttonStyle, cardStyle, subText, titleStyle } from "@/tabs/styles";
 import { haptic } from "@/lib/haptics";
 import { ContractSheet } from "./ContractSheet";
+import { ContractProofSheet } from "./ContractProofSheet";
 import { cancelContractReminders, scheduleContractReminders } from "@/lib/verified/contract-reminders";
 import {
   PROOF_METHODS, REMINDER_PREFS, deviceTimezone, emptyForm, fmtWhen, formFromRow, friendlyError, toPayload,
@@ -12,7 +13,7 @@ import {
 } from "@/lib/verified/contracts";
 
 const READ_ONLY: Record<string, string> = {
-  proof_pending: "Session done — proof step comes next", verified: "Verified",
+  proof_pending: "Session done — submit proof", verified: "Verified",
   rewarded: "Completed", missed: "Missed",
 };
 
@@ -27,6 +28,7 @@ export function ContractCard({ onStart, onResume }: {
   const tz = deviceTimezone();
   const [row, setRow] = useState<ContractRow | null | undefined>(undefined);
   const [loadErr, setLoadErr] = useState<string | null>(null);
+  const [proofOpen, setProofOpen] = useState(false);
   const [goals, setGoals] = useState<{ id: string; title: string }[]>([]);
   const [sheet, setSheet] = useState<null | "create" | "edit">(null);
   const [busy, setBusy] = useState(false);
@@ -159,6 +161,9 @@ export function ContractCard({ onStart, onResume }: {
     } else if (row.status === "active") {
       body = <>{title}<div style={{ fontSize: 12, color: AX.success, marginTop: 4 }}>In progress</div>{details}
         {onResume && <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => onResume(row)} disabled={busy}>RETURN TO SESSION</button>}</>;
+    } else if (row.status === "proof_pending") {
+      body = <>{title}<div style={{ fontSize: 12, color: AX.flame, marginTop: 4 }}>{READ_ONLY.proof_pending}</div>{details}
+        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => setProofOpen(true)} disabled={busy}>SUBMIT PROOF</button></>;
     } else {
       body = <>{title}<div style={{ fontSize: 12, color: row.status === "missed" ? AX.danger : AX.success, marginTop: 4 }}>{READ_ONLY[row.status] ?? row.status}</div>{details}</>;
     }
@@ -174,6 +179,10 @@ export function ContractCard({ onStart, onResume }: {
           goals={goals} busy={busy} serverError={saveErr}
           onClose={() => setSheet(null)} onConfirm={save}
         />
+      )}
+      {proofOpen && row && (
+        <ContractProofSheet contract={row} onClose={() => setProofOpen(false)}
+          onDone={() => { setProofOpen(false); void load(); }} />
       )}
     </div>
   );
