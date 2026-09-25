@@ -70,7 +70,7 @@ export async function scheduleContractReminders(c: ContractRow): Promise<Contrac
   await ensureContractActions();
   await put(contractNotificationIds(c.id)[0], `Prep: “${c.title}” starts in ${leadMin} minutes.`, prepAt, false);
   await put(contractNotificationIds(c.id)[1], `Start now: “${c.title}”.`, startAt, true);
-  return result;
+  return result ?? "past";
 }
 
 /** Listen for notification taps/action buttons. Returns an unsubscribe fn. Native only. */
