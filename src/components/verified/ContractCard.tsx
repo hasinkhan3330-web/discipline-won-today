@@ -17,6 +17,15 @@ const READ_ONLY: Record<string, string> = {
   rewarded: "Completed", missed: "Missed",
 };
 
+const REASONS = [
+  { id: "time_conflict", label: "Time conflict" },
+  { id: "task_too_large", label: "Task too large" },
+  { id: "low_energy", label: "Low energy" },
+  { id: "forgot", label: "Forgot" },
+  { id: "distraction", label: "Distraction" },
+  { id: "other", label: "Other" },
+];
+
 function localToday(tz: string) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(new Date());
 }
@@ -33,6 +42,8 @@ export function ContractCard({ onStart, onResume }: {
   const [sheet, setSheet] = useState<null | "create" | "edit">(null);
   const [busy, setBusy] = useState(false);
   const [saveErr, setSaveErr] = useState<string | null>(null);
+  const [reason, setReason] = useState<string>("");
+  const [hasRecovery, setHasRecovery] = useState(false);
   const lock = useRef(false);
   const mounted = useRef(false);
 
@@ -43,8 +54,17 @@ export function ContractCard({ onStart, onResume }: {
       .order("scheduled_at", { ascending: true }).limit(1);
     if (!mounted.current) return null;
     if (error) { setLoadErr(friendlyError(error)); return null; }
-    const fresh = (data?.[0] ?? null) as ContractRow | null;
+    let fresh = (data?.[0] ?? null) as ContractRow | null;
+    let recovered = false;
+    if (fresh && fresh.status === "missed") {
+      const { data: rec, error: recErr } = await supabase.from("daily_contracts")
+        .select("*").eq("recovery_of_id", fresh.id).eq("is_recovery", true).limit(1);
+      if (!mounted.current) return null;
+      if (recErr) { setLoadErr(friendlyError(recErr)); return null; }
+      if (rec?.[0]) { fresh = rec[0] as ContractRow; recovered = true; }
+    }
     setLoadErr(null);
+    setHasRecovery(recovered);
     setRow(fresh);
     // reminders only make sense for a scheduled contract — clean up anything stale
     if (fresh && fresh.status !== "scheduled") void cancelContractReminders(fresh.id);
@@ -139,6 +159,28 @@ export function ContractCard({ onStart, onResume }: {
     }
   };
 
+  const recover = async () => {
+    if (!row || lock.current) return;
+    lock.current = true; setBusy(true);
+    try {
+      const { error } = await supabase.rpc("start_recovery", { _original_id: row.id, _reason: (reason || null) as any });
+      if (error) {
+        const m = `${error.message ?? ""}`;
+        if (m.includes("already_exists")) toast.info("Recovery already started for this contract");
+        else if (/expired|window|local day|closed/i.test(m)) toast.info("Today's recovery window has closed");
+        else throw error;
+      } else {
+        haptic("success");
+        toast.success("Recovery mode activated");
+      }
+      await load();
+    } catch (e) {
+      toast.error(friendlyError(e));
+    } finally {
+      lock.current = false; setBusy(false);
+    }
+  };
+
   const CARD = cardStyle();
   const head = <div style={titleStyle}><FileCheck2 size={16} strokeWidth={1.8} color={AX.accent} />Today’s Contract</div>;
   const openCreate = () => { setSaveErr(null); setSheet("create"); };
@@ -171,10 +213,12 @@ export function ContractCard({ onStart, onResume }: {
       body = <>{title}{details}
         <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => void start()} disabled={busy || !onStart || notYet}>{busy ? "STARTING…" : "START CONTRACT"}</button>
         {notYet && <div style={{ ...subText, marginTop: 6 }}>Unlocks on the contract's day ({row.local_day}).</div>}
-        <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-          <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={() => { setSaveErr(null); setSheet("edit"); }} disabled={busy}>Reschedule</button>
-          <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={cancel} disabled={busy}>Cancel</button>
-        </div></>;
+        {!row.is_recovery ? (
+          <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
+            <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={() => { setSaveErr(null); setSheet("edit"); }} disabled={busy}>Reschedule</button>
+            <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={cancel} disabled={busy}>Cancel</button>
+          </div>
+        ) : <div style={{ ...subText, marginTop: 8 }}>Recovery mode activated · small win still counts</div>}</>;
     } else if (row.status === "active") {
       body = <>{title}<div style={{ fontSize: 12, color: AX.success, marginTop: 4 }}>In progress</div>{details}
         {onResume && <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => onResume(row)} disabled={busy}>RETURN TO SESSION</button>}</>;
@@ -184,6 +228,20 @@ export function ContractCard({ onStart, onResume }: {
     } else if (row.status === "verified") {
       body = <>{title}<div style={{ fontSize: 12, color: AX.success, marginTop: 4 }}>{READ_ONLY.verified}</div>{details}
         <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => void claim()} disabled={busy}>{busy ? "CLAIMING…" : "CLAIM REWARD"}</button></>;
+    } else if (row.status === "missed" && !row.is_recovery && !hasRecovery) {
+      const mins = Math.min(Math.round(row.planned_seconds / 60), Math.max(5, Math.round(row.planned_seconds * 0.2 / 60)));
+      body = <>{title}<div style={{ fontSize: 12, color: AX.flame, marginTop: 4 }}>You still have today. Start your rescue version.</div>{details}
+        <label style={{ ...subText, display: "block", marginTop: 12 }}>What got in the way? (optional)
+          <select aria-label="Recovery reason" value={reason} onChange={e => setReason(e.target.value)}
+            style={{ display: "block", width: "100%", marginTop: 6, minHeight: 40, background: "transparent", color: AX.text, border: `1px solid ${AX.accent}55`, borderRadius: 10, padding: "0 10px" }}>
+            <option value="">Skip</option>
+            {REASONS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+          </select>
+        </label>
+        <button style={{ ...buttonStyle(), width: "100%", marginTop: 12, minHeight: 48 }} onClick={() => void recover()} disabled={busy}>{busy ? "STARTING…" : `START ${mins}-MINUTE RECOVERY`}</button></>;
+    } else if (row.status === "rewarded" && row.is_recovery) {
+      body = <>{title}<div style={{ fontSize: 12, color: AX.success, marginTop: 4 }}>Recovered</div>
+        <div style={{ ...subText, marginTop: 6 }}>Small win still counts · {row.xp_awarded} XP · {row.coins_awarded} coins</div></>;
     } else {
       body = <>{title}<div style={{ fontSize: 12, color: row.status === "missed" ? AX.danger : AX.success, marginTop: 4 }}>{READ_ONLY[row.status] ?? row.status}</div>{details}</>;
     }
