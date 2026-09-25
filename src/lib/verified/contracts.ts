@@ -28,6 +28,7 @@ export type ContractForm = {
   difficulty: number;
   reminder_pref: string;
   private_note: string;
+  accountability?: boolean;
 };
 
 /** Deterministic suggestion templates — editable, never touch the linked goal. */
