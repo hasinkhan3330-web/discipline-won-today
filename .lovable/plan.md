@@ -1,44 +1,65 @@
-# Phase 3 of 8 — Step 0 Audit (no code written)
+# Phase 3 — Implementation plan (approved decisions folded in)
 
-Target note: the only database this editor can run against is the live one (as approved for Phases 1–2). Nothing has been changed for Phase 3.
+Decisions: (1a) legitimate exit = session `abandoned`, contract stays `active` — no migration. (2a) new `ContractFocusSession` overlay; `DeepFocus.tsx` untouched. No quiet hours. **No database change of any kind.**
 
-## A) What already exists
+## New files
 
-1. Deep Focus timer: `src/components/DeepFocus.tsx` — the timer lives inside this one component (phases idle → setup → active → done). It already uses timestamps (`endsAt - Date.now()`) and restores from saved local state key `dwt_focus_session`.
-2. Deep Focus screen: same file. There is no separate page; it opens as a full-screen overlay from `src/tabs/HomeTab.tsx`.
-3. Notification plugin: `@capacitor/local-notifications` `^8.3.1`, wrapped by `src/lib/local-notifications.ts` (`scheduleLocalReminder`, `cancelLocalReminder`, `stableNotificationId`, `nextReminderAt`, browser-permission fallback on web).
-4. Sound engine: no audio library. Plain HTML audio — Deep Focus `<audio>` tracks, `src/lib/alarm-audio.ts`, `src/lib/live-audio.ts`, `src/components/FocusMusicPanel.tsx`.
-5. `capacitor.config.ts` plugins: none configured (appId `com.hasin.axen`, server URL only). Native plugins present: local-notifications, RevenueCat.
-6. Background handlers: none. No Capacitor `App` plugin, no service worker.
-7. Notification ID storage: none stored — IDs are derived on the fly via `stableNotificationId(key)` (hash + 5000 offset).
-8. Lifecycle handlers: only browser `visibilitychange`/focus listeners in `wake-plan.ts`, `useEntitlement.ts`, `useSubscription.ts`, `alarm-audio.ts`, `live-audio.ts`, `dashboard.tsx`. No app resume/pause handler.
+**1. `src/lib/verified/contract-reminders.ts`**
+- Reuses `scheduleLocalReminder`, `cancelLocalReminder`, `stableNotificationId` from `src/lib/local-notifications.ts`. No new plugin.
+- IDs: `stableNotificationId("contract:<id>:prep")` and `...:start` (offset default 5000); deterministic per contract, so no duplicates ever.
+- `scheduleContractReminders(contract)`: cancels both IDs first, then schedules
+  - prep at `scheduled_at − 5 min`, body "Prep: <title> starts in 5 minutes."
+  - start at `scheduled_at`, body "Start now: <title>"
+  - skipped silently if the instant is already past. Uses the stored `scheduled_at` timestamp (UTC instant), so DST in Asia/Calcutta is handled by the clock, not us.
+  - `reminder_pref` respected: `"none"` → schedule nothing; `"start"` → start only; `"prep"` → both.
+  - permission is requested by the OS only at this point (after contract confirmed), never at app launch.
+  - denied/unsupported → returns a status; the caller shows an in-app note ("Reminders off — we'll keep your spot in-app"). No crash.
+- `cancelContractReminders(contractId)`: cancels both IDs. Called on reschedule (before re-schedule), cancel, start, completion, and on Home resume reconcile.
+- Android action buttons: `createNotificationChannel`/`registerActionTypes` with READY / RESCHEDULE / RESCUE VERSION on the start reminder, behind `Capacitor.isNativePlatform()` + `isPluginAvailable` guard; web skips actions entirely. Tapping the notification deep-links via `localNotificationReceived` → open Home. (RESCHEDULE/RESCUE handled by opening the contract card; no background work promised.)
 
-Database (Phase 1, already live): `start_contract_session`, `end_contract_session` RPCs; contract statuses `draft, scheduled, active, proof_pending, verified, rewarded, missed`; session statuses `active, completed, abandoned, expired`.
+**2. `src/lib/verified/contract-session.ts`**
+- Thin client over existing live RPCs: `start_contract_session(contractId, clientInstanceId)` and `end_contract_session(sessionId, reason)`. No new RPC.
+- Timestamp-only timer: `left = expected_end_at − Date.now()`, never tick-counting.
+- Checkpoint: `localStorage` key `axen_contract_session` = `{ contractId, sessionId, expectedEndAt, startedAt }` written on start; cleared on end/abandon. On Home mount and on `visibilitychange → visible`, recover: if a checkpoint exists and `expected_end_at` is in the future → restore the overlay; if past → call `end_contract_session` once (idempotent guard: ref) so the contract reaches `proof_pending`.
+- Start lock: in-flight ref + disable button, so double-tap START yields one session (RPC is already idempotent via `client_instance_id`).
+- End paths mapped to existing states only:
+  - timer completes → `end_contract_session(id, "completed")` → contract `proof_pending` (existing RPC behavior).
+  - "I'm Stuck" → coach-style nudge sheet + log via `end_contract_session(id, "stuck")`? No — I'm Stuck does NOT end the session; it shows an in-overlay support note and keeps the timer running.
+  - End Session → confirm dialog + free-text reason → `end_contract_session(id, reason)` → session `completed`/`abandoned` per RPC, contract handled by existing RPC.
+  - Emergency Exit → one tap, confirm, `end_contract_session(id, "emergency_exit")` → session `abandoned`, contract stays `active` so the user can restart. Never hidden, never disabled.
 
-## Two conflicts found — need your decision
+**3. `src/components/verified/ContractFocusSession.tsx`**
+- Full-screen overlay reusing the existing `df-*` CSS classes (timer ring, eagle mentor image import, TRACKS list + `<audio>`) — visually identical language to Deep Focus, zero edits to `DeepFocus.tsx`.
+- Prefill: contract title, duration from `planned_seconds`, first track selected; sound controls (loop/volume) same pattern.
+- Buttons: I'm Stuck · Pause (only shown if contract category allows — no pause flag exists, so Pause shows a disabled-state hint unless you want a pause column later; default: Pause allowed, it only pauses audio, never the timer — the timer is server-timestamp-based) · End Session (confirm + reason) · Emergency Exit (always).
+- On completion: hands back "SUBMIT PROOF" entry point placeholder (Phase 4 will wire proof; Phase 3 shows the `proof_pending` state text on the card only — no proof UI built now).
 
-1. **"interrupted" state does not exist.** Contracts can only go active → proof_pending or missed. Options: (a) record a legitimate exit as session `abandoned` and leave the contract `active` so the user can resume/restart (no database change), or (b) add a new `interrupted` contract status via a small additive migration (shown to you before applying).
-2. **Deep Focus cannot be "wrapped" without touching it.** Its timer and overlay are private inside `DeepFocus.tsx` and have no I'm Stuck / Pause / End-with-reason / Emergency Exit buttons. Options: (a) build `ContractFocusSession` as a separate overlay that reuses Deep Focus's look (same CSS classes, ring, eagle mentor, track list) — Deep Focus file untouched; or (b) change `DeepFocus.tsx` (I will not do this without showing exact lines).
-   Recommendation: 1(a) or 1(b) your choice; 2(a).
+## Modified files (exact changes)
 
-Quiet hours: no existing quiet-hours setting was found in the app. I will not invent one unless you want it.
+**4. `src/components/verified/ContractCard.tsx`**
+- Line ~122: replace the disabled `START CONTRACT` button for `scheduled` with an active button calling `onStart(row)` (new optional prop). Drafts unchanged.
+- Add for `active` status: `RETURN TO SESSION` button calling `onResume(row)`.
+- Status line: add `proof_pending` → "SESSION DONE — proof step comes next" to the existing `READ_ONLY` map (line ~129 area).
+- Cancel path (line ~82 area): also call `cancelContractReminders(row.id)`.
+- No visual restyle; same tokens/classes.
 
-## B) Planned files (pending your decisions)
+**5. `src/tabs/HomeTab.tsx`**
+- After the contract card: render `<ContractFocusSession>` when a session/overlay state is active; pass `onStart`/`onResume` handlers into `ContractCard`.
+- On contract create/update success (existing handlers): call `scheduleContractReminders(contract)`; on cancel: `cancelContractReminders`.
+- On mount + `visibilitychange` visible: run the checkpoint reconcile (cancel reminders for non-scheduled contracts; recover an in-flight session).
+- No other Home sections touched.
 
-New:
-- `src/lib/verified/contract-reminders.ts` — prep (−5 min), start, and optional missed-start reminders; IDs from `stableNotificationId("contract:<id>:prep|start|miss")`; cancel-before-schedule; reconcile on resume; Asia/Calcutta via stored contract timezone (absolute UTC instants, so DST-safe).
-- `src/lib/verified/contract-session.ts` — calls existing RPCs, timestamp-only timer, local checkpoint key `axen_contract_session`, recovery after restart, double-tap lock.
-- `src/components/verified/ContractFocusSession.tsx` — full-screen session (title, timer, progress, sound, I'm Stuck, Pause if allowed, End Session with confirm + reason, Emergency Exit always visible).
+**6. `src/lib/local-notifications.ts`** — one additive optional field
+- `LocalReminder` gains `actionsId?: string`; inside the native branch only, pass `actionTypeId` when set. ~4 lines added, nothing existing changed. All current callers compile unchanged.
 
-Modified (small, additive):
-- `src/components/verified/ContractCard.tsx` — enable START CONTRACT (currently disabled, line ~122), add "Return to Session" for active contracts, trigger reminder scheduling after confirm (permission asked here only).
-- `src/tabs/HomeTab.tsx` — mount `ContractFocusSession` next to the card; resume reconcile via `visibilitychange`.
-- `src/lib/local-notifications.ts` — only if needed: add optional `actionTypeId` (READY / RESCHEDULE / RESCUE) to `LocalReminder`; existing callers unaffected. Exact lines shown in the implementation plan.
+## Will not touch
+`DeepFocus.tsx`, `ZenTab.tsx`, `ZenMandalaScene.tsx`, `alarm-audio.ts`, `live-audio.ts`, `FocusMusicPanel.tsx`, `RemindersCard.tsx`, `ProfileDetailScreens.tsx`, XP/coins/rewards, proof, recovery, accountability, navigation, any database object, `capacitor.config.ts`.
 
-Notification action buttons (READY/RESCHEDULE/RESCUE) work on Android only; web gets in-app banner instead.
+## Tests (after build)
+- DB-side (live, two temp accounts, rolled back): start RPC idempotent on double-call; end → `proof_pending`; emergency abandon leaves contract `active`; cross-user session start/end blocked. All use existing RPCs — no migration.
+- App: 20 checks from your list — permission granted/denied paths, reschedule cancels old IDs, restart/reconcile no duplicates, timestamp DST-safe (unit: offset math), double-tap single session, background continues, kill/recover from checkpoint, completion → proof_pending, emergency exit, end-with-reason confirm, Deep Focus standalone unchanged, Zen unchanged, XP/coins unchanged, Home sections intact, nav intact, build + typecheck clean, no console errors.
+- Any failure → stop, report, wait.
 
-## C) Will stay untouched
+Rollback: delete the 3 new files, revert the 3 small edits (git diff is small and isolated). No database rollback needed — nothing changes there.
 
-Deep Focus timer and file, Zen (`ZenTab.tsx`, `ZenMandalaScene.tsx`), audio files/libs, existing reminder screens (`RemindersCard.tsx`, `ProfileDetailScreens.tsx`), XP/coins/rewards, proof, recovery, accountability, navigation, other Home sections.
-
-After your approval I will send the exact-lines implementation plan, then build and run the 20 tests, stopping on any failure.
+Do not start Phase 4. No merge/publish.
