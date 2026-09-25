@@ -1,152 +1,202 @@
-# Phase 7 — Accountability + Soft Shield (Audit, zero code)
+# Phase 7 — Step 2: Database changes for approval
 
-No look, theme, route or navigation changes. Everything new reuses the existing card, button and Deep Focus styles.
+The audit is approved. This is the complete database change. Nothing is applied until you approve it. After that I will show the exact screen changes for a second approval.
 
-## A) What already exists
+Deep Focus is not touched at all (including line 283). Phases 1–6, award_contract, score_events, coins, ranks, Zen and navigation are also untouched. The old pacts feature stays as it is.
 
-### 1. accountability_connections
-- Columns: id, user_id (inviter), partner_id (acceptor), invite_id, status (active / revoked / blocked, default active), share_status (bool, default true), share_streak (bool, default false), created_at, ended_at
-- Constraints: no self-link (user_id <> partner_id); one active connection per user (unique index `acn_one_active_user` on user_id where active); foreign keys to both users and the invite
-- Access rules: both members can read the row. Nobody can add, change or delete rows directly; only the server functions can.
-- Gaps:
-  - `share_status` is one switch for the whole connection, so each person can't control their own sharing separately.
-  - There is no way to mute a partner.
+## What this does, in plain words
+- Each partner gets their own **sharing** switch and their own **mute** switch. The old shared switch stays in the table but is no longer used.
+- **Invites:**
+  - expire after 24 hours
+  - at most 3 per day and 1 per hour
+  - refused with "You already have a partner" if you already have one
+  - every bad code (expired, used, your own, unknown) gets the same message: "Invite invalid or expired"
+- **Nudges:**
+  - only these 4 messages: "You've got this", "Start now", "Great work", "Try the rescue version"
+  - at most 3 per contract and 10 per day
+  - blocked when the receiver has muted you
+  - nothing can be sent once the partner is blocked or removed
+- **Partner view:** only the partner's today's contract title, status and start time, and only when that partner's sharing is on
+- **Your own status:** partner name, photo and the switch states. No email, coins, XP or notes.
+- **Revoke and block:** kept exactly as they are. "Report" uses block.
+- **The invite code** is made on the server (next step). The database still stores only its hash.
 
-### 2. accountability_invites
-- Columns: id, inviter_id, token_hash (exactly 64 hex characters, unique), expires_at (required), accepted_by, accepted_at, revoked_at, created_at
-- Only a hash is stored. The plain token is never saved.
-- One-time use is enforced by the server function: the invite is locked while it's checked, and it's refused if accepted_at is already set. A rule blocks accepting your own invite.
-- Access rules: only the inviter can read their own invites. No direct writes.
-- Gaps:
-  - The token and its hash are currently made in the browser; the server only receives the hash.
-  - Invites expire after 48 hours, not 24.
-  - The limit is 5 invites per day, not 3.
-  - Nothing blocks sending an invite when you already have a partner.
-  - Accepting your own invite gives a specific error message instead of the generic one.
+## Technical details (full SQL)
 
-### 3. accountability_events
-- Columns: id, connection_id, actor_id, recipient_id, kind, message (max 140 characters), contract_id, created_at
-- Event kinds allowed: nudge, cheer, contract_verified, contract_missed, connected, revoked
-- Access rules: the sender and the recipient can read an event. No direct writes.
-- Currently recorded: connected (on accept), revoked (on revoke or block), nudge/cheer (with free text)
+```sql
+-- 1. Per-side sharing and mute (additive)
+ALTER TABLE public.accountability_connections
+  ADD COLUMN IF NOT EXISTS share_by_user    boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS share_by_partner boolean NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS muted_by_user    boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS muted_by_partner boolean NOT NULL DEFAULT false;
 
-### 4. Existing server functions (Phase 1, live)
-- `create_accountability_invite(_token_hash)`: the browser sends the hash; limit 5 per day; expires after 48 hours
-- `accept_accountability_invite(_token_hash)`: locks the invite and checks it isn't used, revoked, expired, your own, or joining someone who already has a partner. It then creates the connection and logs "connected".
-- `revoke_accountability_connection(_connection_id, _block)`: either person can revoke or block, effective immediately; logs "revoked"
-- `send_accountability_nudge(_connection_id, _kind, _message)`: allows free text; limit 3 per connection per 24 hours; no mute check
-- `get_partner_today()`: returns partner id, status and day only when sharing is on (no title)
+CREATE INDEX IF NOT EXISTS aev_actor_contract_idx ON public.accountability_events (actor_id, contract_id, kind);
+CREATE INDEX IF NOT EXISTS aev_actor_recipient_day_idx ON public.accountability_events (actor_id, recipient_id, created_at);
+CREATE INDEX IF NOT EXISTS ai_inviter_created_idx ON public.accountability_invites (inviter_id, created_at);
 
-### 5. Deep Focus (read-only) and the contract focus screen
-- `DeepFocus.tsx` (404 lines):
-  - Full-screen focus with the Frequency Hub music player (6 tracks, lines 26–31, 320–340)
-  - "Permanent Strict" and "Flexible" modes (lines 232–233)
-  - `abandon()` emergency override with a −5 points penalty (lines 141, 351)
-  - "X apps shielded" wording (line 283)
-- `ContractFocusSession.tsx` (Phase 3 layer used for contracts):
-  - Reuses the same music and Deep Focus styles
-  - Confirm dialogs for End Session and Emergency Exit (lines 157–190)
-  - Emergency Exit is always available
-  - Exits are already recorded as session end reasons: emergency / user_ended
-- Keeping the screen awake: **not present anywhere** (no wake lock, no plugin)
-- Do Not Disturb: **not present**
+-- 2. Create invite (same signature, stricter rules)
+CREATE OR REPLACE FUNCTION public.create_accountability_invite(_token_hash text)
+RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $$
+DECLARE _uid uuid := auth.uid(); _id uuid;
+BEGIN
+  IF _uid IS NULL THEN RAISE EXCEPTION 'not authenticated' USING ERRCODE = '42501'; END IF;
+  IF _token_hash IS NULL OR _token_hash !~ '^[0-9a-f]{64}$' THEN
+    RAISE EXCEPTION 'Invite invalid or expired' USING ERRCODE = '22023';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.accountability_connections
+             WHERE status = 'active' AND (user_id = _uid OR partner_id = _uid)) THEN
+    RAISE EXCEPTION 'You already have a partner' USING ERRCODE = '23505';
+  END IF;
+  IF (SELECT count(*) FROM public.accountability_invites
+      WHERE inviter_id = _uid AND created_at > now() - interval '1 day') >= 3 THEN
+    RAISE EXCEPTION 'Invite limit reached for today' USING ERRCODE = '54000';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.accountability_invites
+             WHERE inviter_id = _uid AND created_at > now() - interval '1 hour') THEN
+    RAISE EXCEPTION 'Please wait an hour before a new invite' USING ERRCODE = '54000';
+  END IF;
+  PERFORM pg_catalog.set_config('axen.contract_write', 'on', true);
+  INSERT INTO public.accountability_invites(inviter_id, token_hash, expires_at)
+  VALUES (_uid, _token_hash, now() + interval '24 hours') RETURNING id INTO _id;
+  RETURN _id;
+END $$;
 
-### 6. Other existing systems
-- Blocking: only `revoke_accountability_connection(..., true)`. There is no reporting system.
-- Rate limits: only inside the invite and nudge server functions (numbers above).
-- Sharing switch: only the `share_status` column. There is no screen for it.
-- Old "Accountability Mode" (pacts): `AccountabilityPanel.tsx` + `accountability_pacts` / `pact_nudges` + `get_pact_status` / `leave_pact`
-  - It is **not shown anywhere in the app today**.
-  - It stays untouched.
+-- 3. Accept invite (same signature, generic error)
+CREATE OR REPLACE FUNCTION public.accept_accountability_invite(_token_hash text)
+RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $$
+DECLARE _uid uuid := auth.uid(); _i public.accountability_invites; _cid uuid;
+BEGIN
+  IF _uid IS NULL THEN RAISE EXCEPTION 'not authenticated' USING ERRCODE = '42501'; END IF;
+  SELECT * INTO _i FROM public.accountability_invites WHERE token_hash = _token_hash FOR UPDATE;
+  IF NOT FOUND OR _i.accepted_at IS NOT NULL OR _i.revoked_at IS NOT NULL
+     OR _i.expires_at <= now() OR _i.inviter_id = _uid THEN
+    RAISE EXCEPTION 'Invite invalid or expired' USING ERRCODE = '22023';
+  END IF;
+  IF EXISTS (SELECT 1 FROM public.accountability_connections
+             WHERE status = 'active' AND (user_id IN (_uid, _i.inviter_id) OR partner_id IN (_uid, _i.inviter_id))) THEN
+    RAISE EXCEPTION 'You already have a partner' USING ERRCODE = '23505';
+  END IF;
+  PERFORM pg_catalog.set_config('axen.contract_write', 'on', true);
+  UPDATE public.accountability_invites SET accepted_by = _uid, accepted_at = now() WHERE id = _i.id;
+  INSERT INTO public.accountability_connections(user_id, partner_id, invite_id)
+  VALUES (_i.inviter_id, _uid, _i.id) RETURNING id INTO _cid;
+  INSERT INTO public.accountability_events(connection_id, actor_id, recipient_id, kind)
+  VALUES (_cid, _uid, _i.inviter_id, 'connected');
+  RETURN _cid;
+END $$;
 
-### Every file that touches these areas
-- Accountability: `AccountabilityPanel.tsx` (old, not shown), `ContractSheet.tsx` (accountability switch locked off), `lib/verified/contracts.ts`, `routes/_authenticated/dashboard.tsx` (unrelated "partner" wording only)
-- Focus: `DeepFocus.tsx`, `FocusMusicPanel.tsx`, `verified/ContractFocusSession.tsx`, `tabs/HomeTab.tsx`
-- Privacy: `routes/privacy.tsx` (legal text), `tabs/ProfileTab.tsx`
+-- 4. Nudge (same signature; fixed messages; new limits; mute)
+CREATE OR REPLACE FUNCTION public.send_accountability_nudge(_connection_id uuid, _kind text, _message text DEFAULT NULL)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $$
+DECLARE _uid uuid := auth.uid(); _c public.accountability_connections;
+        _to uuid; _muted boolean; _contract uuid;
+BEGIN
+  IF _uid IS NULL THEN RAISE EXCEPTION 'not authenticated' USING ERRCODE = '42501'; END IF;
+  IF _kind IS DISTINCT FROM 'nudge' OR _message IS NULL OR _message NOT IN
+     ('You''ve got this','Start now','Great work','Try the rescue version') THEN
+    RAISE EXCEPTION 'invalid nudge' USING ERRCODE = '22023';
+  END IF;
+  SELECT * INTO _c FROM public.accountability_connections
+   WHERE id = _connection_id AND status = 'active' AND (user_id = _uid OR partner_id = _uid);
+  IF NOT FOUND THEN RAISE EXCEPTION 'no active connection' USING ERRCODE = '42501'; END IF;
+  IF _c.user_id = _uid THEN _to := _c.partner_id; _muted := _c.muted_by_partner;
+  ELSE _to := _c.user_id; _muted := _c.muted_by_user; END IF;
+  IF _muted THEN RAISE EXCEPTION 'partner has muted nudges' USING ERRCODE = '42501'; END IF;
+  SELECT d.id INTO _contract FROM public.daily_contracts d
+   WHERE d.user_id = _to AND d.is_recovery = false AND d.status <> 'cancelled'
+     AND d.local_day = (now() AT TIME ZONE d.timezone)::date LIMIT 1;
+  IF _contract IS NOT NULL AND (SELECT count(*) FROM public.accountability_events
+      WHERE actor_id = _uid AND contract_id = _contract AND kind = 'nudge') >= 3 THEN
+    RAISE EXCEPTION 'nudge limit for this contract' USING ERRCODE = '54000';
+  END IF;
+  IF (SELECT count(*) FROM public.accountability_events
+      WHERE actor_id = _uid AND recipient_id = _to AND kind IN ('nudge','cheer')
+        AND created_at > now() - interval '24 hours') >= 10 THEN
+    RAISE EXCEPTION 'daily nudge limit' USING ERRCODE = '54000';
+  END IF;
+  PERFORM pg_catalog.set_config('axen.contract_write', 'on', true);
+  INSERT INTO public.accountability_events(connection_id, actor_id, recipient_id, kind, message, contract_id)
+  VALUES (_c.id, _uid, _to, 'nudge', _message, _contract);
+END $$;
 
-### Strict Shield audit
-- Android: accessibility service permission is **not present**. The app only has internet and billing permissions.
-- iOS: FamilyControls entitlement is **not present**; there is no iOS project.
-- Conclusion: **Strict shield not available in this release.** No blocking code will be added.
-- Note: Deep Focus already says "X APPS shielded" (line 283). That is pre-existing wording that I will not touch, because `DeepFocus.tsx` is read-only. Nothing new will claim that apps are blocked.
+-- 5. Own sharing / mute switches (only your own side)
+CREATE OR REPLACE FUNCTION public.set_accountability_prefs(_share boolean DEFAULT NULL, _mute boolean DEFAULT NULL)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $$
+DECLARE _uid uuid := auth.uid(); _c public.accountability_connections;
+BEGIN
+  IF _uid IS NULL THEN RAISE EXCEPTION 'not authenticated' USING ERRCODE = '42501'; END IF;
+  SELECT * INTO _c FROM public.accountability_connections
+   WHERE status = 'active' AND (user_id = _uid OR partner_id = _uid) FOR UPDATE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'no active connection' USING ERRCODE = '42501'; END IF;
+  PERFORM pg_catalog.set_config('axen.contract_write', 'on', true);
+  IF _c.user_id = _uid THEN
+    UPDATE public.accountability_connections
+       SET share_by_user = coalesce(_share, share_by_user), muted_by_user = coalesce(_mute, muted_by_user)
+     WHERE id = _c.id;
+  ELSE
+    UPDATE public.accountability_connections
+       SET share_by_partner = coalesce(_share, share_by_partner), muted_by_partner = coalesce(_mute, muted_by_partner)
+     WHERE id = _c.id;
+  END IF;
+END $$;
 
-## B) Proposed changes
+-- 6. My connection (safe fields only)
+CREATE OR REPLACE FUNCTION public.get_my_accountability()
+RETURNS TABLE(connection_id uuid, partner_name text, partner_avatar text,
+              my_sharing boolean, partner_sharing boolean, i_muted boolean, since timestamptz)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO '' AS $$
+  SELECT a.id,
+         coalesce(p.display_name, p.username, 'Partner'),
+         p.avatar_url,
+         CASE WHEN a.user_id = auth.uid() THEN a.share_by_user ELSE a.share_by_partner END,
+         CASE WHEN a.user_id = auth.uid() THEN a.share_by_partner ELSE a.share_by_user END,
+         CASE WHEN a.user_id = auth.uid() THEN a.muted_by_user ELSE a.muted_by_partner END,
+         a.created_at
+  FROM public.accountability_connections a
+  LEFT JOIN public.profiles p
+    ON p.id = CASE WHEN a.user_id = auth.uid() THEN a.partner_id ELSE a.user_id END
+  WHERE a.status = 'active' AND (a.user_id = auth.uid() OR a.partner_id = auth.uid())
+  LIMIT 1;
+$$;
 
-### Database (additive only; SQL shown for approval before applying)
-1. **New columns on connections:**
-   - `share_by_user` and `share_by_partner` (each person's own sharing switch, default on). `share_status` is kept but no longer used.
-   - `muted_by_user` and `muted_by_partner` (default off)
-2. **Replace the two invite functions with safer versions:**
-   - Expiry after 24 hours
-   - 3 invites per day
-   - At most 1 invite per hour (invites are share links with no named person, so "1 per target per hour" becomes 1 per hour overall)
-   - A new invite is refused if you already have a partner, with the message "You already have a partner"
-   - Every invalid case (expired, used, your own, missing) returns the same generic "Invite invalid or expired"
-3. **Replace `send_accountability_nudge`:**
-   - Only these messages: "You've got this", "Start now", "Great work", "Try the rescue version". No custom text.
-   - At most 3 per contract and 10 per day to the partner
-   - Refused if the receiver has muted you or the connection is blocked
-4. **New:**
-   - `set_accountability_prefs(sharing, mute)`: changes only your own side
-   - `get_partner_contract_summary()`: returns only the partner's today's contract title, status and start time, and only when the partner's sharing is on and the connection is active. Otherwise it returns nothing.
-   - `get_my_accountability()`: returns connection id, partner display name, avatar, and both sharing/mute states. No email, coins or XP.
-5. **Reused unchanged:** `revoke_accountability_connection` (revoke, plus block). "Report" will use block as the report action (there is no reporting system yet).
-6. **Permissions:** signed-out visitors can't run any of these; signed-in users can. Every function locks its search path.
+-- 7. Partner's today summary: 3 fields, only if the partner shares
+CREATE OR REPLACE FUNCTION public.get_partner_contract_summary()
+RETURNS TABLE(title text, status public.contract_status, started_at timestamptz)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO '' AS $$
+  SELECT d.title, d.status, d.started_at
+  FROM public.accountability_connections a
+  JOIN public.daily_contracts d
+    ON d.user_id = CASE WHEN a.user_id = auth.uid() THEN a.partner_id ELSE a.user_id END
+  WHERE a.status = 'active'
+    AND (a.user_id = auth.uid() OR a.partner_id = auth.uid())
+    AND (CASE WHEN a.user_id = auth.uid() THEN a.share_by_partner ELSE a.share_by_user END)
+    AND d.is_recovery = false AND d.status <> 'cancelled'
+    AND d.local_day = (now() AT TIME ZONE d.timezone)::date
+  LIMIT 1;
+$$;
 
-### Server function (new file `src/lib/verified/accountability.functions.ts`)
-- `createInvite`:
-  - Makes 32 secure random bytes on the server and hashes them with SHA-256
-  - Calls the database function with the hash and returns the plain token to the inviter only once
-  - Never logs the token
-- `acceptInvite(token)`: hashes on the server and calls the accept function
+-- 8. Permissions: signed-in only
+REVOKE ALL ON FUNCTION public.create_accountability_invite(text) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.accept_accountability_invite(text) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.send_accountability_nudge(uuid, text, text) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.set_accountability_prefs(boolean, boolean) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.get_my_accountability() FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.get_partner_contract_summary() FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.revoke_accountability_connection(uuid, boolean) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.create_accountability_invite(text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.accept_accountability_invite(text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.send_accountability_nudge(uuid, text, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.set_accountability_prefs(boolean, boolean) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_my_accountability() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_partner_contract_summary() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.revoke_accountability_connection(uuid, boolean) TO authenticated;
+```
 
-### Screens (exact line changes shown for approval before editing)
-1. **New file `src/components/verified/AccountabilitySection.tsx`**, built with the existing card and button styles:
-   - Shows your partner, or "No partner yet"
-   - **Invite** button: shows a copyable code
-   - "Enter code" box to accept an invite
-   - **Sharing** switch
-   - **Mute** switch
-   - The 4 fixed nudge buttons
-   - Revoke button
-   - Block & report button
-2. **`src/tabs/ProfileTab.tsx`:**
-   - Add one "Accountability" item to the existing grid, in the same card style (the list around lines 55–60)
-   - Add one detail view in the same pattern as the existing "account" view (around line 52)
-3. **`src/components/verified/ContractCard.tsx`:** when the contract has accountability on, a partner exists and your sharing is on, show one line: "{partner} · Partner can see your progress".
-4. **`src/components/verified/ContractSheet.tsx`:** unlock the existing accountability switch, only when you have an active partner.
-5. **Soft Shield (only what's missing), in `ContractFocusSession.tsx` only:**
-   - A small "Keep screen awake" switch using the browser's screen wake lock, released when the session ends
-   - One static line of Do Not Disturb tips
-   - Exit events are already recorded, so nothing new there
-6. **Not touched:** DeepFocus.tsx, Zen, navigation, Home sections, the old pacts panel
-
-## C) Confirmed untouched
-- Phases 1–6 functions and screens
-- `award_contract`, `finalize_contract_and_award`, `start_recovery`
-- score_events, coin_transactions, ranks and leaderboard
-- DeepFocus.tsx core logic
-- Zen, the 6 tabs, and the Home order
-
-## Privacy matrix
-| Data | Owner | Partner | Public |
-|---|---|---|---|
-| Contract title | Yes | Only if sharing on | No |
-| Status / started time | Yes | Only if sharing on | No |
-| Private note | Yes | Never | No |
-| Proof photo (never stored) | Yes | Never | No |
-| XP / coins | Yes | Never | No |
-| Health / steps / location | Yes | Never | No |
-| Full history / AI analysis | Yes | Never | No |
-| Email / phone | Yes | Never | No |
-
-The partner only ever gets data through `get_partner_contract_summary`, which returns 3 fields. There is no direct table access for partner data.
-
-## Delivery
-1. Approve this audit.
-2. I show the full database SQL and wait for approval.
-3. I show the exact screen line changes and wait for approval.
-4. I implement and run all 31 tests, stopping on any failure.
-5. I report PHASE 7 PASSED or BLOCKED, with the privacy matrix and the strict shield report.
-
-No Phase 8, no native blocking, no merge or publish.
+## Notes
+- **The contract row stays private.** The partner never reads the contract table, notes, proof, coins or XP. Only the function in section 7 returns 3 fields.
+- **Existing rows:** the new switches start with sharing on and mute off. There are currently no active connections.
+- **Invite limit:** "1 per target per hour" is applied as 1 invite per hour, because invites are share codes that don't name a person.
+- **Next step, after your approval:**
+  - I apply this SQL.
+  - I show the exact screen line changes: the new Accountability section, one Profile grid item, one line on the contract card, the accountability switch in the contract form, and the keep-awake switch plus Do Not Disturb tip on the contract focus screen only.
