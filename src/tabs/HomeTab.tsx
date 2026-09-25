@@ -175,7 +175,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
         <button className="home-primary-action" onClick={() => focusRef.current?.start()}><Zap size={18} fill="currentColor" /> Start Deep Focus</button>
       </section>
 
-      <ContractCard />
+      <ContractCard onStart={handleContractStart} onResume={handleContractResume} />
 
       <section className="home-missions">
         <div className="home-section-heading home-section-heading--plain"><div><h2>Today Missions</h2><p>Execute the plan. No negotiation.</p></div><span>{done}/{tasks.length}</span></div>
@@ -219,6 +219,14 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
       {reminderTasks.length > 0 && <div className="home-command-block"><RemindersCard tasks={reminderTasks} /></div>}
 
       <DeepFocus ref={focusRef} G={AX.cyan} G2={AX.accent} onComplete={onFocusComplete} onMusicReward={onMusicReward} hasPaidAccess={hasPaidFocus} onLocked={onUnlockFocus} />
+
+      {contractSession && (
+        <ContractFocusSession
+          contract={contractSession.contract}
+          session={contractSession.session}
+          onClose={closeContractSession}
+        />
+      )}
 
       <button className="home-music-strip" onClick={() => focusRef.current?.openMusic()}>
         <span><Music2 size={18} /></span><div><strong>Focus Music</strong><small>25 min · 14Hz Beta · Study Melody</small></div><ChevronRight size={17} />
