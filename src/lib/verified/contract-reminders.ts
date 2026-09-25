@@ -54,7 +54,9 @@ export async function scheduleContractReminders(c: ContractRow): Promise<Contrac
   const leadMin = c.reminder_pref === "early" ? 15 : 5;
   const prepAt = new Date(startAt.getTime() - leadMin * 60_000);
 
-  let result: ContractReminderResult = "past";
+  // track the worst outcome so the caller can show a fallback note
+  let result: ContractReminderResult | null = null;
+  const rank = (r: ContractReminderResult) => ({ denied: 4, unsupported: 3, browser: 2, scheduled: 1, none: 0, past: 0 })[r];
   const put = async (id: number, body: string, at: Date, withActions: boolean) => {
     if (at.getTime() <= Date.now()) return;
     const r = await scheduleLocalReminder({
@@ -62,11 +64,7 @@ export async function scheduleContractReminders(c: ContractRow): Promise<Contrac
       actionsId: withActions ? CONTRACT_ACTION_TYPE : undefined,
       extra: { contractId: c.id },
     });
-    // keep the worst outcome so the caller can show a fallback note
-    if (r === "denied" || result === "past") result = r;
-    else if (r === "unsupported") result = "unsupported";
-    else if (r === "browser" && result !== "browser") result = "browser";
-    else if (r === "scheduled" && result === "past") result = "scheduled";
+    if (result === null || rank(r) > rank(result)) result = r;
   };
 
   await ensureContractActions();
