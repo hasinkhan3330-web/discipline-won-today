@@ -54,6 +54,8 @@ export function ContractFocusSession({ contract, session, onClose }: {
   const [busy, setBusy] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const finishing = useRef(false);
+  const [awake, setAwake] = useState(false);
+  const [awakeOn, setAwakeOn] = useState(false);
 
   const total = Math.max(1, Math.round((session.expectedEndAt - session.startedAt) / 1000));
 
@@ -84,6 +86,20 @@ export function ContractFocusSession({ contract, session, onClose }: {
   }, [session.expectedEndAt, finish]);
 
   useEffect(() => { if (audioRef.current) audioRef.current.volume = vol; }, [vol, trackIdx]);
+
+  // Soft Shield: optional screen wake lock, released on toggle-off/unmount.
+  useEffect(() => {
+    if (!awake) { setAwakeOn(false); return; }
+    const nav = navigator as Navigator & { wakeLock?: { request: (t: "screen") => Promise<{ release: () => Promise<void> }> } };
+    if (!nav.wakeLock) { toast.info("Keep-awake isn't supported on this device."); setAwake(false); return; }
+    let lockObj: { release: () => Promise<void> } | null = null;
+    let cancelled = false;
+    nav.wakeLock.request("screen").then(l => {
+      if (cancelled) { void l.release().catch(() => {}); return; }
+      lockObj = l; setAwakeOn(true);
+    }).catch(() => { if (!cancelled) { setAwake(false); toast.info("Couldn't keep the screen awake."); } });
+    return () => { cancelled = true; setAwakeOn(false); void lockObj?.release().catch(() => {}); };
+  }, [awake]);
 
   const togglePause = () => {
     const a = audioRef.current;
@@ -181,6 +197,11 @@ export function ContractFocusSession({ contract, session, onClose }: {
         )}
 
         <footer className="df-lock-footer" style={{ display: "grid", gap: 8 }}>
+          <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontSize: 12 }}>
+            <span>Keep screen awake{awakeOn ? " · on" : ""}</span>
+            <input type="checkbox" aria-label="Keep screen awake" checked={awake} onChange={e => setAwake(e.target.checked)} />
+          </label>
+          <small style={{ opacity: 0.75, fontSize: 11 }}>Tip: turn on Do Not Disturb on your phone for fewer interruptions. AXEN does not block other apps.</small>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             <button onClick={() => setStuck(s => !s)}><HelpCircle size={15} /> I'M STUCK</button>
             <button onClick={togglePause}><Music2 size={15} /> {paused ? "RESUME SOUND" : "PAUSE SOUND"}</button>
