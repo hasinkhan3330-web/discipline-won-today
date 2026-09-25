@@ -50,3 +50,16 @@ describe("contract reminders", () => {
     expect(contractNotificationIds("c-2")).not.toEqual(contractNotificationIds("c-1"));
   });
 });
+
+describe("timer recovery", () => {
+  it("9/10 checkpoint → resume if running, finish if time passed (timestamps only)", async () => {
+    const store: Record<string,string> = {};
+    (globalThis as any).localStorage = { getItem: (k: string) => store[k] ?? null, setItem: (k: string, v: string) => { store[k] = v; }, removeItem: (k: string) => { delete store[k]; } };
+    const m = await import("../contract-session");
+    const base = { contractId: "c", sessionId: "s", startedAt: new Date().toISOString() } as any;
+    store["axen_contract_session"] = JSON.stringify({ ...base, expectedEndAt: new Date(Date.now() + 600000).toISOString() });
+    expect(m.reconcileCheckpoint()?.kind).toBe("resume");
+    store["axen_contract_session"] = JSON.stringify({ ...base, expectedEndAt: new Date(Date.now() - 1000).toISOString() });
+    expect(m.reconcileCheckpoint()?.kind).toBe("finish");
+  });
+});
