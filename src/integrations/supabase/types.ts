@@ -1910,6 +1910,16 @@ export type Database = {
           trial_started_at: string
         }[]
       }
+      finalize_contract_and_award: {
+        Args: { _contract_id: string }
+        Returns: {
+          coin_balance: number
+          coins: number
+          result: string
+          xp: number
+          xp_total: number
+        }[]
+      }
       get_entitlement: {
         Args: never
         Returns: {
