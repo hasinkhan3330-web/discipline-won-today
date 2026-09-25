@@ -5,13 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { AX, buttonStyle, cardStyle, subText, titleStyle } from "@/tabs/styles";
 import { haptic } from "@/lib/haptics";
 import { ContractSheet } from "./ContractSheet";
+import { cancelContractReminders, scheduleContractReminders } from "@/lib/verified/contract-reminders";
 import {
   PROOF_METHODS, REMINDER_PREFS, deviceTimezone, emptyForm, fmtWhen, formFromRow, friendlyError, toPayload,
   type ContractForm, type ContractRow,
 } from "@/lib/verified/contracts";
 
 const READ_ONLY: Record<string, string> = {
-  active: "In progress", proof_pending: "Awaiting proof", verified: "Verified",
+  proof_pending: "Session done — proof step comes next", verified: "Verified",
   rewarded: "Completed", missed: "Missed",
 };
 
@@ -19,7 +20,10 @@ function localToday(tz: string) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(new Date());
 }
 
-export function ContractCard() {
+export function ContractCard({ onStart, onResume }: {
+  onStart?: (row: ContractRow) => Promise<void> | void;
+  onResume?: (row: ContractRow) => void;
+} = {}) {
   const tz = deviceTimezone();
   const [row, setRow] = useState<ContractRow | null | undefined>(undefined);
   const [loadErr, setLoadErr] = useState<string | null>(null);
