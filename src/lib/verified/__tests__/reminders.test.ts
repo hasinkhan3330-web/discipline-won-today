@@ -56,10 +56,10 @@ describe("timer recovery", () => {
     const store: Record<string,string> = {};
     (globalThis as any).localStorage = { getItem: (k: string) => store[k] ?? null, setItem: (k: string, v: string) => { store[k] = v; }, removeItem: (k: string) => { delete store[k]; } };
     const m = await import("../contract-session");
-    const base = { contractId: "c", sessionId: "s", startedAt: new Date().toISOString() } as any;
-    store["axen_contract_session"] = JSON.stringify({ ...base, expectedEndAt: new Date(Date.now() + 600000).toISOString() });
+    const base = { contractId: "c", sessionId: "s", startedAt: Date.now(), clientInstanceId: "x" } as any;
+    store["axen_contract_session"] = JSON.stringify({ ...base, expectedEndAt: Date.now() + 600000 });
     expect(m.reconcileCheckpoint()?.kind).toBe("resume");
-    store["axen_contract_session"] = JSON.stringify({ ...base, expectedEndAt: new Date(Date.now() - 1000).toISOString() });
+    store["axen_contract_session"] = JSON.stringify({ ...base, expectedEndAt: Date.now() - 1000 });
     expect(m.reconcileCheckpoint()?.kind).toBe("finish");
   });
 });
