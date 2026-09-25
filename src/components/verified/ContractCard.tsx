@@ -107,6 +107,13 @@ export function ContractCard({ onStart, onResume }: {
     }
   };
 
+  const start = async () => {
+    if (!row || !onStart || lock.current) return;
+    lock.current = true; setBusy(true);
+    try { await onStart(row); await load(); }
+    finally { lock.current = false; setBusy(false); }
+  };
+
   const CARD = cardStyle();
   const head = <div style={titleStyle}><FileCheck2 size={16} strokeWidth={1.8} color={AX.accent} />Today’s Contract</div>;
   const openCreate = () => { setSaveErr(null); setSheet("create"); };
@@ -135,12 +142,14 @@ export function ContractCard({ onStart, onResume }: {
         <button style={{ ...buttonStyle("ghost"), width: "100%", marginTop: 8 }} onClick={cancel} disabled={busy}>Cancel</button></>;
     } else if (row.status === "scheduled") {
       body = <>{title}{details}
-        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48, opacity: 0.5, cursor: "not-allowed" }} disabled aria-describedby="c-start-note">START CONTRACT</button>
-        <div id="c-start-note" style={{ fontSize: 12, color: AX.muted, marginTop: 6, textAlign: "center" }}>Focus integration arrives next phase.</div>
+        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => void start()} disabled={busy || !onStart}>{busy ? "STARTING…" : "START CONTRACT"}</button>
         <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
           <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={() => { setSaveErr(null); setSheet("edit"); }} disabled={busy}>Reschedule</button>
           <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={cancel} disabled={busy}>Cancel</button>
         </div></>;
+    } else if (row.status === "active") {
+      body = <>{title}<div style={{ fontSize: 12, color: AX.success, marginTop: 4 }}>In progress</div>{details}
+        {onResume && <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => onResume(row)} disabled={busy}>RETURN TO SESSION</button>}</>;
     } else {
       body = <>{title}<div style={{ fontSize: 12, color: row.status === "missed" ? AX.danger : AX.success, marginTop: 4 }}>{READ_ONLY[row.status] ?? row.status}</div>{details}</>;
     }
