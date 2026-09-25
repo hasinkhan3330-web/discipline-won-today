@@ -97,6 +97,56 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
     return () => window.removeEventListener("axen:open-focus", open);
   }, []);
 
+  // --- Contract focus session (Phase 3; Deep Focus itself untouched) ---
+  const [contractSession, setContractSession] = useState<{ contract: ContractRow; session: SessionSnapshot } | null>(null);
+  const startingRef = useRef(false);
+
+  const closeContractSession = (outcome?: "completed" | "ended" | "abandoned") => {
+    setContractSession(null);
+    if (outcome === "completed") toast.success("Session complete — your contract is awaiting proof.");
+    window.dispatchEvent(new Event("axen:contract-changed"));
+  };
+
+  const handleContractStart = async (row: ContractRow) => {
+    if (startingRef.current) return; // double-tap protection
+    startingRef.current = true;
+    try {
+      const res = await startContractSession(row);
+      if (!res.ok) { toast.error(res.error); return; }
+      haptic("success");
+      setContractSession({ contract: row, session: res.session });
+    } finally { startingRef.current = false; }
+  };
+
+  const handleContractResume = (row: ContractRow) => {
+    const cp = readCheckpoint();
+    if (cp && cp.contractId === row.id) { setContractSession({ contract: row, session: cp }); return; }
+    void (async () => {
+      const s = await findActiveSession(row.id);
+      if (s) setContractSession({ contract: row, session: s });
+      else { toast.info("That session has already ended."); window.dispatchEvent(new Event("axen:contract-changed")); }
+    })();
+  };
+
+  // Recover a session after reload/background; finalize it if time ran out while away.
+  useEffect(() => {
+    let cancelled = false;
+    const reconcile = async () => {
+      const hit = reconcileCheckpoint();
+      if (!hit) return;
+      if (hit.kind === "finish") { await endContractSession(hit.session.sessionId, "completed"); closeContractSession(); return; }
+      const { data } = await supabase.from("daily_contracts").select("*").eq("id", hit.session.contractId).maybeSingle();
+      if (cancelled) return;
+      if (data && data.status === "active") setContractSession({ contract: data, session: hit.session });
+      else clearCheckpoint();
+    };
+    void reconcile();
+    const onVis = () => { if (document.visibilityState === "visible") void reconcile(); };
+    document.addEventListener("visibilitychange", onVis);
+    return () => { cancelled = true; document.removeEventListener("visibilitychange", onVis); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleTick = (t: Task) => {
     if (t.done || pending.current.has(t.id)) return; // guard rapid double taps
     pending.current.add(t.id);
