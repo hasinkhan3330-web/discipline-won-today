@@ -51,7 +51,7 @@ export function ProfileTab(props: Props) {
   if (view === "goals") return <GoalsView userId={props.userId} habits={props.habits} onBack={back} onChanged={props.onRefresh} />;
   if (view === "reminders") return <RemindersView habits={props.habits} userId={props.userId} onBack={back} />;
   if (view === "account") return <div className="you-detail animate-fade-in"><header className="you-detail-header"><button className="you-icon-button" onClick={back} aria-label="Back to profile">←</button><div><h1>Account</h1><p>Identity, membership and invitations.</p></div></header><ReferralCard referredBy={props.referredBy ?? null} onCoins={props.onCoins} /><ManageSubscriptionCard /><SubscriptionTimeline />{props.onSignOut && <button className="you-signout" onClick={props.onSignOut}><LogOut size={17} /> Sign out</button>}</div>;
-  if ((view as string) === "accountability") return <div className="you-detail animate-fade-in"><header className="you-detail-header"><button className="you-icon-button" onClick={back} aria-label="Back to profile">←</button><div><h1>Accountability</h1><p>One partner. Only what you choose to share.</p></div></header><AccountabilitySection /></div>;
+  if (view === "accountability") return <div className="you-detail animate-fade-in"><header className="you-detail-header"><button className="you-icon-button" onClick={back} aria-label="Back to profile">←</button><div><h1>Accountability</h1><p>One partner. Only what you choose to share.</p></div></header><AccountabilitySection /></div>;
 
   const features = [
     { id: "journey", title: "My Journey", copy: "Track your progress", icon: Orbit, tone: "blue" },
