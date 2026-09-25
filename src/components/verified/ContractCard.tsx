@@ -6,6 +6,8 @@ import { AX, buttonStyle, cardStyle, subText, titleStyle } from "@/tabs/styles";
 import { haptic } from "@/lib/haptics";
 import { ContractSheet } from "./ContractSheet";
 import { ContractProofSheet } from "./ContractProofSheet";
+import { loadMyAccountability, type MyAccountability } from "./AccountabilitySection";
+import { safeName } from "@/lib/display-name";
 import { cancelContractReminders, scheduleContractReminders } from "@/lib/verified/contract-reminders";
 import {
   PROOF_METHODS, REMINDER_PREFS, deviceTimezone, emptyForm, fmtWhen, formFromRow, friendlyError, toPayload,
@@ -44,6 +46,7 @@ export function ContractCard({ onStart, onResume }: {
   const [saveErr, setSaveErr] = useState<string | null>(null);
   const [reason, setReason] = useState<string>("");
   const [hasRecovery, setHasRecovery] = useState(false);
+  const [partner, setPartner] = useState<MyAccountability | null>(null);
   const lock = useRef(false);
   const mounted = useRef(false);
 
@@ -65,6 +68,7 @@ export function ContractCard({ onStart, onResume }: {
     }
     setLoadErr(null);
     setHasRecovery(recovered);
+    loadMyAccountability().then(p => { if (mounted.current) setPartner(p); }).catch(() => {});
     setRow(fresh);
     // reminders only make sense for a scheduled contract — clean up anything stale
     if (fresh && fresh.status !== "scheduled") void cancelContractReminders(fresh.id);
@@ -200,6 +204,9 @@ export function ContractCard({ onStart, onResume }: {
         {fmtWhen(row)} · {Math.round(row.planned_seconds / 60)} min · {PROOF_METHODS.find(p => p.id === row.proof_method)?.label ?? row.proof_method}
         {" · "}Difficulty {row.difficulty}/3 · {REMINDER_PREFS.find(p => p.id === row.reminder_pref)?.label}
         {goal && <div>Goal: {goal}</div>}
+        {row.accountability_enabled && partner && partner.my_sharing && (
+          <div style={{ color: AX.accent }}>{safeName(partner.partner_name, "Partner")} · Partner can see your progress</div>
+        )}
       </div>
     );
     const title = <div style={{ fontSize: 15, fontWeight: 600, color: AX.text }}>{row.title}</div>;
@@ -254,7 +261,7 @@ export function ContractCard({ onStart, onResume }: {
         <ContractSheet
           title={sheet === "create" ? "New contract" : "Edit contract"}
           initial={sheet === "edit" && row ? formFromRow(row) : emptyForm()}
-          goals={goals} busy={busy} serverError={saveErr}
+          goals={goals} busy={busy} serverError={saveErr} hasPartner={!!partner}
           onClose={() => setSheet(null)} onConfirm={save}
         />
       )}

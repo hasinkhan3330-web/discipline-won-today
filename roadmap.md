@@ -12,7 +12,7 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Phase 4 — Proof step (PASSED by owner decision, Option B: all proof tests pass; intermittent "state update on unmounted component" warning on Home load logged as known pre-existing issue, not investigated)
 - [x] Phase 5 — Verified XP and coins: finalize_contract_and_award wrapper + CLAIM REWARD on card (PASSED)
 - [x] Phase 6 — Same-day recovery (PASSED: 22 server checks + card UI flow, rescue CTA, reason, Recovered 8 XP · 2 coins)
-- [ ] Phase 7 — Accountability UI (invite/accept/remove/block/nudge, share-only-enabled)
+- [x] Phase 7 — Accountability + Soft Shield (PASSED)
 - [ ] Phase 8 — Validation: SQL RLS tests, idempotency tests, Playwright mobile, build + typecheck
 
 ## Constraints
@@ -22,4 +22,4 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Phase 2 — Today's Contract card + create/review/confirm sheet, reschedule, cancel (live; 33 DB checks + preview flow pass)
 - [x] Phase 3 — Reminders + focus session (PASSED)
 - [x] Phase 4 — Proof step (PASSED by owner decision, Option B: all proof tests pass; intermittent "state update on unmounted component" warning on Home load logged as known pre-existing issue, not investigated)
-- [ ] Phase 7 — Accountability + Soft Shield (SQL applied; screen changes awaiting approval; then 31 tests)
+- [x] Phase 7 — Accountability + Soft Shield (PASSED)

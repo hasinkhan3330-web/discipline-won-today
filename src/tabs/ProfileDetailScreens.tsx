@@ -42,7 +42,7 @@ const JOURNEY_HELP: HelpContent = {
 };
 
 
-export type ProfileView = "dashboard" | "habits" | "journey" | "achievements" | "goals" | "reminders" | "account";
+export type ProfileView = "dashboard" | "habits" | "journey" | "achievements" | "goals" | "reminders" | "account" | "accountability";
 export type ProfileHabit = {
   uuid: string;
   name: string;

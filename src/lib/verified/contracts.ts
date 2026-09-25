@@ -28,6 +28,7 @@ export type ContractForm = {
   difficulty: number;
   reminder_pref: string;
   private_note: string;
+  accountability?: boolean;
 };
 
 /** Deterministic suggestion templates — editable, never touch the linked goal. */
@@ -67,7 +68,7 @@ export function formFromRow(r: ContractRow): ContractForm {
     goal_id: r.goal_id, title: r.title, category: r.category, local: toLocalInput(new Date(r.scheduled_at)),
     planned_min: Math.round(r.planned_seconds / 60), rescue_min: Math.round(r.rescue_seconds / 60),
     trigger_text: r.trigger_text ?? "", proof_method: r.proof_method, difficulty: r.difficulty,
-    reminder_pref: r.reminder_pref, private_note: r.private_note ?? "",
+    reminder_pref: r.reminder_pref, private_note: r.private_note ?? "", accountability: !!r.accountability_enabled,
   };
 }
 
@@ -98,7 +99,7 @@ export function toPayload(f: ContractForm, tz: string) {
     planned_seconds: f.planned_min * 60, rescue_seconds: f.rescue_min * 60,
     trigger_text: f.trigger_text.trim() || null, proof_method: f.proof_method,
     difficulty: f.difficulty, reminder_pref: f.reminder_pref,
-    private_note: f.private_note.trim() || null, accountability_enabled: false,
+    private_note: f.private_note.trim() || null, accountability_enabled: !!f.accountability,
   };
 }
 
