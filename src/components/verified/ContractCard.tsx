@@ -32,15 +32,17 @@ export function ContractCard({ onStart, onResume }: {
   const [busy, setBusy] = useState(false);
   const [saveErr, setSaveErr] = useState<string | null>(null);
   const lock = useRef(false);
+  const mounted = useRef(false);
 
   const load = useCallback(async (): Promise<ContractRow | null> => {
-    setLoadErr(null);
     const today = localToday(tz);
     const { data, error } = await supabase.from("daily_contracts")
       .select("*").eq("is_recovery", false).gte("local_day", today).neq("status", "cancelled")
       .order("scheduled_at", { ascending: true }).limit(1);
+    if (!mounted.current) return null;
     if (error) { setLoadErr(friendlyError(error)); return null; }
     const fresh = (data?.[0] ?? null) as ContractRow | null;
+    setLoadErr(null);
     setRow(fresh);
     // reminders only make sense for a scheduled contract — clean up anything stale
     if (fresh && fresh.status !== "scheduled") void cancelContractReminders(fresh.id);
@@ -48,13 +50,17 @@ export function ContractCard({ onStart, onResume }: {
   }, [tz]);
 
   useEffect(() => {
-    load();
+    mounted.current = true;
+    void load();
     supabase.from("goals").select("id,title").eq("completed", false).order("created_at")
-      .then(({ data }) => setGoals((data ?? []) as any));
+      .then(({ data }) => { if (mounted.current) setGoals((data ?? []) as any); });
     const on = () => { void load(); };
     window.addEventListener("online", on);
     window.addEventListener("axen:contract-changed", on);
-    return () => { window.removeEventListener("online", on); window.removeEventListener("axen:contract-changed", on); };
+    return () => {
+      mounted.current = false;
+      window.removeEventListener("online", on); window.removeEventListener("axen:contract-changed", on);
+    };
   }, [load]);
 
   const save = async (f: ContractForm, asDraft: boolean) => {
