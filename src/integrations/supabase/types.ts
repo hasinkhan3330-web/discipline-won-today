@@ -20,7 +20,11 @@ export type Database = {
           ended_at: string | null
           id: string
           invite_id: string | null
+          muted_by_partner: boolean
+          muted_by_user: boolean
           partner_id: string
+          share_by_partner: boolean
+          share_by_user: boolean
           share_status: boolean
           share_streak: boolean
           status: Database["public"]["Enums"]["accountability_status"]
@@ -31,7 +35,11 @@ export type Database = {
           ended_at?: string | null
           id?: string
           invite_id?: string | null
+          muted_by_partner?: boolean
+          muted_by_user?: boolean
           partner_id: string
+          share_by_partner?: boolean
+          share_by_user?: boolean
           share_status?: boolean
           share_streak?: boolean
           status?: Database["public"]["Enums"]["accountability_status"]
@@ -42,7 +50,11 @@ export type Database = {
           ended_at?: string | null
           id?: string
           invite_id?: string | null
+          muted_by_partner?: boolean
+          muted_by_user?: boolean
           partner_id?: string
+          share_by_partner?: boolean
+          share_by_user?: boolean
           share_status?: boolean
           share_streak?: boolean
           status?: Database["public"]["Enums"]["accountability_status"]
@@ -1937,6 +1949,18 @@ export type Database = {
           trial_started_at: string
         }[]
       }
+      get_my_accountability: {
+        Args: never
+        Returns: {
+          connection_id: string
+          i_muted: boolean
+          my_sharing: boolean
+          partner_avatar: string
+          partner_name: string
+          partner_sharing: boolean
+          since: string
+        }[]
+      }
       get_or_create_referral_code: { Args: never; Returns: string }
       get_pact_status: {
         Args: never
@@ -1956,6 +1980,14 @@ export type Database = {
           partner_total_today: number
           role: string
           stake_coins: number
+        }[]
+      }
+      get_partner_contract_summary: {
+        Args: never
+        Returns: {
+          started_at: string
+          status: Database["public"]["Enums"]["contract_status"]
+          title: string
         }[]
       }
       get_partner_today: {
@@ -2121,6 +2153,10 @@ export type Database = {
           ok: boolean
           reason: string
         }[]
+      }
+      set_accountability_prefs: {
+        Args: { _mute?: boolean; _share?: boolean }
+        Returns: undefined
       }
       start_contract_session: {
         Args: { _client_instance?: string; _contract_id: string }
