@@ -141,8 +141,11 @@ export function ContractCard({ onStart, onResume }: {
         <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => { setSaveErr(null); setSheet("edit"); }} disabled={busy}>REVIEW & CONFIRM</button>
         <button style={{ ...buttonStyle("ghost"), width: "100%", marginTop: 8 }} onClick={cancel} disabled={busy}>Cancel</button></>;
     } else if (row.status === "scheduled") {
+      const todayInTz = new Intl.DateTimeFormat("en-CA", { timeZone: row.timezone || undefined, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+      const notYet = row.local_day > todayInTz;
       body = <>{title}{details}
-        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => void start()} disabled={busy || !onStart}>{busy ? "STARTING…" : "START CONTRACT"}</button>
+        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => void start()} disabled={busy || !onStart || notYet}>{busy ? "STARTING…" : "START CONTRACT"}</button>
+        {notYet && <div style={{ ...subText, marginTop: 6 }}>Unlocks on the contract's day ({row.local_day}).</div>}
         <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
           <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={() => { setSaveErr(null); setSheet("edit"); }} disabled={busy}>Reschedule</button>
           <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={cancel} disabled={busy}>Cancel</button>

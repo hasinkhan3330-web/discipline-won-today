@@ -163,14 +163,16 @@ export function ContractFocusSession({ contract, session, onClose }: {
               <form onSubmit={e => {
                 e.preventDefault();
                 if (busy) return;
-                const why = endingMode === "end" ? `ended_early: ${reason.trim() || "no reason given"}` : "emergency_exit";
+                // Only server-approved reasons are sent. The reflection note is never stored.
+                const why = endingMode === "end" ? "user_ended" : "emergency";
+                setReason("");
                 void finish(why, endingMode === "end" ? "ended" : "abandoned");
               }}>
                 <p>{endingMode === "end"
-                  ? "The session ends and your contract moves on. Tell yourself why — one short line."
-                  : "You are never trapped. The session closes as abandoned; your contract stays active so you can restart."}</p>
+                  ? "If you stop before the rescue time, today's contract is marked missed. Past it, your contract moves to proof."
+                  : "You are never trapped. If you leave before the rescue time, today's contract is marked missed — recovery comes later."}</p>
                 {endingMode === "end" && (
-                  <label><input value={reason} onChange={e => setReason(e.target.value)} maxLength={200} placeholder="Reason (optional)" aria-label="Reason for ending early" /></label>
+                  <label><input value={reason} onChange={e => setReason(e.target.value)} maxLength={200} placeholder="Self-reflection (private, not saved)" aria-label="Self-reflection note, not saved" /></label>
                 )}
                 <button type="submit" disabled={busy}><AlertTriangle size={16} />{busy ? "Saving…" : endingMode === "end" ? "Confirm end session" : "Confirm emergency exit"}</button>
               </form>
