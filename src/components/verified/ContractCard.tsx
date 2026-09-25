@@ -122,6 +122,23 @@ export function ContractCard({ onStart, onResume }: {
     finally { lock.current = false; setBusy(false); }
   };
 
+  const claim = async () => {
+    if (!row || lock.current) return;
+    lock.current = true; setBusy(true);
+    try {
+      const { data, error } = await supabase.rpc("finalize_contract_and_award", { _contract_id: row.id });
+      if (error) throw error;
+      const r = Array.isArray(data) ? data[0] : data;
+      if (r?.result === "awarded") toast.success(`+${r.xp} XP · +${r.coins} coins`);
+      else toast.info("Reward already claimed");
+      await load();
+    } catch (e) {
+      toast.error(friendlyError(e));
+    } finally {
+      lock.current = false; setBusy(false);
+    }
+  };
+
   const CARD = cardStyle();
   const head = <div style={titleStyle}><FileCheck2 size={16} strokeWidth={1.8} color={AX.accent} />Today’s Contract</div>;
   const openCreate = () => { setSaveErr(null); setSheet("create"); };
@@ -164,6 +181,9 @@ export function ContractCard({ onStart, onResume }: {
     } else if (row.status === "proof_pending") {
       body = <>{title}<div style={{ fontSize: 12, color: AX.flame, marginTop: 4 }}>{READ_ONLY.proof_pending}</div>{details}
         <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => setProofOpen(true)} disabled={busy}>SUBMIT PROOF</button></>;
+    } else if (row.status === "verified") {
+      body = <>{title}<div style={{ fontSize: 12, color: AX.success, marginTop: 4 }}>{READ_ONLY.verified}</div>{details}
+        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => void claim()} disabled={busy}>{busy ? "CLAIMING…" : "CLAIM REWARD"}</button></>;
     } else {
       body = <>{title}<div style={{ fontSize: 12, color: row.status === "missed" ? AX.danger : AX.success, marginTop: 4 }}>{READ_ONLY[row.status] ?? row.status}</div>{details}</>;
     }
