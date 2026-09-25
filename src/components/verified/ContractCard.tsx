@@ -75,7 +75,13 @@ export function ContractCard({ onStart, onResume }: {
       haptic("success");
       toast.success(asDraft ? "Draft saved" : "Contract set");
       setSheet(null);
-      await load();
+      const fresh = await load();
+      if (fresh && fresh.status === "scheduled" && !asDraft) {
+        const r = await scheduleContractReminders(fresh);
+        if (r === "denied" || r === "unsupported" || r === "browser") {
+          toast.info("Reminders are off here — we'll keep your contract visible in the app.");
+        }
+      }
     } catch (e) {
       setSaveErr(friendlyError(e));
     } finally {
@@ -91,6 +97,7 @@ export function ContractCard({ onStart, onResume }: {
       const { data, error } = await supabase.from("daily_contracts").update({ status: "cancelled" }).eq("id", row.id).select("id").maybeSingle();
       if (error) throw error;
       if (!data) throw { code: "42501", message: "not owner" };
+      await cancelContractReminders(row.id);
       toast.success("Contract cancelled");
       await load();
     } catch (e) {
