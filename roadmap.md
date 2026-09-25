@@ -9,7 +9,7 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Phase 1 — Database foundation (applied to LIVE 2026-09-24 by owner request; reuses score_events; untested with real accounts): daily_contracts, contract_sessions, proof_submissions, recovery_events, accountability_connections/invites/events, contract_events (GRANT + RLS + triggers + indexes)
 - [ ] Phase 2 — Server functions: src/lib/verified/contracts.functions.ts (create/start/pause/end/checkpoint, submitProof/verifyProof, finalizeContractAndAward, startRecovery, reschedule, accountability invite/accept/revoke/nudge)
 - [ ] Phase 3 — Home "Today's Contract" card (src/components/verified/ContractCard.tsx, mounted in HomeTab)
-- [ ] Phase 4 — Proof step built; proof tests all pass; BLOCKED: intermittent React warning on Home load (proof screen not open at the time) — awaiting user
+- [x] Phase 4 — Proof step (PASSED by owner decision, Option B: all proof tests pass; intermittent "state update on unmounted component" warning on Home load logged as known pre-existing issue, not investigated)
 - [ ] Phase 5 — Adaptive reminders (extend src/lib/local-notifications.ts)
 - [ ] Phase 6 — Proof engine + private contract-proofs bucket (signed URLs, EXIF strip, retention)
 - [ ] Phase 7 — Accountability UI (invite/accept/remove/block/nudge, share-only-enabled)
