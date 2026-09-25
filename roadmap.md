@@ -11,7 +11,7 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [ ] Phase 3 — Home "Today's Contract" card (src/components/verified/ContractCard.tsx, mounted in HomeTab)
 - [x] Phase 4 — Proof step (PASSED by owner decision, Option B: all proof tests pass; intermittent "state update on unmounted component" warning on Home load logged as known pre-existing issue, not investigated)
 - [x] Phase 5 — Verified XP and coins: finalize_contract_and_award wrapper + CLAIM REWARD on card (PASSED)
-- [ ] Phase 6 — Proof engine + private contract-proofs bucket (signed URLs, EXIF strip, retention)
+- [x] Phase 6 — Same-day recovery (PASSED: 22 server checks + card UI flow, rescue CTA, reason, Recovered 8 XP · 2 coins)
 - [ ] Phase 7 — Accountability UI (invite/accept/remove/block/nudge, share-only-enabled)
 - [ ] Phase 8 — Validation: SQL RLS tests, idempotency tests, Playwright mobile, build + typecheck
 
