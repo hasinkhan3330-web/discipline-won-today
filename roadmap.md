@@ -23,3 +23,4 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Phase 3 — Reminders + focus session (PASSED)
 - [x] Phase 4 — Proof step (PASSED by owner decision, Option B: all proof tests pass; intermittent "state update on unmounted component" warning on Home load logged as known pre-existing issue, not investigated)
 - [x] Phase 7 — Accountability + Soft Shield (PASSED)
+- [ ] Phase 8 — Final validation + report (no publish/merge)
