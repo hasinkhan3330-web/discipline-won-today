@@ -17,6 +17,15 @@ const READ_ONLY: Record<string, string> = {
   rewarded: "Completed", missed: "Missed",
 };
 
+const REASONS = [
+  { id: "time_conflict", label: "Time conflict" },
+  { id: "task_too_large", label: "Task too large" },
+  { id: "low_energy", label: "Low energy" },
+  { id: "forgot", label: "Forgot" },
+  { id: "distraction", label: "Distraction" },
+  { id: "other", label: "Other" },
+];
+
 function localToday(tz: string) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(new Date());
 }
@@ -33,6 +42,8 @@ export function ContractCard({ onStart, onResume }: {
   const [sheet, setSheet] = useState<null | "create" | "edit">(null);
   const [busy, setBusy] = useState(false);
   const [saveErr, setSaveErr] = useState<string | null>(null);
+  const [reason, setReason] = useState<string>("");
+  const [hasRecovery, setHasRecovery] = useState(false);
   const lock = useRef(false);
   const mounted = useRef(false);
 
@@ -43,8 +54,17 @@ export function ContractCard({ onStart, onResume }: {
       .order("scheduled_at", { ascending: true }).limit(1);
     if (!mounted.current) return null;
     if (error) { setLoadErr(friendlyError(error)); return null; }
-    const fresh = (data?.[0] ?? null) as ContractRow | null;
+    let fresh = (data?.[0] ?? null) as ContractRow | null;
+    let recovered = false;
+    if (fresh && fresh.status === "missed") {
+      const { data: rec, error: recErr } = await supabase.from("daily_contracts")
+        .select("*").eq("recovery_of_id", fresh.id).eq("is_recovery", true).limit(1);
+      if (!mounted.current) return null;
+      if (recErr) { setLoadErr(friendlyError(recErr)); return null; }
+      if (rec?.[0]) { fresh = rec[0] as ContractRow; recovered = true; }
+    }
     setLoadErr(null);
+    setHasRecovery(recovered);
     setRow(fresh);
     // reminders only make sense for a scheduled contract — clean up anything stale
     if (fresh && fresh.status !== "scheduled") void cancelContractReminders(fresh.id);
