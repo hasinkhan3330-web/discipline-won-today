@@ -21,4 +21,4 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - Soft Shield only (no fake app blocking); Android only; no iOS.
 - [x] Phase 2 — Today's Contract card + create/review/confirm sheet, reschedule, cancel (live; 33 DB checks + preview flow pass)
 - [x] Phase 3 — Reminders + focus session (PASSED)
-- [ ] Phase 4 — Proof step built; proof tests all pass; BLOCKED: intermittent React warning on Home load (proof screen not open at the time) — awaiting user
+- [x] Phase 4 — Proof step (PASSED by owner decision, Option B: all proof tests pass; intermittent "state update on unmounted component" warning on Home load logged as known pre-existing issue, not investigated)
