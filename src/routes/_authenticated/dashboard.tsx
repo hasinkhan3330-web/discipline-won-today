@@ -9,6 +9,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
 import { PaywallGate } from "@/components/PaywallGate";
 import { TaskVerify, type VerifyKind } from "@/components/TaskVerify";
+import { WakeSelfie } from "@/components/WakeSelfie";
 import { TopThreeModal } from "@/components/TopThreeModal";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { useEntitlementContext, EntitlementProvider } from "@/components/EntitlementProvider";
@@ -464,6 +465,7 @@ function App() {
     return saved && RINGTONES.some(r => r.id === saved) ? saved : "superloud";
   });
   const [previewId, setPreviewId] = useState<string | null>(null);
+  const [wakeSelfie, setWakeSelfie] = useState(false);
   const [verify, setVerify] = useState<{ uuid: string; kind: VerifyKind; classes: string[]; scan: boolean } | null>(null);
   const [topThree, setTopThree] = useState<string | null>(null);
   const pickRingtone = (id: string) => {
@@ -617,35 +619,41 @@ function App() {
     });
   };
 
-  /** Credits a verified wake-up server-side: coins for the tier, streak, and the Wake Up tick. */
-  const completeWakeProtocol = async (slot: string) => {
+  /** Wake Up 4AM is credited only through the live selfie check (server-verified, 4:00–4:30 AM). */
+  const completeWakeProtocol = async (_slot?: string) => { setWakeSelfie(true); return 0; };
+  const onWakeVerified = (row: { awarded: number; coins: number; streak: number; longestStreak: number; already: boolean }) => {
+    setWakeSelfie(false);
     const uuid = (wakeTask as any)?._uuid as string | undefined;
-    const { data, error } = await (supabase as any).rpc("complete_wake_protocol", {
-      _slot: slot, _task_id: uuid ?? null,
-    });
-    if (error) {
-      console.error(error);
-      toast.error("Could not credit the wake protocol", { description: error.message });
-      throw new Error(error.message);
-    }
-    const row = Array.isArray(data) ? data[0] : data;
-    if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
+    setCoins(row.coins); setStreak(row.streak);
     if (uuid) setTasks(p => p.map(t => ((t as any)._uuid === uuid ? { ...t, done: true } : t)));
-    const awarded = Number(row?.awarded ?? 0);
-    if (awarded > 0) {
+    if (row.awarded > 0) {
       const today = new Date().toISOString().slice(0, 10);
-      setLife(prev => prev ? {
-        ...prev,
-        bestStreak: Math.max(prev.bestStreak, Number(row?.longest_streak ?? row?.streak ?? 0)),
-        lifetimeCoins: prev.lifetimeCoins + awarded,
-        heat: prev.heat.map(h => (h.date === today ? { ...h, count: h.count + 1 } : h)),
-      } : prev);
-      toast.success(`+${awarded} coins · wake verified`);
-    } else {
-      toast.success("Wake protocol already verified today");
-    }
-    return awarded;
+      setLife(prev => prev ? { ...prev, bestStreak: Math.max(prev.bestStreak, row.longestStreak), lifetimeCoins: prev.lifetimeCoins + row.awarded, heat: prev.heat.map(h => (h.date === today ? { ...h, count: h.count + 1 } : h)) } : prev);
+      toast.success(`+${row.awarded} coins · wake verified`);
+    } else toast.success(row.already ? "Wake-up already verified today" : "Wake-up verified · daily coin limit reached");
   };
+  const completeHabitFromProfile = async (uuid: string) => {
+    const t = tasks.find(x => (x as any)._uuid === uuid);
+    if (t && /wake/i.test(t.name)) { setWakeSelfie(true); return; }
+    await completeTaskRpc(uuid);
+  };
+
+  // One-time streak milestone bonuses (server decides; idempotent).
+  const milestoneRef = useRef(0);
+  useEffect(() => {
+    const best = Math.max(streak, life?.bestStreak ?? 0);
+    if (!myId || best < 7 || milestoneRef.current >= best) return;
+    milestoneRef.current = best;
+    (async () => {
+      const { data, error } = await (supabase as any).rpc("claim_streak_milestones");
+      if (error || !Array.isArray(data)) return;
+      const fresh = data.filter((r: any) => r.newly_awarded);
+      if (!fresh.length) return;
+      const total = fresh.reduce((sum: number, r: any) => sum + Number(r.coins), 0);
+      setCoins(c => c + total);
+      toast.success(`+${total.toLocaleString()} coins · ${fresh[fresh.length - 1].milestone}-day streak badge unlocked`);
+    })();
+  }, [streak, life?.bestStreak, myId]);
 
   /** Logs a finished Zen session on the account and credits its coins. */
   const onZenComplete = async (minutes: number) => {
@@ -770,8 +778,6 @@ function App() {
 
 
   const verifyKindFor = (name: string): VerifyKind | null => {
-    if (/workout|gym|train|exercise/i.test(name)) return "gym";
-    if (/shower|bath|cold/i.test(name)) return "shower";
     if (/focus|study|read/i.test(name)) return "focus";
     return null;
   };
@@ -781,18 +787,13 @@ function App() {
     const classes: string[] = Array.isArray(t?.scanClasses) ? t.scanClasses : [];
     const kind = verifyKindFor(t?.name ?? "");
     if (kind) return { kind, classes };
-    if (t?.requireScan && classes.length) return { kind: "custom", classes };
     return null;
   };
 
   const tick = (id: number) => {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
-    if (/wake/i.test(t.name)) {
-      const p = wakePlan && wakePlan.date === todayKey() ? wakePlan : null;
-      setProof(p ? { mode: "time", wakeTime: p.tier, wakePts: p.pts, wakeLine: p.line } : { mode: "time" });
-      return;
-    }
+    if (/wake/i.test(t.name)) { setWakeSelfie(true); return; }
     if (/top\s?3|top three missions/i.test(t.name)) {
       setTopThree((t as any)._uuid as string);
       return;
@@ -1062,7 +1063,7 @@ function App() {
                   startedOn: (task as any).startedOn,
                 }))}
                 userId={myId}
-                onCompleteHabit={completeTaskRpc}
+                onCompleteHabit={completeHabitFromProfile}
                 onRefresh={refreshAll}
                 onOpenStats={() => setTab("stats")}
                 onSignOut={handleSignOut}
