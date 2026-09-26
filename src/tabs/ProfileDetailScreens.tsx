@@ -235,10 +235,6 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
     setDate(goal.target_date ?? ""); setPicked(goal.habits.map(item => item.id));
   };
 
-  const updateProgress = async (goal: GoalRow, progress: number) => {
-    await supabase.from("goals").update({ progress, completed: progress === 100 }).eq("id", goal.id);
-    await load(); onChanged?.();
-  };
   const remove = async (id: string) => {
     const { error: deleteError } = await supabase.from("goals").delete().eq("id", id);
     if (deleteError) return void toast.error("Could not delete that goal", { description: deleteError.message });
