@@ -1824,12 +1824,22 @@ export type Database = {
           xp: number
         }[]
       }
+      axen_daily_coin_room: { Args: { _uid: string }; Returns: number }
+      axen_is_priority_habit: { Args: { _name: string }; Returns: boolean }
       axen_is_server_write: { Args: never; Returns: boolean }
       buy_streak_shield: {
         Args: never
         Returns: {
           coins: number
           shields: number
+        }[]
+      }
+      claim_streak_milestones: {
+        Args: never
+        Returns: {
+          coins: number
+          milestone: number
+          newly_awarded: boolean
         }[]
       }
       complete_alarm: {
@@ -1878,6 +1888,16 @@ export type Database = {
           awarded: number
           coins: number
           longest_streak: number
+          streak: number
+        }[]
+      }
+      complete_wake_selfie: {
+        Args: { _tz: string; _uid: string }
+        Returns: {
+          awarded: number
+          coins: number
+          longest_streak: number
+          result: string
           streak: number
         }[]
       }

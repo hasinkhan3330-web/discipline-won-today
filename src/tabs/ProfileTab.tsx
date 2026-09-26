@@ -1,3 +1,5 @@
+import { StreakBadge } from "@/components/StreakBadge";
+import { topMilestone } from "@/lib/economy";
 import { useState } from "react";
 import {
   Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins, Crown,
@@ -66,7 +68,7 @@ export function ProfileTab(props: Props) {
   return <section className="you-screen animate-fade-in">
     <header className="you-profile-hero">
       <label className="you-avatar" aria-label="Change profile photo"><img src={props.myAvatar || props.fallbackAvatar(props.myName)} onError={event => { event.currentTarget.src = props.fallbackAvatar(props.myName); }} alt={props.myName} /><span><Camera size={14} /></span><input type="file" accept="image/*" disabled={props.uploading} onChange={event => { const file = event.target.files?.[0]; if (file) props.openCropper(file); event.currentTarget.value = ""; }} /></label>
-      <div className="you-profile-copy"><h1>{props.myName}</h1><div><Crown size={15} /><strong>{rank.name}</strong><span className="you-verified">✓</span></div><p>Better Habits <b>·</b> Stronger Mind <b>·</b> Greater You</p></div>
+      <div className="you-profile-copy"><h1>{props.myName}{(() => { const b = topMilestone(Math.max(props.streak, props.life?.bestStreak ?? 0)); return b ? <span className="ax-name-badge"><StreakBadge tone={b.tone} size={18} label={`${b.days}-day streak badge`} /></span> : null; })()}</h1><div><Crown size={15} /><strong>{rank.name}</strong><span className="you-verified">✓</span></div><p>Better Habits <b>·</b> Stronger Mind <b>·</b> Greater You</p></div>
       <button className="you-account-button" onClick={() => setView("account")} aria-label="Open account settings"><Settings size={18} /></button>
       <div className="you-coin-pill"><Coins size={18} /><strong>{coinsShown} coins</strong></div>
     </header>

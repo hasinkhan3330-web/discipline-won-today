@@ -7,7 +7,7 @@ import { FocusMusicPanel } from "@/components/FocusMusicPanel";
 export type FocusTier = { id: "f49" | "f120" | "f229"; label: string; sub: string; minutes: number; reward: number };
 
 export const FOCUS_TIERS: FocusTier[] = [
-  { id: "f49", label: "49 MIN", sub: "IGNITION", minutes: 49, reward: 5 },
+  { id: "f49", label: "49 MIN", sub: "IGNITION", minutes: 49, reward: 10 },
   { id: "f120", label: "2 HOURS", sub: "DEEP DIVE", minutes: 120, reward: 10 },
   { id: "f229", label: "3 HOURS", sub: "MONK MODE", minutes: 180, reward: 15 },
 ];

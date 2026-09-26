@@ -1,3 +1,4 @@
+import { GOAL_PROMISE, GOAL_TARGET_COINS, COIN_RULES } from "@/lib/economy";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -8,7 +9,6 @@ import {
 import { cancelLocalReminder, nextReminderAt, scheduleLocalReminder, stableNotificationId } from "@/lib/local-notifications";
 import { FeatureHelpDot, type HelpContent } from "@/components/FeatureHelpDot";
 import { GoalHabitPicker, type GoalHabit } from "@/components/GoalHabitPicker";
-import { MODEL_CLASSES } from "@/lib/vision";
 
 type GoalRow = {
   id: string; title: string; category: string | null; target_date: string | null; started_on: string;
@@ -18,15 +18,8 @@ type GoalRow = {
 
 const GOALS_HELP: HelpContent = {
   title: "How Goals work",
-  lines: [
-    "A goal is powered by the habits you link to it — pick one or more when you create or edit it.",
-    "Your coin target is the total coins those habits can earn between the goal start and its target date.",
-    "Every verified habit completion adds its normal coin reward once, so progress only moves with real actions.",
-    "Missing a day never removes progress — it simply stops growing until you complete a habit again.",
-    "Goal Readiness = 50% completion consistency + 20% current streak + 20% plan adherence + 10% recent momentum.",
-    "Readiness describes your behaviour so far. It cannot promise an exam result, a body change, or any outcome.",
-  ],
-  question: "Using my real AXEN goals, linked habits, target dates and verified progress, tell me exactly where I stand and one realistic next action.",
+  lines: [GOAL_PROMISE, "Only coins from habits linked to a goal count toward its 18,000-coin target."],
+  question: "How does the 18,000-coin goal system work?",
 };
 
 const JOURNEY_HELP: HelpContent = {
@@ -111,26 +104,16 @@ export function HabitsView({ habits, userId, onBack, onComplete, onChanged }: {
   const [name, setName] = useState("");
   const [frequency, setFrequency] = useState("daily");
   const [duration, setDuration] = useState(21);
-  const [points, setPoints] = useState(10);
-  const [requireScan, setRequireScan] = useState(false);
-  const [classQuery, setClassQuery] = useState("");
-  const [scanClasses, setScanClasses] = useState<string[]>([]);
-  const classMatches = useMemo(() => {
-    const q = classQuery.trim().toLowerCase();
-    return MODEL_CLASSES.filter(c => !q || c.includes(q)).slice(0, 24);
-  }, [classQuery]);
+  const [points, setPoints] = useState<number>(COIN_RULES.customHabit.default);
   const priority = habits.slice(0, 3);
   const saveHabit = async () => {
     if (!userId || !name.trim() || busy) return;
-    if (requireScan && scanClasses.length === 0) {
-      return void toast.error("Pick at least one object the camera should accept");
-    }
     setBusy(true);
     const nextOrder = habits.length ? habits.length + 1 : 1;
     const { error } = await supabase.from("tasks").insert({
-      user_id: userId, name: name.trim(), icon: "◎", pts: points,
+      user_id: userId, name: name.trim(), icon: "◎", pts: Math.min(5, Math.max(1, points)),
       sort_order: nextOrder, frequency, duration_days: duration,
-      require_scan: requireScan, scan_classes: requireScan ? scanClasses : [],
+      require_scan: false, scan_classes: [],
     });
     setBusy(false);
     if (error) return void toast.error("Could not build that habit", { description: error.message });
@@ -162,33 +145,7 @@ export function HabitsView({ habits, userId, onBack, onComplete, onChanged }: {
           <label>Frequency<select value={frequency} onChange={event => setFrequency(event.target.value)}><option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="weekends">Weekends</option><option value="weekly">Weekly</option></select></label>
           <label>Duration<select value={duration} onChange={event => setDuration(Number(event.target.value))}><option value={21}>21 days</option><option value={30}>30 days</option><option value={60}>60 days</option><option value={90}>90 days</option></select></label>
         </div>
-        <label>Reward <input type="range" min="5" max="25" step="5" value={points} onChange={event => setPoints(Number(event.target.value))} /><span className="you-range-value">{points} coins</span></label>
-        <label className="you-toggle-row">
-          <span>Require Scan Proof</span>
-          <input type="checkbox" checked={requireScan} onChange={event => setRequireScan(event.target.checked)} />
-        </label>
-        {requireScan && (
-          <div className="you-scan-picker">
-            <input value={classQuery} onChange={event => setClassQuery(event.target.value)} placeholder="Search accepted objects (e.g. book, sink, bicycle)" />
-            {scanClasses.length > 0 && (
-              <div className="you-scan-chosen">
-                {scanClasses.map(c => (
-                  <button type="button" key={c} onClick={() => setScanClasses(list => list.filter(x => x !== c))}>{c} ✕</button>
-                ))}
-              </div>
-            )}
-            <div className="you-scan-options">
-              {classMatches.map(c => (
-                <button
-                  type="button" key={c}
-                  className={scanClasses.includes(c) ? "is-on" : ""}
-                  onClick={() => setScanClasses(list => list.includes(c) ? list.filter(x => x !== c) : [...list, c])}
-                >{c}</button>
-              ))}
-              {classMatches.length === 0 && <span className="you-scan-empty">This object is not supported by the current model.</span>}
-            </div>
-          </div>
-        )}
+        <label>Reward <input type="range" min="1" max="5" step="1" value={points} onChange={event => setPoints(Number(event.target.value))} /><span className="you-range-value">{points} coins</span></label>
         <button className="you-save-button" disabled={busy || !name.trim()} onClick={saveHabit}>{busy ? "Saving…" : "Start habit"}</button>
       </section>}
     </div>
@@ -278,10 +235,6 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
     setDate(goal.target_date ?? ""); setPicked(goal.habits.map(item => item.id));
   };
 
-  const updateProgress = async (goal: GoalRow, progress: number) => {
-    await supabase.from("goals").update({ progress, completed: progress === 100 }).eq("id", goal.id);
-    await load(); onChanged?.();
-  };
   const remove = async (id: string) => {
     const { error: deleteError } = await supabase.from("goals").delete().eq("id", id);
     if (deleteError) return void toast.error("Could not delete that goal", { description: deleteError.message });
@@ -338,13 +291,13 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
           </div>
         </div>
         {linked && <div className="you-goal-habits">{goal.habits.map(item => <span key={item.id}>{item.name}</span>)}</div>}
-        <Progress value={goal.progress} />
+        <Progress value={Math.min(100, (goal.earned_coins ?? 0) / GOAL_TARGET_COINS * 100)} />
         {linked ? <div className="you-goal-controls">
-          <span>{goal.progress}% · {goal.earned_coins}/{goal.target_coins} coins</span>
+          <span>{(goal.earned_coins ?? 0).toLocaleString()} / {GOAL_TARGET_COINS.toLocaleString()} coins</span>
           <b className={goal.completed ? "is-complete" : (goal.readiness ?? 0) >= 60 ? "is-ok" : "is-warn"}>{goal.readiness ?? 0}% Goal Readiness — {status}</b>
         </div> : <div className="you-goal-controls">
-          <span>{goal.progress}% complete</span>
-          <input aria-label={`Progress for ${goal.title}`} type="range" min="0" max="100" step="5" value={goal.progress} onChange={event => updateProgress(goal, Number(event.target.value))} />
+          <span>{(goal.earned_coins ?? 0).toLocaleString()} / {GOAL_TARGET_COINS.toLocaleString()} coins</span>
+          <input aria-label={`Progress for ${goal.title}`} type="range" min="0" max={GOAL_TARGET_COINS} step="1" value={Math.min(GOAL_TARGET_COINS, goal.earned_coins ?? 0)} readOnly disabled />
         </div>}
       </article>;
     })}</div>
