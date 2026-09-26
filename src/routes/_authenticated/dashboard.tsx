@@ -954,6 +954,7 @@ function App() {
 
 
 
+          {wakeSelfie && <WakeSelfie onClose={() => setWakeSelfie(false)} onDone={onWakeVerified} />}
           {verify && (
             <TaskVerify
               kind={verify.kind}
