@@ -40,10 +40,13 @@ All six parts are logic and content changes. The theme, layout, navigation, Deep
 - The existing info dot next to "Aim clearly. Advance deliberately." shows the Action Promise text exactly as you wrote it.
 
 ## 5. Build Your Discipline
-- Priority habits no longer complete with one instant tap:
-  - Wake Up 4AM: the tick can only be activated between 4:00 and 4:30 AM your time. The server checks the time; earlier or later taps are refused with a short note.
-  - Cold Shower and Workout: a tap opens a small "Mark done" confirmation. The server records the real time and only accepts it between 4:00 AM and 11:59 PM on that day, once.
-  - The circle looks exactly the same.
+- Wake Up 4AM uses a live selfie check:
+  - Check-in works only from 4:00 to 4:30 AM your time. The server checks the time. You can't fill in a missed day.
+  - Tapping opens the front camera for a live photo. You can't pick a photo from your gallery or upload an old one. The camera permission is asked only at that moment, with a one-line reason.
+  - The photo is checked in memory on the server (a face must be present) and thrown away straight after. It is never saved, never shown to anyone and never logged. The whole flow takes a few seconds.
+  - If it passes, you get 10 coins (within the 50 per day limit) and the same circle turns green. If the camera is denied, the photo fails or the time window has passed, you get a short message: no tick and no coins.
+- Cold Shower and Workout stay a simple tap, any time of day, exactly as before.
+- The circles look exactly the same.
 - Build Any Habit: the reward is chosen from 1 to 5 coins (default 2). "Require scan proof" is removed from the form and from the save logic. The server also caps the reward at 1 to 5.
 
 ## 6. Coach knowledge
