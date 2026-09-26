@@ -18,7 +18,7 @@ async function buildContext(supabase:any,userId:string){
   for(const item of comps??[]){counts.set(item.task_id,(counts.get(item.task_id)??0)+1);days.add(item.completed_on);}
   const {data:overview}=await supabase.rpc("goal_overview");
   const [{data:pos},{data:contract},{data:acc}]=await Promise.all([
-    supabase.rpc("my_leaderboard_position",{_scope:"global",_period:"all"}),
+    supabase.rpc("my_leaderboard_position",{_scope:"global",_period:"alltime"}),
     supabase.from("daily_contracts").select("title,status,is_recovery,scheduled_at").eq("user_id",userId).order("scheduled_at",{ascending:false}).limit(1).maybeSingle(),
     supabase.rpc("get_my_accountability"),
   ]);
