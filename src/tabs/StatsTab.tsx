@@ -1,3 +1,5 @@
+import { STREAK_MILESTONES } from "@/lib/economy";
+import { StreakBadge } from "@/components/StreakBadge";
 import {
   BarChart3,
   CalendarDays,
@@ -165,7 +167,7 @@ export function StatsTab({ weekly, life, coins, streak }: StatsTabProps) {
   const meditationPercent = clamp((Math.min(activeDays, 7) / 7) * 100);
   const mindfulPercent = clamp((completedDays / 5) * 100);
   const focusHours = `${Math.floor(focusMinutes / 60)}h ${focusMinutes % 60}m`;
-  const milestoneDays = [3, 7, 14, 30];
+  const best = Math.max(streak, life?.bestStreak ?? 0);
 
   return (
     <section className="stats-screen">
@@ -216,8 +218,8 @@ export function StatsTab({ weekly, life, coins, streak }: StatsTabProps) {
         </div>
         <div className="stats-milestones">
           <div className="stats-milestones__title"><Medal size={20} /><div><strong>Streak Milestones</strong><span>Small steps. Big changes.</span></div></div>
-          <div className="stats-milestones__steps">
-            {milestoneDays.map(days => <div key={days} className={streak >= days ? "is-reached" : ""}><strong>{days}</strong><span>{days} days</span></div>)}
+          <div className="stats-milestones__steps is-five">
+            {STREAK_MILESTONES.map(m => { const reached = best >= m.days; return <div key={m.days} className={reached ? "is-reached" : ""}>{reached && <StreakBadge tone={m.tone} size={m.tone === "diamond" ? 15 : 16} label={`${m.days}-day badge earned`} />}<strong>{m.days}</strong><span>{m.days} days</span><em>{m.coins.toLocaleString()}+</em></div>; })}
           </div>
         </div>
       </article>
