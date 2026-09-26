@@ -6,7 +6,7 @@
 - **Backend:** there is only one: `nfmgiczlthezfwgsazfc`. The staging and production refs are the same project. All Phase 1–7 database changes are already on it. They are additive, and users see nothing new until the app is published.
 - **Migrations:** 72 in order. The verified-discipline ones are 20260924071606, 073015, 074047, 074123, 175423, 175517, 20260925024449, 065950, 075449. Old migration files were never edited.
 - **Feature flags:** there is no existing flag system for the 8 modules. Following your rule, none will be created. They are reported as missing.
-- **Native builds:** Android is set up with Capacitor (com.hasin.axen, internet and billing permissions only). There is no iOS project. The Android shell points to an old URL (discipline-won-today.lovable.app), which needs review before any store build.
+- **Native builds:** Android is set up with Capacitor (com.hasin.axen, internet and billing permissions only). There is no iOS project. The Android shell points to https://axonhabit.app.
 - **Secrets:** no private keys in the branch or the built app. `.env` holds only public keys.
 - **Bundle size:** 15,085,768 bytes before → 15,131,810 after, so about **+45 KB** (+0.3%).
 - **Test run status:** the first automatic test run stopped at setup. Test contracts were created as drafts instead of scheduled. This was a test-script mistake, not an app failure. Everything was undone.
