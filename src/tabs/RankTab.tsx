@@ -82,6 +82,7 @@ export function RankTab({
 }) {
   const [panel, setPanel] = useState<Panel | null>(null);
   const { idx, cur, next, pct } = tierFor(coins);
+  const topBadge = topMilestone(Math.max(streak, bestStreak));
   const completion = todayTotal ? Math.round(todayDone / todayTotal * 100) : 0;
   const level = Math.max(1, Math.floor(coins / 160) + 1);
   const levelXp = coins % 160;
