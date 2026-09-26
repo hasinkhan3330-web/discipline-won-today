@@ -244,13 +244,13 @@ function App() {
       _uuid: r.id as string,
       icon: r.icon,
       name: r.name,
-      pts: r.pts,
+      pts: /wake/i.test(r.name) ? 10 : /cold|shower|workout|gym/i.test(r.name) ? 3 : Math.min(5, Math.max(1, r.pts ?? 2)),
       done: doneIds.has(r.id as string),
       frequency: r.frequency,
       durationDays: r.duration_days,
       startedOn: r.started_on,
-      requireScan: (r as any).require_scan ?? false,
-      scanClasses: ((r as any).scan_classes ?? []) as string[],
+      requireScan: false,
+      scanClasses: [] as string[],
     }) as unknown as Task));
 
     setBoard((leaders || []).map(l => ({
