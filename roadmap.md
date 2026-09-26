@@ -31,3 +31,4 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Goals 18,000 linked-habit coins + info text
 - [x] Wake Up 4AM live-selfie verify (4:00–4:30, auto-delete); Cold Shower/Workout simple tap; custom habit 1–5, no scan proof
 - [x] Coach full app knowledge
+- [x] Gap closure: real-streak badge guard, selfie liveness, recalc_goal owner check, full test report

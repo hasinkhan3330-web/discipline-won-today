@@ -28,23 +28,46 @@ export function WakeSelfie({ onDone, onClose }: { onDone: (r: Extract<WakeSelfie
     return () => { alive = false; streamRef.current?.getTracks().forEach(t => t.stop()); };
   }, []);
 
+  const grab = (v: HTMLVideoElement, w: number) => {
+    const c = document.createElement("canvas");
+    c.width = w; c.height = Math.round(w * (v.videoHeight || 640) / (v.videoWidth || 480));
+    const ctx = c.getContext("2d"); ctx?.drawImage(v, 0, 0, c.width, c.height);
+    return { c, ctx };
+  };
+  const grey = (v: HTMLVideoElement) => {
+    const { c, ctx } = grab(v, 32);
+    const px = ctx?.getImageData(0, 0, c.width, c.height).data ?? new Uint8ClampedArray();
+    const out: number[] = [];
+    for (let i = 0; i < px.length; i += 4) out.push(((px[i] ?? 0) + (px[i + 1] ?? 0) + (px[i + 2] ?? 0)) / 3);
+    c.width = 0; return out;
+  };
+  const jpeg = (v: HTMLVideoElement) => { const { c } = grab(v, 480); const d = c.toDataURL("image/jpeg", 0.7); c.width = 0; return d; };
+
   const capture = async () => {
     const v = videoRef.current;
     if (!v || !ready || busy) return;
     setBusy(true);
-    const c = document.createElement("canvas");
-    const w = 480; c.width = w; c.height = Math.round(w * (v.videoHeight || 640) / (v.videoWidth || 480));
-    c.getContext("2d")?.drawImage(v, 0, 0, c.width, c.height);
-    let img = c.toDataURL("image/jpeg", 0.7);
-    c.width = 0; // release pixels
+    setMsg("Hold still and look at the camera…");
+    let a = jpeg(v); let b = "";
+    // Liveness: ~2 s of 32x32 greyscale samples; a live face shows small natural motion.
+    let prev = grey(v); let total = 0; let n = 0;
+    for (let i = 0; i < 13; i++) {
+      await new Promise(r => setTimeout(r, 150));
+      const cur = grey(v);
+      let d = 0; for (let k = 0; k < cur.length; k++) d += Math.abs((cur[k] ?? 0) - (prev[k] ?? 0));
+      total += d / Math.max(1, cur.length); n++; prev = cur;
+    }
+    const motion = total / Math.max(1, n);
+    if (motion < 0.6) { a = ""; setMsg("No natural movement detected. Use your live face, not a photo."); setBusy(false); return; }
+    b = jpeg(v);
     try {
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const r = await verify({ data: { imageBase64: img, tz } });
-      img = "";
+      const r = await verify({ data: { frames: [a, b], motion, tz } });
+      a = ""; b = "";
       if (r.ok) { streamRef.current?.getTracks().forEach(t => t.stop()); onDone(r); return; }
       setMsg(r.message);
     } catch { setMsg("Selfie check failed. Try again."); }
-    finally { img = ""; setBusy(false); }
+    finally { a = ""; b = ""; setBusy(false); }
   };
 
   return (

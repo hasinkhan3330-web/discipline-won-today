@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type WakeSelfieResult =
   | { ok: true; awarded: number; coins: number; streak: number; longestStreak: number; already: boolean }
-  | { ok: false; code: "window" | "no_face" | "service" | "error"; message: string };
+  | { ok: false; code: "window" | "no_face" | "not_live" | "service" | "error"; message: string };
 
 function localMinutes(tz: string) {
   const parts = new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date());
@@ -20,9 +20,9 @@ function localMinutes(tz: string) {
 export const verifyWakeSelfie = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) => {
-    const d = z.object({ imageBase64: z.string().min(32).max(4_000_000), tz: z.string().min(1).max(64) }).parse(input);
-    const base64 = d.imageBase64.includes(",") ? d.imageBase64.slice(d.imageBase64.indexOf(",") + 1) : d.imageBase64;
-    return { base64, tz: d.tz };
+    const d = z.object({ frames: z.array(z.string().min(32).max(2_000_000)).length(2), motion: z.number().min(0).max(255), tz: z.string().min(1).max(64) }).parse(input);
+    const strip = (s: string) => (s.includes(",") ? s.slice(s.indexOf(",") + 1) : s);
+    return { frames: d.frames.map(strip), motion: d.motion, tz: d.tz };
   })
   .handler(async ({ data, context }): Promise<WakeSelfieResult> => {
     let mins: number;
@@ -33,19 +33,29 @@ export const verifyWakeSelfie = createServerFn({ method: "POST" })
     const model = process.env["ROBOFLOW_MODEL"] || "coco/9";
     if (!apiKey) return { ok: false, code: "service", message: "Selfie check is not available right now." };
 
+    // Liveness: client-measured motion must be natural, and the two frames must differ.
+    if (data.motion < 0.6 || data.frames[0] === data.frames[1]) {
+      data.frames = [];
+      return { ok: false, code: "not_live", message: "No natural movement detected. Use your live face, not a photo." };
+    }
+    const detect = async (b64: string) => {
+      const res = await fetch(`https://detect.roboflow.com/${model}?api_key=${encodeURIComponent(apiKey)}&confidence=40&format=json`, {
+        method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: b64,
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const json = (await res.json()) as { predictions?: { class?: string; confidence?: number }[] };
+      return (json.predictions ?? []).some(p => String(p.class).toLowerCase() === "person" && Number(p.confidence) >= 0.5);
+    };
     let personFound = false;
     try {
-      const res = await fetch(`https://detect.roboflow.com/${model}?api_key=${encodeURIComponent(apiKey)}&confidence=40&format=json`, {
-        method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: data.base64,
-      });
-      if (!res.ok) { console.error("[wake-selfie] detect status", res.status); return { ok: false, code: "service", message: "Selfie check failed. Try again." }; }
-      const json = (await res.json()) as { predictions?: { class?: string; confidence?: number }[] };
-      personFound = (json.predictions ?? []).some(p => String(p.class).toLowerCase() === "person" && Number(p.confidence) >= 0.5);
+      const [p1, p2] = await Promise.all(data.frames.map(detect));
+      personFound = !!p1 && !!p2;
     } catch {
+      data.frames = [];
       return { ok: false, code: "service", message: "Selfie check failed. Try again." };
     }
-    data.base64 = ""; // drop the photo immediately
-    if (!personFound) return { ok: false, code: "no_face", message: "We couldn't see you clearly. Face the camera and try again." };
+    data.frames = []; // drop the photos immediately
+    if (!personFound) return { ok: false, code: "no_face", message: "We couldn't see you clearly in both frames. Face the camera and try again." };
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await (supabaseAdmin as any).rpc("complete_wake_selfie", { _uid: context.userId, _tz: data.tz });
