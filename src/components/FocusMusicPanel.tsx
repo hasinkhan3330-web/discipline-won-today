@@ -27,7 +27,7 @@ export function FocusMusicPanel({ onClose, onReward }: { onClose: () => void; on
   const audioRef = useRef<HTMLAudioElement|null>(null);
   const tokenRef = useRef<string|null>(null);
   const track = TRACKS.find(item => item.id===trackId) ?? TRACKS[0];
-  const reward = DURATIONS.find(item => item.m===minutes)?.reward ?? 5;
+  const reward = DURATIONS.find(item => item.m===minutes)?.reward ?? 0;
 
   useEffect(() => { if (!running) setLeft(minutes*60); },[minutes,running]);
   useEffect(() => { if (audioRef.current) audioRef.current.volume=volume; },[volume,trackId]);
