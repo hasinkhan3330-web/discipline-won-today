@@ -24,7 +24,6 @@ export function tierFor(coins: number) {
   let idx = TIERS.findIndex(t => t.max === null || xp <= t.max);
   if (idx < 0) idx = TIERS.length - 1;
   const cur = TIERS[idx];
-  const topBadge = topMilestone(Math.max(streak, bestStreak));
   const next = TIERS[idx + 1];
   const span = cur.max === null ? 1 : Math.max(1, cur.max - cur.min + 1);
   const pct = cur.max === null ? 100 : Math.min(100, Math.round((xp - cur.min) / span * 100));
