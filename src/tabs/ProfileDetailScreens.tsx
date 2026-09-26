@@ -9,7 +9,6 @@ import {
 import { cancelLocalReminder, nextReminderAt, scheduleLocalReminder, stableNotificationId } from "@/lib/local-notifications";
 import { FeatureHelpDot, type HelpContent } from "@/components/FeatureHelpDot";
 import { GoalHabitPicker, type GoalHabit } from "@/components/GoalHabitPicker";
-import { MODEL_CLASSES } from "@/lib/vision";
 
 type GoalRow = {
   id: string; title: string; category: string | null; target_date: string | null; started_on: string;
@@ -106,13 +105,6 @@ export function HabitsView({ habits, userId, onBack, onComplete, onChanged }: {
   const [frequency, setFrequency] = useState("daily");
   const [duration, setDuration] = useState(21);
   const [points, setPoints] = useState<number>(COIN_RULES.customHabit.default);
-  const [requireScan, setRequireScan] = useState(false);
-  const [classQuery, setClassQuery] = useState("");
-  const [scanClasses, setScanClasses] = useState<string[]>([]);
-  const classMatches = useMemo(() => {
-    const q = classQuery.trim().toLowerCase();
-    return MODEL_CLASSES.filter(c => !q || c.includes(q)).slice(0, 24);
-  }, [classQuery]);
   const priority = habits.slice(0, 3);
   const saveHabit = async () => {
     if (!userId || !name.trim() || busy) return;
