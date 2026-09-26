@@ -1,33 +1,67 @@
-# Phase 8 — Validation and Release Plan (nothing released)
+# AXEN Economy, XP Info, Streak Badges, Goals, Habits and Coach Knowledge
 
-## Facts found so far (read-only)
-- **Phases 1–7:** each has a PASSED verdict in the roadmap.
-- **Branch / commit:** Lovable-managed edit branch `edt-1cc5c2a4…`, latest `34c028f`. Every save creates its own commit automatically.
-- **Backend:** there is only one: `nfmgiczlthezfwgsazfc`. The staging and production refs are the same project. All Phase 1–7 database changes are already on it. They are additive, and users see nothing new until the app is published.
-- **Migrations:** 72 in order. The verified-discipline ones are 20260924071606, 073015, 074047, 074123, 175423, 175517, 20260925024449, 065950, 075449. Old migration files were never edited.
-- **Feature flags:** there is no existing flag system for the 8 modules. Following your rule, none will be created. They are reported as missing.
-- **Native builds:** Android is set up with Capacitor (com.hasin.axen, internet and billing permissions only). There is no iOS project. The Android shell points to https://axonhabit.app.
-- **Secrets:** no private keys in the branch or the built app. `.env` holds only public keys.
-- **Bundle size:** 15,085,768 bytes before → 15,131,810 after, so about **+45 KB** (+0.3%).
-- **Test run status:** the first automatic test run stopped at setup. Test contracts were created as drafts instead of scheduled. This was a test-script mistake, not an app failure. Everything was undone.
+All six parts are logic and content changes. The theme, layout, navigation, Deep Focus screen design, Zen and Home order stay the same. The only visible additions are the ones you asked for: the XP info dot, the 5 milestone circles with badges, the badge next to your name, and the Goals tooltip text.
 
-## Gates I cannot meet here (to state honestly)
-1. **Separate staging environment:** doesn't exist. Every test runs on the one live backend inside a transaction that is fully undone afterwards.
-2. **Isolated per-phase commits, clean tree, squash-free PR:** git is managed by Lovable. I can list the commits and give a diff against the pre-Phase-1 commit (`bc60747`), but I can't open a pull request.
-3. **Schema-drift tool, backup/restore drill, staged rollout:** not available to me. They go on the release checklist as manual steps.
-4. **Physical Android/iOS tests:** none. Browser preview only. Each device item will be marked "untestable here".
-5. **Private storage / signed URLs:** proof photos are checked and then thrown away, never stored, so there are no storage paths to guess. This is reported as not applicable (I'll confirm no proof storage area exists).
-6. **Feature flags:** reported as missing. Adding them would be new code, which needs your separate approval.
+## Decisions you confirmed
+- Deep Focus: 49 min = 10 coins, 2 h = 10, 3 h = 15. Focus Music pays 0 coins.
+- The 50 coins per day limit counts everything: contracts, Deep Focus, 4AM, habits and top tasks.
+- Goal progress counts only coins from habits linked to that goal, toward 18,000.
+- A streak badge unlocks when you reach that many streak days. It pays its coin amount once.
 
-## What I will run after approval (all undone afterwards, no publish)
-- **Flows:** success path (contract → session → proof → server verify → 20 XP + 5 coins once → leaderboard); missed → 9-minute recovery → 8 XP + 2 coins, then full reward blocked; accountability invite → accept → partner sees title/status only → fixed nudges → sharing off → revoke → no access.
-- **Abuse (anonymous, User A, User B, partner, outsider):** client-set XP/coins, self-verify, forced statuses, cross-user reads/writes/sessions, duplicate/replay/concurrent rewards, duplicate recovery and recovery of recovery, self/expired/used/guessed invites, custom and over-limit nudges, invite rate limits, mute, expired sign-in, secret scan of the built app.
-- **Grants review:** every protected server function, checking who can run it and its safe search path.
-- **Screens (browser, phone size):** every card state that can be set up, plus offline, and all 6 tabs, Deep Focus and Zen opening.
-- **Performance:** Home load time, database calls on Home, bundle size, timer save frequency (saved once per start, not every second), and live-update subscriptions cleaned up when you leave a screen.
-- **Stop on the first real failure** and show it to you before any fix.
+## 1. Coin economy (all enforced on the server)
+| Action | Coins |
+|---|---|
+| Contract verified | 20 (recovery stays 2) |
+| Deep Focus 49m / 2h / 3h | 10 / 10 / 15 |
+| 4AM QR verified | 10 |
+| Regular habit tick | 2 |
+| Important (priority) habit tick | 3 |
+| Custom habit | 1 to 5 (your choice, capped) |
+| Focus Music | 0 |
+| Daily limit | 50 in total |
 
-## Final report will contain
-Change inventory, diff summary vs `bc60747`, migration list, security report, test matrix for Phases 1–8, performance before/after, accessibility notes, honest limitations, the device test list, rollback steps per phase, the release checklist, and a verdict. Given gates 1, 4 and 6, the expected verdict is **BLOCKED — FIX THESE ITEMS** (feature flags, physical device tests, Android URL review) unless you accept them as known exceptions.
+- One shared server check reads today's earned coins (in your own time zone) and cuts any reward that would go past 50. It never gives negative coins, and it never changes past coins or balances.
+- Contract XP stays 20 (recovery stays 8). Existing score events and leaderboard code are not touched.
+- The Focus Music panel keeps its look. Only the "+coins" text becomes "Focus only · no coins".
 
-Nothing is merged, published or promoted without **APPROVE PRODUCTION PROMOTION**.
+## 2. XP info dot
+- A tiny glowing dot sits directly above "Use Focus Mode +15 XP" in "How to Earn XP & Climb Ranks". It reuses the existing futuristic info dot and pop-up card.
+- The card lists: Complete Habits +10 · Achieve Goals +20 · Stay Consistent +5 daily · Use Focus Mode +15 · Meditate +10 · Unlock Achievements +25. It closes when you tap outside. No new page.
+
+## 3. Streak milestones (Stats)
+- The same section header and circle style, but with 5 circles: 7 / 21 / 100 / 290 / 365 days, each showing 350+ / 1050+ / 5000+ / 14500+ / 18250+.
+- Circles you haven't reached stay dim with no badge. Reached circles get a glossy check badge at the top-right: yellow, green, blue, red, and a dark-blue diamond with extra glow for 365.
+- Server: a new function awards each milestone's coins once, using a new unique key per milestone. This milestone bonus counts outside the 50 per day limit. If you want the limit to apply here too, say so. With a limit of 50, a 350-coin bonus could never be paid.
+- Your highest badge shows next to your name on Profile and on your own Rank row. The badge is based on your recorded best streak, so it stays permanent.
+
+## 4. Goals
+- The progress bar fills by coins from linked habits divided by 18,000. The label on the right reads "2,450 / 18,000 coins". The bar reaches 100% only at 18,000.
+- Existing goals get a target of 18,000. The goal recalculation counts only coins from linked habits.
+- The existing info dot next to "Aim clearly. Advance deliberately." shows the Action Promise text exactly as you wrote it.
+
+## 5. Build Your Discipline
+- Priority habits no longer complete with one instant tap:
+  - Wake Up 4AM: the tick can only be activated between 4:00 and 4:30 AM your time. The server checks the time; earlier or later taps are refused with a short note.
+  - Cold Shower and Workout: a tap opens a small "Mark done" confirmation. The server records the real time and only accepts it between 4:00 AM and 11:59 PM on that day, once.
+  - The circle looks exactly the same.
+- Build Any Habit: the reward is chosen from 1 to 5 coins (default 2). "Require scan proof" is removed from the form and from the save logic. The server also caps the reward at 1 to 5.
+
+## 6. Coach knowledge
+- One shared knowledge file describes every feature: Home, Rank, Zen, Coach, Stats, milestones and badges, Profile, Goals (18,000), Habits (verified ticks, 1–5 coins), the coin table, contracts, recovery, accountability, Deep Focus, 4AM and Focus Music.
+- Coin values and milestones are imported from the same constants the app uses, so the Coach stays accurate if they change.
+- Both the text Coach and the voice Coach receive this knowledge plus your live data (coins, streak, rank, today's contract, partner status). No change to the chat look, avatar or voice.
+
+## Technical section
+- One migration (all "IF NOT EXISTS" or create-or-replace; nothing dropped):
+  - Helper `axen_daily_coin_room(user)` calculates the remaining room under 50 from today's coin_transactions in the profile timezone.
+  - Replacements for `complete_task` (2/3/custom 1–5 plus priority time windows), `complete_focus_session` (10/10/15), `complete_focus_music_session` (0), `complete_alarm`/wake (10), `award_contract` coins 20; each applies the daily room.
+  - New `claim_streak_milestones()` with idempotency key `streak:<n>`.
+  - `recalc_goal` / `sync_goals_from_completion` count only linked-habit coins, with target_coins set to 18000.
+  - The `validate_task_builder_fields` trigger caps pts at 1–5 for custom habits and forces require_scan false.
+  - Every function uses search_path '', is revoked from PUBLIC/anon and granted to authenticated.
+- Shared constants in `src/lib/economy.ts` are used by the UI and by `src/lib/coach-knowledge.ts`. That knowledge file is injected into `coach.functions.ts` and the voice coach system instruction.
+- DeepFocus.tsx: only reward text or constants change, and only if they show coin numbers. If you still want that file frozen, I will leave it alone and change only the server amounts.
+- Tests run in a rolled-back harness: daily limit, each reward value, one-time milestones, priority time windows, custom 1–5 limit, goal math, and Coach answers about contracts and accountability. Regression covers all 6 tabs.
+
+## Not touched
+Navigation, theme, auth, Zen, score_events and coin_transactions structure, leaderboard ranking logic, Phase 1–7 privacy rules. Nothing is published.
