@@ -11,9 +11,9 @@ All six parts are logic and content changes. The theme, layout, navigation, Deep
 ## 1. Coin economy (all enforced on the server)
 | Action | Coins |
 |---|---|
-| Contract verified | 20 (recovery stays 2) |
+| Contract verified | 20 (recovery contract: 2 coins) |
 | Deep Focus 49m / 2h / 3h | 10 / 10 / 15 |
-| 4AM QR verified | 10 |
+| 4AM selfie verified | 10 |
 | Regular habit tick | 2 |
 | Important (priority) habit tick | 3 |
 | Custom habit | 1 to 5 (your choice, capped) |
@@ -21,7 +21,7 @@ All six parts are logic and content changes. The theme, layout, navigation, Deep
 | Daily limit | 50 in total |
 
 - One shared server check reads today's earned coins (in your own time zone) and cuts any reward that would go past 50. It never gives negative coins, and it never changes past coins or balances.
-- Contract XP stays 20 (recovery stays 8). Existing score events and leaderboard code are not touched.
+- Contract XP stays 20 (recovery contract: 8 XP). So a recovery pays 8 XP + 2 coins. Existing score events and leaderboard code are not touched.
 - The Focus Music panel keeps its look. Only the "+coins" text becomes "Focus only · no coins".
 
 ## 2. XP info dot
