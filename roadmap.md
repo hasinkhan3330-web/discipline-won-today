@@ -25,9 +25,9 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Phase 7 — Accountability + Soft Shield (PASSED)
 
 ## Economy + XP + Milestones + Goals + Habits + Coach (pending plan approval)
-- [ ] Coin economy (20/15-tier/10/2/3, focus music 0, 50/day cap)
-- [ ] XP info dot
-- [ ] Streak milestones 7/21/100/290/365 + badges on profile/rank
-- [ ] Goals 18,000 linked-habit coins + info text
-- [ ] Wake Up 4AM live-selfie verify (4:00–4:30, auto-delete); Cold Shower/Workout simple tap; custom habit 1–5, no scan proof
-- [ ] Coach full app knowledge
+- [x] Coin economy (20/15-tier/10/2/3, focus music 0, 50/day cap)
+- [x] XP info dot
+- [x] Streak milestones 7/21/100/290/365 + badges on profile/rank
+- [x] Goals 18,000 linked-habit coins + info text
+- [x] Wake Up 4AM live-selfie verify (4:00–4:30, auto-delete); Cold Shower/Workout simple tap; custom habit 1–5, no scan proof
+- [x] Coach full app knowledge
