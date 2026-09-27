@@ -32,3 +32,5 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Wake Up 4AM live-selfie verify (4:00–4:30, auto-delete); Cold Shower/Workout simple tap; custom habit 1–5, no scan proof
 - [x] Coach full app knowledge
 - [x] Gap closure: real-streak badge guard, selfie liveness, recalc_goal owner check, full test report
+- [ ] Rank photo badges — awaiting approval of scoped design and secure earned-tier read before implementation; no production database changes without separate approval
+- [ ] Physical Android 4AM selfie check-in — blocked on a real device during 4:00–4:30 AM
