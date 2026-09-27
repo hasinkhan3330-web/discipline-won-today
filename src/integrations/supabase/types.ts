@@ -2126,6 +2126,13 @@ export type Database = {
           weakest_habit_rate: number
         }[]
       }
+      rank_verification_badges: {
+        Args: { _period?: string; _scope?: string }
+        Returns: {
+          milestone: number
+          user_id: string
+        }[]
+      }
       recalc_goal: { Args: { _goal_id: string }; Returns: undefined }
       redeem_referral_code: {
         Args: { _code: string }
