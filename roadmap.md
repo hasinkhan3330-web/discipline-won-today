@@ -32,5 +32,5 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Wake Up alarm math/science challenge (no face/selfie check); Cold Shower/Workout simple tap; custom habit 1–5, no scan proof
 - [x] Coach full app knowledge
 - [x] Gap closure: real-streak badge guard, selfie liveness, recalc_goal owner check, full test report
-- [ ] Rank-only photo badges — show SQL and wait for approval; then show exact file changes and wait for second approval; both coin and streak thresholds, highest tier only, no reward or ranking changes
+- [x] Rank-only photo badges — updated to latest coin-only thresholds (pink/green/blue/black/GOAT); signed-in Rank badge lookup, vertical profile directory and dot; no reward or ranking changes. Device validation remains outside browser checks.
 - [x] Face/selfie verification removed; previous alarm challenge restored
