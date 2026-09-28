@@ -1,12 +1,19 @@
-# Rank verification badge and vertical profile list
+# Rank verification list — final replacement
 
 ## What will change
-- Follow the supplied Instagram-style list composition: each real profile photo stays a simple circle on the left; username and its small verification mark sit together beside it, with display name below. The screenshots are visual references, not images to embed.
-- Latest requested tiers: **0–349 coins: no badge or tier circle; 350–1,049: pink circle + white check; 1,050–14,499: green circle + white check; 14,500–18,249: red circle + white check; 18,250+: dark-blue diamond + white check.** At exactly 350, 1,050, 14,500 and 18,250, switch to the new tier. The white check never changes color. This latest instruction replaces the earlier blue-at-5,000, black-at-14,500 and gold GOAT-at-18,250 scheme.
-- Put one restrained 3-dot control on Rank as the entry to a full-screen vertical profile list, with a top-left X. Scroll up and down only; no horizontal scrolling or swipe navigation. Keep AXEN's existing theme rather than copying Instagram's white background or Follow buttons.
-- Keep photos circular, verification marks and profiles static, and remove the Rank-specific decorative/moving animations requested in the latest brief. Do not change rank positions, DP, coins, navigation, or other tabs.
+- Replace only the Rank/Leaderboard presentation: remove the podium, oversized rank cards, old badge look, and Rank-specific moving/decorative animations. Rank positions, DP, coins, navigation, and all other tabs stay untouched.
+- Rank shows one subtle 3-dot control. Tapping it opens a full-screen Rank Verification List on a clean white background (white only inside this opened interface; the rest of AXEN keeps its existing theme). Top-left X closes it. Scrolling is vertical only — no horizontal scroll, carousel, or swipe.
+- Each row is minimal: circular real profile photo on the left, username immediately followed by the small verification badge, display name below. No followers/following counts, posts, likes, bio, social stats, square photos, profile cards, or podium. Profiles and badges are completely static.
+
+## Final badge rules (authoritative)
+- 0–349 coins: no badge.
+- 350–1,049: pink circle + white check.
+- 1,050–14,499: green circle + white check (5,000 causes absolutely no visual change; it stays green).
+- 14,500–18,249: red circle + white check.
+- 18,250+: dark-blue diamond + white check.
+- The check is always white; badges switch automatically at exactly 350, 1,050, 14,500 and 18,250.
 
 ## Technical scope
-- Keep the existing authenticated `rank_verification_badges` lookup and profile coin balance; its existing 350/1,050/5,000/14,500/18,250 thresholds supply the real eligibility. Display both 1,050 and 5,000 milestone results as green so green lasts through 14,499. No database change, reward change, or ranking change.
-- Update badge rendering in `src/components/RankCoinBadge.tsx`, the Rank/Leaderboard view in `src/components/Leaderboard.tsx` and `src/tabs/RankTab.tsx` as needed, and scoped Rank styles in `src/styles.css`. Replace the current Rank podium, oversized cards and live-standings presentation with the requested static vertical list. Preserve other app tabs, navigation, and functionality.
-- Verify boundaries 349/350, 1,049/1,050, 14,499/14,500 and 18,249/18,250, plus confirm 4,999 and 5,000 look identical in green. Check white marks, circular photos, static presentation, 3-dot/X interaction, vertical-only scrolling on a phone-sized viewport, and preview compilation. Use isolated visual fixtures when needed; never change real balances.
+- Keep the existing authenticated `rank_verification_badges` lookup and real profile coin balance as the source of truth; map its milestones to the final tiers (350→pink, 1,050 and 5,000→green, 14,500→red, 18,250→diamond). No database structure, coin/reward, XP, or ranking changes; users can never grant or change their own badge.
+- Edit only `src/components/RankCoinBadge.tsx`, `src/components/Leaderboard.tsx`, `src/tabs/RankTab.tsx` (if needed for the entry control), and the scoped `.rank-coin-*` / `.rank-people-*` styles in `src/styles.css`.
+- Verify boundaries 349/350, 1,049/1,050, 14,499/14,500, 18,249/18,250 and that 4,999/5,000 render identically in green; check white marks, circular photos, static UI, 3-dot/X interaction, vertical-only scrolling on a phone-sized viewport, and clean compilation. Use isolated visual fixtures where needed; never modify real user balances.
