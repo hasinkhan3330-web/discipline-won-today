@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.rank_coin_badges(text, text);
