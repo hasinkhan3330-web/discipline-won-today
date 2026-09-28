@@ -1,10 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trophy, X, Zap } from "lucide-react";
+import { ChevronRight, Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trophy, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { safeName } from "@/lib/display-name";
-import { Button } from "@/components/ui/button";
 import { RankCoinAvatar, RankCoinBadge } from "@/components/RankCoinBadge";
 
 type Scope = "india" | "global";
@@ -72,13 +70,11 @@ export function Leaderboard({ myId, onMyBadge }: {
   onRemovePhoto?: () => void;
   uploading?: boolean;
 }) {
-  const reduce = useReducedMotion();
   const [scope, setScope] = useState<Scope>("india");
   const [period, setPeriod] = useState<Period>("weekly");
   const [rows, setRows] = useState<Row[]>([]);
   const [me, setMe] = useState<Position | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
-  const [rankUp, setRankUp] = useState<number | null>(null);
   const [badges, setBadges] = useState<Record<string, number>>({});
   const [selected, setSelected] = useState<Row | null>(null);
   const prevRank = useRef<number | null>(null);
@@ -107,19 +103,10 @@ export function Leaderboard({ myId, onMyBadge }: {
     setBadges(nextBadges);
     onMyBadge?.(nextBadges[myId] ?? null);
     setState("ready");
-    if (position && position.rank > 0) {
-      const before = prevRank.current;
-      if (before !== null && position.rank < before) setRankUp(position.rank);
-      prevRank.current = position.rank;
-    }
+    if (position && position.rank > 0) prevRank.current = position.rank;
   }, [scope, period, myId, onMyBadge]);
 
   useEffect(() => { void load(); }, [load]);
-  useEffect(() => {
-    if (rankUp === null) return;
-    const t = window.setTimeout(() => setRankUp(null), 2600);
-    return () => window.clearTimeout(t);
-  }, [rankUp]);
   useEffect(() => {
     if (!selected) return;
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setSelected(null); };
@@ -129,8 +116,6 @@ export function Leaderboard({ myId, onMyBadge }: {
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = previous; };
   }, [selected]);
 
-  const podium = useMemo(() => rows.filter(r => r.rank <= 3).slice(0, 3), [rows]);
-  const list = useMemo(() => rows.filter(r => r.rank >= 4 && r.rank <= 100), [rows]);
 
   return (
     <section className="lb">
@@ -164,9 +149,6 @@ export function Leaderboard({ myId, onMyBadge }: {
         ))}
       </div>
 
-      <div className="lb-arena-label" aria-hidden>
-        <span>TOP 100 // LIVE STANDINGS</span><i /><Zap size={12} />
-      </div>
 
       {state === "loading" && (
         <div className="lb-state"><Loader2 className="lb-spin" size={20} /> Loading rankings…</div>
@@ -221,19 +203,6 @@ export function Leaderboard({ myId, onMyBadge }: {
         </div>, document.body)
       }
 
-      <AnimatePresence>
-        {rankUp !== null && (
-          <motion.div
-            className="lb-rankup"
-            initial={reduce ? { opacity: 1 } : { opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Sparkles size={18} /> RANK UP · now #{rankUp}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }
