@@ -7,6 +7,7 @@ import { AX, buttonStyle, cardStyle, subText, titleStyle } from "@/tabs/styles";
 import { haptic } from "@/lib/haptics";
 import { safeName } from "@/lib/display-name";
 import { acceptInvite, createInvite } from "@/lib/verified/accountability.functions";
+import { NUDGE_EVENT, NUDGE_SEEN_KEY } from "./NudgeListener";
 
 export type MyAccountability = {
   connection_id: string; partner_name: string; partner_avatar: string | null;
@@ -37,6 +38,49 @@ function nudgeError(m: string) {
 }
 
 const toggleRow = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 12, fontSize: 14, color: AX.text } as const;
+
+type NudgeRow = { id: string; actor_id: string; message: string | null; created_at: string };
+
+function NudgeHistory() {
+  const [rows, setRows] = useState<NudgeRow[]>([]);
+  const [me, setMe] = useState<string | null>(null);
+  const [seenAt, setSeenAt] = useState<number>(0);
+  const load = useCallback(async () => {
+    const { data: u } = await supabase.auth.getUser();
+    setMe(u.user?.id ?? null);
+    const { data } = await supabase.from("accountability_events")
+      .select("id, actor_id, message, created_at").eq("kind", "nudge")
+      .order("created_at", { ascending: false }).limit(10);
+    setRows((data ?? []) as NudgeRow[]);
+  }, []);
+  useEffect(() => {
+    setSeenAt(Number(localStorage.getItem(NUDGE_SEEN_KEY) ?? 0));
+    void load();
+    const on = () => void load();
+    window.addEventListener(NUDGE_EVENT, on);
+    return () => {
+      window.removeEventListener(NUDGE_EVENT, on);
+      localStorage.setItem(NUDGE_SEEN_KEY, String(Date.now()));
+    };
+  }, [load]);
+  if (!rows.length) return null;
+  return (
+    <div style={{ marginTop: 14 }} aria-label="Recent nudges">
+      <div style={subText}>Recent nudges</div>
+      {rows.map(r => {
+        const mine = r.actor_id === me;
+        const unread = !mine && new Date(r.created_at).getTime() > seenAt;
+        return (
+          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: AX.text, marginTop: 6 }}>
+            {unread && <span aria-label="New" style={{ width: 7, height: 7, borderRadius: 99, background: AX.accent, flexShrink: 0 }} />}
+            <span style={{ flex: 1 }}>{mine ? "You sent" : "Partner sent"}: {r.message}</span>
+            <span style={{ ...subText, fontSize: 11 }}>{new Date(r.created_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function AccountabilitySection() {
   const CARD = cardStyle();
@@ -139,6 +183,7 @@ export function AccountabilitySection() {
       <label style={toggleRow}>Mute nudges
         <input type="checkbox" aria-label="Mute nudges" checked={me.i_muted} disabled={busy} onChange={e => void setPref({ _mute: e.target.checked })} />
       </label>
+      <NudgeHistory />
       <div style={{ ...subText, marginTop: 14 }}>Send a nudge</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 6 }}>
         {NUDGES.map(m => (
