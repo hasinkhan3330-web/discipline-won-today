@@ -2,8 +2,8 @@
 
 ## What will change
 - Replace only the Rank/Leaderboard presentation: remove the podium, oversized rank cards, old badge look, and Rank-specific moving/decorative animations. Rank positions, DP, coins, navigation, and all other tabs stay untouched.
-- Rank shows one subtle 3-dot control. Tapping it opens a full-screen Rank Verification List on a clean white background (white only inside this opened interface; the rest of AXEN keeps its existing theme). Top-left X closes it. Scrolling is vertical only — no horizontal scroll, carousel, or swipe.
-- Each row is minimal: circular real profile photo on the left, username immediately followed by the small verification badge, display name below. No followers/following counts, posts, likes, bio, social stats, square photos, profile cards, or podium. Profiles and badges are completely static.
+- Rank shows one simple, clean AXEN-style right arrow (no 3-dot button). Tapping it opens the full-screen Verified Rank List on a clean white background (white only inside this list; the rest of AXEN keeps its existing theme). Top-left X/back closes it. Scrolling is vertical only — no horizontal scroll, carousel, or swipe.
+- Each row is minimal and Instagram-inspired with small AXEN touches: circular real profile photo on the left, username immediately followed by the small verification badge, display name below. No Instagram logo/branding, Follow buttons, followers/following counts, posts, likes, bio, social stats, square photos, profile cards, or podium. Profiles and badges are completely static.
 
 ## Final badge rules (authoritative)
 - 0–349 coins: no badge.
