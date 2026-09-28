@@ -15,6 +15,7 @@ import { useAccessControl } from "@/hooks/useAccessControl";
 import { useEntitlementContext, EntitlementProvider } from "@/components/EntitlementProvider";
 import { ProtectedFeatureGate } from "@/components/ProtectedFeatureGate";
 import { Leaderboard } from "@/components/Leaderboard";
+import { NudgeListener } from "@/components/verified/NudgeListener";
 
 import { TrialBanner, TrialWelcome } from "@/components/TrialBanner";
 import { GateSkeleton } from "@/components/GateSkeleton";
@@ -96,6 +97,7 @@ function DashboardShell() {
   const ctx = Route.useRouteContext() as { user?: { id: string } };
   return (
     <EntitlementProvider userId={ctx?.user?.id ?? null}>
+      <NudgeListener userId={ctx?.user?.id ?? null} />
       <App />
     </EntitlementProvider>
   );
