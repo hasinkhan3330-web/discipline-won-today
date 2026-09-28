@@ -15,6 +15,7 @@ type Row = {
   user_id: string;
   username: string;
   display_name?: string | null;
+  coins?: number;
   avatar_url: string | null;
   country: string;
   points: number;
@@ -94,10 +95,10 @@ export function Leaderboard({ myId, onMyBadge }: {
     if (request !== requestRef.current) return;
     if (top.error || pos.error) { setState("error"); return; }
     const list = ((top.data ?? []) as unknown as Row[]).map(r => ({ ...r, username: safeName(r.username) }));
-    const { data: profileNames } = list.length ? await supabase.from("public_profiles").select("id,display_name").in("id", list.map(r => r.user_id)) : { data: [] };
+    const { data: profileNames } = list.length ? await supabase.from("public_profiles").select("id,display_name,coins").in("id", list.map(r => r.user_id)) : { data: [] };
     if (request !== requestRef.current) return;
-    const displayNames = new Map((profileNames ?? []).map(p => [p.id, safeName(p.display_name)]));
-    const namedList = list.map(r => ({ ...r, display_name: displayNames.get(r.user_id) || r.username }));
+    const publicNames = new Map((profileNames ?? []).map(p => [p.id, p]));
+    const namedList = list.map(r => ({ ...r, display_name: safeName(publicNames.get(r.user_id)?.display_name || r.username), coins: publicNames.get(r.user_id)?.coins }));
     const position = ((pos.data ?? []) as unknown as Position[])[0] ?? null;
     setRows(namedList);
     setMe(position);
@@ -211,6 +212,7 @@ export function Leaderboard({ myId, onMyBadge }: {
                     <strong>{p.username}</strong>
                     <span>{flag(p.country)} {p.elite && <EliteCrest size={13} />}</span>
                     <em><b>{p.points.toLocaleString()}</b> DP</em>
+                    {typeof p.coins === "number" && <small className="lb-pod-coins">{p.coins.toLocaleString()} coins</small>}
                   </motion.div>
                 ))}
               </div>
@@ -232,7 +234,7 @@ export function Leaderboard({ myId, onMyBadge }: {
                       <RankCoinAvatar className="lb-list-avatar" name={r.username} src={r.avatar_url || fallbackAvatar(r.username)} milestone={badges[r.user_id]} />
                       <div className="lb-who">
                         <strong>{r.username} {r.elite && <EliteCrest size={12} />}</strong>
-                        <small>{flag(r.country)} {r.consistency} day streak</small>
+                        <small>{flag(r.country)} {typeof r.coins === "number" ? `${r.coins.toLocaleString()} coins · ` : ""}{r.consistency} day streak</small>
                       </div>
                       <b className="lb-pts">{r.points.toLocaleString()}<i>DP</i></b>
                       <Button variant="ghost" size="icon" className="lb-profile-dot" aria-label={`View ${r.username} in Rank profiles`} title={`View ${r.username} in Rank profiles`} onClick={() => setSelected(r)}><span /></Button>
@@ -256,7 +258,7 @@ export function Leaderboard({ myId, onMyBadge }: {
               {rows.map(r => <div className={`rank-people__row ${selected.user_id === r.user_id ? "is-selected" : ""}`} key={r.user_id}>
                 <RankCoinAvatar name={r.username} src={r.avatar_url || fallbackAvatar(r.username)} milestone={badges[r.user_id]} />
                 <div className="rank-people__identity"><strong>{r.username} <RankCoinBadge milestone={badges[r.user_id]} /></strong><small>{safeName(r.display_name || r.username)}</small></div>
-                <span className="rank-people__position">#{r.rank}</span>
+                <span className="rank-people__position">#{r.rank}{typeof r.coins === "number" && <small>{r.coins.toLocaleString()} coins</small>}<small>{r.points.toLocaleString()} DP</small></span>
               </div>)}
             </div>
           </section>
