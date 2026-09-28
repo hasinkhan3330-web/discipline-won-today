@@ -1,10 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trophy, X, Zap } from "lucide-react";
+import { ChevronRight, Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trophy, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { safeName } from "@/lib/display-name";
-import { Button } from "@/components/ui/button";
 import { RankCoinAvatar, RankCoinBadge } from "@/components/RankCoinBadge";
 
 type Scope = "india" | "global";
@@ -72,13 +70,11 @@ export function Leaderboard({ myId, onMyBadge }: {
   onRemovePhoto?: () => void;
   uploading?: boolean;
 }) {
-  const reduce = useReducedMotion();
   const [scope, setScope] = useState<Scope>("india");
   const [period, setPeriod] = useState<Period>("weekly");
   const [rows, setRows] = useState<Row[]>([]);
   const [me, setMe] = useState<Position | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
-  const [rankUp, setRankUp] = useState<number | null>(null);
   const [badges, setBadges] = useState<Record<string, number>>({});
   const [selected, setSelected] = useState<Row | null>(null);
   const prevRank = useRef<number | null>(null);
@@ -107,19 +103,10 @@ export function Leaderboard({ myId, onMyBadge }: {
     setBadges(nextBadges);
     onMyBadge?.(nextBadges[myId] ?? null);
     setState("ready");
-    if (position && position.rank > 0) {
-      const before = prevRank.current;
-      if (before !== null && position.rank < before) setRankUp(position.rank);
-      prevRank.current = position.rank;
-    }
+    if (position && position.rank > 0) prevRank.current = position.rank;
   }, [scope, period, myId, onMyBadge]);
 
   useEffect(() => { void load(); }, [load]);
-  useEffect(() => {
-    if (rankUp === null) return;
-    const t = window.setTimeout(() => setRankUp(null), 2600);
-    return () => window.clearTimeout(t);
-  }, [rankUp]);
   useEffect(() => {
     if (!selected) return;
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setSelected(null); };
@@ -129,8 +116,6 @@ export function Leaderboard({ myId, onMyBadge }: {
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = previous; };
   }, [selected]);
 
-  const podium = useMemo(() => rows.filter(r => r.rank <= 3).slice(0, 3), [rows]);
-  const list = useMemo(() => rows.filter(r => r.rank >= 4 && r.rank <= 100), [rows]);
 
   return (
     <section className="lb">
@@ -164,9 +149,6 @@ export function Leaderboard({ myId, onMyBadge }: {
         ))}
       </div>
 
-      <div className="lb-arena-label" aria-hidden>
-        <span>TOP 100 // LIVE STANDINGS</span><i /><Zap size={12} />
-      </div>
 
       {state === "loading" && (
         <div className="lb-state"><Loader2 className="lb-spin" size={20} /> Loading rankings…</div>
@@ -186,98 +168,41 @@ export function Leaderboard({ myId, onMyBadge }: {
         </div>
       )}
 
-      <AnimatePresence mode="wait">
-        {state === "ready" && rows.length > 0 && (
-          <motion.div
-            key={`${scope}-${period}`}
-            className="lb-standings"
-            initial={reduce ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={reduce ? undefined : { opacity: 0 }}
-            transition={{ type: "spring", stiffness: 280, damping: 28 }}
-          >
-            {podium.length > 0 && (
-              <div className="lb-podium" aria-label="Top ranked members">
-                {podium.map(p => (
-                  <motion.div
-                    key={p.user_id}
-                    className={`lb-pod lb-pod-${p.rank} ${p.is_me ? "is-me" : ""}`}
-                    initial={reduce ? false : { opacity: 0, y: 18, scale: .96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ type: "spring", stiffness: 240, damping: 20, delay: reduce ? 0 : p.rank * 0.06 }}
-                  >
-                    <div className="lb-pod-rank">0{p.rank}</div>
-                    <Button variant="ghost" size="icon" className="lb-profile-dot" aria-label={`View ${p.username} in Rank profiles`} title={`View ${p.username} in Rank profiles`} onClick={() => setSelected(p)}><span /></Button>
-                    <RankCoinAvatar className="lb-pod-avatar" name={p.username} src={p.avatar_url || fallbackAvatar(p.username)} milestone={badges[p.user_id]} />
-                    <strong>{p.username}</strong>
-                    <span>{flag(p.country)} {p.elite && <EliteCrest size={13} />}</span>
-                    <em><b>{p.points.toLocaleString()}</b> DP</em>
-                    {typeof p.coins === "number" && <small className="lb-pod-coins">{p.coins.toLocaleString()} coins</small>}
-                  </motion.div>
-                ))}
-              </div>
-            )}
-
-            {list.length > 0 && (
-              <div className="lb-list-shell">
-                <header><span>RANK</span><span>CHALLENGER</span><span>DISCIPLINE</span></header>
-                <ul className="lb-list">
-                  {list.map((r, i) => (
-                    <motion.li
-                      key={r.user_id}
-                      className={r.is_me ? "is-me" : ""}
-                      initial={reduce ? false : { opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.22, delay: reduce ? 0 : Math.min(i, 12) * 0.015 }}
-                    >
-                      <span className="lb-rank">{String(r.rank).padStart(2, "0")}</span>
-                      <RankCoinAvatar className="lb-list-avatar" name={r.username} src={r.avatar_url || fallbackAvatar(r.username)} milestone={badges[r.user_id]} />
-                      <div className="lb-who">
-                        <strong>{r.username} {r.elite && <EliteCrest size={12} />}</strong>
-                        <small>{flag(r.country)} {typeof r.coins === "number" ? `${r.coins.toLocaleString()} coins · ` : ""}{r.consistency} day streak</small>
-                      </div>
-                      <b className="lb-pts">{r.points.toLocaleString()}<i>DP</i></b>
-                      <Button variant="ghost" size="icon" className="lb-profile-dot" aria-label={`View ${r.username} in Rank profiles`} title={`View ${r.username} in Rank profiles`} onClick={() => setSelected(r)}><span /></Button>
-                    </motion.li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {state === "ready" && rows.length > 0 && (
+        <>
+          <button className="rank-verified-entry" onClick={() => setSelected(rows[0])} aria-label="Open Verified Rank List">
+            <span><strong>Verified Rank List</strong><small>{rows.length} members</small></span>
+            <ChevronRight size={20} />
+          </button>
+          <ul className="rank-simple-list">
+            {rows.map(r => (
+              <li key={r.user_id} className={r.is_me ? "is-me" : ""}>
+                <span className="rank-simple-list__pos">{r.rank}</span>
+                <RankCoinAvatar name={r.username} src={r.avatar_url || fallbackAvatar(r.username)} />
+                <span className="rank-simple-list__who"><strong>{r.username}<RankCoinBadge milestone={badges[r.user_id]} /></strong><small>{r.points.toLocaleString()} DP</small></span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
       {selected && typeof document !== "undefined" && createPortal(
-        <div className="rank-people-backdrop" onClick={() => setSelected(null)}>
-          <section className="rank-people" role="dialog" aria-modal="true" aria-label="Rank profiles" onClick={event => event.stopPropagation()}>
+        <div className="rank-people-backdrop">
+          <section className="rank-people" role="dialog" aria-modal="true" aria-label="Verified Rank List">
             <header className="rank-people__header">
-              <Button variant="ghost" size="icon" onClick={() => setSelected(null)} aria-label="Close Rank profiles"><X size={22} /></Button>
-              <div><strong>Rank profiles</strong><small>{scope === "india" ? "India" : "Global"} · {period === "weekly" ? "Weekly" : "All-time"}</small></div>
-              <span>{rows.length}</span>
+              <button onClick={() => setSelected(null)} aria-label="Close Verified Rank List"><X size={24} /></button>
+              <strong>Verified Rank List</strong>
+              <span />
             </header>
-            <div className="rank-people__list" key={`${scope}-${period}`}>
-              {rows.map(r => <div className={`rank-people__row ${selected.user_id === r.user_id ? "is-selected" : ""}`} key={r.user_id}>
-                <RankCoinAvatar name={r.username} src={r.avatar_url || fallbackAvatar(r.username)} milestone={badges[r.user_id]} />
-                <div className="rank-people__identity"><strong>{r.username} <RankCoinBadge milestone={badges[r.user_id]} /></strong><small>{safeName(r.display_name || r.username)}</small></div>
-                <span className="rank-people__position">#{r.rank}{typeof r.coins === "number" && <small>{r.coins.toLocaleString()} coins</small>}<small>{r.points.toLocaleString()} DP</small></span>
+            <div className="rank-people__list">
+              {rows.map(r => <div className="rank-people__row" key={r.user_id}>
+                <RankCoinAvatar name={r.username} src={r.avatar_url || fallbackAvatar(r.username)} />
+                <div className="rank-people__identity"><strong><span>{r.username}</span><RankCoinBadge milestone={badges[r.user_id]} /></strong><small>{safeName(r.display_name || r.username)}</small></div>
               </div>)}
             </div>
           </section>
         </div>, document.body)
       }
 
-      <AnimatePresence>
-        {rankUp !== null && (
-          <motion.div
-            className="lb-rankup"
-            initial={reduce ? { opacity: 1 } : { opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Sparkles size={18} /> RANK UP · now #{rankUp}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }
