@@ -291,13 +291,16 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
           </div>
         </div>
         {linked && <div className="you-goal-habits">{goal.habits.map(item => <span key={item.id}>{item.name}</span>)}</div>}
-        <Progress value={Math.min(100, (goal.earned_coins ?? 0) / GOAL_TARGET_COINS * 100)} />
+        {(() => { const tgt = goal.target_coins || GOAL_TARGET_COINS; return <>
+        <Progress value={Math.min(100, (goal.earned_coins ?? 0) / tgt * 100)} />
         {linked ? <div className="you-goal-controls">
-          <span>{(goal.earned_coins ?? 0).toLocaleString()} / {GOAL_TARGET_COINS.toLocaleString()} coins</span>
+          <span>{(goal.earned_coins ?? 0).toLocaleString()} / {tgt.toLocaleString()} coins</span>
           <b className={goal.completed ? "is-complete" : (goal.readiness ?? 0) >= 60 ? "is-ok" : "is-warn"}>{goal.readiness ?? 0}% Goal Readiness — {status}</b>
         </div> : <div className="you-goal-controls">
-          <span>{(goal.earned_coins ?? 0).toLocaleString()} / {GOAL_TARGET_COINS.toLocaleString()} coins</span>
-          <input aria-label={`Progress for ${goal.title}`} type="range" min="0" max={GOAL_TARGET_COINS} step="1" value={Math.min(GOAL_TARGET_COINS, goal.earned_coins ?? 0)} readOnly disabled />
+          <span>{(goal.earned_coins ?? 0).toLocaleString()} / {tgt.toLocaleString()} coins</span>
+          <input aria-label={`Progress for ${goal.title}`} type="range" min="0" max={tgt} step="1" value={Math.min(tgt, goal.earned_coins ?? 0)} readOnly disabled />
+        </div>}
+        </>; })()}
         </div>}
       </article>;
     })}</div>
