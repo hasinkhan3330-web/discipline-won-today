@@ -2920,3 +2920,5 @@ select {
 .rank-people__identity strong { display: flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 600; color: #111; }
 .rank-people__identity strong span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rank-people__identity small { display: block; margin-top: 2px; font-size: 14px; color: #737373; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Verified Rank List: keep diamond dark-blue (white check drawn separately) */
+.rank-people__identity strong .rank-coin-badge--diamond, .rank-simple-list .rank-coin-badge--diamond { background: transparent; color: #0d2a8a; border-radius: 0; width: 18px; height: 18px; }
