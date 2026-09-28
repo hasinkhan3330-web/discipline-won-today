@@ -1,4 +1,4 @@
-import { GOAL_PROMISE, GOAL_TARGET_COINS, COIN_RULES } from "@/lib/economy";
+import { GOAL_PROMISE, GOAL_TARGET_COINS, COIN_RULES, GOAL_PLANS, goalPlanForTarget, type GoalPlanKey } from "@/lib/economy";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
