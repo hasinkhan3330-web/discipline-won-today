@@ -1,6 +1,6 @@
 import { FeatureHelpDot } from "@/components/FeatureHelpDot";
-import { StreakBadge } from "@/components/StreakBadge";
-import { XP_RULES, topMilestone } from "@/lib/economy";
+import { RankCoinAvatar } from "@/components/RankCoinBadge";
+import { XP_RULES } from "@/lib/economy";
 import { useMemo, useState } from "react";
 import {
   Brain, CalendarCheck2, Check, ChevronRight, CircleCheck, Coins, Crown,
@@ -67,13 +67,14 @@ function dailyMotivation() {
 
 export function RankTab({
   coins, streak, bestStreak = 0, name, avatar, todayDone = 0, todayTotal = 0,
-  activeTheme, onApplyTheme, onNavigate,
+  activeTheme, onApplyTheme, onNavigate, badgeMilestone,
 }: {
   coins: number;
   streak: number;
   bestStreak?: number;
   name: string;
   avatar: string;
+  badgeMilestone?: number | null;
   todayDone?: number;
   todayTotal?: number;
   activeTheme: ThemeKey;
@@ -82,7 +83,6 @@ export function RankTab({
 }) {
   const [panel, setPanel] = useState<Panel | null>(null);
   const { idx, cur, next, pct } = tierFor(coins);
-  const topBadge = topMilestone(Math.max(streak, bestStreak));
   const completion = todayTotal ? Math.round(todayDone / todayTotal * 100) : 0;
   const level = Math.max(1, Math.floor(coins / 160) + 1);
   const levelXp = coins % 160;
@@ -98,8 +98,8 @@ export function RankTab({
   return (
     <section className={`rank-screen rank-theme-${cur.tone} animate-fade-in`}>
       <header className="rank-profile-strip">
-        <img src={avatar} alt={name} />
-        <div><h1>{name}{topBadge && <span className="ax-name-badge"><StreakBadge tone={topBadge.tone} size={18} label={`${topBadge.days}-day streak badge`} /></span>}</h1><p>Discipline Seeker</p></div>
+        <RankCoinAvatar name={name} src={avatar} milestone={badgeMilestone} />
+        <div><h1>{name}</h1><p>Discipline Seeker</p></div>
         <button className="rank-coin-pill" onClick={() => setPanel({ type: "metric", title: "Total Coins", value: `${coins} coins`, copy: "Your coin balance is your live AXEN XP and unlock progress.", progress: Math.min(100, coins / 20000 * 100) })}><Coins size={18} /><strong>{coins} coins</strong><span>＋</span></button>
       </header>
 

@@ -126,6 +126,7 @@ function App() {
   const [celebration, setCelebration] = useState<(typeof MILESTONES)[number] | null>(null);
 
   const [coins, setCoins] = useState(0);
+  const [myRankBadge, setMyRankBadge] = useState<number | null>(null);
   const [streak, setStreak] = useState(0);
   const [shields, setShields] = useState(0);
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
@@ -1018,6 +1019,7 @@ function App() {
                   <Leaderboard
                     myId={myId}
                     myName={myName}
+                    onMyBadge={setMyRankBadge}
                     uploading={uploading}
                     onEditPhoto={openCropper}
                     onRemovePhoto={removeAvatar}
@@ -1030,6 +1032,7 @@ function App() {
                     bestStreak={life?.bestStreak ?? 0}
                     name={myName}
                     avatar={myAvatar || fallbackAvatar(myName)}
+                    badgeMilestone={myRankBadge}
                     todayDone={tasks.filter(task => task.done).length}
                     todayTotal={tasks.length}
                     activeTheme={themeKey}
