@@ -107,14 +107,27 @@ export function Leaderboard({ myId, onMyBadge }: {
   }, [scope, period, myId, onMyBadge]);
 
   useEffect(() => { void load(); }, [load]);
+  const listOpen = selected !== null;
+  const closeList = useCallback(() => {
+    if (typeof window !== "undefined" && (window.history.state as { axenRankList?: boolean } | null)?.axenRankList) window.history.back();
+    else setSelected(null);
+  }, []);
   useEffect(() => {
-    if (!selected) return;
-    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setSelected(null); };
+    if (!listOpen) return;
+    // Phone Back button / browser back closes the list instead of leaving Rank.
+    window.history.pushState({ ...(window.history.state ?? {}), axenRankList: true }, "", window.location.href);
+    const onPop = () => setSelected(null);
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") closeList(); };
+    window.addEventListener("popstate", onPop);
     document.addEventListener("keydown", onKey);
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = previous; };
-  }, [selected]);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previous;
+    };
+  }, [listOpen, closeList]);
 
 
   return (
