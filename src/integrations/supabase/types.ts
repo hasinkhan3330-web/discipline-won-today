@@ -16,6 +16,8 @@ export type Database = {
     Tables: {
       accountability_connections: {
         Row: {
+          commitment_by_partner: string | null
+          commitment_by_user: string | null
           created_at: string
           ended_at: string | null
           id: string
@@ -31,6 +33,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          commitment_by_partner?: string | null
+          commitment_by_user?: string | null
           created_at?: string
           ended_at?: string | null
           id?: string
@@ -46,6 +50,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          commitment_by_partner?: string | null
+          commitment_by_user?: string | null
           created_at?: string
           ended_at?: string | null
           id?: string
@@ -1956,6 +1962,25 @@ export type Database = {
           xp_total: number
         }[]
       }
+      get_accountability_dashboard: {
+        Args: never
+        Returns: {
+          can_check_in: boolean
+          checked_in_today: boolean
+          connection_id: string
+          i_muted: boolean
+          my_commitment: string
+          my_sharing: boolean
+          partner_avatar: string
+          partner_commitment: string
+          partner_name: string
+          partner_sharing: boolean
+          partner_streak: number
+          partner_weekly_coins: number
+          partner_weekly_tasks: number
+          since: string
+        }[]
+      }
       get_entitlement: {
         Args: never
         Returns: {
@@ -2154,6 +2179,10 @@ export type Database = {
       }
       revoke_accountability_connection: {
         Args: { _block?: boolean; _connection_id: string }
+        Returns: undefined
+      }
+      save_accountability_commitment: {
+        Args: { _commitment: string; _connection_id: string }
         Returns: undefined
       }
       save_goal: {
