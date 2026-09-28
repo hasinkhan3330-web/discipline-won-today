@@ -14,6 +14,7 @@ type Row = {
   rank: number;
   user_id: string;
   username: string;
+  display_name?: string | null;
   avatar_url: string | null;
   country: string;
   points: number;
@@ -250,7 +251,7 @@ export function Leaderboard({ myId, onMyBadge }: {
             <div className="rank-people__list" key={`${scope}-${period}`}>
               {rows.map(r => <div className={`rank-people__row ${selected.user_id === r.user_id ? "is-selected" : ""}`} key={r.user_id}>
                 <RankCoinAvatar name={r.username} src={r.avatar_url || fallbackAvatar(r.username)} milestone={badges[r.user_id]} />
-                <div className="rank-people__identity"><strong>{r.username} <RankCoinBadge milestone={badges[r.user_id]} /></strong><small>{r.username}</small></div>
+                <div className="rank-people__identity"><strong>{r.username} <RankCoinBadge milestone={badges[r.user_id]} /></strong><small>{safeName(r.display_name || r.username)}</small></div>
                 <span className="rank-people__position">#{r.rank}</span>
               </div>)}
             </div>
