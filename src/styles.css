@@ -2823,6 +2823,11 @@ select {
 .rank-coin-avatar--black img { box-shadow: 0 0 0 1px var(--lb-dim, var(--rank-muted)); }
 .rank-coin-avatar--goat img { box-shadow: 0 0 9px color-mix(in oklab,var(--coin-tier) 55%,transparent); }
 .rank-coin-badge { width: 17px; height: 17px; display: inline-grid; flex: 0 0 auto; place-items: center; overflow: hidden; border-radius: 50%; border: 2px solid var(--lb-bg, var(--rank-ink)); background: var(--coin-tier); color: oklch(1 0 0); vertical-align: middle; }
+.rank-coin-badge--pink { --coin-tier: oklch(.67 .25 354); }
+.rank-coin-badge--green { --coin-tier: oklch(.74 .2 152); }
+.rank-coin-badge--blue { --coin-tier: #1877f2; }
+.rank-coin-badge--black { --coin-tier: oklch(.1 0 0); }
+.rank-coin-badge--goat { --coin-tier: oklch(.81 .16 83); }
 .rank-coin-badge svg { width: 12px; height: 12px; }
 .rank-coin-badge--black { box-shadow: 0 0 0 1px var(--lb-dim, var(--rank-muted)); }
 .rank-coin-badge--goat { font-size: 10px; line-height: 1; }
