@@ -2110,6 +2110,13 @@ export type Database = {
           total: number
         }[]
       }
+      rank_coin_badges: {
+        Args: { _period?: string; _scope?: string }
+        Returns: {
+          earned_coins: number
+          user_id: string
+        }[]
+      }
       rank_scan: {
         Args: never
         Returns: {
