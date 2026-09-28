@@ -2836,12 +2836,17 @@ select {
 .lb .lb-pod-1 .lb-pod-avatar { width: 58px; height: 58px; }
 .lb .lb-pod-avatar img,.lb .lb-pod-1 .lb-pod-avatar img { width: 100%; height: 100%; border-radius: 50%; clip-path: none; border-color: transparent; }
 .lb .lb-pod-avatar[class*="rank-coin-avatar--"] img { border-color: var(--coin-tier); }
+.lb .lb-pod-avatar:not([class*="rank-coin-avatar--"]) img { border-color: transparent; }
+.lb .lb-pod-avatar > .rank-coin-badge { position: absolute; right: -3px; bottom: -2px; width: 17px; height: 17px; display: inline-grid; place-items: center; border-radius: 50%; background: var(--coin-tier); color: oklch(1 0 0); }
+.lb .lb-pod-avatar > .rank-coin-badge svg { width: 12px; height: 12px; }
 .lb .lb-pod strong { margin-top: 1px; }
 .lb .lb-pod em b { color: var(--lb-text); }
 .lb .lb-list li { grid-template-columns: 25px 40px minmax(0,1fr) auto; padding-right: 37px; }
 .lb .lb-list-avatar { width: 38px; height: 38px; }
 .lb .lb-list-avatar img { width: 100%; height: 100%; border-radius: 50%; clip-path: none; border-color: transparent; }
 .lb .lb-list-avatar[class*="rank-coin-avatar--"] img { border-color: var(--coin-tier); }
+.lb .lb-list-avatar > .rank-coin-badge { position: absolute; right: -3px; bottom: -2px; width: 17px; height: 17px; display: inline-grid; place-items: center; border-radius: 50%; background: var(--coin-tier); color: oklch(1 0 0); }
+.lb .lb-list-avatar > .rank-coin-badge svg { width: 12px; height: 12px; }
 .lb .lb-profile-dot { position: absolute; right: 4px; top: 4px; z-index: 3; width: 32px; height: 32px; padding: 0; background: transparent; border: 0; color: var(--lb-gold); }
 .lb .lb-profile-dot span { width: 7px; height: 7px; border-radius: 50%; background: var(--lb-text); box-shadow: 0 0 0 2px color-mix(in oklab,var(--lb-gold) 45%,transparent),0 0 11px 3px var(--lb-gold); animation: rank-dot-pulse 2.6s ease-in-out infinite; }
 .lb .lb-profile-dot:hover span,.lb .lb-profile-dot:focus-visible span { box-shadow: 0 0 0 3px var(--lb-gold),0 0 18px 5px var(--lb-gold); }
@@ -2861,6 +2866,7 @@ select {
 .rank-people__identity { overflow: hidden; }
 .rank-people__identity strong { display: flex; align-items: center; gap: 6px; font-size: 14px; white-space: nowrap; }
 .rank-people__identity strong .rank-coin-badge { --lb-bg: oklch(0 0 0); }
+.rank-people__identity strong .rank-coin-badge { position: relative; background: var(--coin-tier); color: oklch(1 0 0); border-radius: 50%; width: 17px; height: 17px; display: inline-grid; place-items: center; }
 .rank-people__identity small { display: block; margin-top: 3px; font-size: 13px; color: var(--lb-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rank-people__position { font-size: 12px; color: var(--lb-dim); }
 @media (prefers-reduced-motion: reduce) { .lb .lb-profile-dot span { animation: none; } }
