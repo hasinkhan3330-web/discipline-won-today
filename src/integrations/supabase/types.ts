@@ -964,6 +964,7 @@ export type Database = {
           description: string | null
           earned_coins: number
           id: string
+          plan_duration: string
           progress: number
           started_on: string
           target_coins: number
@@ -981,6 +982,7 @@ export type Database = {
           description?: string | null
           earned_coins?: number
           id?: string
+          plan_duration?: string
           progress?: number
           started_on?: string
           target_coins?: number
@@ -998,6 +1000,7 @@ export type Database = {
           description?: string | null
           earned_coins?: number
           id?: string
+          plan_duration?: string
           progress?: number
           started_on?: string
           target_coins?: number
@@ -2157,6 +2160,7 @@ export type Database = {
         Args: {
           _category: string
           _goal_id: string
+          _plan_duration?: string
           _target_date: string
           _task_ids: string[]
           _title: string

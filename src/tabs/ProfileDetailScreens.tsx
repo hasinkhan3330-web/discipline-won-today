@@ -1,4 +1,4 @@
-import { GOAL_PROMISE, GOAL_TARGET_COINS, COIN_RULES } from "@/lib/economy";
+import { GOAL_PROMISE, GOAL_TARGET_COINS, COIN_RULES, GOAL_PLANS, goalPlanForTarget, type GoalPlanKey } from "@/lib/economy";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -215,14 +215,15 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
   };
   useEffect(() => { load(); }, []);
 
-  const reset = () => { setTitle(""); setCategory(""); setDate(""); setPicked([]); setEditing(null); };
+  const [plan, setPlan] = useState<GoalPlanKey>("1_year");
+  const reset = () => { setTitle(""); setCategory(""); setDate(""); setPicked([]); setEditing(null); setPlan("1_year"); };
 
   const save = async () => {
     if (!userId || !title.trim() || busy) return;
     setBusy(true);
     const { error: saveError } = await supabase.rpc("save_goal", {
       _goal_id: editing, _title: title.trim(), _category: category.trim() || null,
-      _target_date: date || null, _task_ids: picked,
+      _target_date: date || null, _task_ids: picked, _plan_duration: plan,
     } as never);
 
     setBusy(false);
@@ -233,6 +234,7 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
   const startEdit = (goal: GoalRow) => {
     setEditing(goal.id); setTitle(goal.title); setCategory(goal.category ?? "");
     setDate(goal.target_date ?? ""); setPicked(goal.habits.map(item => item.id));
+    setPlan(goalPlanForTarget(goal.target_coins).key);
   };
 
   const remove = async (id: string) => {
@@ -250,6 +252,17 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
       <label>What do you want to achieve?<input value={title} maxLength={120} onChange={event => setTitle(event.target.value)} placeholder="Clear my exam" /></label>
       <label>Category (optional)<input value={category} maxLength={40} onChange={event => setCategory(event.target.value)} placeholder="Exam · Fitness · Business · Meditation" /></label>
       <label>Target date<input type="date" value={date} onChange={event => setDate(event.target.value)} /></label>
+      <div className="gh-label-row"><label>Goal plan</label></div>
+      <div className="you-scan-options" role="radiogroup" aria-label="Goal plan">
+        {GOAL_PLANS.map(p => (
+          <button type="button" key={p.key} role="radio" aria-checked={plan === p.key}
+            className={plan === p.key ? "is-on" : ""} disabled={!!editing && plan !== p.key}
+            onClick={() => { if (!editing) setPlan(p.key); }}>
+            {p.short} · {p.target.toLocaleString()} coins · 90% Success Guarantee
+          </button>
+        ))}
+      </div>
+      {(() => { const sel = GOAL_PLANS.find(p => p.key === plan)!; return <div className="you-goal-controls"><span>Earn {sel.target.toLocaleString()} coins in {sel.duration} → AXEN guarantees 90% success in any field</span></div>; })()}
       <div className="gh-label-row">
         <label>Linked habits</label>
         <button type="button" className="gh-edit-dot" onClick={() => setPickerOpen(true)} aria-label="Choose linked habits"><Pencil size={13} /></button>
@@ -291,14 +304,16 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
           </div>
         </div>
         {linked && <div className="you-goal-habits">{goal.habits.map(item => <span key={item.id}>{item.name}</span>)}</div>}
-        <Progress value={Math.min(100, (goal.earned_coins ?? 0) / GOAL_TARGET_COINS * 100)} />
+        {(() => { const tgt = goal.target_coins || GOAL_TARGET_COINS; return <>
+        <Progress value={Math.min(100, (goal.earned_coins ?? 0) / tgt * 100)} />
         {linked ? <div className="you-goal-controls">
-          <span>{(goal.earned_coins ?? 0).toLocaleString()} / {GOAL_TARGET_COINS.toLocaleString()} coins</span>
+          <span>{(goal.earned_coins ?? 0).toLocaleString()} / {tgt.toLocaleString()} coins</span>
           <b className={goal.completed ? "is-complete" : (goal.readiness ?? 0) >= 60 ? "is-ok" : "is-warn"}>{goal.readiness ?? 0}% Goal Readiness — {status}</b>
         </div> : <div className="you-goal-controls">
-          <span>{(goal.earned_coins ?? 0).toLocaleString()} / {GOAL_TARGET_COINS.toLocaleString()} coins</span>
-          <input aria-label={`Progress for ${goal.title}`} type="range" min="0" max={GOAL_TARGET_COINS} step="1" value={Math.min(GOAL_TARGET_COINS, goal.earned_coins ?? 0)} readOnly disabled />
+          <span>{(goal.earned_coins ?? 0).toLocaleString()} / {tgt.toLocaleString()} coins</span>
+          <input aria-label={`Progress for ${goal.title}`} type="range" min="0" max={tgt} step="1" value={Math.min(tgt, goal.earned_coins ?? 0)} readOnly disabled />
         </div>}
+        </>; })()}
       </article>;
     })}</div>
     {!goals.length && !error && <div className="you-empty">Your first goal begins with a clear finish line.</div>}

@@ -18,6 +18,14 @@ export const COIN_RULES = {
 } as const;
 
 export const GOAL_TARGET_COINS = 18000;
+export type GoalPlanKey = "1_year" | "6_month" | "3_month";
+export const GOAL_PLANS: { key: GoalPlanKey; short: string; duration: string; target: number }[] = [
+  { key: "1_year", short: "1 Year", duration: "1 year", target: 18000 },
+  { key: "6_month", short: "6 Months", duration: "6 months", target: 9000 },
+  { key: "3_month", short: "3 Months", duration: "3 months", target: 4500 },
+];
+export const goalPlanForTarget = (target?: number | null) =>
+  GOAL_PLANS.find(p => p.target === target) ?? GOAL_PLANS[0];
 export const GOAL_PROMISE =
   "Action Promise: Reach 18,000 coins and unlock a 90% probability of success in your goal — whether you're a student, athlete, boxer, or professional in any field. Consistency compounds. 18,000 coins is your proof of work.";
 
