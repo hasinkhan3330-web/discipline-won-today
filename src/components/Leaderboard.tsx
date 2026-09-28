@@ -94,8 +94,12 @@ export function Leaderboard({ myId, onMyBadge }: {
     if (request !== requestRef.current) return;
     if (top.error || pos.error) { setState("error"); return; }
     const list = ((top.data ?? []) as unknown as Row[]).map(r => ({ ...r, username: safeName(r.username) }));
+    const { data: profileNames } = list.length ? await supabase.from("public_profiles").select("id,display_name").in("id", list.map(r => r.user_id)) : { data: [] };
+    if (request !== requestRef.current) return;
+    const displayNames = new Map((profileNames ?? []).map(p => [p.id, safeName(p.display_name)]));
+    const namedList = list.map(r => ({ ...r, display_name: displayNames.get(r.user_id) || r.username }));
     const position = ((pos.data ?? []) as unknown as Position[])[0] ?? null;
-    setRows(list);
+    setRows(namedList);
     setMe(position);
     const earned = badgeResult.error ? [] : (badgeResult.data ?? []) as { user_id: string; milestone: number | null }[];
     const nextBadges = Object.fromEntries(earned.filter(row => row.milestone != null).map(row => [row.user_id, row.milestone as number]));
