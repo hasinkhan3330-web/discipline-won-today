@@ -1,3 +1,6 @@
+import { FeatureHelpDot } from "@/components/FeatureHelpDot";
+import { RankCoinAvatar } from "@/components/RankCoinBadge";
+import { XP_RULES } from "@/lib/economy";
 import { useMemo, useState } from "react";
 import {
   Brain, CalendarCheck2, Check, ChevronRight, CircleCheck, Coins, Crown,
@@ -64,13 +67,14 @@ function dailyMotivation() {
 
 export function RankTab({
   coins, streak, bestStreak = 0, name, avatar, todayDone = 0, todayTotal = 0,
-  activeTheme, onApplyTheme, onNavigate,
+  activeTheme, onApplyTheme, onNavigate, badgeMilestone,
 }: {
   coins: number;
   streak: number;
   bestStreak?: number;
   name: string;
   avatar: string;
+  badgeMilestone?: number | null;
   todayDone?: number;
   todayTotal?: number;
   activeTheme: ThemeKey;
@@ -94,7 +98,7 @@ export function RankTab({
   return (
     <section className={`rank-screen rank-theme-${cur.tone} animate-fade-in`}>
       <header className="rank-profile-strip">
-        <img src={avatar} alt={name} />
+        <RankCoinAvatar name={name} src={avatar} milestone={badgeMilestone} />
         <div><h1>{name}</h1><p>Discipline Seeker</p></div>
         <button className="rank-coin-pill" onClick={() => setPanel({ type: "metric", title: "Total Coins", value: `${coins} coins`, copy: "Your coin balance is your live AXEN XP and unlock progress.", progress: Math.min(100, coins / 20000 * 100) })}><Coins size={18} /><strong>{coins} coins</strong><span>＋</span></button>
       </header>
@@ -121,7 +125,7 @@ export function RankTab({
       </article>
 
       <article className="rank-section rank-earn">
-        <header><div><Hexagon size={20} /><span><strong>How to Earn XP & Climb Ranks</strong></span></div></header>
+        <header><div><Hexagon size={20} /><span><strong>How to Earn XP & Climb Ranks</strong></span></div><FeatureHelpDot label="XP" content={{ title: "What is XP?", lines: ["XP is your discipline score. It decides your rank and leaderboard place.", ...XP_RULES.map(rule => `${rule.title} ${rule.xp}`), "Verified actions count most. XP can never be bought."], question: "Explain XP and how I climb ranks fastest." }} /></header>
         <div>{[
           { title: "Complete Habits", xp: "+10 XP", Icon: CircleCheck, tab: "home", copy: "Complete your active habits from Home." },
           { title: "Use Focus Mode", xp: "+15 XP", Icon: Focus, tab: "home", copy: "Finish a Deep Focus session from Home." },

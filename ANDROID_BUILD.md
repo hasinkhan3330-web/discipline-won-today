@@ -225,7 +225,7 @@ This is a server-rendered (TanStack Start) app, so the Android shell loads the
 deployed site rather than a static export. `capacitor.config.ts` sets:
 
 ```ts
-server: { url: "https://discipline-won-today.lovable.app", androidScheme: "https" }
+server: { url: "https://axonhabit.app", androidScheme: "https" }
 ```
 
 `android-shell/index.html` is bundled into the APK as an offline/splash fallback.

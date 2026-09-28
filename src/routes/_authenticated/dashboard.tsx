@@ -14,6 +14,7 @@ import { useAccessControl } from "@/hooks/useAccessControl";
 import { useEntitlementContext, EntitlementProvider } from "@/components/EntitlementProvider";
 import { ProtectedFeatureGate } from "@/components/ProtectedFeatureGate";
 import { Leaderboard } from "@/components/Leaderboard";
+import { NudgeListener } from "@/components/verified/NudgeListener";
 
 import { TrialBanner, TrialWelcome } from "@/components/TrialBanner";
 import { GateSkeleton } from "@/components/GateSkeleton";
@@ -95,6 +96,7 @@ function DashboardShell() {
   const ctx = Route.useRouteContext() as { user?: { id: string } };
   return (
     <EntitlementProvider userId={ctx?.user?.id ?? null}>
+      <NudgeListener userId={ctx?.user?.id ?? null} />
       <App />
     </EntitlementProvider>
   );
@@ -124,6 +126,7 @@ function App() {
   const [celebration, setCelebration] = useState<(typeof MILESTONES)[number] | null>(null);
 
   const [coins, setCoins] = useState(0);
+  const [myRankBadge, setMyRankBadge] = useState<number | null>(null);
   const [streak, setStreak] = useState(0);
   const [shields, setShields] = useState(0);
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
@@ -243,13 +246,13 @@ function App() {
       _uuid: r.id as string,
       icon: r.icon,
       name: r.name,
-      pts: r.pts,
+      pts: /wake/i.test(r.name) ? 10 : /cold|shower|workout|gym/i.test(r.name) ? 3 : Math.min(5, Math.max(1, r.pts ?? 2)),
       done: doneIds.has(r.id as string),
       frequency: r.frequency,
       durationDays: r.duration_days,
       startedOn: r.started_on,
-      requireScan: (r as any).require_scan ?? false,
-      scanClasses: ((r as any).scan_classes ?? []) as string[],
+      requireScan: false,
+      scanClasses: [] as string[],
     }) as unknown as Task));
 
     setBoard((leaders || []).map(l => ({
@@ -617,16 +620,17 @@ function App() {
     });
   };
 
-  /** Credits a verified wake-up server-side: coins for the tier, streak, and the Wake Up tick. */
+  /** Credits a solved wake challenge server-side: once per day, including the linked Wake task. */
   const completeWakeProtocol = async (slot: string) => {
     const uuid = (wakeTask as any)?._uuid as string | undefined;
     const { data, error } = await (supabase as any).rpc("complete_wake_protocol", {
-      _slot: slot, _task_id: uuid ?? null,
+      _slot: slot,
+      _task_id: uuid ?? null,
     });
     if (error) {
       console.error(error);
       toast.error("Could not credit the wake protocol", { description: error.message });
-      throw new Error(error.message);
+      return 0;
     }
     const row = Array.isArray(data) ? data[0] : data;
     if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
@@ -634,18 +638,37 @@ function App() {
     const awarded = Number(row?.awarded ?? 0);
     if (awarded > 0) {
       const today = new Date().toISOString().slice(0, 10);
-      setLife(prev => prev ? {
-        ...prev,
-        bestStreak: Math.max(prev.bestStreak, Number(row?.longest_streak ?? row?.streak ?? 0)),
-        lifetimeCoins: prev.lifetimeCoins + awarded,
-        heat: prev.heat.map(h => (h.date === today ? { ...h, count: h.count + 1 } : h)),
-      } : prev);
-      toast.success(`+${awarded} coins · wake verified`);
-    } else {
-      toast.success("Wake protocol already verified today");
-    }
+      setLife(prev => prev ? { ...prev, bestStreak: Math.max(prev.bestStreak, Number(row?.longest_streak ?? row?.streak ?? 0)), lifetimeCoins: prev.lifetimeCoins + awarded, heat: prev.heat.map(h => (h.date === today ? { ...h, count: h.count + 1 } : h)) } : prev);
+      toast.success(`+${awarded} coins · wake challenge complete`);
+    } else toast.success("Wake protocol already completed today");
     return awarded;
   };
+  const completeHabitFromProfile = async (uuid: string) => {
+    const t = tasks.find(x => (x as any)._uuid === uuid);
+    if (t && /wake/i.test(t.name)) {
+      const plan = wakePlan && wakePlan.date === todayKey() ? wakePlan : null;
+      setProof(plan ? { mode: "time", wakeTime: plan.tier, wakePts: plan.pts, wakeLine: plan.line } : { mode: "time" });
+      return;
+    }
+    await completeTaskRpc(uuid);
+  };
+
+  // One-time streak milestone bonuses (server decides; idempotent).
+  const milestoneRef = useRef(0);
+  useEffect(() => {
+    const best = Math.max(streak, life?.bestStreak ?? 0);
+    if (!myId || best < 7 || milestoneRef.current >= best) return;
+    milestoneRef.current = best;
+    (async () => {
+      const { data, error } = await (supabase as any).rpc("claim_streak_milestones");
+      if (error || !Array.isArray(data)) return;
+      const fresh = data.filter((r: any) => r.newly_awarded);
+      if (!fresh.length) return;
+      const total = fresh.reduce((sum: number, r: any) => sum + Number(r.coins), 0);
+      setCoins(c => c + total);
+      toast.success(`+${total.toLocaleString()} coins · ${fresh[fresh.length - 1].milestone}-day streak badge unlocked`);
+    })();
+  }, [streak, life?.bestStreak, myId]);
 
   /** Logs a finished Zen session on the account and credits its coins. */
   const onZenComplete = async (minutes: number) => {
@@ -770,8 +793,6 @@ function App() {
 
 
   const verifyKindFor = (name: string): VerifyKind | null => {
-    if (/workout|gym|train|exercise/i.test(name)) return "gym";
-    if (/shower|bath|cold/i.test(name)) return "shower";
     if (/focus|study|read/i.test(name)) return "focus";
     return null;
   };
@@ -781,7 +802,6 @@ function App() {
     const classes: string[] = Array.isArray(t?.scanClasses) ? t.scanClasses : [];
     const kind = verifyKindFor(t?.name ?? "");
     if (kind) return { kind, classes };
-    if (t?.requireScan && classes.length) return { kind: "custom", classes };
     return null;
   };
 
@@ -789,8 +809,8 @@ function App() {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
     if (/wake/i.test(t.name)) {
-      const p = wakePlan && wakePlan.date === todayKey() ? wakePlan : null;
-      setProof(p ? { mode: "time", wakeTime: p.tier, wakePts: p.pts, wakeLine: p.line } : { mode: "time" });
+      const plan = wakePlan && wakePlan.date === todayKey() ? wakePlan : null;
+      setProof(plan ? { mode: "time", wakeTime: plan.tier, wakePts: plan.pts, wakeLine: plan.line } : { mode: "time" });
       return;
     }
     if (/top\s?3|top three missions/i.test(t.name)) {
@@ -999,6 +1019,7 @@ function App() {
                   <Leaderboard
                     myId={myId}
                     myName={myName}
+                    onMyBadge={setMyRankBadge}
                     uploading={uploading}
                     onEditPhoto={openCropper}
                     onRemovePhoto={removeAvatar}
@@ -1011,6 +1032,7 @@ function App() {
                     bestStreak={life?.bestStreak ?? 0}
                     name={myName}
                     avatar={myAvatar || fallbackAvatar(myName)}
+                    badgeMilestone={myRankBadge}
                     todayDone={tasks.filter(task => task.done).length}
                     todayTotal={tasks.length}
                     activeTheme={themeKey}
@@ -1062,7 +1084,7 @@ function App() {
                   startedOn: (task as any).startedOn,
                 }))}
                 userId={myId}
-                onCompleteHabit={completeTaskRpc}
+                onCompleteHabit={completeHabitFromProfile}
                 onRefresh={refreshAll}
                 onOpenStats={() => setTab("stats")}
                 onSignOut={handleSignOut}
@@ -1128,7 +1150,11 @@ function App() {
           onTone={pickRingtone}
           onMode={setWakeMode}
           onSave={saveWakePlan}
-          onCheckIn={completeWakeProtocol}
+          onCheckIn={async slot => {
+            const option = WAKE_OPTIONS.find(item => item.time === slot);
+            setProof({ mode: "choose", wakeTime: slot, wakePts: option?.pts, wakeLine: option?.line });
+            return 0;
+          }}
         />
       )}
 

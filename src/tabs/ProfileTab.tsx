@@ -1,11 +1,14 @@
+import { StreakBadge } from "@/components/StreakBadge";
+import { topMilestone } from "@/lib/economy";
 import { useState } from "react";
 import {
   Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins, Crown,
-  Circle, Flame, LogOut, Orbit, Settings, Sparkles, Target, Trophy,
+  Circle, Flame, HeartHandshake, LogOut, Orbit, Settings, Sparkles, Target, Trophy,
 } from "lucide-react";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
 import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
 import { ReferralCard } from "@/components/ReferralCard";
+import { AccountabilitySection } from "@/components/verified/AccountabilitySection";
 import { useCountUp } from "./HomeTab";
 import {
   AchievementsView, GoalsView, HabitsView, JourneyView, RemindersView,
@@ -50,6 +53,7 @@ export function ProfileTab(props: Props) {
   if (view === "goals") return <GoalsView userId={props.userId} habits={props.habits} onBack={back} onChanged={props.onRefresh} />;
   if (view === "reminders") return <RemindersView habits={props.habits} userId={props.userId} onBack={back} />;
   if (view === "account") return <div className="you-detail animate-fade-in"><header className="you-detail-header"><button className="you-icon-button" onClick={back} aria-label="Back to profile">←</button><div><h1>Account</h1><p>Identity, membership and invitations.</p></div></header><ReferralCard referredBy={props.referredBy ?? null} onCoins={props.onCoins} /><ManageSubscriptionCard /><SubscriptionTimeline />{props.onSignOut && <button className="you-signout" onClick={props.onSignOut}><LogOut size={17} /> Sign out</button>}</div>;
+  if (view === "accountability") return <div className="you-detail animate-fade-in"><header className="you-detail-header"><button className="you-icon-button" onClick={back} aria-label="Back to profile">←</button><div><h1>Accountability</h1><p>One partner. Only what you choose to share.</p></div></header><AccountabilitySection /></div>;
 
   const features = [
     { id: "journey", title: "My Journey", copy: "Track your progress", icon: Orbit, tone: "blue" },
@@ -58,12 +62,13 @@ export function ProfileTab(props: Props) {
     { id: "goals", title: "Goals", copy: "Set & track goals", icon: Target, tone: "pink" },
     { id: "habits", title: "Habits", copy: "Build better habits", icon: CheckCircle2, tone: "green" },
     { id: "reminders", title: "Reminders", copy: "Stay on track", icon: Bell, tone: "violet" },
+    { id: "accountability", title: "Accountability", copy: "Partner & privacy", icon: HeartHandshake, tone: "violet" },
   ] as const;
 
   return <section className="you-screen animate-fade-in">
     <header className="you-profile-hero">
       <label className="you-avatar" aria-label="Change profile photo"><img src={props.myAvatar || props.fallbackAvatar(props.myName)} onError={event => { event.currentTarget.src = props.fallbackAvatar(props.myName); }} alt={props.myName} /><span><Camera size={14} /></span><input type="file" accept="image/*" disabled={props.uploading} onChange={event => { const file = event.target.files?.[0]; if (file) props.openCropper(file); event.currentTarget.value = ""; }} /></label>
-      <div className="you-profile-copy"><h1>{props.myName}</h1><div><Crown size={15} /><strong>{rank.name}</strong><span className="you-verified">✓</span></div><p>Better Habits <b>·</b> Stronger Mind <b>·</b> Greater You</p></div>
+      <div className="you-profile-copy"><h1>{props.myName}{(() => { const b = topMilestone(Math.max(props.streak, props.life?.bestStreak ?? 0)); return b ? <span className="ax-name-badge"><StreakBadge tone={b.tone} size={18} label={`${b.days}-day streak badge`} /></span> : null; })()}</h1><div><Crown size={15} /><strong>{rank.name}</strong><span className="you-verified">✓</span></div><p>Better Habits <b>·</b> Stronger Mind <b>·</b> Greater You</p></div>
       <button className="you-account-button" onClick={() => setView("account")} aria-label="Open account settings"><Settings size={18} /></button>
       <div className="you-coin-pill"><Coins size={18} /><strong>{coinsShown} coins</strong></div>
     </header>

@@ -10,7 +10,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * To point the app at a different backend (e.g. the preview build), set
  * CAP_SERVER_URL before running the build/sync scripts.
  */
-const serverUrl = process.env.CAP_SERVER_URL ?? "https://discipline-won-today.lovable.app";
+const serverUrl = process.env.CAP_SERVER_URL ?? "https://axonhabit.app";
 
 const config: CapacitorConfig = {
   appId: "com.hasin.axen",

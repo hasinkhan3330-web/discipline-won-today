@@ -1,0 +1,1 @@
+GRANT INSERT (reminder_pref), UPDATE (reminder_pref) ON public.daily_contracts TO authenticated;

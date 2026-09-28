@@ -1,3 +1,4 @@
+import { buildCoachKnowledge } from "@/lib/coach-knowledge";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getLiveSession } from "@/utils/voice.functions";
@@ -239,9 +240,10 @@ export function VoiceCoach() {
       wsRef.current = ws;
       playerRef.current = new PcmPlayer(24000);
 
+      const KB = buildCoachKnowledge();
       const instruction = snapshot
-        ? `${SYSTEM}\n\nAXEN_COACH_CONTEXT (private, never read aloud):\n${JSON.stringify(snapshot)}`
-        : `${SYSTEM}\n\nAXEN_COACH_CONTEXT is unavailable for this session. Do not state any statistic; call get_axen_coach_context before referencing data.`;
+        ? `${SYSTEM}\n\n${KB}\n\nAXEN_COACH_CONTEXT (private, never read aloud):\n${JSON.stringify(snapshot)}`
+        : `${SYSTEM}\n\n${KB}\n\nAXEN_COACH_CONTEXT is unavailable for this session. Do not state any statistic; call get_axen_coach_context before referencing data.`;
 
       ws.onopen = () => {
         if (controller.signal.aborted || session !== sessionRef.current) {
