@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { Crown, Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trophy, Zap } from "lucide-react";
+import { Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trophy, X, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { safeName } from "@/lib/display-name";
+import { Button } from "@/components/ui/button";
+import { RankCoinAvatar, RankCoinBadge } from "@/components/RankCoinBadge";
 
 type Scope = "india" | "global";
 type Period = "weekly" | "alltime";
@@ -11,6 +14,8 @@ type Row = {
   rank: number;
   user_id: string;
   username: string;
+  display_name?: string | null;
+  coins?: number;
   avatar_url: string | null;
   country: string;
   points: number;
@@ -59,9 +64,10 @@ function EliteCrest({ size = 16 }: { size?: number }) {
   );
 }
 
-export function Leaderboard({ myId }: {
+export function Leaderboard({ myId, onMyBadge }: {
   myId: string;
   myName: string;
+  onMyBadge?: (milestone: number | null) => void;
   onEditPhoto?: (file: File) => void;
   onRemovePhoto?: () => void;
   uploading?: boolean;
@@ -73,28 +79,40 @@ export function Leaderboard({ myId }: {
   const [me, setMe] = useState<Position | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [rankUp, setRankUp] = useState<number | null>(null);
+  const [badges, setBadges] = useState<Record<string, number>>({});
+  const [selected, setSelected] = useState<Row | null>(null);
   const prevRank = useRef<number | null>(null);
-  const podiumRef = useRef<HTMLDivElement | null>(null);
-  const podiumFrameRef = useRef<number | null>(null);
+  const requestRef = useRef(0);
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setState("loading");
-    const [top, pos] = await Promise.all([
+    const request = ++requestRef.current;
+    const [top, pos, badgeResult] = await Promise.all([
       supabase.rpc("leaderboard_top" as never, { _scope: scope, _period: period, _limit: 100, _offset: 0 } as never),
       supabase.rpc("my_leaderboard_position" as never, { _scope: scope, _period: period } as never),
+      supabase.rpc("rank_verification_badges" as never, { _scope: scope, _period: period } as never),
     ]);
+    if (request !== requestRef.current) return;
     if (top.error || pos.error) { setState("error"); return; }
     const list = ((top.data ?? []) as unknown as Row[]).map(r => ({ ...r, username: safeName(r.username) }));
+    const { data: profileNames } = list.length ? await supabase.from("public_profiles").select("id,display_name,coins").in("id", list.map(r => r.user_id)) : { data: [] };
+    if (request !== requestRef.current) return;
+    const publicNames = new Map((profileNames ?? []).map(p => [p.id, p]));
+    const namedList = list.map(r => ({ ...r, display_name: safeName(publicNames.get(r.user_id)?.display_name || r.username), coins: publicNames.get(r.user_id)?.coins ?? undefined }));
     const position = ((pos.data ?? []) as unknown as Position[])[0] ?? null;
-    setRows(list);
+    setRows(namedList);
     setMe(position);
+    const earned = badgeResult.error ? [] : (badgeResult.data ?? []) as { user_id: string; milestone: number | null }[];
+    const nextBadges = Object.fromEntries(earned.filter(row => row.milestone != null).map(row => [row.user_id, row.milestone as number]));
+    setBadges(nextBadges);
+    onMyBadge?.(nextBadges[myId] ?? null);
     setState("ready");
     if (position && position.rank > 0) {
       const before = prevRank.current;
       if (before !== null && position.rank < before) setRankUp(position.rank);
       prevRank.current = position.rank;
     }
-  }, [scope, period, myId]);
+  }, [scope, period, myId, onMyBadge]);
 
   useEffect(() => { void load(); }, [load]);
   useEffect(() => {
@@ -102,43 +120,17 @@ export function Leaderboard({ myId }: {
     const t = window.setTimeout(() => setRankUp(null), 2600);
     return () => window.clearTimeout(t);
   }, [rankUp]);
+  useEffect(() => {
+    if (!selected) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setSelected(null); };
+    document.addEventListener("keydown", onKey);
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = previous; };
+  }, [selected]);
 
   const podium = useMemo(() => rows.filter(r => r.rank <= 3).slice(0, 3), [rows]);
   const list = useMemo(() => rows.filter(r => r.rank >= 4 && r.rank <= 100), [rows]);
-
-  const order = [1, 0, 2]; // visual podium order: 2nd, 1st, 3rd
-
-  const updatePodiumDepth = useCallback(() => {
-    const track = podiumRef.current;
-    if (!track) return;
-    const center = track.scrollLeft + track.clientWidth / 2;
-    track.querySelectorAll<HTMLElement>(".lb-pod").forEach(card => {
-      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
-      const distance = Math.max(-1, Math.min(1, (cardCenter - center) / Math.max(card.offsetWidth, 1)));
-      card.style.setProperty("--swipe-depth", String(Math.abs(distance)));
-      card.style.setProperty("--swipe-shift", String(distance));
-    });
-  }, []);
-
-  const handlePodiumScroll = useCallback(() => {
-    if (reduce || podiumFrameRef.current !== null) return;
-    podiumFrameRef.current = requestAnimationFrame(() => {
-      podiumFrameRef.current = null;
-      updatePodiumDepth();
-    });
-  }, [reduce, updatePodiumDepth]);
-
-  useEffect(() => {
-    const track = podiumRef.current;
-    if (!track || podium.length === 0) return;
-    const champion = track.querySelector<HTMLElement>(".lb-pod-1");
-    if (champion) track.scrollLeft = champion.offsetLeft - (track.clientWidth - champion.offsetWidth) / 2;
-    updatePodiumDepth();
-    return () => {
-      if (podiumFrameRef.current !== null) cancelAnimationFrame(podiumFrameRef.current);
-      podiumFrameRef.current = null;
-    };
-  }, [podium, updatePodiumDepth]);
 
   return (
     <section className="lb">
@@ -199,14 +191,14 @@ export function Leaderboard({ myId }: {
           <motion.div
             key={`${scope}-${period}`}
             className="lb-standings"
-            initial={reduce ? false : { opacity: 0, x: 10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={reduce ? undefined : { opacity: 0, x: -8 }}
+            initial={reduce ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduce ? undefined : { opacity: 0 }}
             transition={{ type: "spring", stiffness: 280, damping: 28 }}
           >
             {podium.length > 0 && (
-              <div ref={podiumRef} className="lb-podium" onScroll={handlePodiumScroll} aria-label="Top ranked members. Swipe left or right.">
-                {order.map(i => podium[i]).filter(Boolean).map(p => (
+              <div className="lb-podium" aria-label="Top ranked members">
+                {podium.map(p => (
                   <motion.div
                     key={p.user_id}
                     className={`lb-pod lb-pod-${p.rank} ${p.is_me ? "is-me" : ""}`}
@@ -214,16 +206,13 @@ export function Leaderboard({ myId }: {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ type: "spring", stiffness: 240, damping: 20, delay: reduce ? 0 : p.rank * 0.06 }}
                   >
-                    <div className="lb-pod-orbit" aria-hidden><i /><i /><i /></div>
                     <div className="lb-pod-rank">0{p.rank}</div>
-                    <div className="lb-pod-avatar">
-                      <img src={p.avatar_url || fallbackAvatar(p.username)} alt={p.username} loading="lazy" />
-                      {p.rank === 1 && <Crown size={19} className="lb-pod-crown" />}
-                    </div>
+                    <Button variant="ghost" size="icon" className="lb-profile-dot" aria-label={`View ${p.username} in Rank profiles`} title={`View ${p.username} in Rank profiles`} onClick={() => setSelected(p)}><span /></Button>
+                    <RankCoinAvatar className="lb-pod-avatar" name={p.username} src={p.avatar_url || fallbackAvatar(p.username)} milestone={badges[p.user_id]} />
                     <strong>{p.username}</strong>
                     <span>{flag(p.country)} {p.elite && <EliteCrest size={13} />}</span>
                     <em><b>{p.points.toLocaleString()}</b> DP</em>
-                    <div className="lb-pod-base"><i /><span /></div>
+                    {typeof p.coins === "number" && <small className="lb-pod-coins">{p.coins.toLocaleString()} coins</small>}
                   </motion.div>
                 ))}
               </div>
@@ -242,12 +231,13 @@ export function Leaderboard({ myId }: {
                       transition={{ duration: 0.22, delay: reduce ? 0 : Math.min(i, 12) * 0.015 }}
                     >
                       <span className="lb-rank">{String(r.rank).padStart(2, "0")}</span>
-                      <img src={r.avatar_url || fallbackAvatar(r.username)} alt={r.username} loading="lazy" />
+                      <RankCoinAvatar className="lb-list-avatar" name={r.username} src={r.avatar_url || fallbackAvatar(r.username)} milestone={badges[r.user_id]} />
                       <div className="lb-who">
                         <strong>{r.username} {r.elite && <EliteCrest size={12} />}</strong>
-                        <small>{flag(r.country)} {r.consistency} day streak</small>
+                        <small>{flag(r.country)} {typeof r.coins === "number" ? `${r.coins.toLocaleString()} coins · ` : ""}{r.consistency} day streak</small>
                       </div>
                       <b className="lb-pts">{r.points.toLocaleString()}<i>DP</i></b>
+                      <Button variant="ghost" size="icon" className="lb-profile-dot" aria-label={`View ${r.username} in Rank profiles`} title={`View ${r.username} in Rank profiles`} onClick={() => setSelected(r)}><span /></Button>
                     </motion.li>
                   ))}
                 </ul>
@@ -256,6 +246,24 @@ export function Leaderboard({ myId }: {
           </motion.div>
         )}
       </AnimatePresence>
+      {selected && typeof document !== "undefined" && createPortal(
+        <div className="rank-people-backdrop" onClick={() => setSelected(null)}>
+          <section className="rank-people" role="dialog" aria-modal="true" aria-label="Rank profiles" onClick={event => event.stopPropagation()}>
+            <header className="rank-people__header">
+              <Button variant="ghost" size="icon" onClick={() => setSelected(null)} aria-label="Close Rank profiles"><X size={22} /></Button>
+              <div><strong>Rank profiles</strong><small>{scope === "india" ? "India" : "Global"} · {period === "weekly" ? "Weekly" : "All-time"}</small></div>
+              <span>{rows.length}</span>
+            </header>
+            <div className="rank-people__list" key={`${scope}-${period}`}>
+              {rows.map(r => <div className={`rank-people__row ${selected.user_id === r.user_id ? "is-selected" : ""}`} key={r.user_id}>
+                <RankCoinAvatar name={r.username} src={r.avatar_url || fallbackAvatar(r.username)} milestone={badges[r.user_id]} />
+                <div className="rank-people__identity"><strong>{r.username} <RankCoinBadge milestone={badges[r.user_id]} /></strong><small>{safeName(r.display_name || r.username)}</small></div>
+                <span className="rank-people__position">#{r.rank}{typeof r.coins === "number" && <small>{r.coins.toLocaleString()} coins</small>}<small>{r.points.toLocaleString()} DP</small></span>
+              </div>)}
+            </div>
+          </section>
+        </div>, document.body)
+      }
 
       <AnimatePresence>
         {rankUp !== null && (
