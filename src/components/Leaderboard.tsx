@@ -98,7 +98,7 @@ export function Leaderboard({ myId, onMyBadge }: {
     const { data: profileNames } = list.length ? await supabase.from("public_profiles").select("id,display_name,coins").in("id", list.map(r => r.user_id)) : { data: [] };
     if (request !== requestRef.current) return;
     const publicNames = new Map((profileNames ?? []).map(p => [p.id, p]));
-    const namedList = list.map(r => ({ ...r, display_name: safeName(publicNames.get(r.user_id)?.display_name || r.username), coins: publicNames.get(r.user_id)?.coins }));
+    const namedList = list.map(r => ({ ...r, display_name: safeName(publicNames.get(r.user_id)?.display_name || r.username), coins: publicNames.get(r.user_id)?.coins ?? undefined }));
     const position = ((pos.data ?? []) as unknown as Position[])[0] ?? null;
     setRows(namedList);
     setMe(position);
