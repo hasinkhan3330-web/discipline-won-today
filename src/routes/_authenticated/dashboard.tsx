@@ -9,7 +9,6 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { Paywall } from "@/components/Paywall";
 import { PaywallGate } from "@/components/PaywallGate";
 import { TaskVerify, type VerifyKind } from "@/components/TaskVerify";
-import { WakeSelfie } from "@/components/WakeSelfie";
 import { TopThreeModal } from "@/components/TopThreeModal";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { useEntitlementContext, EntitlementProvider } from "@/components/EntitlementProvider";
@@ -467,7 +466,6 @@ function App() {
     return saved && RINGTONES.some(r => r.id === saved) ? saved : "superloud";
   });
   const [previewId, setPreviewId] = useState<string | null>(null);
-  const [wakeSelfie, setWakeSelfie] = useState(false);
   const [verify, setVerify] = useState<{ uuid: string; kind: VerifyKind; classes: string[]; scan: boolean } | null>(null);
   const [topThree, setTopThree] = useState<string | null>(null);
   const pickRingtone = (id: string) => {
@@ -621,22 +619,36 @@ function App() {
     });
   };
 
-  /** Wake Up 4AM is credited only through the live selfie check (server-verified, 4:00–4:30 AM). */
-  const completeWakeProtocol = async (_slot?: string) => { setWakeSelfie(true); return 0; };
-  const onWakeVerified = (row: { awarded: number; coins: number; streak: number; longestStreak: number; already: boolean }) => {
-    setWakeSelfie(false);
+  /** Credits a solved wake challenge server-side: once per day, including the linked Wake task. */
+  const completeWakeProtocol = async (slot: string) => {
     const uuid = (wakeTask as any)?._uuid as string | undefined;
-    setCoins(row.coins); setStreak(row.streak);
+    const { data, error } = await (supabase as any).rpc("complete_wake_protocol", {
+      _slot: slot,
+      _task_id: uuid ?? null,
+    });
+    if (error) {
+      console.error(error);
+      toast.error("Could not credit the wake protocol", { description: error.message });
+      return 0;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
     if (uuid) setTasks(p => p.map(t => ((t as any)._uuid === uuid ? { ...t, done: true } : t)));
-    if (row.awarded > 0) {
+    const awarded = Number(row?.awarded ?? 0);
+    if (awarded > 0) {
       const today = new Date().toISOString().slice(0, 10);
-      setLife(prev => prev ? { ...prev, bestStreak: Math.max(prev.bestStreak, row.longestStreak), lifetimeCoins: prev.lifetimeCoins + row.awarded, heat: prev.heat.map(h => (h.date === today ? { ...h, count: h.count + 1 } : h)) } : prev);
-      toast.success(`+${row.awarded} coins · wake verified`);
-    } else toast.success(row.already ? "Wake-up already verified today" : "Wake-up verified · daily coin limit reached");
+      setLife(prev => prev ? { ...prev, bestStreak: Math.max(prev.bestStreak, Number(row?.longest_streak ?? row?.streak ?? 0)), lifetimeCoins: prev.lifetimeCoins + awarded, heat: prev.heat.map(h => (h.date === today ? { ...h, count: h.count + 1 } : h)) } : prev);
+      toast.success(`+${awarded} coins · wake challenge complete`);
+    } else toast.success("Wake protocol already completed today");
+    return awarded;
   };
   const completeHabitFromProfile = async (uuid: string) => {
     const t = tasks.find(x => (x as any)._uuid === uuid);
-    if (t && /wake/i.test(t.name)) { setWakeSelfie(true); return; }
+    if (t && /wake/i.test(t.name)) {
+      const plan = wakePlan && wakePlan.date === todayKey() ? wakePlan : null;
+      setProof(plan ? { mode: "time", wakeTime: plan.tier, wakePts: plan.pts, wakeLine: plan.line } : { mode: "time" });
+      return;
+    }
     await completeTaskRpc(uuid);
   };
 
@@ -795,7 +807,11 @@ function App() {
   const tick = (id: number) => {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
-    if (/wake/i.test(t.name)) { setWakeSelfie(true); return; }
+    if (/wake/i.test(t.name)) {
+      const plan = wakePlan && wakePlan.date === todayKey() ? wakePlan : null;
+      setProof(plan ? { mode: "time", wakeTime: plan.tier, wakePts: plan.pts, wakeLine: plan.line } : { mode: "time" });
+      return;
+    }
     if (/top\s?3|top three missions/i.test(t.name)) {
       setTopThree((t as any)._uuid as string);
       return;
@@ -956,7 +972,6 @@ function App() {
 
 
 
-          {wakeSelfie && <WakeSelfie onClose={() => setWakeSelfie(false)} onDone={onWakeVerified} />}
           {verify && (
             <TaskVerify
               kind={verify.kind}
@@ -1132,7 +1147,11 @@ function App() {
           onTone={pickRingtone}
           onMode={setWakeMode}
           onSave={saveWakePlan}
-          onCheckIn={completeWakeProtocol}
+          onCheckIn={async slot => {
+            const option = WAKE_OPTIONS.find(item => item.time === slot);
+            setProof({ mode: "choose", wakeTime: slot, wakePts: option?.pts, wakeLine: option?.line });
+            return 0;
+          }}
         />
       )}
 

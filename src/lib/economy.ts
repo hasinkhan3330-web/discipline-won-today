@@ -9,7 +9,7 @@ export const COIN_RULES = {
   contractXp: 20,
   recoveryXp: 8,
   deepFocus: { "49 min": 10, "2 hours": 10, "3 hours": 15 },
-  wakeSelfie: 10,
+  wakeChallenge: 10,
   priorityHabit: 3,
   customHabit: { min: 1, max: 5, default: 2 },
   zen: 5,

@@ -29,8 +29,8 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] XP info dot
 - [x] Streak milestones 7/21/100/290/365 + badges on profile/rank
 - [x] Goals 18,000 linked-habit coins + info text
-- [x] Wake Up 4AM live-selfie verify (4:00–4:30, auto-delete); Cold Shower/Workout simple tap; custom habit 1–5, no scan proof
+- [x] Wake Up alarm math/science challenge (no face/selfie check); Cold Shower/Workout simple tap; custom habit 1–5, no scan proof
 - [x] Coach full app knowledge
 - [x] Gap closure: real-streak badge guard, selfie liveness, recalc_goal owner check, full test report
 - [ ] Rank-only photo badges — show SQL and wait for approval; then show exact file changes and wait for second approval; both coin and streak thresholds, highest tier only, no reward or ranking changes
-- [ ] Physical Android 4AM selfie check-in — blocked on a real device during 4:00–4:30 AM
+- [x] Face/selfie verification removed; previous alarm challenge restored
