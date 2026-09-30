@@ -1837,6 +1837,7 @@ export type Database = {
       axen_is_priority_habit: { Args: { _name: string }; Returns: boolean }
       axen_is_server_write: { Args: never; Returns: boolean }
       axen_real_best_streak: { Args: { _uid: string }; Returns: number }
+      axen_user_local_day: { Args: { _uid: string }; Returns: string }
       buy_streak_shield: {
         Args: never
         Returns: {
