@@ -1962,7 +1962,6 @@ export type Database = {
           xp_total: number
         }[]
       }
-      get_accountability_details: { Args: never; Returns: Json }
       get_entitlement: {
         Args: never
         Returns: {
@@ -2184,7 +2183,7 @@ export type Database = {
       }
       send_accountability_nudge: {
         Args: { _connection_id: string; _kind: string; _message?: string }
-        Returns: undefined
+        Returns: Json
       }
       send_friend_request: {
         Args: { _username: string }
