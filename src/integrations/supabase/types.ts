@@ -1962,6 +1962,7 @@ export type Database = {
           xp_total: number
         }[]
       }
+      get_accountability_details: { Args: never; Returns: Json }
       get_entitlement: {
         Args: never
         Returns: {
