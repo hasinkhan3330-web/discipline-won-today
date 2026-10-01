@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CheckCircle2, HeartHandshake, Send, Siren } from "lucide-react";
+import { CheckCircle2, Flame, Handshake, HeartHandshake, Send, Siren, Skull, Trophy, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,13 @@ export const NUDGES = [
   "Discipline seeker ya excuse maker? Choice teri 💀",
   "Top 10 mein aana hai? Aaj ka kaam kar 🏆",
   "Main dekh raha hoon — mat chook aaj 🤝",
+] as const;
+const NUDGE_LABELS = [
+  { message: NUDGES[0], label: "Bhai uth, aaj ka task pending hai", Icon: Flame },
+  { message: NUDGES[1], label: "Tera streak toot raha hai — 1 task kar abhi", Icon: Zap },
+  { message: NUDGES[2], label: "Discipline seeker ya excuse maker? Choice teri", Icon: Skull },
+  { message: NUDGES[3], label: "Top 10 mein aana hai? Aaj ka kaam kar", Icon: Trophy },
+  { message: NUDGES[4], label: "Main dekh raha hoon — mat chook aaj", Icon: Handshake },
 ] as const;
 
 const STATUS_LABEL: Record<string, string> = {
@@ -238,17 +245,17 @@ export function AccountabilitySection() {
       <div style={{ marginTop: 10, padding: 10, border: `1px solid ${AX.border}`, borderRadius: 8 }}><span style={{ ...subText, display: "block" }}>Partner commitment</span><span style={{ color: AX.text, fontSize: 13 }}>{details?.partner_commitment || "No commitment yet."}</span></div>
       <NudgeHistory />
       <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 46, display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }} onClick={() => void sendAction("checkin")} disabled={busy || !details?.can_check_in || details.checked_in_today}>
-        <CheckCircle2 size={16} />{details?.checked_in_today ? "Checked in today" : "✅ Aaj ka task kiya"}
+        <CheckCircle2 size={16} />{details?.checked_in_today ? "Checked in today" : "Aaj ka task kiya"}
       </button>
       <div style={{ ...subText, marginTop: 14 }}>Send a nudge</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8, marginTop: 6 }}>
-        {NUDGES.map(m => (
-          <button key={m} style={{ ...buttonStyle("ghost"), display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }} onClick={() => void nudge(m)} disabled={busy}>
-            <Send size={13} strokeWidth={1.8} />{m}
+        {NUDGE_LABELS.map(({ message, label, Icon }) => (
+          <button key={message} aria-label={message} style={{ ...buttonStyle("ghost"), display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }} onClick={() => void nudge(message)} disabled={busy}>
+            <Send size={13} strokeWidth={1.8} /><span>{label}</span><Icon size={14} strokeWidth={1.8} />
           </button>
         ))}
       </div>
-      <button style={{ ...buttonStyle("ghost"), width: "100%", marginTop: 8, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, color: AX.danger }} onClick={() => void sendAction("emergency")} disabled={busy}><Siren size={15} />🚨 Emergency Nudge</button>
+      <button style={{ ...buttonStyle("ghost"), width: "100%", marginTop: 8, minHeight: 44, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, color: AX.danger }} onClick={() => void sendAction("emergency")} disabled={busy}><Siren size={15} />Emergency Nudge</button>
       <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
         <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={() => void end(false)} disabled={busy}>Remove partner</button>
         <button style={{ ...buttonStyle("ghost"), flex: 1, color: AX.danger }} onClick={() => void end(true)} disabled={busy}>Block & report</button>
