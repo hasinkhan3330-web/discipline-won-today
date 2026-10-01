@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.axen_user_local_day(uuid) FROM PUBLIC, anon, authenticated, service_role;
