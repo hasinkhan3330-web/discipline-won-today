@@ -1348,14 +1348,19 @@ export type Database = {
       }
       proof_submissions: {
         Row: {
+          asked_once: boolean
           confidence: number | null
           contract_id: string
           created_at: string
           id: string
+          partner_review_status: string | null
           private_storage_path: string | null
           proof_type: string
           reason_code: string | null
           retry_count: number
+          review_note: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
           session_id: string | null
           status: Database["public"]["Enums"]["proof_status"]
           text_evidence: string | null
@@ -1364,14 +1369,19 @@ export type Database = {
           verifier_version: string | null
         }
         Insert: {
+          asked_once?: boolean
           confidence?: number | null
           contract_id: string
           created_at?: string
           id?: string
+          partner_review_status?: string | null
           private_storage_path?: string | null
           proof_type: string
           reason_code?: string | null
           retry_count?: number
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
           session_id?: string | null
           status?: Database["public"]["Enums"]["proof_status"]
           text_evidence?: string | null
@@ -1380,14 +1390,19 @@ export type Database = {
           verifier_version?: string | null
         }
         Update: {
+          asked_once?: boolean
           confidence?: number | null
           contract_id?: string
           created_at?: string
           id?: string
+          partner_review_status?: string | null
           private_storage_path?: string | null
           proof_type?: string
           reason_code?: string | null
           retry_count?: number
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
           session_id?: string | null
           status?: Database["public"]["Enums"]["proof_status"]
           text_evidence?: string | null
@@ -2021,6 +2036,21 @@ export type Database = {
           title: string
         }[]
       }
+      get_partner_reviews: {
+        Args: never
+        Returns: {
+          asked_once: boolean
+          elapsed_minutes: number
+          evidence: string
+          owner_name: string
+          planned_minutes: number
+          proof_id: string
+          proof_type: string
+          review_status: string
+          submitted_at: string
+          title: string
+        }[]
+      }
       get_partner_today: {
         Args: never
         Returns: {
@@ -2029,6 +2059,7 @@ export type Database = {
           status: Database["public"]["Enums"]["contract_status"]
         }[]
       }
+      get_trust_summary: { Args: never; Returns: Json }
       goal_overview: { Args: never; Returns: Json }
       goal_scheduled_count: {
         Args: { _frequency: string; _from: string; _to: string }
@@ -2116,6 +2147,10 @@ export type Database = {
           rank: number
           total: number
         }[]
+      }
+      partner_proof_action: {
+        Args: { _action: string; _note?: string; _proof_id: string }
+        Returns: string
       }
       rank_scan: {
         Args: never
@@ -2275,14 +2310,19 @@ export type Database = {
           _verifier: string
         }
         Returns: {
+          asked_once: boolean
           confidence: number | null
           contract_id: string
           created_at: string
           id: string
+          partner_review_status: string | null
           private_storage_path: string | null
           proof_type: string
           reason_code: string | null
           retry_count: number
+          review_note: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
           session_id: string | null
           status: Database["public"]["Enums"]["proof_status"]
           text_evidence: string | null
