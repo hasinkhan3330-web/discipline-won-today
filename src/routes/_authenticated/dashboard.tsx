@@ -53,7 +53,7 @@ import { safeName } from "@/lib/display-name";
 import { WakeVerify } from "@/components/WakeVerify";
 import { WakeProtocol } from "@/components/WakeProtocol";
 import {
-  loadPlan, savePlan, todayKey, shouldFire, markFired, scheduleNativeAlarm, cancelNativeAlarm, rearmWakePlan,
+  loadPlan, savePlan, shouldFire, markFired, scheduleNativeAlarm, cancelNativeAlarm, rearmWakePlan,
   nextPlanDate, isStalePlan,
   type WakePlan,
 } from "@/lib/wake-plan";
@@ -646,7 +646,7 @@ function App() {
   const completeHabitFromProfile = async (uuid: string) => {
     const t = tasks.find(x => (x as any)._uuid === uuid);
     if (t && /wake/i.test(t.name)) {
-      const plan = wakePlan && wakePlan.date === todayKey() ? wakePlan : null;
+      const plan = wakePlan && !isStalePlan(wakePlan) ? wakePlan : null;
       setProof(plan ? { mode: "time", wakeTime: plan.tier, wakePts: plan.pts, wakeLine: plan.line } : { mode: "time" });
       return;
     }
@@ -809,7 +809,7 @@ function App() {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
     if (/wake/i.test(t.name)) {
-      const plan = wakePlan && wakePlan.date === todayKey() ? wakePlan : null;
+      const plan = wakePlan && !isStalePlan(wakePlan) ? wakePlan : null;
       setProof(plan ? { mode: "time", wakeTime: plan.tier, wakePts: plan.pts, wakeLine: plan.line } : { mode: "time" });
       return;
     }
@@ -1008,7 +1008,7 @@ function App() {
                 tasks={tasks} tick={tick} onScan={scanTask} onFocusComplete={onFocusComplete} onMusicReward={onMusicReward}
                 onBuyShield={buyShield}
                 reminderTasks={tasks.map(t => ({ uuid: (t as any)._uuid as string, name: t.name, done: t.done }))}
-                wakeSet={!!wakePlan && wakePlan.date === todayKey()}
+                wakeSet={!!wakePlan && !isStalePlan(wakePlan)}
                 hasPaidFocus={ent.isPremium}
                 onUnlockFocus={() => setShowPaywall(true)}
               />
