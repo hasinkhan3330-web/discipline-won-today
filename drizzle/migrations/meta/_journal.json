@@ -8,6 +8,13 @@
       "when": 1791003538549,
       "tag": "0000_accountability_partner_review",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791252411548,
+      "tag": "0001_grant_proof_insert",
+      "breakpoints": true
     }
   ]
 }
