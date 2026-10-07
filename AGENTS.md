@@ -12,3 +12,5 @@
 - Wake Protocol completion uses the existing math/science alarm challenge with no camera or selfie verification, preserving user privacy and the established alarm experience.
 - Rank coin badges use the signed-in, leaderboard-scoped `rank_verification_badges` lookup and profile coin balance, not leaderboard DP or client-calculated rewards, so badge thresholds match the displayed coin count without changing ranking.
 - Accountability commitments, aggregate partner stats, fixed nudges, emergency alerts, and verified check-ins use the existing authenticated `send_accountability_nudge` RPC, keeping one server-authoritative partner boundary without exposing raw partner rows.
+
+- Partner proof review lives on proof_submissions review columns and the single partner_proof_action RPC; trust is read-only via get_trust_summary. Why: one server-authoritative review path, no parallel tables, rewards untouched.
