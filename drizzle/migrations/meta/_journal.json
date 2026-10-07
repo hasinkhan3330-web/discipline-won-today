@@ -15,6 +15,13 @@
       "when": 1791252411548,
       "tag": "0001_grant_proof_insert",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791343506664,
+      "tag": "0002_contract_events_review_kinds",
+      "breakpoints": true
     }
   ]
 }
