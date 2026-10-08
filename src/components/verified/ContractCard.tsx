@@ -52,6 +52,7 @@ export function ContractCard({ onStart, onResume }: {
 
   const load = useCallback(async (): Promise<ContractRow | null> => {
     const today = localToday(tz);
+    await (supabase.rpc as any)("check_my_comebacks").then(() => {}, () => {});
     const { data, error } = await supabase.from("daily_contracts")
       .select("*").eq("is_recovery", false).gte("local_day", today).neq("status", "cancelled")
       .order("scheduled_at", { ascending: true }).limit(1);

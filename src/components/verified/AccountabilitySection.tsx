@@ -78,6 +78,7 @@ export type AcctState = "NO_PACT" | "BEFORE_SESSION" | "STARTING" | "SESSION_LIV
 /** Pure derivation from server rows only. */
 export function deriveState(c: ContractRow | null, live: boolean, proof: Proof | null, partnerPending: number, pending: "STARTING" | "ENDING" | null): AcctState {
   if (pending) return pending;
+  if (c?.is_recovery && c.status === "rewarded") return "RECOVERED";
   if (live) return "SESSION_LIVE";
   if (c?.status === "proof_pending" && !proof) return "PROOF_REQUIRED";
   if (proof) {
@@ -149,6 +150,7 @@ export function AccountabilitySection() {
       const uid = u.user?.id;
       if (!uid) return;
       const day = todayLocal();
+      await (supabase.rpc as any)("check_my_comebacks").then(() => {}, () => {});
       const [m, cRes, pRes, tRes, rRes, prof, recov] = await Promise.all([
         loadMyAccountability(),
         supabase.from("daily_contracts").select("*").eq("user_id", uid).eq("local_day", day).neq("status", "cancelled").order("created_at", { ascending: false }).limit(5),
@@ -185,6 +187,11 @@ export function AccountabilitySection() {
     window.addEventListener(NUDGE_EVENT, on); window.addEventListener("axen:contract-changed", on);
     return () => { mounted.current = false; window.removeEventListener(NUDGE_EVENT, on); window.removeEventListener("axen:contract-changed", on); localStorage.setItem(NUDGE_SEEN_KEY, String(Date.now())); };
   }, [load]);
+  const dueRef = useRef<string | null>(null);
+  useEffect(() => { // comeback timer reached its server end time: let the server finalize it
+    const end = contract?.comeback_ends_at ? new Date(contract.comeback_ends_at).getTime() : 0;
+    if (contract?.is_recovery && session && end && now >= end && dueRef.current !== contract.id) { dueRef.current = contract.id; void changed(); }
+  }, [now, contract, session]);
   useEffect(() => { if (!session) return; const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, [session]);
 
   const run = async (fn: () => Promise<void>) => {
@@ -284,7 +291,7 @@ export function AccountabilitySection() {
       primary = <button className="acct-btn ghost" onClick={() => void ownerAction("resolve")} disabled={busy}>Mark as self-reported</button>; break;
     case "VERIFIED": statusLine = <><div className="acct-status">{PROOF_LABEL.confirmed.label}</div><div className="acct-sub">Confirmed {myProof?.reviewed_at ? fmtWhen(myProof.reviewed_at) : ""}. Nice work today.</div></>; break;
     case "SELF_REPORTED": statusLine = <><div className="acct-status">{PROOF_LABEL.self_reported.label}</div><div className="acct-sub">{PROOF_LABEL.self_reported.help}</div></>; break;
-    case "RECOVERED": statusLine = <><div className="acct-status">{PROOF_LABEL.recovered.label}</div><div className="acct-sub">{PROOF_LABEL.recovered.help}</div></>; break;
+    case "RECOVERED": statusLine = <><div className="acct-status">{PROOF_LABEL.recovered.label}</div><div className="acct-sub">{PROOF_LABEL.recovered.help}{contract?.status === "rewarded" && contract.is_recovery ? ` +${contract.xp_awarded} XP · +${contract.coins_awarded} coins` : ""}</div></>; break;
     case "RECOVERY_AVAILABLE":
       statusLine = <div className="acct-sub">{hasRecovery ? "You already used the comeback for this pact. Tomorrow is a fresh start." : "Missed the window? Make a comeback with a short focused session."}</div>;
       if (!hasRecovery) primary = <button className="acct-btn" onClick={() => void comeback()} disabled={busy}>Start comeback</button>; break;
