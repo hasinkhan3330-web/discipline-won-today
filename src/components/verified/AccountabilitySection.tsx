@@ -422,7 +422,7 @@ export function AccountabilitySection() {
           )}
           {open === k && k === "recovery" && (
             <div className="acct-panel"><div className="acct-sub">
-              {contract?.status === "missed" && !hasRecovery ? "Missed the window? Start again with a short focused session — use the button above." : "Comebacks appear here when a pact is missed. They're labelled Recovered, never perfect, and there's no penalty."}
+              {contract?.status === "missed" && !hasRecovery ? "Missed the window? Start again with a 15 minutes focused session — use the button above." : "Comebacks are 15 minutes and appear here when a pact is missed. They're labelled Recovered, never perfect, and there's no penalty."}
             </div></div>
           )}
         </div>
