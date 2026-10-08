@@ -236,7 +236,7 @@ export function ContractCard({ onStart, onResume }: {
       body = <>{title}<div style={{ fontSize: 12, color: AX.success, marginTop: 4 }}>{READ_ONLY.verified}</div>{details}
         <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => void claim()} disabled={busy}>{busy ? "CLAIMING…" : "CLAIM REWARD"}</button></>;
     } else if (row.status === "missed" && !row.is_recovery && !hasRecovery) {
-      const mins = Math.min(Math.round(row.planned_seconds / 60), Math.max(5, Math.round(row.planned_seconds * 0.2 / 60)));
+      const mins = 15;
       body = <>{title}<div style={{ fontSize: 12, color: AX.flame, marginTop: 4 }}>You still have today. Start your rescue version.</div>{details}
         <label style={{ ...subText, display: "block", marginTop: 12 }}>What got in the way? (optional)
           <select aria-label="Recovery reason" value={reason} onChange={e => setReason(e.target.value)}
