@@ -641,6 +641,8 @@ export type Database = {
           accountability_enabled: boolean
           category: string
           coins_awarded: number
+          comeback_ends_at: string | null
+          comeback_started_at: string | null
           completed_at: string | null
           created_at: string
           difficulty: number
@@ -671,6 +673,8 @@ export type Database = {
           accountability_enabled?: boolean
           category: string
           coins_awarded?: number
+          comeback_ends_at?: string | null
+          comeback_started_at?: string | null
           completed_at?: string | null
           created_at?: string
           difficulty?: number
@@ -701,6 +705,8 @@ export type Database = {
           accountability_enabled?: boolean
           category?: string
           coins_awarded?: number
+          comeback_ends_at?: string | null
+          comeback_started_at?: string | null
           completed_at?: string | null
           created_at?: string
           difficulty?: number
@@ -1849,6 +1855,10 @@ export type Database = {
         }[]
       }
       axen_daily_coin_room: { Args: { _uid: string }; Returns: number }
+      axen_finalize_comeback: {
+        Args: { _contract_id: string }
+        Returns: boolean
+      }
       axen_is_priority_habit: { Args: { _name: string }; Returns: boolean }
       axen_is_server_write: { Args: never; Returns: boolean }
       axen_real_best_streak: { Args: { _uid: string }; Returns: number }
@@ -1860,6 +1870,7 @@ export type Database = {
           shields: number
         }[]
       }
+      check_my_comebacks: { Args: never; Returns: number }
       claim_streak_milestones: {
         Args: never
         Returns: {
@@ -2260,6 +2271,8 @@ export type Database = {
           accountability_enabled: boolean
           category: string
           coins_awarded: number
+          comeback_ends_at: string | null
+          comeback_started_at: string | null
           completed_at: string | null
           created_at: string
           difficulty: number
@@ -2293,6 +2306,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      sweep_due_comebacks: { Args: never; Returns: number }
       use_streak_shield: {
         Args: never
         Returns: {
