@@ -1,8 +1,8 @@
 # AXEN VERIFIED DISCIPLINE SYSTEM — Task Roadmap
 
 ## Stats and Rank metallic badge adjustment
-- [ ] Place metallic seal tiers beneath Stats circles and replace Rank profile ticks with the five server coin tiers; preserve rewards and other screens.
-- [ ] Run tier boundary tests and signed-in Stats/Rank checks, including phone widths and reduced motion; no publication.
+- [x] Place metallic seal tiers beneath Stats circles and replace Rank profile ticks with five existing server coin tiers; no database/reward changes.
+- [x] 20 tests passed; signed-in Stats 360/390/430px placement/no-overflow and reduced-motion passed; four Rank filters and preserved sections passed, no page errors, build OK. Five Rank artworks checked separately; live listed accounts have no qualifying badges, so an earned live Rank badge was not observed. No publication or physical-device test.
 
 ## Surgical Rank section restoration
 - [x] Re-mount existing Daily Motivation, Rank Progress, Current Rank Rewards and Earn XP sections below Verified Rank List with live user data; keep inline members removed.
