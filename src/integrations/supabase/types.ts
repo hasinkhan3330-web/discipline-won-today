@@ -1950,6 +1950,12 @@ export type Database = {
           minutes: number
         }[]
       }
+      consume_milestone_seal_shines: {
+        Args: never
+        Returns: {
+          milestone: number
+        }[]
+      }
       create_accountability_invite: {
         Args: { _token_hash: string }
         Returns: string
@@ -2020,6 +2026,13 @@ export type Database = {
           partner_name: string
           partner_sharing: boolean
           since: string
+        }[]
+      }
+      get_my_milestone_seals: {
+        Args: never
+        Returns: {
+          milestone: number
+          unlocked_at: string
         }[]
       }
       get_or_create_referral_code: { Args: never; Returns: string }
@@ -2311,6 +2324,7 @@ export type Database = {
         }
       }
       sweep_due_comebacks: { Args: never; Returns: number }
+      sync_milestone_seals: { Args: { _user_id: string }; Returns: undefined }
       use_streak_shield: {
         Args: never
         Returns: {
