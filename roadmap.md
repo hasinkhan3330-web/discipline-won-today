@@ -16,7 +16,7 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Phase 8 — Validation complete (report delivered; accepted exceptions: feature flags, physical device tests, Android URL). Awaiting APPROVE PRODUCTION PROMOTION.
 
 ## Constraints
-- [ ] Finish Comeback server timer, reopen/duplicate/scheduler checks, Recovered screenshot and complete temporary-data cleanup.
+- [x] Finish Comeback server timer, reopen/duplicate/scheduler checks, Recovered phone screenshot and complete temporary-data cleanup (37 tables checked; physical-device testing not performed).
 - Additive-only; never touch existing UI/theme/routes/auth/economy.
 - XP ledger = score_events (kinds: contract_verified / contract_recovery); coins via existing pattern.
 - Soft Shield only (no fake app blocking); Android only; no iOS.
