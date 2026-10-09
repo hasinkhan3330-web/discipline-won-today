@@ -234,9 +234,10 @@ export function StatsTab({ weekly, life, coins, streak, seals }: StatsTabProps) 
             {MILESTONE_SEALS.map(m => {
               const reached = seals.some(seal => seal.milestone === m.days);
               return <div key={m.days} className={reached ? "is-reached" : ""}>
-                <div className="stats-milestone-circle"><strong>{m.days}</strong><span>days</span><em>{m.coins.toLocaleString()}+</em></div>
+                <div className="stats-milestone-circle"><strong>{m.days}</strong><span>days</span><em>{m.coins.toLocaleString()}+</em>
                 <div className={`stats-milestone-seal-slot${reached ? "" : " is-locked"}`}>
                   <MilestoneSeal tier={m.tier} shine={reached && shines.includes(m.days)} label={`${m.name} seal: ${reached ? "earned" : "locked"} · ${m.coins.toLocaleString()} coins`} />
+                </div>
                 </div>
                 <span className="stats-milestone-tier-name">{m.name.replace("Dark ", "")}</span>
               </div>;

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { milestoneSealTier, qualifyingMilestoneSeals } from "../src/lib/milestone-seals";
+import { highestMilestoneSeal, milestoneSealTier, qualifyingMilestoneSeals } from "../src/lib/milestone-seals";
 
 for (const [coins, expected] of [
   [349, []], [350, [7]], [1049, [7]], [1050, [7, 21]],
@@ -20,4 +20,16 @@ for (const [milestone, tier] of [[7, "bronze"], [21, "silver"], [100, "gold"], [
 test("Rank without a qualifying server milestone has no badge", () => {
   expect(milestoneSealTier(null)).toBeNull();
   expect(milestoneSealTier(0)).toBeNull();
+});
+
+for (const [coins, tier] of [[0,null],[349,null],[350,"bronze"],[400,"bronze"],[1049,"bronze"],[1050,"silver"],[5000,"gold"],[14500,"amethyst"],[18250,"diamond"]] as const) {
+  test(`${coins} member coins shows only ${tier ?? "no seal"}`, () => {
+    expect(highestMilestoneSeal(coins)?.tier ?? null).toBe(tier);
+  });
+}
+test("server earned diamond remains at zero coins", () => {
+  expect(highestMilestoneSeal(0, "diamond")?.tier).toBe("diamond");
+});
+test("current qualifying gold supersedes an older bronze record", () => {
+  expect(highestMilestoneSeal(5000, "bronze")?.tier).toBe("gold");
 });

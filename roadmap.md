@@ -1,5 +1,10 @@
 # AXEN VERIFIED DISCIPLINE SYSTEM — Task Roadmap
 
+## Bright seal v2 and verified member additions
+- [x] Replace shared seal artwork with requested bright serrated SVG and top-right milestone contact; existing one-time server shine consumption retained.
+- [x] Add authenticated member-scoped permanent tier/coin projection, compact chips and tappable seals; preserve list order and geometry.
+- [x] 31 unit tests passed; live authenticated membership matches all four filters, pinned search_path/anonymous denial confirmed. Before/after 390px rows, avatar positions, fonts and order identical; 360/390/430px chips and Stats checks passed. Controlled-response badge/tooltip and RPC-failure checks passed; no database test data created. Build OK; no publishing or physical-device testing. Live members are below badge thresholds; earned Rank badges were verified with response fixtures only.
+
 ## Stats and Rank metallic badge adjustment
 - [x] Place metallic seal tiers beneath Stats circles and replace Rank profile ticks with five existing server coin tiers; no database/reward changes.
 - [x] 20 tests passed; signed-in Stats 360/390/430px placement/no-overflow and reduced-motion passed; four Rank filters and preserved sections passed, no page errors, build OK. Five Rank artworks checked separately; live listed accounts have no qualifying badges, so an earned live Rank badge was not observed. No publication or physical-device test.

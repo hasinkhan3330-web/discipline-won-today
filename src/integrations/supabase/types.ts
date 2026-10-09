@@ -2088,6 +2088,14 @@ export type Database = {
         }[]
       }
       get_trust_summary: { Args: never; Returns: Json }
+      get_verified_rank_coins: {
+        Args: { _period?: string; _scope?: string }
+        Returns: {
+          coins_earned: number
+          highest_seal_tier: string
+          user_id: string
+        }[]
+      }
       goal_overview: { Args: never; Returns: Json }
       goal_scheduled_count: {
         Args: { _frequency: string; _from: string; _to: string }
