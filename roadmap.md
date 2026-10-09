@@ -1,5 +1,10 @@
 # AXEN VERIFIED DISCIPLINE SYSTEM — Task Roadmap
 
+## Milestone-only metallic seals
+- [x] Server coin-threshold unlocks, protected persistent records and idempotent backfill; ten live boundaries passed, rewards unchanged.
+- [x] Milestone-only SVG seals, one-time shine and reduced-motion support; shared badges untouched.
+- [x] 14 unit tests, live forgery/privacy/concurrency/permanence checks, signed-in Stats screenshots at 360/390/430px, zero page errors; ten temporary accounts deleted with zero checked leftovers. Physical devices not tested; not published.
+
 ## Current surgical privacy fix
 - [x] Remove email/username fallbacks from public name displays and leaderboard/partner output; preserve ranking, badges and auth.
 - [x] Run name/data privacy tests and signed-in Rank filter/dialog checks (4 helper tests, 4 authenticated SQL fixtures, 13 safe network responses, all four filters/dialog/refresh, zero page errors; build OK).
