@@ -150,7 +150,8 @@ export function AccountabilitySection() {
       const uid = u.user?.id;
       if (!uid) return;
       const day = todayLocal();
-      await (supabase.rpc as any)("check_my_comebacks").then(() => {}, () => {});
+      const { error: comebackError } = await supabase.rpc("check_my_comebacks");
+      if (comebackError) throw comebackError;
       const [m, cRes, pRes, tRes, rRes, prof, recov] = await Promise.all([
         loadMyAccountability(),
         supabase.from("daily_contracts").select("*").eq("user_id", uid).eq("local_day", day).neq("status", "cancelled").order("created_at", { ascending: false }).limit(5),
@@ -335,7 +336,7 @@ export function AccountabilitySection() {
           <div className="acct-sub">{fmtTime(contract.scheduled_at)}{name ? ` · with ${name}` : " · private"}</div>
           {state === "BEFORE_SESSION" && <div className="acct-sub">Success means a {minutes}-minute focused session.</div>}
         </> : <div className="acct-pact" style={{ fontSize: 18 }}>Nothing planned yet</div>}
-        {session && state === "SESSION_LIVE" && <Ring session={session} now={now} />}
+         {session && state === "SESSION_LIVE" && <Ring session={contract?.is_recovery && contract.comeback_started_at && contract.comeback_ends_at ? { ...session, startedAt: new Date(contract.comeback_started_at).getTime(), expectedEndAt: new Date(contract.comeback_ends_at).getTime() } : session} now={now} />}
         {statusLine}
         {primary}
       </div>
