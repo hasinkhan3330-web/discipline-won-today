@@ -2968,26 +2968,37 @@ select {
   .acct-btn { box-shadow: none; }
 }
 
-/* Shared metallic artwork; Stats entitlement and Rank lookup remain separate. */
-.milestone-seal { --seal-white: oklch(1 0 0); --seal-black: oklch(0 0 0); --seal-check-end: oklch(0.8931616 0.0379022 88.472376); display: inline-block; width: 24px; height: 24px; flex: 0 0 auto; filter: drop-shadow(0 0 4px var(--seal-glow)); }
-.milestone-seal--bronze { --seal-highlight: oklch(0.7883334 0.1009686 63.538889); --seal-tier: oklch(0.5132945 0.0906002 61.593438); --seal-shadow: oklch(0.2798231 0.0557820 52.060857); --seal-rim: oklch(0.8248495 0.0886700 61.638497); --seal-glow: oklch(0.6661058 0.1315333 61.293840 / .55); }
-.milestone-seal--silver { --seal-highlight: oklch(0.9264825 0.0121017 259.822988); --seal-tier: oklch(0.6102920 0.0223949 257.498940); --seal-shadow: oklch(0.3282783 0.0190363 264.268182); --seal-rim: oklch(0.9572931 0.0074335 260.731536); --seal-glow: oklch(0.8296860 0.0237066 258.364017 / .5); }
-.milestone-seal--gold { --seal-highlight: oklch(0.9106321 0.1098852 92.567781); --seal-tier: oklch(0.6133265 0.1259821 83.558846); --seal-shadow: oklch(0.3436385 0.0705345 83.985050); --seal-rim: oklch(0.9354422 0.0945797 93.295054); --seal-glow: oklch(0.8419440 0.1683783 90.429920 / .55); }
-.milestone-seal--amethyst { --seal-highlight: oklch(0.7990232 0.1147915 296.183153); --seal-tier: oklch(0.5045199 0.2093876 290.470087); --seal-shadow: oklch(0.2785724 0.1419570 282.831637); --seal-rim: oklch(0.8585826 0.0798415 297.559497); --seal-glow: oklch(0.6247118 0.2194078 290.504263 / .6); }
-.milestone-seal--diamond { --seal-highlight: oklch(0.9175871 0.0742783 203.311616); --seal-tier: oklch(0.5508163 0.0917019 209.646090); --seal-shadow: oklch(0.2776365 0.0464406 213.486964); --seal-rim: oklch(0.9528221 0.0502354 204.030343); --seal-glow: oklch(0.7555890 0.1149142 206.582694 / .7); }
+/* Shared bright serrated seal v2; eligibility and rewards are unchanged. */
+.milestone-seal { --seal-white: #fff; display: inline-block; width: 24px; height: 24px; flex: 0 0 auto; filter: drop-shadow(0 0 4px var(--seal-glow)); }
+.milestone-seal--bronze { --seal-highlight: #F2B27A; --seal-tier: #CD7F32; --seal-shadow: #9A5A1E; --seal-check: #1a0f05; --seal-glow: rgba(205,127,50,.5); }
+.milestone-seal--silver { --seal-highlight: #F1F4F9; --seal-tier: #C0C6D0; --seal-shadow: #8E96A4; --seal-check: #10141a; --seal-glow: rgba(192,198,208,.45); }
+.milestone-seal--gold { --seal-highlight: #FFE98A; --seal-tier: #F5C518; --seal-shadow: #C79A00; --seal-check: #2a1f00; --seal-glow: rgba(245,197,24,.5); }
+.milestone-seal--amethyst { --seal-highlight: #C9B2FF; --seal-tier: #9B6BFF; --seal-shadow: #6E3FD8; --seal-check: #ffffff; --seal-glow: rgba(155,107,255,.55); }
+.milestone-seal--diamond { --seal-highlight: #C9FBFF; --seal-tier: #5EEAF5; --seal-shadow: #1FB6C6; --seal-check: #04282c; --seal-glow: rgba(94,234,245,.65); }
 .stats-milestones__steps > div { aspect-ratio: auto; display: flex; flex-direction: column; align-items: center; border: 0; border-radius: 0; background: none; box-shadow: none; }
 .stats-milestones__steps > div:not(.is-reached) { opacity: 1; }
 .stats-milestones__steps > .is-reached { background: none; box-shadow: none; }
-.stats-milestone-circle { width: 100%; aspect-ratio: 1; display: grid; place-content: center; border: 1px solid var(--stats-border); border-radius: 50%; color: var(--stats-text); }
+.stats-milestone-circle { position: relative; width: 100%; aspect-ratio: 1; display: grid; place-content: center; border: 1px solid var(--stats-border); border-radius: 50%; color: var(--stats-text); }
 .is-reached > .stats-milestone-circle { border-color: var(--stats-gold); background: color-mix(in oklab, var(--stats-gold) 5%, transparent); }
-.stats-milestone-seal-slot { height: 52px; display: grid; place-items: center; margin-top: 9px; }
+.stats-milestone-seal-slot { position: absolute; right: -4px; top: -7px; width: 28px; height: 28px; display: grid; place-items: center; }
 .stats-milestone-seal-slot.is-locked { opacity: .35; }
-.stats-milestones__steps .milestone-seal { position: static; width: 40px; height: 40px; margin: 0; overflow: visible; }
+.stats-milestones__steps .milestone-seal { position: static; width: 28px; height: 28px; margin: 0; overflow: visible; }
 .stats-milestones__steps .stats-milestone-tier-name { margin-top: 4px; font-size: 8px; color: var(--stats-text); }
 .rank-metallic-badge { width: 21px; height: 21px; vertical-align: middle; }
 .milestone-seal > svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.milestone-seal--diamond { animation: milestone-seal-pulse 2.4s ease-in-out infinite; }
 .milestone-seal__sweep { animation: milestone-seal-shine .8s ease-out both; }
-@keyframes milestone-seal-pulse { 0%, 100% { filter: drop-shadow(0 0 3px var(--seal-glow)); } 50% { filter: drop-shadow(0 0 10px var(--seal-glow)); } }
 @keyframes milestone-seal-shine { from { transform: translateX(-48px); } to { transform: translateX(64px); } }
-@media (prefers-reduced-motion: reduce) { .milestone-seal--diamond { animation: none; } .milestone-seal__sweep { display: none; animation: none; } }
+
+/* Only the two requested additions inside the existing white member sheet. */
+.rank-people { --rank-coins-bg: #fff8df; --rank-coins-border: #dfca84; --rank-coins-text: #705509; --rank-coins-icon: #9a740b; --rank-coins-skeleton: #eee3c1; }
+.dark .rank-people { --rank-coins-bg: #302816; --rank-coins-border: #75622e; --rank-coins-text: #f6dc84; --rank-coins-icon: #ebc85b; --rank-coins-skeleton: #514326; }
+.rank-people__row.has-earned-coins { grid-template-columns: 56px minmax(0,1fr) auto; }
+.rank-people__identity strong > span:first-child { min-width: 0; }
+.rank-earned-coins { height: 28px; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 0 9px; border: 1px solid var(--rank-coins-border); border-radius: 999px; background: var(--rank-coins-bg); color: var(--rank-coins-text); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; flex-shrink: 0; }
+.rank-earned-coins svg { color: var(--rank-coins-icon); flex-shrink: 0; }
+.rank-earned-coins.is-loading { width: 64px; background: var(--rank-coins-skeleton); }
+.rank-people__identity .rank-member-seal { width: 18px; height: 18px; min-width: 18px; flex: 0 0 18px; padding: 0; border: 0; border-radius: 0; background: none; overflow: visible; animation: rank-seal-appear .25s ease-out both; }
+.rank-member-seal .milestone-seal { width: 18px; height: 18px; }
+.rank-member-seal-tooltip { z-index: 350; width: auto; max-width: 240px; font-size: 12px; padding: 8px 10px; }
+@keyframes rank-seal-appear { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .milestone-seal__sweep { display: none; animation: none; } .rank-people__identity .rank-member-seal { animation: none; } }
