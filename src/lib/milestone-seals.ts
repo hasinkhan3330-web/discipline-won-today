@@ -18,3 +18,12 @@ export function milestoneSealTier(milestone?: number | null): MilestoneSealTier 
 export function qualifyingMilestoneSeals(coins: number) {
   return MILESTONE_SEALS.filter(seal => coins >= seal.coins).map(seal => seal.days);
 }
+
+/** A server-confirmed permanent tier can only raise the current coin tier. */
+export function highestMilestoneSeal(coins: number, permanentTier?: string | null) {
+  return [...MILESTONE_SEALS].reverse().find(seal =>
+    coins >= seal.coins || MILESTONE_SEALS.findIndex(s => s.tier === permanentTier) >= MILESTONE_SEALS.indexOf(seal)
+  ) ?? null;
+}
+
+export type VerifiedRankCoins = { user_id: string; coins_earned: number; highest_seal_tier: string | null };
