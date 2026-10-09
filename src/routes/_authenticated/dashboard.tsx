@@ -32,7 +32,6 @@ import axenLogo from "@/assets/axen-logo.png";
 import { useMeditation } from "@/hooks/useMeditation";
 import { AX, cardStyle, titleStyle } from "@/tabs/styles";
 import { HomeTab } from "@/tabs/HomeTab";
-import { RankTab } from "@/tabs/RankTab";
 import { ZenTab } from "@/tabs/ZenTab";
 import { StatsTab } from "@/tabs/StatsTab";
 import { ProfileTab } from "@/tabs/ProfileTab";
@@ -1025,21 +1024,6 @@ function App() {
                     onRemovePhoto={removeAvatar}
                   />
                 )}
-                <ProtectedFeatureGate featureName="Rank & Accountability" onUpgrade={() => setShowPaywall(true)} onContinueBasic={() => setTab("home")}>
-                  <RankTab
-                    coins={coins}
-                    streak={streak}
-                    bestStreak={life?.bestStreak ?? 0}
-                    name={myName}
-                    avatar={myAvatar || fallbackAvatar(myName)}
-                    badgeMilestone={myRankBadge}
-                    todayDone={tasks.filter(task => task.done).length}
-                    todayTotal={tasks.length}
-                    activeTheme={themeKey}
-                    onApplyTheme={setThemeKey}
-                    onNavigate={setTab}
-                  />
-                </ProtectedFeatureGate>
               </>
             ))}
 
