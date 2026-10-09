@@ -17,3 +17,4 @@
 - Comebacks use guarded server timestamps and one row-locked finalizer, called on app open and by a shared cron armed on start and removed after drain; this keeps closed-app completion durable and rewards exactly once.
 - Public identity rendering uses the shared display-name helper and SQL display-name projection, never username/auth fields; this prevents email-prefix disclosure while retaining existing RPC signatures and ranking logic.
 - Milestone-circle seals use server-owned milestone_seal_* unlock_rewards records and an isolated SVG component; keeping entitlement separate from streak_* bonuses and shared name/Rank badges prevents reward and visual regressions.
+- The Rank dashboard mounts RankTab in sections-only mode below Leaderboard; reuse its existing progression, reward and navigation logic without duplicating profile headers or restoring the removed inline member list.

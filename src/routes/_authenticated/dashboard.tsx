@@ -34,6 +34,7 @@ import { AX, cardStyle, titleStyle } from "@/tabs/styles";
 import { HomeTab } from "@/tabs/HomeTab";
 import { ZenTab } from "@/tabs/ZenTab";
 import { StatsTab } from "@/tabs/StatsTab";
+import { RankTab } from "@/tabs/RankTab";
 import { useMilestoneSeals } from "@/hooks/useMilestoneSeals";
 import { ProfileTab } from "@/tabs/ProfileTab";
 
@@ -1028,6 +1029,19 @@ function App() {
                     onRemovePhoto={removeAvatar}
                   />
                 )}
+                <RankTab
+                  sectionsOnly
+                  coins={coins}
+                  streak={streak}
+                  bestStreak={life?.bestStreak ?? streak}
+                  name={myName}
+                  avatar={myAvatar}
+                  todayDone={tasks.filter(t => t.done).length}
+                  todayTotal={tasks.length}
+                  activeTheme={themeKey}
+                  onApplyTheme={setThemeKey}
+                  onNavigate={setTab}
+                />
               </>
             ))}
 

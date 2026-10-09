@@ -2132,6 +2132,7 @@ select {
   font-family: "Rajdhani", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 .rank-screen button { font: inherit; -webkit-tap-highlight-color: transparent; }
+.rank-screen--sections-only { min-height: 0; }
 .rank-screen button:active { transform: scale(.975); }
 .rank-profile-strip { height: 60px; display: grid; grid-template-columns: 45px minmax(0,1fr) auto; align-items: center; gap: 10px; margin-bottom: 9px; }
 .rank-profile-strip > img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid var(--rank-line); }

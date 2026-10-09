@@ -67,7 +67,7 @@ function dailyMotivation() {
 
 export function RankTab({
   coins, streak, bestStreak = 0, name, avatar, todayDone = 0, todayTotal = 0,
-  activeTheme, onApplyTheme, onNavigate, badgeMilestone,
+  activeTheme, onApplyTheme, onNavigate, badgeMilestone, sectionsOnly = false,
 }: {
   coins: number;
   streak: number;
@@ -75,6 +75,7 @@ export function RankTab({
   name: string;
   avatar: string;
   badgeMilestone?: number | null;
+  sectionsOnly?: boolean;
   todayDone?: number;
   todayTotal?: number;
   activeTheme: ThemeKey;
@@ -96,7 +97,8 @@ export function RankTab({
   ];
 
   return (
-    <section className={`rank-screen rank-theme-${cur.tone} animate-fade-in`}>
+    <section className={`rank-screen rank-theme-${cur.tone} animate-fade-in${sectionsOnly ? " rank-screen--sections-only" : ""}`}>
+      {!sectionsOnly && <>
       <header className="rank-profile-strip">
         <RankCoinAvatar name={name} src={avatar} milestone={badgeMilestone} />
         <div><h1>{name}</h1><p>Discipline Seeker</p></div>
@@ -111,6 +113,7 @@ export function RankTab({
       </button>
 
       <div className="rank-metrics">{metricCards.map(card => <button key={card.title} className="rank-metric" onClick={() => setPanel({ type: "metric", title: card.title, value: card.value, copy: card.copy, progress: card.progress })}><span><card.Icon size={22} /></span><div><small>{card.title}</small><strong>{card.value}</strong><em>{card.note} <ChevronRight size={12} /></em></div></button>)}</div>
+      </>}
 
       <button className="rank-motivation" onClick={() => setPanel({ type: "motivation" })}><div className="rank-motivation-mark"><Mountain /><i /></div><blockquote>“{quote}”<span>— {quoteLine}</span></blockquote><b><Play size={12} fill="currentColor" /> Daily Motivation <ChevronRight size={14} /></b></button>
 

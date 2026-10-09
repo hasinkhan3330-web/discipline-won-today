@@ -1,5 +1,9 @@
 # AXEN VERIFIED DISCIPLINE SYSTEM — Task Roadmap
 
+## Surgical Rank section restoration
+- [x] Re-mount existing Daily Motivation, Rank Progress, Current Rank Rewards and Earn XP sections below Verified Rank List with live user data; keep inline members removed.
+- [x] Signed-in 360/390/430px screenshots show restored sections and no inline members/overflow; all four filters, refresh, list opening, horizontal rows, motivation, ranks, reward details and Home navigation passed; zero page errors, build OK. No publication; physical devices untested.
+
 ## Milestone-only metallic seals
 - [x] Server coin-threshold unlocks, protected persistent records and idempotent backfill; ten live boundaries passed, rewards unchanged.
 - [x] Milestone-only SVG seals, one-time shine and reduced-motion support; shared badges untouched.
