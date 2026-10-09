@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronRight, Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trophy, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { safeName } from "@/lib/display-name";
+import { publicDisplayName } from "@/lib/display-name";
 import { RankCoinAvatar, RankCoinBadge } from "@/components/RankCoinBadge";
 
 type Scope = "india" | "global";
@@ -11,7 +11,6 @@ type Period = "weekly" | "alltime";
 type Row = {
   rank: number;
   user_id: string;
-  username: string;
   display_name?: string | null;
   coins?: number;
   avatar_url: string | null;
@@ -69,16 +68,16 @@ export function Leaderboard({ myId, onMyBadge }: {
     if (!silent) setState("loading");
     const request = ++requestRef.current;
     const [top, badgeResult] = await Promise.all([
-      supabase.rpc("leaderboard_top" as never, { _scope: scope, _period: period, _limit: 100, _offset: 0 } as never),
+      supabase.rpc("leaderboard_top" as never, { _scope: scope, _period: period, _limit: 100, _offset: 0 } as never).select("user_id,avatar_url,points"),
       supabase.rpc("rank_verification_badges" as never, { _scope: scope, _period: period } as never),
     ]);
     if (request !== requestRef.current) return;
     if (top.error) { setState("error"); return; }
-    const list = ((top.data ?? []) as unknown as Row[]).map(r => ({ ...r, username: safeName(r.username) }));
-    const { data: profileNames } = list.length ? await supabase.from("public_profiles").select("id,display_name,coins").in("id", list.map(r => r.user_id)) : { data: [] };
+    const list = (top.data ?? []) as unknown as Row[];
+    const { data: profileNames } = list.length ? await supabase.from("public_profiles").select("id,display_name,avatar_url,coins").in("id", list.map(r => r.user_id)) : { data: [] };
     if (request !== requestRef.current) return;
     const publicNames = new Map((profileNames ?? []).map(p => [p.id, p]));
-    const namedList = list.map(r => ({ ...r, display_name: safeName(publicNames.get(r.user_id)?.display_name || r.username), coins: publicNames.get(r.user_id)?.coins ?? undefined }));
+    const namedList = list.map(r => ({ ...r, display_name: publicDisplayName(publicNames.get(r.user_id)?.display_name, r.user_id), coins: publicNames.get(r.user_id)?.coins ?? undefined }));
     setRows(namedList);
     const earned = badgeResult.error ? [] : (badgeResult.data ?? []) as { user_id: string; milestone: number | null }[];
     const nextBadges = Object.fromEntries(earned.filter(row => row.milestone != null).map(row => [row.user_id, row.milestone as number]));
@@ -178,8 +177,8 @@ export function Leaderboard({ myId, onMyBadge }: {
             </header>
             <div className="rank-people__list">
               {rows.map(r => <div className="rank-people__row" key={r.user_id}>
-                <RankCoinAvatar name={r.username} src={r.avatar_url || fallbackAvatar(r.username)} />
-                <div className="rank-people__identity"><strong><span>{r.username}</span><RankCoinBadge milestone={badges[r.user_id]} /></strong><small>{safeName(r.display_name || r.username)}</small></div>
+                <RankCoinAvatar name={r.display_name ?? "Axen Member"} src={r.avatar_url || fallbackAvatar(r.display_name ?? "Axen Member")} />
+                <div className="rank-people__identity"><strong><span>{r.display_name}</span><RankCoinBadge milestone={badges[r.user_id]} /></strong><small>{r.display_name}</small></div>
               </div>)}
             </div>
           </section>

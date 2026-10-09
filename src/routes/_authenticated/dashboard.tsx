@@ -48,7 +48,7 @@ import toneSuperLoud from "@/assets/ringtones/the_cutie_pie-super-loud-ahh-alarm
 import toneScariest from "@/assets/ringtones/The_Scariest_Alarm_256k.mp3.asset.json";
 import toneRetro from "@/assets/ringtones/retro_emergency.wav.asset.json";
 import toneLoudEmergency from "@/assets/ringtones/loud_emergency.mp3.asset.json";
-import { safeName } from "@/lib/display-name";
+import { publicDisplayName, safeName } from "@/lib/display-name";
 import { WakeVerify } from "@/components/WakeVerify";
 import { WakeProtocol } from "@/components/WakeProtocol";
 import {
@@ -205,14 +205,14 @@ function App() {
 
       supabase.from("tasks").select("id, icon, name, pts, sort_order, frequency, duration_days, started_on, require_scan, scan_classes").eq("user_id", uid).eq("is_active", true).order("sort_order"),
       supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
-      supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20),
+      supabase.from("public_profiles").select("id, display_name, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20),
       supabase.from("task_completions").select("completed_on").eq("user_id", uid).gte("completed_on", sevenAgo),
     ]);
 
     if (prof) {
       setCoins(prof.coins ?? 0);
       setStreak(prof.streak ?? 0);
-      setMyName(safeName(prof.display_name, "YOU"));
+      setMyName(publicDisplayName(prof.display_name, uid));
       setMyAvatar(prof.avatar_url || "");
       setShields((prof as any).shields ?? 0);
       setOnboarded(!!(prof as any).onboarded);
@@ -255,10 +255,10 @@ function App() {
     }) as unknown as Task));
 
     setBoard((leaders || []).map(l => ({
-      n: safeName(l.display_name || l.username, "USER").toUpperCase().replace(/\s+/g, "_"),
+      n: publicDisplayName(l.display_name, l.id),
       c: l.coins ?? 0,
       s: l.streak ?? 0,
-      img: l.avatar_url || fallbackAvatar(safeName(l.display_name || l.username, "U")),
+      img: l.avatar_url || fallbackAvatar(publicDisplayName(l.display_name, l.id)),
       you: l.id === uid,
     })));
 
@@ -608,12 +608,12 @@ function App() {
       return next;
     });
 
-    supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
+    supabase.from("public_profiles").select("id, display_name, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
       if (!leaders) return;
       setBoard(leaders.map(l => ({
-        n: safeName(l.display_name || l.username, "USER").toUpperCase().replace(/\s+/g, "_"),
+        n: publicDisplayName(l.display_name, l.id),
         c: l.coins ?? 0, s: l.streak ?? 0,
-        img: l.avatar_url || fallbackAvatar(safeName(l.display_name || l.username, "U")),
+        img: l.avatar_url || fallbackAvatar(publicDisplayName(l.display_name, l.id)),
         you: l.id === myId,
       })));
     });
@@ -722,12 +722,12 @@ function App() {
     setLife(prev => prev ? { ...prev, lifetimeCoins: prev.lifetimeCoins + awarded, focusMinutes: prev.focusMinutes + Number(row?.minutes ?? 0) } : prev);
 
     toast.success(`+${awarded} coins · focus session logged`);
-    supabase.from("public_profiles").select("id, display_name, username, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
+    supabase.from("public_profiles").select("id, display_name, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20).then(({ data: leaders }) => {
       if (!leaders) return;
       setBoard(leaders.map(l => ({
-        n: safeName(l.display_name || l.username, "USER").toUpperCase().replace(/\s+/g, "_"),
+        n: publicDisplayName(l.display_name, l.id),
         c: l.coins ?? 0, s: l.streak ?? 0,
-        img: l.avatar_url || fallbackAvatar(safeName(l.display_name || l.username, "U")),
+        img: l.avatar_url || fallbackAvatar(publicDisplayName(l.display_name, l.id)),
         you: l.id === myId,
       })));
     });
