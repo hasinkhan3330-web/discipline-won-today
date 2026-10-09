@@ -2968,14 +2968,23 @@ select {
   .acct-btn { box-shadow: none; }
 }
 
-/* Milestone-circle seals only; shared name and Rank badges remain unchanged. */
+/* Shared metallic artwork; Stats entitlement and Rank lookup remain separate. */
 .milestone-seal { --seal-white: oklch(1 0 0); --seal-black: oklch(0 0 0); --seal-check-end: oklch(0.8931616 0.0379022 88.472376); display: inline-block; width: 24px; height: 24px; flex: 0 0 auto; filter: drop-shadow(0 0 4px var(--seal-glow)); }
 .milestone-seal--bronze { --seal-highlight: oklch(0.7883334 0.1009686 63.538889); --seal-tier: oklch(0.5132945 0.0906002 61.593438); --seal-shadow: oklch(0.2798231 0.0557820 52.060857); --seal-rim: oklch(0.8248495 0.0886700 61.638497); --seal-glow: oklch(0.6661058 0.1315333 61.293840 / .55); }
 .milestone-seal--silver { --seal-highlight: oklch(0.9264825 0.0121017 259.822988); --seal-tier: oklch(0.6102920 0.0223949 257.498940); --seal-shadow: oklch(0.3282783 0.0190363 264.268182); --seal-rim: oklch(0.9572931 0.0074335 260.731536); --seal-glow: oklch(0.8296860 0.0237066 258.364017 / .5); }
 .milestone-seal--gold { --seal-highlight: oklch(0.9106321 0.1098852 92.567781); --seal-tier: oklch(0.6133265 0.1259821 83.558846); --seal-shadow: oklch(0.3436385 0.0705345 83.985050); --seal-rim: oklch(0.9354422 0.0945797 93.295054); --seal-glow: oklch(0.8419440 0.1683783 90.429920 / .55); }
 .milestone-seal--amethyst { --seal-highlight: oklch(0.7990232 0.1147915 296.183153); --seal-tier: oklch(0.5045199 0.2093876 290.470087); --seal-shadow: oklch(0.2785724 0.1419570 282.831637); --seal-rim: oklch(0.8585826 0.0798415 297.559497); --seal-glow: oklch(0.6247118 0.2194078 290.504263 / .6); }
 .milestone-seal--diamond { --seal-highlight: oklch(0.9175871 0.0742783 203.311616); --seal-tier: oklch(0.5508163 0.0917019 209.646090); --seal-shadow: oklch(0.2776365 0.0464406 213.486964); --seal-rim: oklch(0.9528221 0.0502354 204.030343); --seal-glow: oklch(0.7555890 0.1149142 206.582694 / .7); }
-.stats-milestones__steps .milestone-seal { position: absolute; top: -3px; right: -3px; margin: 0; overflow: visible; }
+.stats-milestones__steps > div { aspect-ratio: auto; display: flex; flex-direction: column; align-items: center; border: 0; border-radius: 0; background: none; box-shadow: none; }
+.stats-milestones__steps > div:not(.is-reached) { opacity: 1; }
+.stats-milestones__steps > .is-reached { background: none; box-shadow: none; }
+.stats-milestone-circle { width: 100%; aspect-ratio: 1; display: grid; place-content: center; border: 1px solid var(--stats-border); border-radius: 50%; color: var(--stats-text); }
+.is-reached > .stats-milestone-circle { border-color: var(--stats-gold); background: color-mix(in oklab, var(--stats-gold) 5%, transparent); }
+.stats-milestone-seal-slot { height: 52px; display: grid; place-items: center; margin-top: 9px; }
+.stats-milestone-seal-slot.is-locked { opacity: .35; }
+.stats-milestones__steps .milestone-seal { position: static; width: 40px; height: 40px; margin: 0; overflow: visible; }
+.stats-milestones__steps .stats-milestone-tier-name { margin-top: 4px; font-size: 8px; color: var(--stats-text); }
+.rank-metallic-badge { width: 21px; height: 21px; vertical-align: middle; }
 .milestone-seal > svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .milestone-seal--diamond { animation: milestone-seal-pulse 2.4s ease-in-out infinite; }
 .milestone-seal__sweep { animation: milestone-seal-shine .8s ease-out both; }

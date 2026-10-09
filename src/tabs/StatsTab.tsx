@@ -231,7 +231,16 @@ export function StatsTab({ weekly, life, coins, streak, seals }: StatsTabProps) 
         <div className="stats-milestones">
           <div className="stats-milestones__title"><Medal size={20} /><div><strong>Streak Milestones</strong><span>Small steps. Big changes.</span></div></div>
           <div className="stats-milestones__steps is-five">
-            {MILESTONE_SEALS.map(m => { const reached = seals.some(seal => seal.milestone === m.days); return <div key={m.days} className={reached ? "is-reached" : ""}>{reached && <MilestoneSeal tier={m.tier} shine={shines.includes(m.days)} label={`${m.days}-day milestone: ${m.name} seal earned at ${m.coins.toLocaleString()} coins`} />}<strong>{m.days}</strong><span>{m.days} days</span><em>{m.coins.toLocaleString()}+</em></div>; })}
+            {MILESTONE_SEALS.map(m => {
+              const reached = seals.some(seal => seal.milestone === m.days);
+              return <div key={m.days} className={reached ? "is-reached" : ""}>
+                <div className="stats-milestone-circle"><strong>{m.days}</strong><span>days</span><em>{m.coins.toLocaleString()}+</em></div>
+                <div className={`stats-milestone-seal-slot${reached ? "" : " is-locked"}`}>
+                  <MilestoneSeal tier={m.tier} shine={reached && shines.includes(m.days)} label={`${m.name} seal: ${reached ? "earned" : "locked"} · ${m.coins.toLocaleString()} coins`} />
+                </div>
+                <span className="stats-milestone-tier-name">{m.name.replace("Dark ", "")}</span>
+              </div>;
+            })}
           </div>
         </div>
       </article>
