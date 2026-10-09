@@ -34,6 +34,7 @@ import { AX, cardStyle, titleStyle } from "@/tabs/styles";
 import { HomeTab } from "@/tabs/HomeTab";
 import { ZenTab } from "@/tabs/ZenTab";
 import { StatsTab } from "@/tabs/StatsTab";
+import { useMilestoneSeals } from "@/hooks/useMilestoneSeals";
 import { ProfileTab } from "@/tabs/ProfileTab";
 
 import { startAlarm as startAlarmAudio, stopAlarm as stopAlarmAudio, previewTone, isAlarmPlaying } from "@/lib/alarm-audio";
@@ -653,6 +654,7 @@ function App() {
   };
 
   // One-time streak milestone bonuses (server decides; idempotent).
+  const milestoneSeals = useMilestoneSeals(myId, coins);
   const milestoneRef = useRef(0);
   useEffect(() => {
     const best = Math.max(streak, life?.bestStreak ?? 0);
@@ -1045,6 +1047,7 @@ function App() {
                 life={life ? { ...life, medMinutes: med.medLifetime } : undefined}
                 coins={coins}
                 streak={streak}
+                seals={milestoneSeals}
               />
             )}
             {tab === "profile" && (

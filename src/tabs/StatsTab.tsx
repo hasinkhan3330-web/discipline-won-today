@@ -1,5 +1,7 @@
-import { STREAK_MILESTONES } from "@/lib/economy";
-import { StreakBadge } from "@/components/StreakBadge";
+import { useEffect, useState } from "react";
+import { MILESTONE_SEALS, type MilestoneSealRecord } from "@/lib/milestone-seals";
+import { MilestoneSeal } from "@/components/MilestoneSeal";
+import { supabase } from "@/integrations/supabase/client";
 import {
   BarChart3,
   CalendarDays,
@@ -31,6 +33,7 @@ type StatsTabProps = {
   life?: LifeStats;
   coins: number;
   streak: number;
+  seals: MilestoneSealRecord[];
 };
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -156,7 +159,17 @@ function ProgressRow({ icon, label, detail, value, delta }: { icon: React.ReactN
   );
 }
 
-export function StatsTab({ weekly, life, coins, streak }: StatsTabProps) {
+export function StatsTab({ weekly, life, coins, streak, seals }: StatsTabProps) {
+  const [shines, setShines] = useState<number[]>([]);
+  const sealKey = seals.map(seal => seal.milestone).join(",");
+  useEffect(() => {
+    if (!sealKey) return;
+    let cancelled = false;
+    void supabase.rpc("consume_milestone_seal_shines").then(({ data, error }) => {
+      if (!cancelled && !error && data?.length) setShines(data.map(row => row.milestone));
+    });
+    return () => { cancelled = true; };
+  }, [sealKey]);
   const values = Array.from({ length: 7 }, (_, index) => clamp(weekly[index] ?? 0));
   const activeDays = values.filter(value => value > 0).length;
   const completedDays = values.filter(value => value >= 100).length;
@@ -167,7 +180,6 @@ export function StatsTab({ weekly, life, coins, streak }: StatsTabProps) {
   const meditationPercent = clamp((Math.min(activeDays, 7) / 7) * 100);
   const mindfulPercent = clamp((completedDays / 5) * 100);
   const focusHours = `${Math.floor(focusMinutes / 60)}h ${focusMinutes % 60}m`;
-  const best = Math.max(streak, life?.bestStreak ?? 0);
 
   return (
     <section className="stats-screen">
@@ -219,7 +231,7 @@ export function StatsTab({ weekly, life, coins, streak }: StatsTabProps) {
         <div className="stats-milestones">
           <div className="stats-milestones__title"><Medal size={20} /><div><strong>Streak Milestones</strong><span>Small steps. Big changes.</span></div></div>
           <div className="stats-milestones__steps is-five">
-            {STREAK_MILESTONES.map(m => { const reached = best >= m.days; return <div key={m.days} className={reached ? "is-reached" : ""}>{reached && <StreakBadge tone={m.tone} size={m.tone === "diamond" ? 15 : 16} label={`${m.days}-day badge earned`} />}<strong>{m.days}</strong><span>{m.days} days</span><em>{m.coins.toLocaleString()}+</em></div>; })}
+            {MILESTONE_SEALS.map(m => { const reached = seals.some(seal => seal.milestone === m.days); return <div key={m.days} className={reached ? "is-reached" : ""}>{reached && <MilestoneSeal tier={m.tier} shine={shines.includes(m.days)} label={`${m.days}-day milestone: ${m.name} seal earned at ${m.coins.toLocaleString()} coins`} />}<strong>{m.days}</strong><span>{m.days} days</span><em>{m.coins.toLocaleString()}+</em></div>; })}
           </div>
         </div>
       </article>
