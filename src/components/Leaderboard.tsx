@@ -97,7 +97,7 @@ export function Leaderboard({ myId, onMyBadge }: {
     let cancelled = false;
     setMemberCoins(null);
     setCoinsLoading(true);
-    void supabase.rpc("get_verified_rank_coins", { _scope: scope, _period: period }).then(({ data, error }) => {
+    void Promise.resolve(supabase.rpc("get_verified_rank_coins", { _scope: scope, _period: period })).then(({ data, error }) => {
       if (cancelled) return;
       if (!error && data) setMemberCoins(Object.fromEntries(data.map(row => [row.user_id, row])));
       setCoinsLoading(false);

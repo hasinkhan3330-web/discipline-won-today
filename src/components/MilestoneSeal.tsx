@@ -17,11 +17,8 @@ export function MilestoneSeal({ tier, label, shine = false, className = "" }: { 
         <linearGradient id={`${id}-body`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="var(--seal-highlight)" /><stop offset="50%" stopColor="var(--seal-tier)" /><stop offset="100%" stopColor="var(--seal-shadow)" />
         </linearGradient>
-        <linearGradient id={`${id}-rim`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="var(--seal-rim)" /><stop offset="100%" stopColor="var(--seal-shadow)" /></linearGradient>
         <linearGradient id={`${id}-gloss`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="var(--seal-white)" stopOpacity=".6" /><stop offset="60%" stopColor="var(--seal-white)" stopOpacity="0" /></linearGradient>
-        <linearGradient id={`${id}-check`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="var(--seal-white)" /><stop offset="100%" stopColor="var(--seal-check-end)" /></linearGradient>
         <linearGradient id={`${id}-sweep`}><stop stopColor="var(--seal-white)" stopOpacity="0" /><stop offset="50%" stopColor="var(--seal-white)" stopOpacity=".8" /><stop offset="100%" stopColor="var(--seal-white)" stopOpacity="0" /></linearGradient>
-        <filter id={`${id}-check-shadow`} x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy=".8" stdDeviation=".5" floodColor="var(--seal-black)" floodOpacity=".55" /></filter>
         <clipPath id={`${id}-clip`}><path d={sealPath} /></clipPath>
       </defs>
       <circle cx="24" cy="24" r="26.5" fill="none" stroke="var(--seal-tier)" strokeWidth={tier === "diamond" ? 1.5 : 1} strokeDasharray="4 3" opacity={tier === "diamond" ? 1 : .55} />
