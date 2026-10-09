@@ -50,6 +50,13 @@
       "when": 1791514579008,
       "tag": "0006_allow_due_comeback_completion",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791519347837,
+      "tag": "0007_public_display_name_privacy",
+      "breakpoints": true
     }
   ]
 }
