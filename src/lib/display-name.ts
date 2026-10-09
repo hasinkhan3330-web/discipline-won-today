@@ -8,6 +8,6 @@ export function safeName(raw?: string | null, fallback = "Axen Member"): string 
 }
 
 /** Public identities never fall back to username or auth metadata. */
-export function publicDisplayName(displayName: string | null | undefined, userId: string): string {
-  return safeName(displayName, `Axen Member ${userId.slice(-4)}`);
+export function publicDisplayName(displayName: string | null | undefined, userId: string | null | undefined): string {
+  return safeName(displayName, userId ? `Axen Member ${userId.slice(-4)}` : "Axen Member");
 }
