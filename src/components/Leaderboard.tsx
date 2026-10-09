@@ -22,19 +22,6 @@ type Row = {
   is_me: boolean;
 };
 
-type Position = {
-  rank: number;
-  total: number;
-  percentile: number;
-  points: number;
-  consistency: number;
-  country: string;
-  elite: boolean;
-  next_milestone: number;
-  points_to_next: number;
-  in_top100: boolean;
-};
-
 const COUNTRIES = [
   ["IN", "India"], ["US", "United States"], ["GB", "United Kingdom"], ["CA", "Canada"],
   ["AU", "Australia"], ["AE", "UAE"], ["DE", "Germany"], ["FR", "France"], ["BR", "Brazil"],
@@ -73,37 +60,31 @@ export function Leaderboard({ myId, onMyBadge }: {
   const [scope, setScope] = useState<Scope>("india");
   const [period, setPeriod] = useState<Period>("weekly");
   const [rows, setRows] = useState<Row[]>([]);
-  const [me, setMe] = useState<Position | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
   const [badges, setBadges] = useState<Record<string, number>>({});
   const [selected, setSelected] = useState<Row | null>(null);
-  const prevRank = useRef<number | null>(null);
   const requestRef = useRef(0);
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setState("loading");
     const request = ++requestRef.current;
-    const [top, pos, badgeResult] = await Promise.all([
+    const [top, badgeResult] = await Promise.all([
       supabase.rpc("leaderboard_top" as never, { _scope: scope, _period: period, _limit: 100, _offset: 0 } as never),
-      supabase.rpc("my_leaderboard_position" as never, { _scope: scope, _period: period } as never),
       supabase.rpc("rank_verification_badges" as never, { _scope: scope, _period: period } as never),
     ]);
     if (request !== requestRef.current) return;
-    if (top.error || pos.error) { setState("error"); return; }
+    if (top.error) { setState("error"); return; }
     const list = ((top.data ?? []) as unknown as Row[]).map(r => ({ ...r, username: safeName(r.username) }));
     const { data: profileNames } = list.length ? await supabase.from("public_profiles").select("id,display_name,coins").in("id", list.map(r => r.user_id)) : { data: [] };
     if (request !== requestRef.current) return;
     const publicNames = new Map((profileNames ?? []).map(p => [p.id, p]));
     const namedList = list.map(r => ({ ...r, display_name: safeName(publicNames.get(r.user_id)?.display_name || r.username), coins: publicNames.get(r.user_id)?.coins ?? undefined }));
-    const position = ((pos.data ?? []) as unknown as Position[])[0] ?? null;
     setRows(namedList);
-    setMe(position);
     const earned = badgeResult.error ? [] : (badgeResult.data ?? []) as { user_id: string; milestone: number | null }[];
     const nextBadges = Object.fromEntries(earned.filter(row => row.milestone != null).map(row => [row.user_id, row.milestone as number]));
     setBadges(nextBadges);
     onMyBadge?.(nextBadges[myId] ?? null);
     setState("ready");
-    if (position && position.rank > 0) prevRank.current = position.rank;
   }, [scope, period, myId, onMyBadge]);
 
   useEffect(() => { void load(); }, [load]);
@@ -182,21 +163,10 @@ export function Leaderboard({ myId, onMyBadge }: {
       )}
 
       {state === "ready" && rows.length > 0 && (
-        <>
           <button className="rank-verified-entry" onClick={() => setSelected(rows[0])} aria-label="Open Verified Rank List">
             <span><strong>Verified Rank List</strong><small>{rows.length} members</small></span>
             <ChevronRight size={20} />
           </button>
-          <ul className="rank-simple-list">
-            {rows.map(r => (
-              <li key={r.user_id} className={r.is_me ? "is-me" : ""}>
-                <span className="rank-simple-list__pos">{r.rank}</span>
-                <RankCoinAvatar name={r.username} src={r.avatar_url || fallbackAvatar(r.username)} />
-                <span className="rank-simple-list__who"><strong>{r.username}<RankCoinBadge milestone={badges[r.user_id]} /></strong><small>{r.points.toLocaleString()} DP</small></span>
-              </li>
-            ))}
-          </ul>
-        </>
       )}
       {selected && typeof document !== "undefined" && createPortal(
         <div className="rank-people-backdrop">
