@@ -2999,6 +2999,6 @@ select {
 .rank-earned-coins.is-loading { width: 64px; background: var(--rank-coins-skeleton); }
 .rank-people__identity .rank-member-seal { width: 18px; height: 18px; min-width: 18px; flex: 0 0 18px; padding: 0; border: 0; border-radius: 0; background: none; overflow: visible; animation: rank-seal-appear .25s ease-out both; }
 .rank-member-seal .milestone-seal { width: 18px; height: 18px; }
-.rank-member-seal-tooltip { z-index: 350; width: auto; max-width: 240px; font-size: 12px; padding: 8px 10px; }
+.rank-member-seal-tooltip { z-index: 350; width: auto; max-width: 240px; font-size: 12px; padding: 8px 10px; background: #fff; color: #242424; border-color: #ddd; }
 @keyframes rank-seal-appear { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .milestone-seal__sweep { display: none; animation: none; } .rank-people__identity .rank-member-seal { animation: none; } }
