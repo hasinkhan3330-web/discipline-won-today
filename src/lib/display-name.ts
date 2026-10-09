@@ -1,11 +1,13 @@
 /**
  * Never render a raw email address in the UI.
- * Returns a safe display name: trimmed name, or the local part of an email,
- * or the given fallback when nothing usable exists.
+ * Email addresses are rejected entirely, never shortened to their local part.
  */
-export function safeName(raw?: string | null, fallback = "Warrior"): string {
+export function safeName(raw?: string | null, fallback = "Axen Member"): string {
   const value = (raw ?? "").trim();
-  if (!value) return fallback;
-  const local = value.includes("@") ? value.split("@")[0].trim() : value;
-  return local || fallback;
+  return value && !value.includes("@") ? value : fallback;
+}
+
+/** Public identities never fall back to username or auth metadata. */
+export function publicDisplayName(displayName: string | null | undefined, userId: string | null | undefined): string {
+  return safeName(displayName, userId ? `Axen Member ${userId.slice(-4)}` : "Axen Member");
 }

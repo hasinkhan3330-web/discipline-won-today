@@ -1,5 +1,9 @@
 # AXEN VERIFIED DISCIPLINE SYSTEM — Task Roadmap
 
+## Current surgical privacy fix
+- [x] Remove email/username fallbacks from public name displays and leaderboard/partner output; preserve ranking, badges and auth.
+- [x] Run name/data privacy tests and signed-in Rank filter/dialog checks (4 helper tests, 4 authenticated SQL fixtures, 13 safe network responses, all four filters/dialog/refresh, zero page errors; build OK).
+
 Approved plan: `.lovable/plan/axen-verified-discipline-system-implementation-plan-2026-09-22.md`
 Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHECK.
 

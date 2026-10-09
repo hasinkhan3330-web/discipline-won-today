@@ -1815,20 +1815,20 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           coins?: number | null
-          display_name?: string | null
+          display_name?: never
           id?: string | null
           longest_streak?: number | null
           streak?: number | null
-          username?: string | null
+          username?: never
         }
         Update: {
           avatar_url?: string | null
           coins?: number | null
-          display_name?: string | null
+          display_name?: never
           id?: string | null
           longest_streak?: number | null
           streak?: number | null
-          username?: string | null
+          username?: never
         }
         Relationships: []
       }
@@ -1861,6 +1861,10 @@ export type Database = {
       }
       axen_is_priority_habit: { Args: { _name: string }; Returns: boolean }
       axen_is_server_write: { Args: never; Returns: boolean }
+      axen_public_display_name: {
+        Args: { _display_name: string; _user_id: string }
+        Returns: string
+      }
       axen_real_best_streak: { Args: { _uid: string }; Returns: number }
       axen_user_local_day: { Args: { _uid: string }; Returns: string }
       buy_streak_shield: {
