@@ -86,6 +86,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       { name: "description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, legendary quotes, streaks." },
       { property: "og:title", content: "Dashboard — AXEN Habit & Discipline" },
       { property: "og:description", content: "Ultra-futuristic discipline tracker. Cosmic wallpapers, daily missions, legendary quotes, streaks." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: DashboardShell,

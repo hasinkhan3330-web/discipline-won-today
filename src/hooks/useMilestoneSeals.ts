@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { MilestoneSealRecord } from "@/lib/milestone-seals";
 
-export function useMilestoneSeals(userId: string, coins: number) {
+export function useMilestoneSeals(userId: string | null, coins: number) {
   const [result, setResult] = useState<{ userId: string; seals: MilestoneSealRecord[] }>({ userId: "", seals: [] });
   useEffect(() => {
     if (!userId) return;

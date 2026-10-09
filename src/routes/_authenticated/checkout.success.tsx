@@ -13,6 +13,8 @@ export const Route = createFileRoute("/_authenticated/checkout/success")({
       { name: "description", content: "Your AXEN PRO subscription is now active. The full system is unlocked." },
       { property: "og:title", content: "Welcome to AXEN PRO" },
       { property: "og:description", content: "Your AXEN PRO subscription is now active." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: SuccessPage,
