@@ -8,10 +8,10 @@ const sealPath = Array.from({ length: 64 }, (_, i) => {
   return `${i ? "L" : "M"}${24 + Math.cos(a) * r},${24 + Math.sin(a) * r}`;
 }).join(" ") + " Z";
 
-export function MilestoneSeal({ tier, label, shine = false }: { tier: MilestoneSealTier; label: string; shine?: boolean }) {
+export function MilestoneSeal({ tier, label, shine = false, className = "" }: { tier: MilestoneSealTier; label: string; shine?: boolean; className?: string }) {
   const id = useId().replace(/:/g, "");
   const ref = (name: string) => `url(#${id}-${name})`;
-  return <span className={`milestone-seal milestone-seal--${tier}`} role="img" aria-label={label}>
+  return <span className={`milestone-seal milestone-seal--${tier} ${className}`} role="img" aria-label={label}>
     <svg viewBox="0 0 48 48" aria-hidden="true">
       <defs>
         <linearGradient id={`${id}-body`} x1="0" y1="0" x2="1" y2="1">

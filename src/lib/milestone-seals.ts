@@ -9,6 +9,11 @@ export const MILESTONE_SEALS = [
 export type MilestoneSealTier = typeof MILESTONE_SEALS[number]["tier"];
 export type MilestoneSealRecord = { milestone: number; unlocked_at: string };
 
+/** Rank receives the qualifying milestone from its authenticated server lookup. */
+export function milestoneSealTier(milestone?: number | null): MilestoneSealTier | null {
+  return MILESTONE_SEALS.find(seal => seal.days === milestone)?.tier ?? null;
+}
+
 /** Reference thresholds for tests; UI entitlement always comes from the server. */
 export function qualifyingMilestoneSeals(coins: number) {
   return MILESTONE_SEALS.filter(seal => coins >= seal.coins).map(seal => seal.days);
