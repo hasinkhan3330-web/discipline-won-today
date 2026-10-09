@@ -4,6 +4,8 @@ import { ChevronRight, Globe2, Loader2, RefreshCw, ShieldAlert, Sparkles, Trophy
 import { supabase } from "@/integrations/supabase/client";
 import { publicDisplayName } from "@/lib/display-name";
 import { RankCoinAvatar, RankCoinBadge } from "@/components/RankCoinBadge";
+import { VerifiedCoinChip, VerifiedMemberSeal } from "@/components/VerifiedRankAdditions";
+import type { VerifiedRankCoins } from "@/lib/milestone-seals";
 
 type Scope = "india" | "global";
 type Period = "weekly" | "alltime";
@@ -88,6 +90,20 @@ export function Leaderboard({ myId, onMyBadge }: {
 
   useEffect(() => { void load(); }, [load]);
   const listOpen = selected !== null;
+  const [memberCoins, setMemberCoins] = useState<Record<string, VerifiedRankCoins> | null>(null);
+  const [coinsLoading, setCoinsLoading] = useState(false);
+  useEffect(() => {
+    if (!listOpen) return;
+    let cancelled = false;
+    setMemberCoins(null);
+    setCoinsLoading(true);
+    void supabase.rpc("get_verified_rank_coins", { _scope: scope, _period: period }).then(({ data, error }) => {
+      if (cancelled) return;
+      if (!error && data) setMemberCoins(Object.fromEntries(data.map(row => [row.user_id, row])));
+      setCoinsLoading(false);
+    }).catch(() => { if (!cancelled) setCoinsLoading(false); });
+    return () => { cancelled = true; };
+  }, [listOpen, scope, period]);
   const closeList = useCallback(() => {
     if (typeof window !== "undefined" && (window.history.state as { axenRankList?: boolean } | null)?.axenRankList) window.history.back();
     else setSelected(null);
@@ -176,9 +192,10 @@ export function Leaderboard({ myId, onMyBadge }: {
               <span />
             </header>
             <div className="rank-people__list">
-              {rows.map(r => <div className="rank-people__row" key={r.user_id}>
+              {rows.map(r => <div className={`rank-people__row${coinsLoading || memberCoins ? " has-earned-coins" : ""}`} key={r.user_id}>
                 <RankCoinAvatar name={r.display_name ?? "Axen Member"} src={r.avatar_url || fallbackAvatar(r.display_name ?? "Axen Member")} />
-                <div className="rank-people__identity"><strong><span>{r.display_name}</span><RankCoinBadge milestone={badges[r.user_id]} /></strong><small>{r.display_name}</small></div>
+                <div className="rank-people__identity"><strong><span>{r.display_name}</span>{memberCoins?.[r.user_id] ? <VerifiedMemberSeal data={memberCoins[r.user_id]} /> : <RankCoinBadge milestone={badges[r.user_id]} />}</strong><small>{r.display_name}</small></div>
+                <VerifiedCoinChip data={memberCoins?.[r.user_id]} loading={coinsLoading} />
               </div>)}
             </div>
           </section>
