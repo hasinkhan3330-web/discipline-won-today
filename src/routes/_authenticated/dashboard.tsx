@@ -1018,7 +1018,7 @@ function App() {
               />
             )}
             {tab === "rank" && (!gateReady ? <GateSkeleton /> : (
-              <>
+              <ProtectedFeatureGate featureName="Rank & Accountability" onUpgrade={() => setShowPaywall(true)} onContinueBasic={() => setTab("home")}>
                 {myId && (
                   <Leaderboard
                     myId={myId}
@@ -1042,7 +1042,7 @@ function App() {
                   onApplyTheme={setThemeKey}
                   onNavigate={setTab}
                 />
-              </>
+              </ProtectedFeatureGate>
             ))}
 
             {tab === "zen" && (!gateReady ? <GateSkeleton /> : (

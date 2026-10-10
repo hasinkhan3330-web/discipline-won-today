@@ -1,5 +1,9 @@
 # AXEN VERIFIED DISCIPLINE SYSTEM — Task Roadmap
 
+## Rank Pro gate regression
+- [x] Confirmed expired-access bypass in signed-in preview; restored the shared entitlement gate around Leaderboard and Rank sections only.
+- [x] Signed-in browser regression with controlled server responses passed Basic/expired blocking, upgrade and Basic exit, subscribed/trial progression access; 31 existing unit tests passed, build OK. No account/payment data changed; no publication.
+
 ## Bright seal v2 and verified member additions
 - [x] Replace shared seal artwork with requested bright serrated SVG and top-right milestone contact; existing one-time server shine consumption retained.
 - [x] Add authenticated member-scoped permanent tier/coin projection, compact chips and tappable seals; preserve list order and geometry.

@@ -18,3 +18,4 @@
 - Public identity rendering uses the shared display-name helper and SQL display-name projection, never username/auth fields; this prevents email-prefix disclosure while retaining existing RPC signatures and ranking logic.
 - Stats and Rank reuse MilestoneSeal SVG artwork; the verified member list reads the authenticated scoped get_verified_rank_coins projection for coins and permanent highest seals, while other Rank surfaces retain rank_verification_badges. Why: preserve existing ranking and owner-only seal access without exposing private rows.
 - The Rank dashboard mounts RankTab in sections-only mode below Leaderboard; reuse its existing progression, reward and navigation logic without duplicating profile headers or restoring the removed inline member list.
+- Rank content uses the shared ProtectedFeatureGate around Leaderboard and RankTab; the existing server entitlement verdict preserves subscription/trial access and blocks Basic or expired access.
