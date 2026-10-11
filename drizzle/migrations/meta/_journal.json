@@ -85,6 +85,13 @@
       "when": 1791694627499,
       "tag": "0011_guard_zen_reward_evidence",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791694706023,
+      "tag": "0012_temporary_coin_test_fixture",
+      "breakpoints": true
     }
   ]
 }

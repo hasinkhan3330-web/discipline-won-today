@@ -1885,6 +1885,10 @@ export type Database = {
         Args: { _id: string; _slot?: number; _source: string; _uid: string }
         Returns: number
       }
+      axen_coin_test_fixture: {
+        Args: { _id?: string; _op: string; _uid: string }
+        Returns: string
+      }
       axen_completion_reward_config: { Args: never; Returns: Json }
       axen_daily_coin_room: { Args: { _uid: string }; Returns: number }
       axen_finalize_comeback: {
