@@ -113,6 +113,13 @@
       "when": 1791694909041,
       "tag": "0015_repair_temporary_fixture_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1791695024304,
+      "tag": "0016_strict_full_zen_completion",
+      "breakpoints": true
     }
   ]
 }
