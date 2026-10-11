@@ -5,6 +5,7 @@
 }
 .page {width:100%; max-width:430px; margin:auto; min-height:100dvh; padding-bottom:24px; position:relative; isolation:isolate;}
 :global(.ax-shell):has(.page)>:global(.ax-safe-top){display:none!important;}
+:global(.ax-shell):has(.page)>:global(.ax-safe-top)+div:has(>div>button){display:none;}
 :global(.ax-content-pad):has(.page){padding-top:0!important;padding-left:0!important;padding-right:0!important;}
 .page::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--zen-bg);}
 .scope *{box-sizing:border-box;}
@@ -58,7 +59,7 @@
 .scope .start>svg{width:20px;height:20px;}
 .footer{margin:14px 0 0;text-align:center;font-family:"JetBrains Mono",monospace;font-size:8.5px;line-height:13px;letter-spacing:.1em;color:var(--zen-muted);text-transform:uppercase;}
 .sessionCenter{position:absolute;top:46%;width:100%;text-align:center;color:var(--zen-pearl);}.sessionCenter strong{display:block;font-size:28px;font-weight:300;}.sessionCenter span{font:10px "JetBrains Mono",monospace;letter-spacing:.2em;}.sessionCenter small{display:block;font-size:11px;color:var(--zen-muted);margin-top:8px;}
-.chamberContent{padding:0 16px;}.tabs{display:flex;gap:8px;margin:12px 0;}.scope .tabs button,.scope .control{background:var(--zen-surface);color:var(--zen-muted);border:1px solid var(--zen-border);border-radius:18px;min-height:44px;flex:1;}
+.chamberContent{padding:0 16px;}.tabs{display:flex;gap:8px;margin:12px 0;}.scope .tabs button,.scope .control{font-family:"JetBrains Mono",monospace;background:var(--zen-surface);color:var(--zen-muted);border:1px solid var(--zen-border);border-radius:18px;min-height:44px;flex:1;}
 .scope .tabs button[aria-selected=true],.scope .control[aria-pressed=true]{color:var(--zen-gold);}
 .phases{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}.phases div{text-align:center;font:10px "JetBrains Mono",monospace;color:var(--zen-muted);}.phases strong{display:block;margin-top:6px;font-weight:500;}.phases div[data-active=true]{color:var(--zen-gold);}
 .quote{text-align:center;color:var(--zen-secondary);}.quote h2{font-size:16px;font-weight:400;}.quote p{font-size:11px;color:var(--zen-muted);}.controls{display:flex;gap:8px;align-items:center;}.scope .controls .start{margin:0;letter-spacing:.1em;width:auto;flex:1;}.scope .control{display:flex;flex-direction:column;gap:4px;font:9px "JetBrains Mono",monospace;height:60px;}
