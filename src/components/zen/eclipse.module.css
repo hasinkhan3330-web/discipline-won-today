@@ -76,3 +76,5 @@
 @keyframes zenTw{0%,100%{opacity:.25}50%{opacity:1}}
 @media(prefers-reduced-motion:reduce){.scope *{animation:none!important;transition:none!important;}}
 @media(max-width:379px){.coins{padding:9px 10px;}.brand p{font-size:7px;}.header{gap:4px;}}
+.rewardRow { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:14px; min-width:0; }
+.rewardRow small { color:var(--zen-muted); font-size:11px; line-height:1.4; }

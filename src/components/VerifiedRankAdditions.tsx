@@ -1,4 +1,4 @@
-import { Coins } from "lucide-react";
+import { CoinBadge } from "@/components/CoinBadge";
 import { MilestoneSeal } from "@/components/MilestoneSeal";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -16,5 +16,5 @@ export function VerifiedMemberSeal({ data }: { data: VerifiedRankCoins }) {
 export function VerifiedCoinChip({ data, loading }: { data?: VerifiedRankCoins; loading: boolean }) {
   if (loading) return <span className="rank-earned-coins is-loading" aria-label="Loading coins earned" />;
   if (!data) return null;
-  return <span className="rank-earned-coins" aria-label={`${data.coins_earned.toLocaleString("en-US")} coins earned`}><Coins size={14} aria-hidden="true" /><span>{data.coins_earned.toLocaleString("en-US")}</span></span>;
+  return <CoinBadge amount={data.coins_earned} variant="amount" surface="light" />;
 }

@@ -1,3 +1,4 @@
+import { CoinBadge } from "@/components/CoinBadge";
 import { useEffect, useState } from "react";
 import { MILESTONE_SEALS, type MilestoneSealRecord } from "@/lib/milestone-seals";
 import { MilestoneSeal } from "@/components/MilestoneSeal";
@@ -185,7 +186,7 @@ export function StatsTab({ weekly, life, coins, streak, seals }: StatsTabProps) 
     <section className="stats-screen">
       <header className="stats-header">
         <div><h1>Stats</h1><p>Discipline builds the life you want.</p></div>
-        <div className="stats-coin-pill"><IconTile tone="gold"><Coins size={16} /></IconTile><strong>{coins} coins</strong></div>
+        <CoinBadge amount={coins} variant="balance" />
       </header>
 
       <article className="stats-card stats-performance">

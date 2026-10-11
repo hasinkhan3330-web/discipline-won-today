@@ -115,6 +115,7 @@ function App() {
     navigate({ to: "/", replace: true });
   };
   const [tab, setTab] = useState("home");
+  useEffect(() => { window.dispatchEvent(new CustomEvent("axen:active-tab", { detail: tab })); }, [tab]);
   const [themeKey, setThemeKeyState] = useState<ThemeKey>("hourglass");
   const setThemeKey = (k: ThemeKey) => {
     setThemeKeyState(k);
@@ -675,10 +676,7 @@ function App() {
   }, [streak, life?.bestStreak, myId]);
 
   /** Logs a finished Zen session on the account and credits its coins. */
-  const onZenComplete = async (minutes: number) => {
-    const { data, error } = await (supabase as any).rpc("complete_zen_session", { _minutes: minutes });
-    if (error) { console.error("complete_zen_session", error); return; }
-    const row = Array.isArray(data) ? data[0] : data;
+  const onZenComplete = async (minutes: number, row: { coins: number; awarded: number }) => {
     const awarded = Number(row?.awarded ?? 0);
     if (typeof row?.coins === "number") setCoins(row.coins);
     setLife(prev => prev ? { ...prev, lifetimeCoins: prev.lifetimeCoins + Math.max(0, awarded) } : prev);

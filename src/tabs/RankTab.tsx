@@ -1,3 +1,4 @@
+import { CoinBadge } from "@/components/CoinBadge";
 import { FeatureHelpDot } from "@/components/FeatureHelpDot";
 import { RankCoinAvatar } from "@/components/RankCoinBadge";
 import { XP_RULES } from "@/lib/economy";
@@ -102,7 +103,7 @@ export function RankTab({
       <header className="rank-profile-strip">
         <RankCoinAvatar name={name} src={avatar} milestone={badgeMilestone} />
         <div><h1>{name}</h1><p>Discipline Seeker</p></div>
-        <button className="rank-coin-pill" onClick={() => setPanel({ type: "metric", title: "Total Coins", value: `${coins} coins`, copy: "Your coin balance is your live AXEN XP and unlock progress.", progress: Math.min(100, coins / 20000 * 100) })}><Coins size={18} /><strong>{coins} coins</strong><span>＋</span></button>
+        <button className="rank-coin-pill" onClick={() => setPanel({ type: "metric", title: "Total Coins", value: `${coins} coins`, copy: "Your coin balance is your live AXEN XP and unlock progress.", progress: Math.min(100, coins / 20000 * 100) })}><CoinBadge amount={coins} variant="balance" /><span>＋</span></button>
       </header>
 
       <button className="rank-main-card" onClick={() => setPanel({ type: "ranks" })}>
