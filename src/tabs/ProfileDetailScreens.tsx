@@ -1,3 +1,4 @@
+import { CoinBadge } from "@/components/CoinBadge";
 import { GOAL_PROMISE, GOAL_TARGET_COINS, COIN_RULES, GOAL_PLANS, goalPlanForTarget, type GoalPlanKey } from "@/lib/economy";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,7 +131,7 @@ export function HabitsView({ habits, userId, onBack, onComplete, onChanged }: {
           <article className={`you-habit-card ${habit.done ? "is-done" : ""}`} key={habit.uuid}>
             <span className="you-habit-index">0{index + 1}</span>
             <div className="you-habit-copy"><strong>{habit.name}</strong><span>{habit.durationDays ?? 21}-day track · {habit.frequency ?? "daily"}</span><Progress value={habit.done ? 100 : 0} /></div>
-            <div className="you-habit-reward"><Coins size={14} />+{habit.pts}</div>
+            <CoinBadge amount={habit.pts} />
             <button type="button" className="you-check-button" disabled={habit.done} onClick={() => onComplete(habit.uuid)} aria-label={`Complete ${habit.name}`}>
               {habit.done ? <Check size={17} /> : <Circle size={17} />}
             </button>
@@ -145,7 +146,7 @@ export function HabitsView({ habits, userId, onBack, onComplete, onChanged }: {
           <label>Frequency<select value={frequency} onChange={event => setFrequency(event.target.value)}><option value="daily">Daily</option><option value="weekdays">Weekdays</option><option value="weekends">Weekends</option><option value="weekly">Weekly</option></select></label>
           <label>Duration<select value={duration} onChange={event => setDuration(Number(event.target.value))}><option value={21}>21 days</option><option value={30}>30 days</option><option value={60}>60 days</option><option value={90}>90 days</option></select></label>
         </div>
-        <label>Reward <input type="range" min="1" max="5" step="1" value={points} onChange={event => setPoints(Number(event.target.value))} /><span className="you-range-value">{points} coins</span></label>
+        <label>Reward <input type="range" min="1" max="5" step="1" value={points} onChange={event => setPoints(Number(event.target.value))} /><CoinBadge amount={points} variant="amount" /></label>
         <button className="you-save-button" disabled={busy || !name.trim()} onClick={saveHabit}>{busy ? "Saving…" : "Start habit"}</button>
       </section>}
     </div>
@@ -159,7 +160,7 @@ export function JourneyView({ life, streak, onBack }: { life?: ProfileLife; stre
     <div className="axh-dot-row"><FeatureHelpDot label="My Journey" content={JOURNEY_HELP} /></div>
 
     <section className="you-journey-orbit"><div><Flame size={23} /><strong>{streak}</strong><span>day current streak</span></div><p>{life?.completionCount ?? 0} habits completed across your discipline journey.</p></section>
-    <div className="you-journey-metrics"><div><b>{life?.bestStreak ?? 0}</b><span>Best streak</span></div><div><b>{life?.lifetimeCoins ?? 0}</b><span>Coins earned</span></div><div><b>{Math.floor((life?.focusMinutes ?? 0) / 60)}h</b><span>Deep focus</span></div></div>
+    <div className="you-journey-metrics"><div><b>{life?.bestStreak ?? 0}</b><span>Best streak</span></div><div><CoinBadge amount={life?.lifetimeCoins ?? 0} variant="amount" /><span>Coins earned</span></div><div><b>{Math.floor((life?.focusMinutes ?? 0) / 60)}h</b><span>Deep focus</span></div></div>
     <h2 className="you-detail-title">Progress timeline</h2>
     <div className="you-timeline">
       {activeDates.length ? activeDates.map((day, index) => <div key={day.date} className="you-timeline-item"><i className={index === 0 ? "is-current" : ""} /><div><strong>{new Date(`${day.date}T00:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</strong><span>{day.count} {day.count === 1 ? "habit" : "habits"} completed</span></div></div>) : <div className="you-empty">Complete your first habit to begin the timeline.</div>}

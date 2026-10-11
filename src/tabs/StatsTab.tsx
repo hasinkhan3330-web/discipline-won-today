@@ -138,7 +138,7 @@ function KpiCard({ icon, label, value, unit, gold = false }: { icon: React.React
         <span>{label}</span>
         <ChevronRight size={16} aria-hidden="true" />
       </div>
-      <strong>{value}</strong>
+      <strong>{label === "Lifetime Coins" ? <CoinBadge amount={Number(value)} variant="amount" /> : value}</strong>
       <small>{unit}</small>
     </article>
   );

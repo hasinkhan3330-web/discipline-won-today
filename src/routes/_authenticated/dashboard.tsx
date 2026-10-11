@@ -1,3 +1,4 @@
+import { CoinBadge } from "@/components/CoinBadge";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -947,7 +948,7 @@ function App() {
             {gateReady && !premiumUnlocked && (
               <button onClick={() => setShowPaywall(true)} style={{ background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF", padding: "7px 14px", fontSize: 13, fontWeight: 600, fontFamily: AX.font, cursor: "pointer", borderRadius: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Go Pro</button>
             )}
-            <div className="ax-ellipsis" style={{ background: "#181820", border: `1px solid ${AX.border}`, padding: "7px 12px", fontSize: 13, fontWeight: 600, color: AX.text, borderRadius: 12, maxWidth: "45vw" }}>{coins} coins</div>
+            <CoinBadge amount={coins} variant="balance" />
           </div>
 
         </div>
