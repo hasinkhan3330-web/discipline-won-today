@@ -72,6 +72,6 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Accountability rebuild — five fixed smart nudges, verified daily check-in, two-sided commitments, aggregate partner stats, and Emergency Nudge through the existing live partner flow
 
 ## Completion-only CoinBadge rewards
-- [ ] Scoped badge and coin display replacements
-- [ ] Server local-day limits, Zen lifecycle, Contract and Top 3 awards
-- [ ] Automated and authenticated server proof; cleanup and report
+- [x] Scoped badge and coin display replacements
+- [x] Server local-day limits, Zen lifecycle, Contract and Top 3 awards
+- [x] Automated and authenticated server proof; cleanup and report (`docs/coin-rewards-verification.md`; physical-device/midnight/motion checks remain manual)
