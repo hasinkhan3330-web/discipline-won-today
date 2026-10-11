@@ -1,20 +1,12 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { X } from "lucide-react";
-import { AX, buttonStyle, subText } from "@/tabs/styles";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { X, ChevronDown, CalendarDays, Sparkles } from "lucide-react";
+import { ContractButton, ContractStep, contractStyles as cs } from "./ContractVisuals";
 import {
   CATEGORIES, PROOF_METHODS, REMINDER_PREFS, TEMPLATES, deviceTimezone, rescueMax, validate,
   type ContractForm,
 } from "@/lib/verified/contracts";
 
 type Goal = { id: string; title: string };
-
-const field: CSSProperties = {
-  width: "100%", minHeight: 44, padding: "10px 12px", borderRadius: 12, background: "#181820",
-  border: `1px solid ${AX.border}`, color: AX.text, fontFamily: AX.font, fontSize: 14, outline: "none",
-  boxSizing: "border-box",
-};
-const label: CSSProperties = { display: "block", fontSize: 12, color: AX.muted, margin: "12px 0 6px" };
-const err: CSSProperties = { fontSize: 12, color: AX.danger, marginTop: 4 };
 
 export function ContractSheet({ title, initial, goals, busy, serverError, onClose, onConfirm, hasPartner = false }: {
   title: string;
@@ -50,109 +42,67 @@ export function ContractSheet({ title, initial, goals, busy, serverError, onClos
     if (Object.keys(e).length === 0) setStep("review");
   };
   const goalTitle = goals.find(g => g.id === f.goal_id)?.title;
-
+  const visualErrors = validate(f);
+  const selectWrap = (children: ReactNode) => <div className={cs.fieldWrap}>{children}<ChevronDown className={cs.fieldIcon} aria-hidden="true" /></div>;
   return (
-    <div role="dialog" aria-modal="true" aria-label={title} onClick={() => !busy && onClose()}
-      style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(5,5,9,0.82)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        width: "100%", maxWidth: 520, maxHeight: "92vh", overflowY: "auto", background: AX.surface,
-        border: `1px solid ${AX.border}`, borderRadius: "20px 20px 0 0", padding: 18,
-        paddingBottom: "calc(18px + env(safe-area-inset-bottom))", fontFamily: AX.font, color: AX.text,
-      }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-          <strong style={{ fontSize: 17 }}>{step === "edit" ? title : "Review contract"}</strong>
-          <button aria-label="Close" onClick={onClose} disabled={busy} style={{ width: 44, height: 44, borderRadius: 12, background: "transparent", border: `1px solid ${AX.border}`, color: AX.muted, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={18} /></button>
-        </div>
-
-        {step === "edit" ? (
-          <>
-            <label style={label} htmlFor="c-goal">Linked goal (optional)</label>
-            <select id="c-goal" style={field} value={f.goal_id ?? ""} onChange={e => set("goal_id", e.target.value || null)}>
-              <option value="">No goal</option>
-              {goals.map(g => <option key={g.id} value={g.id}>{g.title}</option>)}
-            </select>
-
-            <label style={label} htmlFor="c-cat">Category</label>
-            <select id="c-cat" style={field} value={f.category} onChange={e => set("category", e.target.value)}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c[0].toUpperCase() + c.slice(1)}</option>)}
-            </select>
-
-            <label style={label} htmlFor="c-title">What exactly will you do?</label>
-            <input id="c-title" ref={firstRef} style={field} value={f.title} maxLength={120} onChange={e => set("title", e.target.value)} placeholder="e.g. Study one chapter with notes" aria-invalid={!!errors.title} />
-            <button type="button" onClick={suggest} style={{ ...buttonStyle("ghost"), padding: "8px 12px", fontSize: 12, marginTop: 8 }}>Suggest for {f.category}</button>
-            {errors.title && <div style={err}>{errors.title}</div>}
-
-            <label style={label} htmlFor="c-when">Date & time ({tz})</label>
-            <input id="c-when" type="datetime-local" style={field} value={f.local} onChange={e => set("local", e.target.value)} aria-invalid={!!errors.local} />
-            {errors.local && <div style={err}>{errors.local}</div>}
-
-            <div style={{ display: "flex", gap: 10 }}>
-              <div style={{ flex: 1 }}>
-                <label style={label} htmlFor="c-dur">Duration (min)</label>
-                <input id="c-dur" type="number" inputMode="numeric" min={5} max={240} style={field} value={f.planned_min} onChange={e => set("planned_min", parseInt(e.target.value || "0", 10))} />
-                {errors.planned_min && <div style={err}>{errors.planned_min}</div>}
+    <div className={`${cs.scope} ${cs.backdrop}`} role="dialog" aria-modal="true" aria-label={title} onClick={() => !busy && onClose()}>
+      <div className={cs.sheet} onClick={e => e.stopPropagation()}>
+        <div className={cs.handle} aria-hidden="true" />
+        <header className={cs.sheetHeader}>
+          <div><div className={cs.mono}>AXEN · CONTRACT</div><h2>{step === "edit" ? title : "Review contract"}</h2></div>
+          <button className={cs.close} aria-label="Close" onClick={onClose} disabled={busy}><X size={20} /></button>
+        </header>
+        {step === "edit" ? <>
+          <div className={cs.stepper}>
+            <ContractStep number={1} label="Category" complete={!visualErrors.category}>
+              {selectWrap(<select id="c-cat" aria-label="Category" className={cs.field} value={f.category} onChange={e => set("category", e.target.value)}>{CATEGORIES.map(c => <option key={c} value={c}>{c[0].toUpperCase() + c.slice(1)}</option>)}</select>)}
+              <label className={cs.fieldLabel} htmlFor="c-goal">Linked goal (optional)</label>
+              {selectWrap(<select id="c-goal" className={cs.field} value={f.goal_id ?? ""} onChange={e => set("goal_id", e.target.value || null)}><option value="">No goal</option>{goals.map(g => <option key={g.id} value={g.id}>{g.title}</option>)}</select>)}
+            </ContractStep>
+            <ContractStep number={2} label="What exactly will you do?" complete={!visualErrors.title}>
+              <input id="c-title" aria-label="What exactly will you do?" ref={firstRef} className={cs.field} value={f.title} maxLength={120} onChange={e => set("title", e.target.value)} placeholder="e.g. Study one chapter with notes" aria-invalid={!!errors.title} />
+              <ContractButton secondary type="button" onClick={suggest} className={cs.suggest}><Sparkles size={15} />Suggest for {f.category}</ContractButton>
+              {errors.title && <div className={cs.error}>{errors.title}</div>}
+            </ContractStep>
+            <ContractStep number={3} label={`Date & time · ${tz}`} complete={!visualErrors.local}>
+              <div className={cs.fieldWrap}><input id="c-when" aria-label={`Date & time (${tz})`} type="datetime-local" className={cs.field} value={f.local} onChange={e => set("local", e.target.value)} aria-invalid={!!errors.local} /><CalendarDays className={`${cs.fieldIcon} ${cs.calendar}`} aria-hidden="true" /></div>
+              {errors.local && <div className={cs.error}>{errors.local}</div>}
+            </ContractStep>
+            <ContractStep number={4} label="Commitment" complete={!visualErrors.planned_min && !visualErrors.rescue_min && !visualErrors.difficulty}>
+              <div className={cs.stats}>
+                <div className={`${cs.tile} ${cs.tileField}`}><label className={cs.mono} htmlFor="c-dur">Duration</label><div className={cs.numberWrap}><input id="c-dur" type="number" inputMode="numeric" min={5} max={240} value={f.planned_min} onChange={e => set("planned_min", parseInt(e.target.value || "0", 10))} /><small>min</small></div></div>
+                <div className={`${cs.tile} ${cs.tileField}`}><label className={cs.mono} htmlFor="c-res">Rescue</label><div className={cs.numberWrap}><input id="c-res" type="number" inputMode="numeric" min={1} max={rescueMax(f.planned_min)} value={f.rescue_min} onChange={e => set("rescue_min", parseInt(e.target.value || "0", 10))} /><small>min</small></div></div>
+                <div className={`${cs.tile} ${cs.tileField}`}><label className={cs.mono} htmlFor="c-diff">Difficulty</label><div className={cs.numberWrap}><select id="c-diff" aria-label="Difficulty" value={f.difficulty} onChange={e => set("difficulty", Number(e.target.value))}>{[1, 2, 3].map(n => <option key={n} value={n}>{n}</option>)}</select></div></div>
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={label} htmlFor="c-res">Rescue (min)</label>
-                <input id="c-res" type="number" inputMode="numeric" min={1} max={rescueMax(f.planned_min)} style={field} value={f.rescue_min} onChange={e => set("rescue_min", parseInt(e.target.value || "0", 10))} />
-                {errors.rescue_min && <div style={err}>{errors.rescue_min}</div>}
-              </div>
-            </div>
-
-            <label style={label} htmlFor="c-proof">Proof method</label>
-            <select id="c-proof" style={field} value={f.proof_method} onChange={e => set("proof_method", e.target.value)}>
-              {PROOF_METHODS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-            </select>
-
-            <div style={{ display: "flex", gap: 10 }}>
-              <div style={{ flex: 1 }}>
-                <label style={label} htmlFor="c-diff">Difficulty</label>
-                <select id="c-diff" style={field} value={f.difficulty} onChange={e => set("difficulty", Number(e.target.value))}>
-                  {[1, 2, 3].map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </div>
-              <div style={{ flex: 1.4 }}>
-                <label style={label} htmlFor="c-rem">Reminder</label>
-                <select id="c-rem" style={field} value={f.reminder_pref} onChange={e => set("reminder_pref", e.target.value)}>
-                  {REMINDER_PREFS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-                </select>
-              </div>
-            </div>
-
-            <label style={label} htmlFor="c-cue">Cue (optional)</label>
-            <input id="c-cue" style={field} maxLength={200} value={f.trigger_text} onChange={e => set("trigger_text", e.target.value)} placeholder="After breakfast, at my desk" />
-
-            <label style={label} htmlFor="c-note">Private note (optional)</label>
-            <textarea id="c-note" style={{ ...field, minHeight: 64 }} maxLength={500} value={f.private_note} onChange={e => set("private_note", e.target.value)} />
-
-            {hasPartner ? (
-              <label style={{ ...subText, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginTop: 12 }}>
-                Share with my accountability partner
-                <input type="checkbox" aria-label="Share with my accountability partner" checked={!!f.accountability} onChange={e => setF(p => ({ ...p, accountability: e.target.checked }))} />
-              </label>
-            ) : <div style={{ ...subText, marginTop: 12 }}>Add an accountability partner in Profile to share progress.</div>}
-
-            <button onClick={review} style={{ ...buttonStyle(), width: "100%", marginTop: 16, minHeight: 48 }}>Review</button>
-          </>
-        ) : (
-          <>
-            <dl style={{ margin: "10px 0", display: "grid", gridTemplateColumns: "auto 1fr", gap: "8px 14px", fontSize: 14 }}>
-              <dt style={{ color: AX.muted }}>Action</dt><dd style={{ margin: 0 }}>{f.title.trim()}</dd>
-              <dt style={{ color: AX.muted }}>Goal</dt><dd style={{ margin: 0 }}>{goalTitle ?? "None"}</dd>
-              <dt style={{ color: AX.muted }}>When</dt><dd style={{ margin: 0 }}>{new Date(f.local).toLocaleString()} · {tz}</dd>
-              <dt style={{ color: AX.muted }}>Duration</dt><dd style={{ margin: 0 }}>{f.planned_min} min · rescue {f.rescue_min} min</dd>
-              <dt style={{ color: AX.muted }}>Proof</dt><dd style={{ margin: 0 }}>{PROOF_METHODS.find(p => p.id === f.proof_method)?.label}</dd>
-              <dt style={{ color: AX.muted }}>Difficulty</dt><dd style={{ margin: 0 }}>{f.difficulty}/3</dd>
-              <dt style={{ color: AX.muted }}>Reminder</dt><dd style={{ margin: 0 }}>{REMINDER_PREFS.find(p => p.id === f.reminder_pref)?.label}</dd>
-            </dl>
-            {serverError && <div role="alert" style={{ ...err, fontSize: 13, margin: "8px 0" }}>{serverError}</div>}
-            <button onClick={() => onConfirm(f, false)} disabled={busy} aria-busy={busy} style={{ ...buttonStyle(), width: "100%", minHeight: 48, opacity: busy ? 0.6 : 1 }}>{busy ? "Saving…" : "Confirm contract"}</button>
-            <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-              <button onClick={() => setStep("edit")} disabled={busy} style={{ ...buttonStyle("ghost"), flex: 1 }}>Edit</button>
-              <button onClick={() => onConfirm(f, true)} disabled={busy} style={{ ...buttonStyle("ghost"), flex: 1 }}>Save as draft</button>
-            </div>
-          </>
-        )}
+              {errors.planned_min && <div className={cs.error}>{errors.planned_min}</div>}{errors.rescue_min && <div className={cs.error}>{errors.rescue_min}</div>}
+            </ContractStep>
+            <ContractStep number={5} label="Proof method" complete={!visualErrors.proof_method}>
+              {selectWrap(<select id="c-proof" aria-label="Proof method" className={cs.field} value={f.proof_method} onChange={e => set("proof_method", e.target.value)}>{PROOF_METHODS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select>)}
+            </ContractStep>
+            <ContractStep number={6} label="Reminder" complete={!!f.reminder_pref}>
+              {selectWrap(<select id="c-rem" aria-label="Reminder" className={cs.field} value={f.reminder_pref} onChange={e => set("reminder_pref", e.target.value)}>{REMINDER_PREFS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}</select>)}
+            </ContractStep>
+            <ContractStep number={7} label="Cue (optional)" complete={!!f.trigger_text.trim() && !visualErrors.trigger_text}>
+              <input id="c-cue" aria-label="Cue (optional)" className={cs.field} maxLength={200} value={f.trigger_text} onChange={e => set("trigger_text", e.target.value)} placeholder="After breakfast, at my desk" />
+            </ContractStep>
+            <ContractStep number={8} label="Private note (optional)" complete={!!f.private_note.trim() && !visualErrors.private_note}>
+              <textarea id="c-note" aria-label="Private note (optional)" className={cs.field} rows={3} maxLength={500} value={f.private_note} onChange={e => set("private_note", e.target.value)} />
+            </ContractStep>
+          </div>
+          <div className={cs.partner}>{hasPartner ? <label>Share with my accountability partner<input type="checkbox" aria-label="Share with my accountability partner" checked={!!f.accountability} onChange={e => setF(p => ({ ...p, accountability: e.target.checked }))} /></label> : "Add an accountability partner in Profile to share progress."}</div>
+          <footer className={cs.footer}><ContractButton onClick={review}>Review</ContractButton></footer>
+        </> : <>
+          <div className={cs.review}><dl>
+            <dt>Action</dt><dd>{f.title.trim()}</dd><dt>Goal</dt><dd>{goalTitle ?? "None"}</dd>
+            <dt>When</dt><dd>{new Date(f.local).toLocaleString()} · {tz}</dd>
+            <dt>Duration</dt><dd>{f.planned_min} min · rescue {f.rescue_min} min</dd>
+            <dt>Proof</dt><dd>{PROOF_METHODS.find(p => p.id === f.proof_method)?.label}</dd>
+            <dt>Difficulty</dt><dd>{f.difficulty}/3</dd><dt>Reminder</dt><dd>{REMINDER_PREFS.find(p => p.id === f.reminder_pref)?.label}</dd>
+          </dl>{serverError && <div role="alert" className={cs.error}>{serverError}</div>}</div>
+          <footer className={cs.footer}><ContractButton onClick={() => onConfirm(f, false)} disabled={busy} aria-busy={busy}>{busy ? "Saving…" : "Confirm contract"}</ContractButton>
+            <div className={cs.actions}><ContractButton secondary onClick={() => setStep("edit")} disabled={busy}>Edit</ContractButton><ContractButton secondary onClick={() => onConfirm(f, true)} disabled={busy}>Save as draft</ContractButton></div>
+          </footer>
+        </>}
       </div>
     </div>
   );

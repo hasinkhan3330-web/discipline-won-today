@@ -1,5 +1,9 @@
 # AXEN VERIFIED DISCIPLINE SYSTEM — Task Roadmap
 
+## Contract-only black-card visual redesign
+- [x] Redesign all Home Contract states and New/Edit sheet with isolated CSS module and Contract-only controls; existing actions, fields, validation and server calls preserved. Global CSS, shared controls and other screens untouched.
+- [x] Signed-in live empty/create/suggest/review/edit flow passed; display-only fixtures cover scheduled, active, proof_pending, verified, rewarded, missed and draft at 360/380/430px without overflow. All edited fields retained through review/edit, close and reduced-motion checks passed; zero browser errors and 31 existing unit tests passed. Build OK; no database writes, publication or physical-device testing.
+
 ## Rank Pro gate regression
 - [x] Confirmed expired-access bypass in signed-in preview; restored the shared entitlement gate around Leaderboard and Rank sections only.
 - [x] Signed-in browser regression with controlled server responses passed Basic/expired blocking, upgrade and Basic exit, subscribed/trial progression access; 31 existing unit tests passed, build OK. No account/payment data changed; no publication.
