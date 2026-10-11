@@ -54,7 +54,7 @@
 .primary:disabled, .secondary:disabled { opacity: .5; cursor: not-allowed; animation: none; }
 .actions { display: flex; gap: 8px; margin-top: 10px; }
 .empty { text-align: center; padding: 5px 8px 24px; }
-.empty > svg { color: var(--ct-action); width: 62px; height: 62px; stroke-width: 1; margin-bottom: 8px; }
+.empty > svg { display: block; color: var(--ct-action); width: 62px; height: 62px; stroke-width: 1; margin: 0 auto 8px; }
 .empty .note { font-size: 14px; max-width: 240px; margin: 8px auto 0; }
 .skeleton { background: linear-gradient(100deg, var(--ct-tile-top) 30%, var(--ct-border) 50%, var(--ct-tile-top) 70%); background-size: 240% 100%; animation: ct-shimmer 1.7s linear infinite; border-radius: 14px; }
 .skeletonRing { width: 120px; height: 120px; border-radius: 50%; }
