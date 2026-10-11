@@ -1,3 +1,4 @@
+import { CoinBadge } from "@/components/CoinBadge";
 import { useState } from "react";
 import { AX, cardStyle, titleStyle } from "@/tabs/styles";
 import { ChevronDown, Shield } from "lucide-react";
@@ -74,7 +75,7 @@ export function ShieldCard({ shields, coins, onBuy }: {
           transition: "opacity .15s ease, transform .15s ease",
         }}
       >
-        {busy ? "Buying…" : full ? "Shield stock full" : poor ? `Need ${SHIELD_COST - coins} more coins` : `Buy a shield · ${SHIELD_COST} coins`}
+        {busy ? "Buying…" : full ? "Shield stock full" : poor ? <>Need <CoinBadge amount={SHIELD_COST - coins} variant="amount" /> more coins</> : <>Buy a shield · <CoinBadge amount={SHIELD_COST} variant="amount" /></>}
       </button>
       </div></div>
       </div>

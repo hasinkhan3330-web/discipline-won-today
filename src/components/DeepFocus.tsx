@@ -1,3 +1,4 @@
+import { CoinBadge } from "@/components/CoinBadge";
 import { forwardRef, useState, useEffect, useRef, useCallback, useImperativeHandle } from "react";
 import { ChevronRight, Clock3, LockKeyhole, Music2, Plus, Repeat2, Search, Shield, Volume2, X, Zap } from "lucide-react";
 import { siFacebook, siInstagram, siX, siYoutube } from "simple-icons/icons";
@@ -188,7 +189,7 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
               <Clock3 size={16} strokeWidth={1.8} />
               <strong>{t.label}</strong>
               <span>{t.sub}</span>
-              <b>+{t.reward} coins</b>
+              <CoinBadge amount={t.reward} />
               <small>+{t.reward} leaderboard pts</small>
             </button>
           ))}
@@ -382,7 +383,7 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
             </div>
           </div>
           {result.coins !== null && (
-            <div style={{ fontSize: 10, color: G, letterSpacing: 2 }}>◉ WALLET BALANCE: {result.coins} COINS</div>
+            <div style={{ fontSize: 10, color: G, letterSpacing: 2 }}>WALLET BALANCE: <CoinBadge amount={result.coins} variant="balance" /></div>
           )}
           <div style={{ fontSize: 9, color: "#777", letterSpacing: 2, marginTop: 6 }}>LEADERBOARD SCORE UPDATED (+{result.awarded} PTS)</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 18 }}>

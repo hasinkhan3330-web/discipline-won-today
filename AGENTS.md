@@ -21,3 +21,6 @@
 - Contract card and New/Edit sheet visuals use a Contract-only CSS module and controls; isolation prevents style changes from reaching shared components or other screens.
 - Rank content uses the shared ProtectedFeatureGate around Leaderboard and RankTab; the existing server entitlement verdict preserves subscription/trial access and blocks Basic or expired access.
 - Zen presentation uses Zen-only components and a CSS module, reading existing meditation/audio/settings state; scoped wrapper overrides and font loading keep other screens and shared controls unchanged.
+
+- Completion coin rewards reuse the existing ledger and balance through private serialized award logic; stored reward timezone and scoped unique keys prevent daily replay without changing XP/recovery.
+- Coin amounts use the scoped CoinBadge and animate only server-confirmed award identities; no global theme or shared controls are restyled.

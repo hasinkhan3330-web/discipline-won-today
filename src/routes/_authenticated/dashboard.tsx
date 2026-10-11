@@ -1,3 +1,4 @@
+import { CoinBadge } from "@/components/CoinBadge";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -115,6 +116,7 @@ function App() {
     navigate({ to: "/", replace: true });
   };
   const [tab, setTab] = useState("home");
+  useEffect(() => { window.dispatchEvent(new CustomEvent("axen:active-tab", { detail: tab })); }, [tab]);
   const [themeKey, setThemeKeyState] = useState<ThemeKey>("hourglass");
   const setThemeKey = (k: ThemeKey) => {
     setThemeKeyState(k);
@@ -675,10 +677,7 @@ function App() {
   }, [streak, life?.bestStreak, myId]);
 
   /** Logs a finished Zen session on the account and credits its coins. */
-  const onZenComplete = async (minutes: number) => {
-    const { data, error } = await (supabase as any).rpc("complete_zen_session", { _minutes: minutes });
-    if (error) { console.error("complete_zen_session", error); return; }
-    const row = Array.isArray(data) ? data[0] : data;
+  const onZenComplete = async (minutes: number, row: { coins: number; awarded: number }) => {
     const awarded = Number(row?.awarded ?? 0);
     if (typeof row?.coins === "number") setCoins(row.coins);
     setLife(prev => prev ? { ...prev, lifetimeCoins: prev.lifetimeCoins + Math.max(0, awarded) } : prev);
@@ -949,7 +948,7 @@ function App() {
             {gateReady && !premiumUnlocked && (
               <button onClick={() => setShowPaywall(true)} style={{ background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF", padding: "7px 14px", fontSize: 13, fontWeight: 600, fontFamily: AX.font, cursor: "pointer", borderRadius: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Go Pro</button>
             )}
-            <div className="ax-ellipsis" style={{ background: "#181820", border: `1px solid ${AX.border}`, padding: "7px 12px", fontSize: 13, fontWeight: 600, color: AX.text, borderRadius: 12, maxWidth: "45vw" }}>{coins} coins</div>
+            <CoinBadge amount={coins} variant="balance" />
           </div>
 
         </div>

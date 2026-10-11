@@ -70,3 +70,8 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Rank-only photo badges — updated to latest coin-only thresholds (pink/green/blue/black/GOAT); signed-in Rank badge lookup, vertical profile directory and dot; no reward or ranking changes. Device validation remains outside browser checks.
 - [x] Face/selfie verification removed; previous alarm challenge restored
 - [x] Accountability rebuild — five fixed smart nudges, verified daily check-in, two-sided commitments, aggregate partner stats, and Emergency Nudge through the existing live partner flow
+
+## Completion-only CoinBadge rewards
+- [x] Scoped badge and coin display replacements
+- [x] Server local-day limits, Zen lifecycle, Contract and Top 3 awards
+- [x] Automated and authenticated server proof; cleanup and report (`docs/coin-rewards-verification.md`; physical-device/midnight/motion checks remain manual)

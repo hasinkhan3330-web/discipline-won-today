@@ -1,3 +1,4 @@
+import { CoinBadge } from "@/components/CoinBadge";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { AX } from "./styles";
 import { DeepFocus, type DeepFocusHandle, type FocusTier } from "@/components/DeepFocus";
@@ -160,7 +161,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
     <main className="home-command">
       <header className="home-header">
         <div><span>AXEN</span><h1>Command Center</h1><p>{greeting()}, {name}</p></div>
-        <div className="home-coin-pill"><Coins size={17} strokeWidth={1.8} /><strong>{coins}</strong><span>coins</span></div>
+        <CoinBadge amount={coins} variant="balance" />
       </header>
 
       <section className="home-discipline-panel">
@@ -170,7 +171,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
         </div>
         <div className="home-discipline-stats">
           <div><Flame size={16} /><span>Current streak</span><strong>{streakShown} days</strong></div>
-          <div><Coins size={16} /><span>Today coins</span><strong>{tasks.filter(t => t.done).reduce((sum, t) => sum + t.pts, 0)}</strong></div>
+          <div><Coins size={16} /><span>Today coins</span><CoinBadge amount={tasks.filter(t => t.done).reduce((sum, t) => sum + t.pts, 0)} variant="amount" /></div>
         </div>
         <button className="home-primary-action" onClick={() => focusRef.current?.start()}><Zap size={18} fill="currentColor" /> Start Deep Focus</button>
       </section>
@@ -201,7 +202,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
               <span className="home-mission__icon"><Ico size={18} strokeWidth={1.7} /></span>
               <div className="home-mission__copy">
                 <strong>{t.name}</strong>
-                <span>{unset ? "Not set — tap to schedule" : `+${t.pts} coins`}</span>
+                {unset ? <span>Not set — tap to schedule</span> : <CoinBadge amount={t.pts} state={t.done ? "earned" : "available"} />}
               </div>
               {scannable && (
                 <button className="home-scan-button" aria-label={`Scan to verify ${t.name}`} onClick={e => { e.stopPropagation(); haptic("tap"); onScan!(t.id); }}>

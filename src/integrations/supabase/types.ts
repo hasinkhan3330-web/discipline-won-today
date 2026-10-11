@@ -525,6 +525,10 @@ export type Database = {
           id: string
           reason: string
           ref_id: string | null
+          reward_key: string | null
+          reward_local_date: string | null
+          reward_source: string | null
+          reward_timezone: string | null
           user_id: string
         }
         Insert: {
@@ -533,6 +537,10 @@ export type Database = {
           id?: string
           reason: string
           ref_id?: string | null
+          reward_key?: string | null
+          reward_local_date?: string | null
+          reward_source?: string | null
+          reward_timezone?: string | null
           user_id: string
         }
         Update: {
@@ -541,6 +549,10 @@ export type Database = {
           id?: string
           reason?: string
           ref_id?: string | null
+          reward_key?: string | null
+          reward_local_date?: string | null
+          reward_source?: string | null
+          reward_timezone?: string | null
           user_id?: string
         }
         Relationships: []
@@ -860,11 +872,15 @@ export type Database = {
           blocked_apps: string[]
           coins_awarded: number
           created_at: string
+          duration_seconds: number | null
           ended_at: string | null
           id: string
           intensity: string | null
           lock_mode: string
           minutes: number
+          reward_active_seconds: number
+          reward_lifecycle: string | null
+          reward_ping_at: string | null
           session_token: string | null
           started_at: string | null
           tier: string
@@ -874,11 +890,15 @@ export type Database = {
           blocked_apps?: string[]
           coins_awarded?: number
           created_at?: string
+          duration_seconds?: number | null
           ended_at?: string | null
           id?: string
           intensity?: string | null
           lock_mode?: string
           minutes: number
+          reward_active_seconds?: number
+          reward_lifecycle?: string | null
+          reward_ping_at?: string | null
           session_token?: string | null
           started_at?: string | null
           tier: string
@@ -888,11 +908,15 @@ export type Database = {
           blocked_apps?: string[]
           coins_awarded?: number
           created_at?: string
+          duration_seconds?: number | null
           ended_at?: string | null
           id?: string
           intensity?: string | null
           lock_mode?: string
           minutes?: number
+          reward_active_seconds?: number
+          reward_lifecycle?: string | null
+          reward_ping_at?: string | null
           session_token?: string | null
           started_at?: string | null
           tier?: string
@@ -1237,6 +1261,7 @@ export type Database = {
           primary_goal: string | null
           referral_code: string | null
           referred_by: string | null
+          reward_timezone: string
           routine_breaker: string | null
           safe_minor_mode: boolean
           shields: number
@@ -1287,6 +1312,7 @@ export type Database = {
           primary_goal?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          reward_timezone?: string
           routine_breaker?: string | null
           safe_minor_mode?: boolean
           shields?: number
@@ -1337,6 +1363,7 @@ export type Database = {
           primary_goal?: string | null
           referral_code?: string | null
           referred_by?: string | null
+          reward_timezone?: string
           routine_breaker?: string | null
           safe_minor_mode?: boolean
           shields?: number
@@ -1854,6 +1881,11 @@ export type Database = {
           xp: number
         }[]
       }
+      axen_award_completion_coins: {
+        Args: { _id: string; _slot?: number; _source: string; _uid: string }
+        Returns: number
+      }
+      axen_completion_reward_config: { Args: never; Returns: Json }
       axen_daily_coin_room: { Args: { _uid: string }; Returns: number }
       axen_finalize_comeback: {
         Args: { _contract_id: string }
@@ -1866,6 +1898,7 @@ export type Database = {
         Returns: string
       }
       axen_real_best_streak: { Args: { _uid: string }; Returns: number }
+      axen_reward_local_day: { Args: { _uid: string }; Returns: string }
       axen_user_local_day: { Args: { _uid: string }; Returns: string }
       buy_streak_shield: {
         Args: never
@@ -1942,14 +1975,24 @@ export type Database = {
           streak: number
         }[]
       }
-      complete_zen_session: {
-        Args: { _minutes: number }
-        Returns: {
-          awarded: number
-          coins: number
-          minutes: number
-        }[]
-      }
+      complete_zen_session:
+        | {
+            Args: { _minutes: number }
+            Returns: {
+              awarded: number
+              coins: number
+              minutes: number
+            }[]
+          }
+        | {
+            Args: { _session_id: string }
+            Returns: {
+              awarded: number
+              coins: number
+              minutes: number
+              result: string
+            }[]
+          }
       consume_milestone_seal_shines: {
         Args: never
         Returns: {
@@ -1999,6 +2042,7 @@ export type Database = {
           xp_total: number
         }[]
       }
+      get_daily_coin_rewards: { Args: never; Returns: Json }
       get_entitlement: {
         Args: never
         Returns: {
@@ -2331,6 +2375,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      start_zen_reward_session: {
+        Args: { _duration_seconds: number }
+        Returns: string
+      }
       sweep_due_comebacks: { Args: never; Returns: number }
       sync_milestone_seals: { Args: { _user_id: string }; Returns: undefined }
       use_streak_shield: {
@@ -2378,6 +2426,10 @@ export type Database = {
         }
       }
       wake_slot_reward: { Args: { _slot: string }; Returns: number }
+      zen_reward_progress: {
+        Args: { _action?: string; _session_id: string }
+        Returns: string
+      }
     }
     Enums: {
       accountability_status: "active" | "revoked" | "blocked"

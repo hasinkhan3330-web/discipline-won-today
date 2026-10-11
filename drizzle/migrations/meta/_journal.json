@@ -71,6 +71,69 @@
       "when": 1791549906332,
       "tag": "0009_verified_rank_coin_seal_projection",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791694554353,
+      "tag": "0010_completion_coin_rewards",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791694627499,
+      "tag": "0011_guard_zen_reward_evidence",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791694706023,
+      "tag": "0012_temporary_coin_test_fixture",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791694783054,
+      "tag": "0013_correct_coin_contract_test_fixture",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791694858742,
+      "tag": "0014_isolated_coin_fixture_cleanup",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1791694909041,
+      "tag": "0015_repair_temporary_fixture_cleanup",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1791695024304,
+      "tag": "0016_strict_full_zen_completion",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791695231606,
+      "tag": "0017_temporary_coin_edge_case_fixture",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791695335220,
+      "tag": "0018_remove_temporary_coin_test_functions",
+      "breakpoints": true
     }
   ]
 }

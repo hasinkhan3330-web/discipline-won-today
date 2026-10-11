@@ -19,6 +19,10 @@ import { haptic } from "@/lib/haptics";
 import { EclipseHero } from "@/components/zen/EclipseHero";
 import { SessionCard } from "@/components/zen/SessionCard";
 import zen from "@/components/zen/eclipse.module.css";
+import { CoinBadge } from "@/components/CoinBadge";
+import { useDailyCoinRewards } from "@/hooks/useDailyCoinRewards";
+import { ZEN_REWARD_COINS } from "@/lib/coin-reward-config";
+import type { ZenAward } from "@/lib/coin-rewards";
 import manifestation from "@/assets/audio/deep-manifestation.mp3.asset.json";
 import stillness852 from "@/assets/audio/852hz-stillness.mp3.asset.json";
 import higherSelf from "@/assets/audio/higher-self-alpha.mp3.asset.json";
@@ -51,16 +55,18 @@ const PRESETS: { key: WavePreset; label: string }[] = [
 export function ZenTab({ med, coins }: {
   coins?: number;
   med: {
+    rewardResult?: ZenAward | null; rewardAwardId?: string;
     medMin: number; medLeft: number; medLeftMs: number; medRun: boolean;
     medStatus: "idle" | "running" | "paused" | "complete";
     medSessions: number; medTotal: number;
     elapsedMs: number; getElapsedMs: () => number;
     medPhase: BreathPhase; phaseProgress: number; phaseCountdown: number;
-    start: () => void; pause: () => void; restart: () => void;
+    start: () => void | Promise<void>; pause: () => void; restart: () => void | Promise<void>;
     pickMed: (m: number) => void;
     fmtT: (s: number) => string;
   };
 }) {
+  const { daily } = useDailyCoinRewards();
   const { medMin, medLeft, medRun, medStatus, medSessions, medTotal, elapsedMs, medPhase, phaseProgress, phaseCountdown, start, pause, restart, pickMed, fmtT } = med;
   const [trackIndex, setTrackIndex] = useState(0);
   const [volume, setVolume] = useState(68);
@@ -117,7 +123,7 @@ export function ZenTab({ med, coins }: {
       pause();
       return;
     }
-    start();
+    await start();
     if (audio && soundEnabled) await audio.play().catch(() => undefined);
   };
 
@@ -143,7 +149,7 @@ export function ZenTab({ med, coins }: {
       <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@500&display=swap" />
       <header className={zen.header}>
         <div className={zen.brand}><strong>AXEN</strong><p>DISCIPLINE BUILDS FREEDOM</p></div>
-        <div className={zen.coins}><svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v8"/></svg>{coins ?? 0} coins</div>
+        <CoinBadge amount={coins ?? 0} variant="balance" />
       </header>
       {medStatus === "idle" ? <>
         <EclipseHero />
@@ -154,6 +160,8 @@ export function ZenTab({ med, coins }: {
             <Button variant="ghost" className={zen.option} onClick={() => setSoundSheet(true)} aria-label="Open Sound chamber"><svg viewBox="0 0 26 22" fill="none" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true"><path d="M5 8v6M9 4v14M13 7v8M17 5v12M21 9v4"/></svg><span><strong>Sound</strong><small>{track.title}</small></span></Button>
             <Button variant="ghost" className={zen.option} onClick={() => setSettingsSheet(true)} aria-label="Open Flow settings"><svg viewBox="0 0 22 22" fill="none" strokeWidth="1.6" aria-hidden="true"><circle cx="11" cy="11" r="7"/><circle cx="11" cy="11" r="4" fillOpacity=".25"/></svg><span><strong>Corona</strong><small>{PRESETS.find(item => item.key === preset)?.label}</small></span></Button>
           </div>
+          <div className={zen.rewardRow}><small>{daily?.zen_claimed ? "Daily reward claimed · resets at midnight" : "Complete the full session to earn"}</small><CoinBadge amount={ZEN_REWARD_COINS} state={!daily || daily.zen_claimed ? "disabled" : "available"} /></div>
+          {med.rewardResult && <div className={zen.rewardRow} role="status">{med.rewardResult.awarded > 0 ? <CoinBadge amount={med.rewardResult.awarded} state="earned" awardId={med.rewardAwardId} /> : <small>{med.rewardResult.result === "daily_claimed" || med.rewardResult.result === "already_completed" ? "Session complete. Today's coin reward was already earned." : "Finish the full session to earn coins"}</small>}</div>}
           <Button className={zen.start} onClick={toggleSession}><svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6 3l11 7-11 7z"/></svg>START SESSION</Button>
           <p className={zen.footer}>Close your eyes · Feel the energy · Be the best version of you</p>
         </div>
@@ -162,6 +170,7 @@ export function ZenTab({ med, coins }: {
           <div className={zen.sessionCenter}><span>{medStatus === "complete" ? "SESSION COMPLETE" : phaseLabel}</span><strong>{medStatus === "complete" ? "✓" : fmtT(medLeft)}</strong><small>{medStatus === "complete" ? "Flow recorded" : phaseInstruction}</small></div>
         </EclipseHero>
         <div className={zen.chamberContent}>
+          {medStatus === "complete" && med.rewardResult && <div className={zen.rewardRow} role="status">{med.rewardResult.awarded > 0 ? <CoinBadge amount={med.rewardResult.awarded} state="earned" awardId={med.rewardAwardId} /> : <small>{med.rewardResult.result === "daily_claimed" || med.rewardResult.result === "already_completed" ? "Session complete. Today's coin reward was already earned." : "Finish the full session to earn coins"}</small>}</div>}
           <div className={zen.phases} aria-label="Breathing timeline">{PHASES.map((item,index) => <div key={item.key} data-active={phaseIndex === index}><span>{item.label}</span><strong>{phaseIndex === index ? phaseCountdown : 4}s</strong></div>)}</div>
           <div className={zen.tabs} role="tablist" aria-label="Zen modes">
             <Button variant="ghost" role="tab" aria-selected="true">BREATH</Button>

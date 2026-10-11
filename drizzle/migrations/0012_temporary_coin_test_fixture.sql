@@ -1,0 +1,20 @@
+CREATE OR REPLACE FUNCTION public.axen_coin_test_fixture(_uid uuid,_op text,_id uuid DEFAULT NULL) RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE cid uuid; sid uuid; z text; BEGIN
+IF NOT EXISTS(SELECT 1 FROM auth.users WHERE id=_uid AND email LIKE 'coin-test-%@example.com') THEN RAISE EXCEPTION 'temporary test accounts only'; END IF;
+PERFORM set_config('axen.contract_write','on',true); PERFORM set_config('app.economy_write','on',true);
+IF _op='zen_elapsed' THEN UPDATE public.focus_sessions SET started_at=now()-make_interval(secs=>duration_seconds),reward_active_seconds=duration_seconds,reward_ping_at=now() WHERE id=_id AND user_id=_uid AND reward_lifecycle='running'; RETURN _id;
+ELSIF _op='previous_day' THEN UPDATE public.coin_transactions SET created_at=created_at-interval '1 day',reward_local_date=reward_local_date-1 WHERE user_id=_uid AND reward_source IS NOT NULL; RETURN _uid;
+ELSIF _op='contract' THEN
+SELECT reward_timezone INTO z FROM public.profiles WHERE id=_uid;
+INSERT INTO public.daily_contracts(user_id,title,category,scheduled_at,timezone,local_day,planned_seconds,rescue_seconds,proof_method,difficulty,status) VALUES(_uid,'Coin test contract','study',now(),z,public.axen_reward_local_day(_uid),300,60,'text',1,'proof_pending') RETURNING id INTO cid;
+INSERT INTO public.contract_sessions(contract_id,user_id,started_at,expected_end_at,ended_at,elapsed_seconds,session_status) VALUES(cid,_uid,now()-interval '5 minutes',now(),now(),300,'completed') RETURNING id INTO sid;
+INSERT INTO public.proof_submissions(contract_id,session_id,user_id,proof_type,text_evidence,status) VALUES(cid,sid,_uid,'text','Automated isolated proof fixture','verified');
+UPDATE public.daily_contracts SET status='verified' WHERE id=cid; RETURN cid;
+ELSIF _op='cleanup' THEN
+DELETE FROM public.contract_events WHERE user_id=_uid;
+DELETE FROM public.score_events WHERE user_id=_uid;
+DELETE FROM public.proof_submissions WHERE user_id=_uid;
+RETURN _uid;
+END IF; RAISE EXCEPTION 'invalid fixture operation'; END; $$;
+REVOKE ALL ON FUNCTION public.axen_coin_test_fixture(uuid,text,uuid) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.axen_coin_test_fixture(uuid,text,uuid) TO service_role;

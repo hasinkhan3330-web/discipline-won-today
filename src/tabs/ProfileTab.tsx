@@ -1,3 +1,4 @@
+import { CoinBadge } from "@/components/CoinBadge";
 import { StreakBadge } from "@/components/StreakBadge";
 import { topMilestone } from "@/lib/economy";
 import { useState } from "react";
@@ -70,7 +71,7 @@ export function ProfileTab(props: Props) {
       <label className="you-avatar" aria-label="Change profile photo"><img src={props.myAvatar || props.fallbackAvatar(props.myName)} onError={event => { event.currentTarget.src = props.fallbackAvatar(props.myName); }} alt={props.myName} /><span><Camera size={14} /></span><input type="file" accept="image/*" disabled={props.uploading} onChange={event => { const file = event.target.files?.[0]; if (file) props.openCropper(file); event.currentTarget.value = ""; }} /></label>
       <div className="you-profile-copy"><h1>{props.myName}{(() => { const b = topMilestone(Math.max(props.streak, props.life?.bestStreak ?? 0)); return b ? <span className="ax-name-badge"><StreakBadge tone={b.tone} size={18} label={`${b.days}-day streak badge`} /></span> : null; })()}</h1><div><Crown size={15} /><strong>{rank.name}</strong><span className="you-verified">✓</span></div><p>Better Habits <b>·</b> Stronger Mind <b>·</b> Greater You</p></div>
       <button className="you-account-button" onClick={() => setView("account")} aria-label="Open account settings"><Settings size={18} /></button>
-      <div className="you-coin-pill"><Coins size={18} /><strong>{coinsShown} coins</strong></div>
+      <CoinBadge amount={props.coins} variant="balance" />
     </header>
 
     <article className="you-rank-card">
@@ -81,7 +82,7 @@ export function ProfileTab(props: Props) {
 
     <div className="you-kpis">
       <Metric icon={<Flame />} title="Current Streak" value={`${streakShown}`} unit="day" tone="pink" />
-      <Metric icon={<Coins />} title="Total Coins" value={`${coinsShown}`} unit="earned" tone="gold" />
+      <Metric icon={<Coins />} title="Total Coins" value={`${props.coins}`} unit="earned" tone="gold" />
       <Metric icon={<Target />} title="Completion Rate" value={`${completion}%`} unit={`${done}/${total} today`} tone="cyan" />
       <Metric icon={<Crown />} title="Best Rank" value={rank.name} unit={`Top ${Math.max(1, 100 - Math.min(99, props.life?.bestStreak ?? 0))}%`} tone="violet" />
     </div>
@@ -103,5 +104,5 @@ export function ProfileTab(props: Props) {
 
 function ProgressBar({ value }: { value: number }) { return <div className="you-rank-progress"><i style={{ width: `${Math.max(0, Math.min(100, value))}%` }} /></div>; }
 function Metric({ icon, title, value, unit, tone }: { icon: React.ReactNode; title: string; value: string; unit: string; tone: string }) {
-  return <article className={`you-metric you-tone-${tone}`}><span>{icon}</span><small>{title}</small><strong>{value}</strong><em>{unit}</em></article>;
+  return <article className={`you-metric you-tone-${tone}`}><span>{icon}</span><small>{title}</small><strong>{title === "Total Coins" ? <CoinBadge amount={Number(value)} variant="amount" /> : value}</strong><em>{unit}</em></article>;
 }

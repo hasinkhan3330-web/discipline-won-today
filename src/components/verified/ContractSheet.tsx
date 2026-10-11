@@ -1,6 +1,9 @@
+import { CONTRACT_REWARD_COINS } from "@/lib/coin-reward-config";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { X, ChevronDown, CalendarDays, Sparkles } from "lucide-react";
 import { ContractButton, ContractStep, contractStyles as cs } from "./ContractVisuals";
+import { CoinBadge } from "@/components/CoinBadge";
+import { useDailyCoinRewards } from "@/hooks/useDailyCoinRewards";
 import {
   CATEGORIES, PROOF_METHODS, REMINDER_PREFS, TEMPLATES, deviceTimezone, rescueMax, validate,
   type ContractForm,
@@ -18,6 +21,7 @@ export function ContractSheet({ title, initial, goals, busy, serverError, onClos
   onConfirm: (f: ContractForm, asDraft: boolean) => void;
   hasPartner?: boolean;
 }) {
+  const { daily } = useDailyCoinRewards();
   const [f, setF] = useState<ContractForm>(initial);
   const [step, setStep] = useState<"edit" | "review">("edit");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -50,8 +54,10 @@ export function ContractSheet({ title, initial, goals, busy, serverError, onClos
         <div className={cs.handle} aria-hidden="true" />
         <header className={cs.sheetHeader}>
           <div><div className={cs.mono}>AXEN · CONTRACT</div><h2>{step === "edit" ? title : "Review contract"}</h2></div>
-          <button className={cs.close} aria-label="Close" onClick={onClose} disabled={busy}><X size={20} /></button>
+           <CoinBadge amount={CONTRACT_REWARD_COINS} state={!daily || daily.contract_claimed ? "disabled" : "available"} />
+           <button className={cs.close} aria-label="Close" onClick={onClose} disabled={busy}><X size={20} /></button>
         </header>
+        <p className={cs.note}>{daily?.contract_claimed ? "Daily reward claimed · resets at midnight" : "Complete the full contract to earn"}</p>
         {step === "edit" ? <>
           <div className={cs.stepper}>
             <ContractStep number={1} label="Category" complete={!visualErrors.category}>
