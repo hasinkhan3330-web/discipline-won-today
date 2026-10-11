@@ -1,8 +1,8 @@
 # AXEN VERIFIED DISCIPLINE SYSTEM — Task Roadmap
 
 ## Zen-only eclipse screenshot rebuild
-- [ ] Replace Zen presentation with supplied eclipse SVG and exact selection layout; preserve all existing session/audio/settings handlers and isolate styles/fonts to Zen.
-- [ ] Verify signed-in selection, sound/settings, start/pause/resume/restart, visibility/reduced-motion and 360/380/390/414px overflow; report actual evidence only.
+- [x] Replace Zen presentation with supplied eclipse SVG and selection layout; preserve existing session/audio/settings handlers and isolate styles/fonts to Zen. Existing hook default remains 10 minutes to avoid changing session logic; selecting 5 uses real state.
+- [x] Signed-in real selection, sound/preset readback, sliders/cues, start/pause/resume/restart and Breath/Sound/Body access passed; 360/380/390/414px no horizontal overflow, reduced-motion and simulated visibility passed, zero page errors, 31 existing Bun tests passed. Physical devices, full session reward completion, exact screenshot pixel equivalence and WCAG AA audit not verified; supplied tiny muted text/colors preserved.
 
 ## Contract-only black-card visual redesign
 - [x] Redesign all Home Contract states and New/Edit sheet with isolated CSS module and Contract-only controls; existing actions, fields, validation and server calls preserved. Global CSS, shared controls and other screens untouched.
