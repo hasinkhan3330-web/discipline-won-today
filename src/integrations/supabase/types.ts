@@ -1885,6 +1885,10 @@ export type Database = {
         Args: { _id: string; _slot?: number; _source: string; _uid: string }
         Returns: number
       }
+      axen_coin_edge_fixture: {
+        Args: { _seconds?: number; _session?: string; _uid: string }
+        Returns: undefined
+      }
       axen_coin_test_cleanup: { Args: { _uid: string }; Returns: undefined }
       axen_coin_test_fixture: {
         Args: { _id?: string; _op: string; _uid: string }

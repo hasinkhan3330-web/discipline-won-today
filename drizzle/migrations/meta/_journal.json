@@ -120,6 +120,13 @@
       "when": 1791695024304,
       "tag": "0016_strict_full_zen_completion",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791695231606,
+      "tag": "0017_temporary_coin_edge_case_fixture",
+      "breakpoints": true
     }
   ]
 }
