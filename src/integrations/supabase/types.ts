@@ -2119,6 +2119,14 @@ export type Database = {
         }
         Relationships: []
       }
+      wake_daily_monitor: {
+        Row: {
+          day: string | null
+          kind: string | null
+          total: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       accept_accountability_invite: {
@@ -2685,8 +2693,13 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      wake_claim_push: { Args: { _limit?: number }; Returns: Json }
       wake_create_occurrence: { Args: { aid: string }; Returns: string }
       wake_event_payload: { Args: { eid: string }; Returns: Json }
+      wake_finish_push: {
+        Args: { _http: number; _id: string; _lease: string }
+        Returns: undefined
+      }
       wake_get_state: { Args: never; Returns: Json }
       wake_issue_question: { Args: { eid: string }; Returns: undefined }
       wake_next_fire: {
@@ -2706,6 +2719,15 @@ export type Database = {
         Returns: Json
       }
       wake_slot_reward: { Args: { _slot: string }; Returns: number }
+      wake_submit_answer: {
+        Args: { _answer: string; _event_id: string; _version: number }
+        Returns: Json
+      }
+      wake_subscribe: {
+        Args: { _auth: string; _endpoint: string; _p256dh: string }
+        Returns: undefined
+      }
+      wake_sweep_due: { Args: { _limit?: number }; Returns: number }
       wake_test_alarm: { Args: never; Returns: string }
       wake_tier_coins: { Args: { t: string }; Returns: number }
       zen_reward_progress: {
