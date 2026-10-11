@@ -99,6 +99,13 @@
       "when": 1791694783054,
       "tag": "0013_correct_coin_contract_test_fixture",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791694858742,
+      "tag": "0014_isolated_coin_fixture_cleanup",
+      "breakpoints": true
     }
   ]
 }
