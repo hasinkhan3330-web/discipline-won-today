@@ -1,0 +1,1 @@
+DROP FUNCTION public.axen_coin_edge_fixture(uuid,uuid,double precision); DROP FUNCTION public.axen_coin_test_fixture(uuid,text,uuid); DROP FUNCTION public.axen_coin_test_cleanup(uuid);
