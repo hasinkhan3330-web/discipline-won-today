@@ -78,6 +78,13 @@
       "when": 1791694554353,
       "tag": "0010_completion_coin_rewards",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791694627499,
+      "tag": "0011_guard_zen_reward_evidence",
+      "breakpoints": true
     }
   ]
 }

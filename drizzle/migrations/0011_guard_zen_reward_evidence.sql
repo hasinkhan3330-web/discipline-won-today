@@ -1,0 +1,2 @@
+CREATE OR REPLACE FUNCTION public.guard_zen_reward_evidence() RETURNS trigger LANGUAGE plpgsql SET search_path='' AS $$ BEGIN IF (NEW.duration_seconds IS NOT NULL OR (TG_OP='UPDATE' AND OLD.duration_seconds IS NOT NULL)) AND NOT public.axen_is_server_write() THEN RAISE EXCEPTION 'Zen reward evidence is server-written only' USING ERRCODE='42501'; END IF; RETURN NEW; END; $$;
+CREATE TRIGGER guard_zen_reward_evidence BEFORE INSERT OR UPDATE ON public.focus_sessions FOR EACH ROW EXECUTE FUNCTION public.guard_zen_reward_evidence();
