@@ -26,6 +26,7 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedCheckoutSuccessRouteImport } from './routes/_authenticated/checkout.success'
 import { Route as ApiPublicPaymentsRevenuecatWebhookRouteImport } from './routes/api/public/payments/revenuecat-webhook'
+import { Route as ApiPublicWakeProcessRouteImport } from './routes/api/public/wake/process'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -116,6 +117,11 @@ const ApiPublicPaymentsRevenuecatWebhookRoute =
     path: '/api/public/payments/revenuecat-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWakeProcessRoute = ApiPublicWakeProcessRouteImport.update({
+  id: '/api/public/wake/process',
+  path: '/api/public/wake/process',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
   '/api/public/payments/revenuecat-webhook': typeof ApiPublicPaymentsRevenuecatWebhookRoute
+  '/api/public/wake/process': typeof ApiPublicWakeProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
   '/api/public/payments/revenuecat-webhook': typeof ApiPublicPaymentsRevenuecatWebhookRoute
+  '/api/public/wake/process': typeof ApiPublicWakeProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
   '/api/public/payments/revenuecat-webhook': typeof ApiPublicPaymentsRevenuecatWebhookRoute
+  '/api/public/wake/process': typeof ApiPublicWakeProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/checkout/success'
     | '/api/public/payments/revenuecat-webhook'
+    | '/api/public/wake/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/checkout/success'
     | '/api/public/payments/revenuecat-webhook'
+    | '/api/public/wake/process'
   id:
     | '__root__'
     | '/'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/checkout/success'
     | '/api/public/payments/revenuecat-webhook'
+    | '/api/public/wake/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -247,6 +259,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicPaymentsRevenuecatWebhookRoute: typeof ApiPublicPaymentsRevenuecatWebhookRoute
+  ApiPublicWakeProcessRoute: typeof ApiPublicWakeProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -370,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsRevenuecatWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/wake/process': {
+      id: '/api/public/wake/process'
+      path: '/api/public/wake/process'
+      fullPath: '/api/public/wake/process'
+      preLoaderRoute: typeof ApiPublicWakeProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -404,6 +424,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicPaymentsRevenuecatWebhookRoute:
     ApiPublicPaymentsRevenuecatWebhookRoute,
+  ApiPublicWakeProcessRoute: ApiPublicWakeProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
