@@ -1,0 +1,3 @@
+import { ZEN_MAX_REWARDED_PER_DAY, CONTRACT_MAX_REWARDED_PER_DAY, ZEN_REWARD_COINS, CONTRACT_REWARD_COINS, TOP_THREE_REWARD_COINS } from "../src/lib/coin-reward-config";
+// Regenerate this SQL when changing the single TypeScript config source.
+await Bun.write("/tmp/coin-audit/config.sql", `CREATE OR REPLACE FUNCTION public.axen_completion_reward_config() RETURNS jsonb LANGUAGE sql IMMUTABLE SET search_path='' AS $$ SELECT jsonb_build_object('zen_limit',${ZEN_MAX_REWARDED_PER_DAY},'contract_limit',${CONTRACT_MAX_REWARDED_PER_DAY},'zen',${ZEN_REWARD_COINS},'contract',${CONTRACT_REWARD_COINS},'top3',${TOP_THREE_REWARD_COINS}); $$;`);
