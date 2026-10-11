@@ -1,0 +1,22 @@
+.surface {
+  --wake-bg: #070a12; --wake-fg: #edf3fb; --wake-muted: #a2b0c4; --wake-accent: #79dbfb; --wake-panel: #121a28; --wake-line: #29384b; --wake-error: #ff9d9d;
+  position: fixed; inset: 0; z-index: 1500; background: var(--wake-bg); color: var(--wake-fg); overflow-y: auto; font-family: Manrope, sans-serif; padding: max(24px, env(safe-area-inset-top)) 20px max(32px, env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+}
+.inner { width: min(100%, 420px); display: grid; gap: 20px; text-align: center; }
+.title { font-family: Orbitron, sans-serif; font-size: 30px; font-weight: 800; margin: 0; }
+.question { font-size: 23px; line-height: 1.5; min-height: 90px; overflow-wrap: anywhere; }
+.input { background: var(--wake-panel); border: 1px solid var(--wake-line); color: var(--wake-fg); width: 100%; min-height: 56px; text-align: center; font-size: 26px; border-radius: 6px; }
+.command { background: var(--wake-panel); color: var(--wake-fg); border: 1px solid var(--wake-line); border-radius: 6px; min-height: 48px; white-space: normal; height: auto; padding: 12px 16px; }
+.command:hover { background: var(--wake-line); }
+.primary { background: var(--wake-accent); color: var(--wake-bg); }
+.muted { color: var(--wake-muted); line-height: 1.6; font-size: 13px; margin: 0; }
+.error { color: var(--wake-error); font-size: 14px; }
+.options { display: grid; gap: 10px; }
+.clock { font-family: Orbitron, sans-serif; font-size: 44px; font-variant-numeric: tabular-nums; color: var(--wake-muted); }
+.readiness { --wake-muted: #a2b0c4; --wake-line: #29384b; --wake-error: #ff9d9d; display: grid; gap: 12px; font-size: 12px; color: var(--wake-muted); padding: 16px 0; border-top: 1px solid var(--wake-line); }
+.readiness ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.readiness li { display: flex; justify-content: space-between; gap: 12px; }
+.readiness button { width: 100%; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.install { line-height: 1.6; }
+.warning { line-height: 1.6; margin: 0; }

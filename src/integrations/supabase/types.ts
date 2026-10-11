@@ -190,6 +190,113 @@ export type Database = {
         }
         Relationships: []
       }
+      alarm_events: {
+        Row: {
+          alarm_id: string
+          coins_awarded: number
+          correct_in_row: number
+          created_at: string
+          difficulty: number
+          first_ring_at: string | null
+          id: string
+          is_test: boolean
+          last_answer_at: string | null
+          local_date: string
+          next_push_at: string | null
+          push_round: number
+          question_answer: string | null
+          question_cycle: number
+          question_explanation: string | null
+          question_hash: string | null
+          question_id: string | null
+          question_options: Json | null
+          question_text: string | null
+          question_type: string
+          question_version: number
+          reward_result: string | null
+          saved_at: string
+          scheduled_for: string
+          solved_at: string | null
+          status: string
+          tier: number
+          timezone: string
+          user_id: string
+          wake_time: string
+        }
+        Insert: {
+          alarm_id: string
+          coins_awarded?: number
+          correct_in_row?: number
+          created_at?: string
+          difficulty?: number
+          first_ring_at?: string | null
+          id?: string
+          is_test?: boolean
+          last_answer_at?: string | null
+          local_date: string
+          next_push_at?: string | null
+          push_round?: number
+          question_answer?: string | null
+          question_cycle?: number
+          question_explanation?: string | null
+          question_hash?: string | null
+          question_id?: string | null
+          question_options?: Json | null
+          question_text?: string | null
+          question_type: string
+          question_version?: number
+          reward_result?: string | null
+          saved_at: string
+          scheduled_for: string
+          solved_at?: string | null
+          status?: string
+          tier?: number
+          timezone: string
+          user_id: string
+          wake_time: string
+        }
+        Update: {
+          alarm_id?: string
+          coins_awarded?: number
+          correct_in_row?: number
+          created_at?: string
+          difficulty?: number
+          first_ring_at?: string | null
+          id?: string
+          is_test?: boolean
+          last_answer_at?: string | null
+          local_date?: string
+          next_push_at?: string | null
+          push_round?: number
+          question_answer?: string | null
+          question_cycle?: number
+          question_explanation?: string | null
+          question_hash?: string | null
+          question_id?: string | null
+          question_options?: Json | null
+          question_text?: string | null
+          question_type?: string
+          question_version?: number
+          reward_result?: string | null
+          saved_at?: string
+          scheduled_for?: string
+          solved_at?: string | null
+          status?: string
+          tier?: number
+          timezone?: string
+          user_id?: string
+          wake_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alarm_events_alarm_id_fkey"
+            columns: ["alarm_id"]
+            isOneToOne: false
+            referencedRelation: "alarms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alarm_sessions: {
         Row: {
           alarm_id: string
@@ -253,6 +360,11 @@ export type Database = {
           tone: string
           updated_at: string
           user_id: string
+          wake_difficulty: number
+          wake_next_fire_at: string | null
+          wake_repeat_daily: boolean
+          wake_saved_at: string | null
+          wake_timezone: string | null
         }
         Insert: {
           challenge_started_on?: string | null
@@ -269,6 +381,11 @@ export type Database = {
           tone?: string
           updated_at?: string
           user_id: string
+          wake_difficulty?: number
+          wake_next_fire_at?: string | null
+          wake_repeat_daily?: boolean
+          wake_saved_at?: string | null
+          wake_timezone?: string | null
         }
         Update: {
           challenge_started_on?: string | null
@@ -285,6 +402,11 @@ export type Database = {
           tone?: string
           updated_at?: string
           user_id?: string
+          wake_difficulty?: number
+          wake_next_fire_at?: string | null
+          wake_repeat_daily?: boolean
+          wake_saved_at?: string | null
+          wake_timezone?: string | null
         }
         Relationships: []
       }
@@ -1507,33 +1629,39 @@ export type Database = {
           created_at: string
           difficulty: string
           explanation: string | null
+          fact_source: string | null
           id: string
           is_active: boolean
           options: Json | null
           question_text: string
           subject: string
+          wake_only: boolean
         }
         Insert: {
           correct_answer: string
           created_at?: string
           difficulty?: string
           explanation?: string | null
+          fact_source?: string | null
           id?: string
           is_active?: boolean
           options?: Json | null
           question_text: string
           subject: string
+          wake_only?: boolean
         }
         Update: {
           correct_answer?: string
           created_at?: string
           difficulty?: string
           explanation?: string | null
+          fact_source?: string | null
           id?: string
           is_active?: boolean
           options?: Json | null
           question_text?: string
           subject?: string
+          wake_only?: boolean
         }
         Relationships: []
       }
@@ -1827,6 +1955,138 @@ export type Database = {
         }
         Relationships: []
       }
+      wake_delivery_log: {
+        Row: {
+          detail: string | null
+          event_id: string | null
+          id: number
+          kind: string
+          occurred_at: string
+        }
+        Insert: {
+          detail?: string | null
+          event_id?: string | null
+          id?: never
+          kind: string
+          occurred_at?: string
+        }
+        Update: {
+          detail?: string | null
+          event_id?: string | null
+          id?: never
+          kind?: string
+          occurred_at?: string
+        }
+        Relationships: []
+      }
+      wake_push_outbox: {
+        Row: {
+          accepted_at: string | null
+          attempts: number
+          event_id: string
+          id: string
+          last_error: string | null
+          lease_token: string | null
+          lease_until: string | null
+          retry_at: string
+          round: number
+          status: string
+          subscription_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          attempts?: number
+          event_id: string
+          id?: string
+          last_error?: string | null
+          lease_token?: string | null
+          lease_until?: string | null
+          retry_at?: string
+          round: number
+          status?: string
+          subscription_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          attempts?: number
+          event_id?: string
+          id?: string
+          last_error?: string | null
+          lease_token?: string | null
+          lease_until?: string | null
+          retry_at?: string
+          round?: number
+          status?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wake_push_outbox_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "alarm_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wake_push_outbox_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "wake_push_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wake_push_subscriptions: {
+        Row: {
+          auth_key: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth_key: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth_key?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wake_question_history: {
+        Row: {
+          cycle: number
+          issued_at: string
+          question_hash: string
+          question_type: string
+          user_id: string
+        }
+        Insert: {
+          cycle?: number
+          issued_at?: string
+          question_hash: string
+          question_type: string
+          user_id: string
+        }
+        Update: {
+          cycle?: number
+          issued_at?: string
+          question_hash?: string
+          question_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_profiles: {
@@ -1856,6 +2116,14 @@ export type Database = {
           longest_streak?: number | null
           streak?: number | null
           username?: never
+        }
+        Relationships: []
+      }
+      wake_daily_monitor: {
+        Row: {
+          day: string | null
+          kind: string | null
+          total: number | null
         }
         Relationships: []
       }
@@ -2425,7 +2693,43 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      wake_claim_push: { Args: { _limit?: number }; Returns: Json }
+      wake_create_occurrence: { Args: { aid: string }; Returns: string }
+      wake_event_payload: { Args: { eid: string }; Returns: Json }
+      wake_finish_push: {
+        Args: { _http: number; _id: string; _lease: string }
+        Returns: undefined
+      }
+      wake_get_state: { Args: never; Returns: Json }
+      wake_issue_question: { Args: { eid: string }; Returns: undefined }
+      wake_next_fire: {
+        Args: { at_time?: string; t: string; z: string }
+        Returns: string
+      }
+      wake_save_settings: {
+        Args: {
+          _difficulty: number
+          _enabled: boolean
+          _mode: string
+          _repeat: boolean
+          _sleep: string
+          _time: string
+          _tone: string
+        }
+        Returns: Json
+      }
       wake_slot_reward: { Args: { _slot: string }; Returns: number }
+      wake_submit_answer: {
+        Args: { _answer: string; _event_id: string; _version: number }
+        Returns: Json
+      }
+      wake_subscribe: {
+        Args: { _auth: string; _endpoint: string; _p256dh: string }
+        Returns: undefined
+      }
+      wake_sweep_due: { Args: { _limit?: number }; Returns: number }
+      wake_test_alarm: { Args: never; Returns: string }
+      wake_tier_coins: { Args: { t: string }; Returns: number }
       zen_reward_progress: {
         Args: { _action?: string; _session_id: string }
         Returns: string

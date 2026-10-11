@@ -19,6 +19,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as AuthenticatedAlarmRouteImport } from './routes/_authenticated/alarm'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthForgotRouteImport } from './routes/auth.forgot'
 import { Route as AuthVerifiedRouteImport } from './routes/auth.verified'
@@ -26,6 +27,7 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AuthenticatedCheckoutSuccessRouteImport } from './routes/_authenticated/checkout.success'
 import { Route as ApiPublicPaymentsRevenuecatWebhookRouteImport } from './routes/api/public/payments/revenuecat-webhook'
+import { Route as ApiPublicWakeProcessRouteImport } from './routes/api/public/wake/process'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -78,6 +80,11 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedAlarmRoute = AuthenticatedAlarmRouteImport.update({
+  id: '/alarm',
+  path: '/alarm',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -116,6 +123,11 @@ const ApiPublicPaymentsRevenuecatWebhookRoute =
     path: '/api/public/payments/revenuecat-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWakeProcessRoute = ApiPublicWakeProcessRouteImport.update({
+  id: '/api/public/wake/process',
+  path: '/api/public/wake/process',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -127,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/alarm': typeof AuthenticatedAlarmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/verified': typeof AuthVerifiedRoute
@@ -134,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
   '/api/public/payments/revenuecat-webhook': typeof ApiPublicPaymentsRevenuecatWebhookRoute
+  '/api/public/wake/process': typeof ApiPublicWakeProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -145,6 +159,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/alarm': typeof AuthenticatedAlarmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/verified': typeof AuthVerifiedRoute
@@ -152,6 +167,7 @@ export interface FileRoutesByTo {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
   '/api/public/payments/revenuecat-webhook': typeof ApiPublicPaymentsRevenuecatWebhookRoute
+  '/api/public/wake/process': typeof ApiPublicWakeProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -165,6 +181,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/_authenticated/alarm': typeof AuthenticatedAlarmRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/verified': typeof AuthVerifiedRoute
@@ -172,6 +189,7 @@ export interface FileRoutesById {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/checkout/success': typeof AuthenticatedCheckoutSuccessRoute
   '/api/public/payments/revenuecat-webhook': typeof ApiPublicPaymentsRevenuecatWebhookRoute
+  '/api/public/wake/process': typeof ApiPublicWakeProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -185,6 +203,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/alarm'
     | '/dashboard'
     | '/auth/forgot'
     | '/auth/verified'
@@ -192,6 +211,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/checkout/success'
     | '/api/public/payments/revenuecat-webhook'
+    | '/api/public/wake/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -203,6 +223,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/alarm'
     | '/dashboard'
     | '/auth/forgot'
     | '/auth/verified'
@@ -210,6 +231,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/checkout/success'
     | '/api/public/payments/revenuecat-webhook'
+    | '/api/public/wake/process'
   id:
     | '__root__'
     | '/'
@@ -222,6 +244,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/_authenticated/alarm'
     | '/_authenticated/dashboard'
     | '/auth/forgot'
     | '/auth/verified'
@@ -229,6 +252,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/checkout/success'
     | '/api/public/payments/revenuecat-webhook'
+    | '/api/public/wake/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -247,6 +271,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicPaymentsRevenuecatWebhookRoute: typeof ApiPublicPaymentsRevenuecatWebhookRoute
+  ApiPublicWakeProcessRoute: typeof ApiPublicWakeProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -321,6 +346,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/alarm': {
+      id: '/_authenticated/alarm'
+      path: '/alarm'
+      fullPath: '/alarm'
+      preLoaderRoute: typeof AuthenticatedAlarmRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -370,15 +402,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsRevenuecatWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/wake/process': {
+      id: '/api/public/wake/process'
+      path: '/api/public/wake/process'
+      fullPath: '/api/public/wake/process'
+      preLoaderRoute: typeof ApiPublicWakeProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAlarmRoute: typeof AuthenticatedAlarmRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedCheckoutSuccessRoute: typeof AuthenticatedCheckoutSuccessRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAlarmRoute: AuthenticatedAlarmRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedCheckoutSuccessRoute: AuthenticatedCheckoutSuccessRoute,
 }
@@ -404,6 +445,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicPaymentsRevenuecatWebhookRoute:
     ApiPublicPaymentsRevenuecatWebhookRoute,
+  ApiPublicWakeProcessRoute: ApiPublicWakeProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

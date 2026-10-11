@@ -1,0 +1,9 @@
+{
+  "id": "/",
+  "name": "AXEN Habit & Discipline",
+  "short_name": "AXEN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "icons": [{ "src": "/favicon.png", "sizes": "any", "type": "image/png" }]
+}

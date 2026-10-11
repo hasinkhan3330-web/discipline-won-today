@@ -134,6 +134,20 @@
       "when": 1791695335220,
       "tag": "0018_remove_temporary_coin_test_functions",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791707995916,
+      "tag": "0019_wake_alarm_occurrences_and_private_solve",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791708039896,
+      "tag": "0020_wake_verified_rewards_and_push_queue",
+      "breakpoints": true
     }
   ]
 }
