@@ -28,7 +28,21 @@ export function ContractSheet({ title, initial, goals, busy, serverError, onClos
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === "Escape" && !busy) onClose(); };
     window.addEventListener("keydown", k);
-    const visualErrors = validate(f);
+    return () => window.removeEventListener("keydown", k);
+  }, [busy, onClose]);
+
+  const set = <K extends keyof ContractForm>(k: K, v: ContractForm[K]) => setF(p => ({ ...p, [k]: v }));
+  const suggest = () => {
+    const t = TEMPLATES[f.category] ?? TEMPLATES.other;
+    setF(p => ({ ...p, title: t.title, planned_min: t.planned, rescue_min: Math.min(p.rescue_min, rescueMax(t.planned)), proof_method: t.proof }));
+  };
+  const review = () => {
+    const e = validate(f);
+    setErrors(e);
+    if (Object.keys(e).length === 0) setStep("review");
+  };
+  const goalTitle = goals.find(g => g.id === f.goal_id)?.title;
+  const visualErrors = validate(f);
   const selectWrap = (children: ReactNode) => <div className={cs.fieldWrap}>{children}<ChevronDown className={cs.fieldIcon} aria-hidden="true" /></div>;
   return (
     <div className={`${cs.scope} ${cs.backdrop}`} role="dialog" aria-modal="true" aria-label={title} onClick={() => !busy && onClose()}>
