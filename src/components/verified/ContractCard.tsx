@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FileCheck2 } from "lucide-react";
+import { ShieldCheck, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { AX, buttonStyle, cardStyle, subText, titleStyle } from "@/tabs/styles";
+import { ContractButton, ContractRing, ContractStats, contractStyles as cs } from "./ContractVisuals";
 import { haptic } from "@/lib/haptics";
 import { ContractSheet } from "./ContractSheet";
 import { ContractProofSheet } from "./ContractProofSheet";
@@ -186,78 +186,56 @@ export function ContractCard({ onStart, onResume }: {
     }
   };
 
-  const CARD = cardStyle();
-  const head = <div style={titleStyle}><FileCheck2 size={16} strokeWidth={1.8} color={AX.accent} />Today’s Contract</div>;
   const openCreate = () => { setSaveErr(null); setSheet("create"); };
-
+  const completed = row?.status === "rewarded" || row?.status === "verified";
+  const status = row ? ({ scheduled: "Active", active: "Active", draft: "Draft", proof_pending: "Proof pending", verified: "Verified", rewarded: row.is_recovery ? "Recovered" : "Completed", missed: "Missed" }[row.status] ?? row.status) : null;
   let body: React.ReactNode;
   if (loadErr) {
-    body = <><div role="alert" style={subText}>{loadErr}</div><button style={{ ...buttonStyle("ghost"), marginTop: 12 }} onClick={load}>Try again</button></>;
+    body = <><div role="alert" className={cs.error}>{loadErr}</div><ContractButton secondary onClick={load}>Try again</ContractButton></>;
   } else if (row === undefined) {
-    body = <div style={subText} aria-busy="true">Loading…</div>;
+    body = <div aria-busy="true" aria-label="Loading contract"><div className={cs.summary}><div className={`${cs.skeleton} ${cs.skeletonRing}`} /><div><div className={`${cs.skeleton} ${cs.skeletonLine}`} /><div className={`${cs.skeleton} ${cs.skeletonTitle}`} /></div></div><div className={cs.stats}>{[0, 1, 2].map(n => <div key={n} className={`${cs.tile} ${cs.skeleton}`} />)}</div><div className={`${cs.skeleton} ${cs.skeletonButton}`} /></div>;
   } else if (row === null) {
-    body = <><div style={subText}>Choose one action that makes today a win.</div>
-      <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={openCreate}>CREATE CONTRACT</button></>;
+    body = <><div className={cs.empty}><ShieldCheck aria-hidden="true" /><p className={cs.note}>Choose one action that makes today a win.</p></div><ContractButton onClick={openCreate}>CREATE CONTRACT</ContractButton></>;
   } else {
     const goal = goals.find(g => g.id === row.goal_id)?.title;
-    const details = (
-      <div style={{ ...subText, marginTop: 6 }}>
-        {fmtWhen(row)} · {Math.round(row.planned_seconds / 60)} min · {PROOF_METHODS.find(p => p.id === row.proof_method)?.label ?? row.proof_method}
-        {" · "}Difficulty {row.difficulty}/3 · {REMINDER_PREFS.find(p => p.id === row.reminder_pref)?.label}
-        {goal && <div>Goal: {goal}</div>}
-        {row.accountability_enabled && partner && partner.my_sharing && (
-          <div style={{ color: AX.accent }}>{safeName(partner.partner_name, "Partner")} · Partner can see your progress</div>
-        )}
-      </div>
-    );
-    const title = <div style={{ fontSize: 15, fontWeight: 600, color: AX.text }}>{row.title}</div>;
+    const details = <>
+      <div className={cs.summary}><ContractRing duration={Math.round(row.planned_seconds / 60)} completed={completed} /><div><div className={`${cs.mono} ${cs.category}`}>{row.category} · {fmtWhen(row)}</div><h3 className={cs.title}>{row.title}</h3></div></div>
+      <ContractStats duration={Math.round(row.planned_seconds / 60)} rescue={Math.round(row.rescue_seconds / 60)} level={row.difficulty} />
+      <div className={cs.chips}><span className={`${cs.mono} ${cs.chip}`}>{PROOF_METHODS.find(p => p.id === row.proof_method)?.label ?? row.proof_method}</span><span className={`${cs.mono} ${cs.chip} ${cs.reminder}`}>{REMINDER_PREFS.find(p => p.id === row.reminder_pref)?.label}</span></div>
+      {goal && <div className={cs.note}>Goal: {goal}</div>}
+      {row.accountability_enabled && partner && partner.my_sharing && <div className={cs.note}>{safeName(partner.partner_name, "Partner")} · Partner can see your progress</div>}
+    </>;
+    let actions: React.ReactNode;
     if (row.status === "draft") {
-      body = <>{title}<div style={{ fontSize: 12, color: AX.flame, marginTop: 4 }}>Draft — not confirmed yet</div>{details}
-        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => { setSaveErr(null); setSheet("edit"); }} disabled={busy}>REVIEW & CONFIRM</button>
-        <button style={{ ...buttonStyle("ghost"), width: "100%", marginTop: 8 }} onClick={cancel} disabled={busy}>Cancel</button></>;
+      actions = <><div className={cs.note}>Draft — not confirmed yet</div><ContractButton onClick={() => { setSaveErr(null); setSheet("edit"); }} disabled={busy}>REVIEW & CONFIRM</ContractButton><div className={cs.actions}><ContractButton secondary onClick={cancel} disabled={busy}>Cancel</ContractButton></div></>;
     } else if (row.status === "scheduled") {
       const todayInTz = new Intl.DateTimeFormat("en-CA", { timeZone: row.timezone || undefined, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
       const notYet = row.local_day > todayInTz;
-      body = <>{title}{details}
-        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => void start()} disabled={busy || !onStart || notYet}>{busy ? "STARTING…" : "START CONTRACT"}</button>
-        {notYet && <div style={{ ...subText, marginTop: 6 }}>Unlocks on the contract's day ({row.local_day}).</div>}
-        {!row.is_recovery ? (
-          <div style={{ display: "flex", gap: 10, marginTop: 10 }}>
-            <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={() => { setSaveErr(null); setSheet("edit"); }} disabled={busy}>Reschedule</button>
-            <button style={{ ...buttonStyle("ghost"), flex: 1 }} onClick={cancel} disabled={busy}>Cancel</button>
-          </div>
-        ) : <div style={{ ...subText, marginTop: 8 }}>Recovery mode activated · small win still counts</div>}</>;
+      actions = <><ContractButton onClick={() => void start()} disabled={busy || !onStart || notYet}>{busy ? "STARTING…" : "START CONTRACT"}</ContractButton>
+        {notYet && <div className={cs.note}>Unlocks on the contract's day ({row.local_day}).</div>}
+        {!row.is_recovery ? <div className={cs.actions}><ContractButton secondary onClick={() => { setSaveErr(null); setSheet("edit"); }} disabled={busy}>Reschedule</ContractButton><ContractButton secondary onClick={cancel} disabled={busy}>Cancel</ContractButton></div> : <div className={cs.note}>Recovery mode activated · small win still counts</div>}</>;
     } else if (row.status === "active") {
-      body = <>{title}<div style={{ fontSize: 12, color: AX.success, marginTop: 4 }}>In progress</div>{details}
-        {onResume && <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => onResume(row)} disabled={busy}>RETURN TO SESSION</button>}</>;
+      actions = <><div className={`${cs.note} ${cs.success}`}>In progress</div>{onResume && <ContractButton onClick={() => onResume(row)} disabled={busy}>RETURN TO SESSION</ContractButton>}</>;
     } else if (row.status === "proof_pending") {
-      body = <>{title}<div style={{ fontSize: 12, color: AX.flame, marginTop: 4 }}>{READ_ONLY.proof_pending}</div>{details}
-        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => setProofOpen(true)} disabled={busy}>SUBMIT PROOF</button></>;
+      actions = <><div className={cs.note}>{READ_ONLY.proof_pending}</div><ContractButton onClick={() => setProofOpen(true)} disabled={busy}>SUBMIT PROOF</ContractButton></>;
     } else if (row.status === "verified") {
-      body = <>{title}<div style={{ fontSize: 12, color: AX.success, marginTop: 4 }}>{READ_ONLY.verified}</div>{details}
-        <button style={{ ...buttonStyle(), width: "100%", marginTop: 14, minHeight: 48 }} onClick={() => void claim()} disabled={busy}>{busy ? "CLAIMING…" : "CLAIM REWARD"}</button></>;
+      actions = <><div className={`${cs.note} ${cs.success}`}>{READ_ONLY.verified}</div><ContractButton onClick={() => void claim()} disabled={busy}>{busy ? "CLAIMING…" : "CLAIM REWARD"}</ContractButton></>;
     } else if (row.status === "missed" && !row.is_recovery && !hasRecovery) {
       const mins = 15;
-      body = <>{title}<div style={{ fontSize: 12, color: AX.flame, marginTop: 4 }}>You still have today. Start your rescue version.</div>{details}
-        <label style={{ ...subText, display: "block", marginTop: 12 }}>What got in the way? (optional)
-          <select aria-label="Recovery reason" value={reason} onChange={e => setReason(e.target.value)}
-            style={{ display: "block", width: "100%", marginTop: 6, minHeight: 40, background: "transparent", color: AX.text, border: `1px solid ${AX.accent}55`, borderRadius: 10, padding: "0 10px" }}>
-            <option value="">Skip</option>
-            {REASONS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
-          </select>
-        </label>
-        <button style={{ ...buttonStyle(), width: "100%", marginTop: 12, minHeight: 48 }} onClick={() => void recover()} disabled={busy}>{busy ? "STARTING…" : `START ${mins}-MINUTE RECOVERY`}</button></>;
+      actions = <><div className={cs.note}>You still have today. Start your rescue version.</div><label className={cs.fieldLabel}>What got in the way? (optional)<div className={cs.fieldWrap}><select className={cs.field} aria-label="Recovery reason" value={reason} onChange={e => setReason(e.target.value)}><option value="">Skip</option>{REASONS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}</select><ChevronDown className={cs.fieldIcon} aria-hidden="true" /></div></label><ContractButton onClick={() => void recover()} disabled={busy}>{busy ? "STARTING…" : `START ${mins}-MINUTE RECOVERY`}</ContractButton></>;
     } else if (row.status === "rewarded" && row.is_recovery) {
-      body = <>{title}<div style={{ fontSize: 12, color: AX.success, marginTop: 4 }}>Recovered</div>
-        <div style={{ ...subText, marginTop: 6 }}>Small win still counts · {row.xp_awarded} XP · {row.coins_awarded} coins</div></>;
+      actions = <><div className={`${cs.note} ${cs.success}`}>Recovered</div><div className={cs.note}>Small win still counts · {row.xp_awarded} XP · {row.coins_awarded} coins</div></>;
     } else {
-      body = <>{title}<div style={{ fontSize: 12, color: row.status === "missed" ? AX.danger : AX.success, marginTop: 4 }}>{READ_ONLY[row.status] ?? row.status}</div>{details}</>;
+      actions = <div className={`${cs.note} ${row.status === "missed" ? cs.error : cs.success}`}>{READ_ONLY[row.status] ?? row.status}</div>;
     }
+    body = <>{details}{actions}</>;
   }
 
   return (
     <div className="home-command-block">
-      <section style={CARD} aria-label="Today’s Contract">{head}{body}</section>
+      <section className={`${cs.scope} ${cs.card} ${completed ? cs.completed : ""} ${row?.status === "missed" ? cs.missed : ""}`} aria-label="Today’s Contract">
+        <header className={cs.header}><span className={cs.shield}><ShieldCheck size={22} strokeWidth={1.8} /></span><span className={`${cs.mono} ${cs.headerLabel}`}>TODAY’S CONTRACT</span>{status && <span className={`${cs.mono} ${cs.status}`}><i aria-hidden="true" />{status}</span>}</header>{body}
+      </section>
       {sheet && (
         <ContractSheet
           title={sheet === "create" ? "New contract" : "Edit contract"}
