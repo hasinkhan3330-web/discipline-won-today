@@ -1,5 +1,11 @@
 # AXEN VERIFIED DISCIPLINE SYSTEM — Task Roadmap
 
+## Real 4AM web alarm
+- [ ] Server scheduling, private challenge history, verified solve and existing-ledger daily rewards
+- [ ] Wake-only saved UI, Overnight Mode, readiness/test and authenticated ringing route
+- [ ] Push subscription/outbox, bounded processors and private monitoring
+- [ ] Bun/server/browser/load checks and honest verification report; no publication
+
 ## Zen-only eclipse screenshot rebuild
 - [x] Replace Zen presentation with supplied eclipse SVG and selection layout; preserve existing session/audio/settings handlers and isolate styles/fonts to Zen. Existing hook default remains 10 minutes to avoid changing session logic; selecting 5 uses real state.
 - [x] Signed-in real selection, sound/preset readback, sliders/cues, start/pause/resume/restart and Breath/Sound/Body access passed; 360/380/390/414px no horizontal overflow, reduced-motion and simulated visibility passed, zero page errors, 31 existing Bun tests passed. Physical devices, full session reward completion, exact screenshot pixel equivalence and WCAG AA audit not verified; supplied tiny muted text/colors preserved.
