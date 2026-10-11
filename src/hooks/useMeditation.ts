@@ -28,6 +28,7 @@ export function useMeditation(
   const tasksRef = useRef(tasks);
   const completeRef = useRef(completeTaskRpc);
   const sessionRef = useRef(onSessionComplete);
+  const startingRef = useRef(false);
   const rewardSession = useRef<Promise<string> | null>(null);
   const rewardQueue = useRef<Promise<unknown>>(Promise.resolve());
   const [rewardResult, setRewardResult] = useState<ZenAward | null>(null);
@@ -149,13 +150,15 @@ export function useMeditation(
     };
   }, [cancelReward, rewardAction]);
 
-  const start = useCallback(() => {
-    if (status === "complete") return;
+  const start = useCallback(async () => {
+    if (status === "complete" || startingRef.current) return;
+    startingRef.current = true;
     if (status === "idle") {
       setRewardResult(null); setRewardAwardId(undefined);
       rewardSession.current = coinRewardRpc<string>("start_zen_reward_session", { _duration_seconds: totalMs / 1000 });
-      void rewardSession.current.catch(() => {});
-    } else rewardAction("resume");
+      try { await rewardSession.current; } catch { rewardSession.current = null; }
+    } else { rewardAction("resume"); await rewardQueue.current; }
+    startingRef.current = false;
     startedAtRef.current = performance.now();
     setStatus("running");
   }, [status, totalMs, rewardAction]);

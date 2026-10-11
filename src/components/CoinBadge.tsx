@@ -30,7 +30,7 @@ export function CoinBadge({ amount, variant = "reward", state = "available", sur
     let frame = 0;
     const tick = (now: number) => {
       const progress = Math.min(1, (now - start) / 600);
-      setDisplay(variant === "balance" ? Math.round(before + (amount - before) * progress) : amount);
+      setDisplay(variant === "balance" ? Math.round(before + (amount - before) * progress) : Math.round(amount * progress));
       if (progress < 1) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);

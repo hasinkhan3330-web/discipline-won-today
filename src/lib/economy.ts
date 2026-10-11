@@ -1,10 +1,11 @@
+import { CONTRACT_REWARD_COINS, ZEN_REWARD_COINS, TOP_THREE_REWARD_COINS } from "./coin-reward-config";
 /**
  * Single source of truth for AXEN reward rules shown in the UI and taught to
  * the Coach. The server functions enforce the same numbers.
  */
 export const DAILY_COIN_CAP = 50;
 export const COIN_RULES = {
-  contractVerified: 20,
+  contractVerified: CONTRACT_REWARD_COINS,
   contractRecovery: 2,
   contractXp: 20,
   recoveryXp: 8,
@@ -12,8 +13,8 @@ export const COIN_RULES = {
   wakeChallenge: 10,
   priorityHabit: 3,
   customHabit: { min: 1, max: 5, default: 2 },
-  zen: 5,
-  top3: [7, 7, 6],
+  zen: ZEN_REWARD_COINS,
+  top3: [TOP_THREE_REWARD_COINS, TOP_THREE_REWARD_COINS, TOP_THREE_REWARD_COINS],
   focusMusic: 0,
 } as const;
 
