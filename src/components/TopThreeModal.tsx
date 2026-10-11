@@ -1,3 +1,4 @@
+import { TOP_THREE_REWARD_COINS } from "@/lib/coin-reward-config";
 import { useCallback, useEffect, useState } from "react";
 import { AX } from "@/tabs/styles";
 import { toast } from "sonner";
@@ -10,7 +11,7 @@ import { getDailyCoinRewards } from "@/lib/coin-rewards";
 type Slot = 1 | 2 | 3;
 type Row = { slot: Slot; title: string; done: boolean; coins_awarded?: number };
 
-const REWARD: Record<Slot, number> = { 1: 10, 2: 10, 3: 10 };
+const REWARD: Record<Slot, number> = { 1: TOP_THREE_REWARD_COINS, 2: TOP_THREE_REWARD_COINS, 3: TOP_THREE_REWARD_COINS };
 
 const btn = (primary?: boolean): React.CSSProperties => ({
   minHeight: 46, padding: "0 16px", borderRadius: 12, cursor: "pointer",
@@ -73,7 +74,9 @@ export function TopThreeModal({ onClose, onCoins, onAllDone }: {
     const { data: u } = await supabase.auth.getUser();
     if (!u.user || !day) { setSaving(false); return; }
     const userId = u.user.id;
-    const currentDay = (await getDailyCoinRewards()).local_date;
+    let currentDay: string;
+    try { currentDay = (await getDailyCoinRewards()).local_date; }
+    catch { setSaving(false); toast.error("Could not load today’s rewards. Try again."); return; }
     const { error: e } = await supabase.from("daily_top_tasks").upsert(
       rows.map(r => ({ user_id: userId, day: currentDay, slot: r.slot, title: r.title.trim().slice(0, 120) })),
       { onConflict: "user_id,day,slot", ignoreDuplicates: false },

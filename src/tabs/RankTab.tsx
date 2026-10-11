@@ -113,7 +113,7 @@ export function RankTab({
         <div className="rank-progress"><i style={{ width: `${levelXp / 160 * 100}%` }} /></div>
       </button>
 
-      <div className="rank-metrics">{metricCards.map(card => <button key={card.title} className="rank-metric" onClick={() => setPanel({ type: "metric", title: card.title, value: card.value, copy: card.copy, progress: card.progress })}><span><card.Icon size={22} /></span><div><small>{card.title}</small><strong>{card.value}</strong><em>{card.note} <ChevronRight size={12} /></em></div></button>)}</div>
+      <div className="rank-metrics">{metricCards.map(card => <button key={card.title} className="rank-metric" onClick={() => setPanel({ type: "metric", title: card.title, value: card.value, copy: card.copy, progress: card.progress })}><span><card.Icon size={22} /></span><div><small>{card.title}</small><strong>{card.title === "Total Coins" ? <CoinBadge amount={coins} variant="amount" /> : card.value}</strong><em>{card.note} <ChevronRight size={12} /></em></div></button>)}</div>
       </>}
 
       <button className="rank-motivation" onClick={() => setPanel({ type: "motivation" })}><div className="rank-motivation-mark"><Mountain /><i /></div><blockquote>“{quote}”<span>— {quoteLine}</span></blockquote><b><Play size={12} fill="currentColor" /> Daily Motivation <ChevronRight size={14} /></b></button>

@@ -82,7 +82,7 @@ export function ProfileTab(props: Props) {
 
     <div className="you-kpis">
       <Metric icon={<Flame />} title="Current Streak" value={`${streakShown}`} unit="day" tone="pink" />
-      <Metric icon={<Coins />} title="Total Coins" value={`${coinsShown}`} unit="earned" tone="gold" />
+      <Metric icon={<Coins />} title="Total Coins" value={`${props.coins}`} unit="earned" tone="gold" />
       <Metric icon={<Target />} title="Completion Rate" value={`${completion}%`} unit={`${done}/${total} today`} tone="cyan" />
       <Metric icon={<Crown />} title="Best Rank" value={rank.name} unit={`Top ${Math.max(1, 100 - Math.min(99, props.life?.bestStreak ?? 0))}%`} tone="violet" />
     </div>

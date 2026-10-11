@@ -1,3 +1,4 @@
+import { CONTRACT_REWARD_COINS } from "@/lib/coin-reward-config";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ShieldCheck, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
@@ -242,7 +243,7 @@ export function ContractCard({ onStart, onResume }: {
   return (
     <div className="home-command-block">
       <section className={`${cs.scope} ${cs.card} ${completed ? cs.completed : ""} ${row?.status === "missed" ? cs.missed : ""}`} aria-label="Today’s Contract">
-        <header className={cs.header}><span className={cs.shield}><ShieldCheck size={22} strokeWidth={1.8} /></span><span className={`${cs.mono} ${cs.headerLabel}`}>TODAY’S CONTRACT</span>{status && <span className={`${cs.mono} ${cs.status}`}><i aria-hidden="true" />{status}</span>}<CoinBadge amount={row?.status === "rewarded" && row.coins_awarded > 0 ? row.coins_awarded : row?.is_recovery ? 2 : 10} state={row?.status === "rewarded" && row.coins_awarded > 0 || daily?.contract_claimed && !row?.is_recovery ? "earned" : !daily ? "disabled" : "available"} awardId={awardId} /></header>
+        <header className={cs.header}><span className={cs.shield}><ShieldCheck size={22} strokeWidth={1.8} /></span><span className={`${cs.mono} ${cs.headerLabel}`}>TODAY’S CONTRACT</span>{status && <span className={`${cs.mono} ${cs.status}`}><i aria-hidden="true" />{status}</span>}<CoinBadge amount={row?.status === "rewarded" ? row.coins_awarded : row?.is_recovery ? 2 : CONTRACT_REWARD_COINS} state={row?.status === "rewarded" ? row.coins_awarded > 0 ? "earned" : "disabled" : !daily || daily.contract_claimed && !row?.is_recovery ? "disabled" : "available"} awardId={awardId} /></header>
         {!row?.is_recovery && <p className={cs.note}>{daily?.contract_claimed ? "Daily reward claimed · resets at midnight" : "Complete the full contract to earn"}</p>}{body}
       </section>
       {sheet && (
