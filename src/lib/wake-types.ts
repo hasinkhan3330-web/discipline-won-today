@@ -1,0 +1,5 @@
+export type WakeSettings = { alarm_id: string; time: string; sleep_time: string | null; enabled: boolean; repeat_daily: boolean; tone: string; mode: "math" | "science"; difficulty: number; next_fire_at: string | null };
+export type AlarmQuestion = { id: string; version: number; text: string; options: string[] | null; type: "math" | "science"; correct_in_row: number };
+export type AlarmEvent = { id: string; status: "scheduled" | "ringing" | "solved" | "expired"; scheduled_for: string; first_ring_at: string | null; local_date: string; timezone: string; time: string; tier: number; is_test: boolean; tone: string; question: AlarmQuestion | null; awarded: number; result: string | null };
+export type AlarmState = { server_now: string; local_date: string; timezone: string; settings: WakeSettings | null; event: AlarmEvent | null };
+export type AlarmSubmission = { solved: boolean; correct: boolean; awarded?: number; result?: string; explanation?: string; event: AlarmEvent };
