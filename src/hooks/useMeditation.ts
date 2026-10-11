@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { BreathPhase } from "@/components/NeuralWaveCanvas";
+import { coinRewardRpc, type ZenAward } from "@/lib/coin-rewards";
 
 type MedTask = { done: boolean; name: string; _uuid?: string } & Record<string, unknown>;
 type SessionStatus = "idle" | "running" | "paused" | "complete";
@@ -10,7 +11,7 @@ const CYCLE_MS = 16000;
 export function useMeditation(
   tasks: MedTask[],
   completeTaskRpc: (uuid: string, overridePts?: number) => Promise<void>,
-  onSessionComplete?: (minutes: number) => Promise<void> | void,
+  onSessionComplete?: (minutes: number, reward: ZenAward) => Promise<void> | void,
 ) {
   const [medMin, setMedMin] = useState(10);
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -27,6 +28,19 @@ export function useMeditation(
   const tasksRef = useRef(tasks);
   const completeRef = useRef(completeTaskRpc);
   const sessionRef = useRef(onSessionComplete);
+  const rewardSession = useRef<Promise<string> | null>(null);
+  const rewardQueue = useRef<Promise<unknown>>(Promise.resolve());
+  const [rewardResult, setRewardResult] = useState<ZenAward | null>(null);
+  const [rewardAwardId, setRewardAwardId] = useState<string | undefined>();
+  const rewardAction = useCallback((action: string) => {
+    const session = rewardSession.current;
+    if (!session) return;
+    rewardQueue.current = rewardQueue.current.catch(() => {}).then(async () => {
+      const id = await session;
+      return coinRewardRpc("zen_reward_progress", { _session_id: id, _action: action });
+    }).catch(() => {});
+  }, []);
+  const cancelReward = useCallback(() => { rewardAction("cancel"); rewardSession.current = null; }, [rewardAction]);
   tasksRef.current = tasks;
   completeRef.current = completeTaskRpc;
   sessionRef.current = onSessionComplete;
@@ -73,7 +87,18 @@ export function useMeditation(
     });
     const medTask = tasksRef.current.find(task => /medit/i.test(task.name));
     if (medTask && !medTask.done && medTask._uuid) await completeRef.current(medTask._uuid);
-    try { await sessionRef.current?.(medMin); } catch { /* session logging must never break the timer */ }
+    try {
+      await rewardQueue.current;
+      const id = await rewardSession.current;
+      if (id) {
+        const reward = await coinRewardRpc<ZenAward>("complete_zen_session", { _session_id: id });
+        setRewardResult(reward);
+        setRewardAwardId(reward.awarded > 0 ? id : undefined);
+        await sessionRef.current?.(medMin, reward);
+        window.dispatchEvent(new Event("axen:coin-reward"));
+      } else setRewardResult({ awarded: 0, coins: 0, minutes: medMin, result: "not_eligible" });
+    } catch { setRewardResult({ awarded: 0, coins: 0, minutes: medMin, result: "not_eligible" }); }
+    rewardSession.current = null;
     resetTimerRef.current = setTimeout(() => {
       liveElapsedRef.current = 0;
       bankedMsRef.current = 0;
@@ -106,36 +131,57 @@ export function useMeditation(
     };
   }, [finishSession, status, totalMs]);
 
-  useEffect(() => () => {
+  useEffect(() => {
+    const timer = setInterval(() => { if (!document.hidden) rewardAction("ping"); }, 15_000);
+    const hidden = () => { if (document.hidden) cancelReward(); };
+    const leave = () => cancelReward();
+    const tab = (event: Event) => { if ((event as CustomEvent<string>).detail !== "zen") cancelReward(); };
+    document.addEventListener("visibilitychange", hidden);
+    window.addEventListener("pagehide", leave);
+    window.addEventListener("axen:active-tab", tab);
+    return () => {
+    clearInterval(timer); cancelReward();
+    document.removeEventListener("visibilitychange", hidden);
+    window.removeEventListener("pagehide", leave);
+    window.removeEventListener("axen:active-tab", tab);
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
-  }, []);
+    };
+  }, [cancelReward, rewardAction]);
 
   const start = useCallback(() => {
     if (status === "complete") return;
+    if (status === "idle") {
+      setRewardResult(null); setRewardAwardId(undefined);
+      rewardSession.current = coinRewardRpc<string>("start_zen_reward_session", { _duration_seconds: totalMs / 1000 });
+      void rewardSession.current.catch(() => {});
+    } else rewardAction("resume");
     startedAtRef.current = performance.now();
     setStatus("running");
-  }, [status]);
+  }, [status, totalMs, rewardAction]);
 
   const pause = useCallback(() => {
     if (status !== "running") return;
+    rewardAction("pause");
     const next = Math.min(totalMs, bankedMsRef.current + performance.now() - startedAtRef.current);
     bankedMsRef.current = next;
     liveElapsedRef.current = next;
     setElapsedMs(next);
     setStatus("paused");
-  }, [status, totalMs]);
+  }, [status, totalMs, rewardAction]);
 
   const restart = useCallback(() => {
+    cancelReward(); setRewardResult(null); setRewardAwardId(undefined);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     completionGuardRef.current = false;
     bankedMsRef.current = 0;
     liveElapsedRef.current = 0;
     setElapsedMs(0);
     setStatus("idle");
-  }, []);
+  }, [cancelReward]);
 
   const pickMed = useCallback((minutes: number) => {
+    cancelReward(); setRewardResult(null); setRewardAwardId(undefined);
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
     completionGuardRef.current = false;
     bankedMsRef.current = 0;
@@ -143,7 +189,7 @@ export function useMeditation(
     setElapsedMs(0);
     setStatus("idle");
     setMedMin(minutes);
-  }, []);
+  }, [cancelReward]);
 
   const cycleMs = elapsedMs % CYCLE_MS;
   const phaseIndex = Math.min(3, Math.floor(cycleMs / PHASE_MS));
@@ -156,6 +202,8 @@ export function useMeditation(
 
   return {
     medMin,
+    rewardResult,
+    rewardAwardId,
     medLeft: Math.ceil(medLeftMs / 1000),
     medLeftMs,
     medRun: status === "running",

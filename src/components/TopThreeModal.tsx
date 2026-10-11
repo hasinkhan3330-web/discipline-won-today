@@ -4,12 +4,13 @@ import { toast } from "sonner";
 import { haptic } from "@/lib/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import { Target, X, Check, Loader2 } from "lucide-react";
+import { CoinBadge } from "@/components/CoinBadge";
+import { getDailyCoinRewards } from "@/lib/coin-rewards";
 
 type Slot = 1 | 2 | 3;
-type Row = { slot: Slot; title: string; done: boolean };
+type Row = { slot: Slot; title: string; done: boolean; coins_awarded?: number };
 
-const REWARD: Record<Slot, number> = { 1: 7, 2: 7, 3: 6 };
-const todayKey = () => new Date(new Date().getTime() - new Date().getTimezoneOffset() * 0).toISOString().slice(0, 10);
+const REWARD: Record<Slot, number> = { 1: 10, 2: 10, 3: 10 };
 
 const btn = (primary?: boolean): React.CSSProperties => ({
   minHeight: 46, padding: "0 16px", borderRadius: 12, cursor: "pointer",
@@ -29,7 +30,7 @@ export function TopThreeModal({ onClose, onCoins, onAllDone }: {
   onCoins: (coins: number) => void;
   onAllDone?: () => void;
 }) {
-  const day = todayKey();
+  const [day, setDay] = useState("");
   const [rows, setRows] = useState<Row[]>([
     { slot: 1, title: "", done: false },
     { slot: 2, title: "", done: false },
@@ -44,21 +45,24 @@ export function TopThreeModal({ onClose, onCoins, onAllDone }: {
     setLoading(true);
     const { data: u } = await supabase.auth.getUser();
     if (!u.user) { setError("Please sign in again."); setLoading(false); return; }
+    let serverDay: string;
+    try { serverDay = (await getDailyCoinRewards()).local_date; setDay(serverDay); }
+    catch { setError("Could not load today's rewards. Try again."); setLoading(false); return; }
     const { data, error: e } = await supabase
       .from("daily_top_tasks")
-      .select("slot, title, done")
+      .select("slot, title, done, coins_awarded")
       .eq("user_id", u.user.id)
-      .eq("day", day)
+      .eq("day", serverDay)
       .order("slot");
     if (e) setError(e.message);
     else if (data?.length) {
       setRows([1, 2, 3].map(s => {
         const r = data.find(d => Number(d.slot) === s);
-        return { slot: s as Slot, title: r?.title ?? "", done: !!r?.done };
+        return { slot: s as Slot, title: r?.title ?? "", done: !!r?.done, coins_awarded: r?.coins_awarded ?? 0 };
       }));
     }
     setLoading(false);
-  }, [day]);
+  }, []);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -67,9 +71,11 @@ export function TopThreeModal({ onClose, onCoins, onAllDone }: {
     if (filled.length < 3) { toast.error("Write all three tasks first"); return; }
     setSaving(true);
     const { data: u } = await supabase.auth.getUser();
-    if (!u.user) { setSaving(false); return; }
+    if (!u.user || !day) { setSaving(false); return; }
+    const userId = u.user.id;
+    const currentDay = (await getDailyCoinRewards()).local_date;
     const { error: e } = await supabase.from("daily_top_tasks").upsert(
-      rows.map(r => ({ user_id: u.user!.id, day, slot: r.slot, title: r.title.trim().slice(0, 120) })),
+      rows.map(r => ({ user_id: userId, day: currentDay, slot: r.slot, title: r.title.trim().slice(0, 120) })),
       { onConflict: "user_id,day,slot", ignoreDuplicates: false },
     );
     setSaving(false);
@@ -85,7 +91,7 @@ export function TopThreeModal({ onClose, onCoins, onAllDone }: {
     setBusySlot(null);
     if (e) { toast.error("Could not log that task", { description: e.message }); return; }
     const row = Array.isArray(data) ? data[0] : data;
-    setRows(p => p.map(r => (r.slot === slot ? { ...r, done: true } : r)));
+    void load();
     if (row?.coins != null) onCoins(Number(row.coins));
     if (Number(row?.awarded ?? 0) > 0) {
       haptic("success");
@@ -114,7 +120,7 @@ export function TopThreeModal({ onClose, onCoins, onAllDone }: {
         </div>
 
         <div style={{ fontSize: 13, color: AX.muted, lineHeight: 1.5, marginBottom: 14 }}>
-          Write the three most important tasks you must finish before sleeping. 7 + 7 + 6 = 20 coins. They reset automatically tomorrow.
+          Write the three most important tasks you must finish before sleeping. 10 + 10 + 10 = 30 coins. They reset automatically tomorrow.
         </div>
 
         {loading ? (
@@ -130,7 +136,7 @@ export function TopThreeModal({ onClose, onCoins, onAllDone }: {
               }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: AX.muted }}>
                   <span style={{ color: AX.text, fontWeight: 600 }}>Mission {r.slot}</span>
-                  <span>+{REWARD[r.slot]} coins</span>
+                  <CoinBadge amount={r.done ? r.coins_awarded ?? 0 : REWARD[r.slot]} state={r.done ? "earned" : "available"} />
                 </div>
                 <input
                   value={r.title}
@@ -146,7 +152,7 @@ export function TopThreeModal({ onClose, onCoins, onAllDone }: {
                 />
                 {r.done ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 8, color: AX.success, fontSize: 13, fontWeight: 600 }}>
-                    <Check size={16} />Completed · +{REWARD[r.slot]} coins
+                    <Check size={16} />Completed
                   </div>
                 ) : (
                   <button

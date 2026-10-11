@@ -3,6 +3,8 @@ import { ShieldCheck, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ContractButton, ContractRing, ContractStats, contractStyles as cs } from "./ContractVisuals";
+import { CoinBadge } from "@/components/CoinBadge";
+import { useDailyCoinRewards } from "@/hooks/useDailyCoinRewards";
 import { haptic } from "@/lib/haptics";
 import { ContractSheet } from "./ContractSheet";
 import { ContractProofSheet } from "./ContractProofSheet";
@@ -36,6 +38,8 @@ export function ContractCard({ onStart, onResume }: {
   onStart?: (row: ContractRow) => Promise<void> | void;
   onResume?: (row: ContractRow) => void;
 } = {}) {
+  const { daily, refresh: refreshRewards } = useDailyCoinRewards();
+  const [awardId, setAwardId] = useState<string | undefined>();
   const tz = deviceTimezone();
   const [row, setRow] = useState<ContractRow | null | undefined>(undefined);
   const [loadErr, setLoadErr] = useState<string | null>(null);
@@ -154,7 +158,11 @@ export function ContractCard({ onStart, onResume }: {
       const { data, error } = await supabase.rpc("finalize_contract_and_award", { _contract_id: row.id });
       if (error) throw error;
       const r = Array.isArray(data) ? data[0] : data;
-      if (r?.result === "awarded") toast.success(`+${r.xp} XP · +${r.coins} coins`);
+      if (r?.result === "awarded") {
+        if (Number(r.coins) > 0) { setAwardId(row.id); toast.success(`+${r.xp} XP · +${r.coins} coins`); }
+        else toast.success(`+${r.xp} XP · Today's coin reward was already earned.`);
+        void refreshRewards(); window.dispatchEvent(new Event("axen:coin-reward"));
+      }
       else toast.info("Reward already claimed");
       await load();
     } catch (e) {
@@ -224,7 +232,7 @@ export function ContractCard({ onStart, onResume }: {
       const mins = 15;
       actions = <><div className={cs.note}>You still have today. Start your rescue version.</div><label className={cs.fieldLabel}>What got in the way? (optional)<div className={cs.fieldWrap}><select className={cs.field} aria-label="Recovery reason" value={reason} onChange={e => setReason(e.target.value)}><option value="">Skip</option>{REASONS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}</select><ChevronDown className={cs.fieldIcon} aria-hidden="true" /></div></label><ContractButton onClick={() => void recover()} disabled={busy}>{busy ? "STARTING…" : `START ${mins}-MINUTE RECOVERY`}</ContractButton></>;
     } else if (row.status === "rewarded" && row.is_recovery) {
-      actions = <><div className={`${cs.note} ${cs.success}`}>Recovered</div><div className={cs.note}>Small win still counts · {row.xp_awarded} XP · {row.coins_awarded} coins</div></>;
+      actions = <><div className={`${cs.note} ${cs.success}`}>Recovered</div><div className={cs.note}>Small win still counts · {row.xp_awarded} XP · <CoinBadge amount={row.coins_awarded} state="earned" /></div></>;
     } else {
       actions = <div className={`${cs.note} ${row.status === "missed" ? cs.error : cs.success}`}>{READ_ONLY[row.status] ?? row.status}</div>;
     }
@@ -234,7 +242,8 @@ export function ContractCard({ onStart, onResume }: {
   return (
     <div className="home-command-block">
       <section className={`${cs.scope} ${cs.card} ${completed ? cs.completed : ""} ${row?.status === "missed" ? cs.missed : ""}`} aria-label="Today’s Contract">
-        <header className={cs.header}><span className={cs.shield}><ShieldCheck size={22} strokeWidth={1.8} /></span><span className={`${cs.mono} ${cs.headerLabel}`}>TODAY’S CONTRACT</span>{status && <span className={`${cs.mono} ${cs.status}`}><i aria-hidden="true" />{status}</span>}</header>{body}
+        <header className={cs.header}><span className={cs.shield}><ShieldCheck size={22} strokeWidth={1.8} /></span><span className={`${cs.mono} ${cs.headerLabel}`}>TODAY’S CONTRACT</span>{status && <span className={`${cs.mono} ${cs.status}`}><i aria-hidden="true" />{status}</span>}<CoinBadge amount={row?.status === "rewarded" && row.coins_awarded > 0 ? row.coins_awarded : row?.is_recovery ? 2 : 10} state={row?.status === "rewarded" && row.coins_awarded > 0 || daily?.contract_claimed && !row?.is_recovery ? "earned" : !daily ? "disabled" : "available"} awardId={awardId} /></header>
+        {!row?.is_recovery && <p className={cs.note}>{daily?.contract_claimed ? "Daily reward claimed · resets at midnight" : "Complete the full contract to earn"}</p>}{body}
       </section>
       {sheet && (
         <ContractSheet
