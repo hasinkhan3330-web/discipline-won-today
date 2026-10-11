@@ -188,7 +188,7 @@ export function ContractCard({ onStart, onResume }: {
 
   const openCreate = () => { setSaveErr(null); setSheet("create"); };
   const completed = row?.status === "rewarded" || row?.status === "verified";
-  const status = row ? ({ scheduled: "Active", active: "Active", draft: "Draft", proof_pending: "Proof pending", verified: "Verified", rewarded: row.is_recovery ? "Recovered" : "Completed", missed: "Missed" }[row.status] ?? row.status) : null;
+  const status = row ? ({ scheduled: "Active", active: "Active", draft: "Draft", proof_pending: "Proof pending", verified: "Verified", rewarded: row.is_recovery ? "Recovered" : "Completed", missed: "Missed", cancelled: "Cancelled" }[row.status] ?? row.status) : null;
   let body: React.ReactNode;
   if (loadErr) {
     body = <><div role="alert" className={cs.error}>{loadErr}</div><ContractButton secondary onClick={load}>Try again</ContractButton></>;
