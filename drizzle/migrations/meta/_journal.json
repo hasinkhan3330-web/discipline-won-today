@@ -71,6 +71,13 @@
       "when": 1791549906332,
       "tag": "0009_verified_rank_coin_seal_projection",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791694554353,
+      "tag": "0010_completion_coin_rewards",
+      "breakpoints": true
     }
   ]
 }
