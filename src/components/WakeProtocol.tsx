@@ -5,6 +5,13 @@ import {
   Play, ShieldCheck, Sparkles, Volume2, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { useNavigate } from "@tanstack/react-router";
+import { readWakeState, saveWakeSettings } from "@/lib/wake.functions";
+import { webAlarmScheduler } from "@/lib/web-alarm-scheduler";
+import { WakeReadiness } from "@/components/wake/WakeReadiness";
+import { CoinBadge } from "@/components/CoinBadge";
+import { wakeReward } from "@/lib/wake-rules";
 
 export type WakeOption = { time: string; pts: number; tag: string; line: string };
 export type WakeTone = { id: string; name: string; url: string };
@@ -52,6 +59,9 @@ export function WakeProtocol({
   onCheckIn: (tier: string) => Promise<number>;
 }) {
   const reduceMotion = useReducedMotion();
+  const readState = useServerFn(readWakeState);
+  const saveState = useServerFn(saveWakeSettings);
+  const navigate = useNavigate();
   const [tier, setTier] = useState(initialTier ?? "4AM");
   const [tone, setTone] = useState(initialTone);
   const [mode, setMode] = useState(initialMode);
@@ -64,12 +74,19 @@ export function WakeProtocol({
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
   const [now, setNow] = useState(Date.now());
+  const [wakeTime, setWakeTime] = useState(timeForTier(initialTier ?? "4AM"));
+  const [repeatDaily, setRepeatDaily] = useState(true);
+  const [difficulty, setDifficulty] = useState(2);
+  const [nextFire, setNextFire] = useState<string | null>(null);
+  const [timezone, setTimezone] = useState("Asia/Kolkata");
+  const [ready, setReady] = useState(webAlarmScheduler.ready);
+  const [saved, setSaved] = useState(false);
 
   const selected = options.find(option => option.time === tier) ?? options[0];
-  const countdown = useMemo(() => nextWindow(tier).getTime() - now, [tier, now]);
+  const countdown = useMemo(() => nextFire ? Date.parse(nextFire) - now : 0, [nextFire, now]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    const timer = window.setInterval(() => setNow(webAlarmScheduler.now()), 1000);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -79,7 +96,18 @@ export function WakeProtocol({
       const { data: userData } = await supabase.auth.getUser();
       const uid = userData.user?.id;
       if (!uid) return;
-      const today = new Date().toISOString().slice(0, 10);
+      const state = await readState();
+      webAlarmScheduler.synchronize(state);
+      setNextFire(state.settings?.next_fire_at ?? null);
+      setTimezone(state.timezone);
+      setSaved(!!state.settings);
+      if (state.settings) {
+        setWakeTime(state.settings.time.slice(0, 5));
+        setRepeatDaily(state.settings.repeat_daily);
+        setDifficulty(state.settings.difficulty);
+        setReminderEnabled(state.settings.enabled);
+      }
+      const today = state.local_date;
       const thirtyAgo = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
       const [{ data: alarm }, { data: sessions }] = await Promise.all([
         supabase.from("alarms").select("time,tone,challenge_type,recovery_enabled,sleep_recommendation").eq("user_id", uid).eq("label", "AXEN Wake Protocol").maybeSingle(),
@@ -91,16 +119,16 @@ export function WakeProtocol({
         if (hour >= 4 && hour <= 7) setTier(`${hour}AM`);
         setTone(alarm.tone || initialTone);
         setMode(alarm.challenge_type === "science" ? "science" : "math");
-        setReminderEnabled(alarm.recovery_enabled);
+        setReminderEnabled(state.settings?.enabled ?? alarm.recovery_enabled);
         setSleepGoal(alarm.sleep_recommendation?.slice(0, 5) || "20:30");
       }
       const completed = (sessions ?? []).filter(session => session.status === "completed" || session.status === "recovered");
       setDayCount(completed.length + (completed.some(session => session.completed_on === today) ? 0 : 1));
       setCheckedToday(completed.some(session => session.completed_on === today));
       setWakeScore(Math.round(Math.min(100, completed.length / 30 * 100)));
-    })();
+    })().catch(reason => { if (live) { setError(reason instanceof Error ? reason.message : "Could not load your alarm"); setStatus("error"); } });
     return () => { live = false; };
-  }, [initialTone]);
+  }, [initialTone, readState]);
 
   const saveSettings = async () => {
     setStatus("saving");
@@ -108,7 +136,11 @@ export function WakeProtocol({
     try {
       onTone(tone);
       onMode(mode);
-      await onSave(selected, reminderEnabled, sleepGoal, tone, mode);
+      const state = await saveState({ data: { time: wakeTime, sleep: sleepGoal, tone, mode, enabled: reminderEnabled, repeat: repeatDaily, difficulty } });
+      webAlarmScheduler.synchronize(state);
+      setNextFire(state.settings?.next_fire_at ?? null);
+      setTimezone(state.timezone);
+      setSaved(true);
       setStatus("idle");
     } catch (reason) {
       setStatus("error");
@@ -123,10 +155,10 @@ export function WakeProtocol({
     try {
       onTone(tone);
       onMode(mode);
-      await onSave(selected, reminderEnabled, sleepGoal, tone, mode);
-      const awarded = await onCheckIn(selected.time);
-      setCheckedToday(true);
-      setStatus(awarded > 0 ? "success" : "already");
+      const state = await readState();
+      if (state.event?.status !== "ringing") throw new Error("Your alarm must ring first. Use Test alarm to check the solve flow without rewards.");
+      await navigate({ to: "/alarm" });
+      setStatus("idle");
     } catch (reason) {
       setStatus("error");
       setError(reason instanceof Error ? reason.message : "Check-in could not be secured.");
@@ -173,7 +205,7 @@ export function WakeProtocol({
 
         <div className="wakep__tiers" role="radiogroup" aria-label="Wake time">
           {options.map(option => (
-            <button key={option.time} type="button" role="radio" aria-checked={tier === option.time} className={tier === option.time ? "is-selected" : ""} onClick={() => setTier(option.time)}>
+            <button key={option.time} type="button" role="radio" aria-checked={tier === option.time} className={tier === option.time ? "is-selected" : ""} onClick={() => { setTier(option.time); setWakeTime(timeForTier(option.time)); setSaved(false); }}>
               <strong>{option.time}</strong><span>+{option.pts} XP</span><small>{option.tag}</small>
             </button>
           ))}
@@ -181,8 +213,9 @@ export function WakeProtocol({
 
         <section className="wakep__countdown">
           <span><Clock3 size={15} /> NEXT CHECK-IN WINDOW</span>
-          <strong>{formatCountdown(countdown)}</strong>
-          <small>{timeForTier(tier)} · local time</small>
+          <strong>{nextFire ? formatCountdown(countdown) : "—:—:—"}</strong>
+          <small>{nextFire ? `${wakeTime} · ${timezone}` : "No saved alarm"} · {saved ? reminderEnabled ? ready ? "Overnight ready" : "Saved · start Overnight Mode" : "Off" : "Unsaved changes"}</small>
+          <CoinBadge amount={wakeReward(wakeTime)} variant="amount" state={wakeReward(wakeTime) ? "available" : "disabled"} />
         </section>
 
         <div className="wakep__metrics" aria-label="Wake metrics">
@@ -194,9 +227,12 @@ export function WakeProtocol({
 
         <div className="wakep__sections">
           {section("sleep", <BedDouble size={19} />, "Sleep Goal", sleepGoal, <label className="wakep__field"><span>Target bedtime</span><input type="time" value={sleepGoal} onChange={event => setSleepGoal(event.target.value)} /></label>)}
-          {section("reminder", reminderEnabled ? <Bell size={19} /> : <BellOff size={19} />, "Wake Reminder", reminderEnabled ? `${timeForTier(tier)} · On` : "Off", <div className="wakep__reminder"><label><span>Alarm time</span><input type="time" min="04:00" max="07:00" value={timeForTier(tier)} onChange={event => { const hour = Number.parseInt(event.target.value, 10); if (hour >= 4 && hour <= 7) setTier(`${hour}AM`); }} /></label><button type="button" role="switch" aria-checked={reminderEnabled} className={reminderEnabled ? "is-on" : ""} onClick={() => setReminderEnabled(value => !value)}><i /></button></div>)}
+          {section("reminder", reminderEnabled ? <Bell size={19} /> : <BellOff size={19} />, "Wake Reminder", reminderEnabled ? `${wakeTime} · On` : "Off", <><div className="wakep__reminder"><label><span>Alarm time</span><input type="time" value={wakeTime} onChange={event => { setWakeTime(event.target.value); const hour = Number.parseInt(event.target.value, 10); setTier(hour >= 4 && hour <= 7 ? `${hour}AM` : ""); setSaved(false); }} /></label><button type="button" role="switch" aria-label="Alarm enabled" aria-checked={reminderEnabled} className={reminderEnabled ? "is-on" : ""} onClick={() => { setReminderEnabled(value => !value); setSaved(false); }}><i /></button></div><label className="wakep__field"><span>Repeat daily</span><input type="checkbox" checked={repeatDaily} onChange={event => { setRepeatDaily(event.target.checked); setSaved(false); }} /></label></>)}
           {section("evening", <MoonStar size={19} />, "Evening Plan", `${mode === "math" ? "Math" : "Science"} · ${(tones.find(item => item.id === tone)?.name ?? "Alarm").toLowerCase()}`, <><div className="wakep__mode"><button type="button" className={mode === "math" ? "is-selected" : ""} onClick={() => setMode("math")}>Math</button><button type="button" className={mode === "science" ? "is-selected" : ""} onClick={() => setMode("science")}>Science</button></div><div className="wakep__tones">{tones.map(item => <button type="button" key={item.id} className={tone === item.id ? "is-selected" : ""} onClick={() => { setTone(item.id); onTone(item.id); }}><Volume2 size={15} /><span>{item.name}</span>{tone === item.id ? <Check size={15} /> : <Play size={13} />}</button>)}</div></>)}
         </div>
+
+        {mode === "math" && <label className="wakep__field"><span>Math difficulty</span><select value={difficulty} onChange={e => setDifficulty(Number(e.target.value))}><option value={1}>Easy</option><option value={2}>Medium</option><option value={3}>Hard</option></select></label>}
+        <WakeReadiness onReady={setReady} />
 
         <section className="wakep__journey">
           <header><Sparkles size={16} /><span>MILESTONE JOURNEY</span></header>

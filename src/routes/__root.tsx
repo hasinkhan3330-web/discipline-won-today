@@ -2,6 +2,7 @@ import { createRootRouteWithContext, Outlet, Scripts } from "@tanstack/react-rou
 import { QueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "@/styles.css?url";
+import { WakeObserver } from "@/components/wake/WakeObserver";
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +12,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" href={appCss} />
         <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="manifest" href="/wake-manifest.webmanifest" />
       </head>
       <body style={{ margin: 0, background: "#000", color: "#e8e8e8" }}>
         {children}
@@ -24,6 +26,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <div style={{ minHeight: "100vh", background: "#000" }}>
+      <WakeObserver />
       <Outlet />
     </div>
   );
