@@ -27,7 +27,6 @@ import { CropModal } from "@/components/CropModal";
 import { Onboarding, type OnboardingAnswers } from "@/components/Onboarding";
 import { flushQuizToProfile } from "@/lib/quiz";
 import { THEMES, MILESTONES, THEME_PHOTO, THEME_VIDEO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
-import { analyzeWake, type WakeVerdict } from "@/lib/wake-ai";
 import axenLogo from "@/assets/axen-logo.png";
 
 import { useMeditation } from "@/hooks/useMeditation";
@@ -39,7 +38,7 @@ import { RankTab } from "@/tabs/RankTab";
 import { useMilestoneSeals } from "@/hooks/useMilestoneSeals";
 import { ProfileTab } from "@/tabs/ProfileTab";
 
-import { startAlarm as startAlarmAudio, stopAlarm as stopAlarmAudio, previewTone, isAlarmPlaying } from "@/lib/alarm-audio";
+import { stopAlarm as stopAlarmAudio, previewTone } from "@/lib/alarm-audio";
 
 import toneTechno from "@/assets/ringtones/techno_beat.mp3.asset.json";
 import toneMeduzza from "@/assets/ringtones/MEDUZZA.mp3.asset.json";
@@ -52,13 +51,10 @@ import toneScariest from "@/assets/ringtones/The_Scariest_Alarm_256k.mp3.asset.j
 import toneRetro from "@/assets/ringtones/retro_emergency.wav.asset.json";
 import toneLoudEmergency from "@/assets/ringtones/loud_emergency.mp3.asset.json";
 import { publicDisplayName, safeName } from "@/lib/display-name";
-import { WakeVerify } from "@/components/WakeVerify";
 import { WakeProtocol } from "@/components/WakeProtocol";
-import {
-  loadPlan, savePlan, shouldFire, markFired, scheduleNativeAlarm, cancelNativeAlarm, rearmWakePlan,
-  nextPlanDate, isStalePlan,
-  type WakePlan,
-} from "@/lib/wake-plan";
+import { readWakeState } from "@/lib/wake.functions";
+import { webAlarmScheduler } from "@/lib/web-alarm-scheduler";
+import type { AlarmState } from "@/lib/wake-types";
 
 const WAKE_OPTIONS = [
   { time: "4AM", pts: 10, tag: "ELITE", line: "The world sleeps. You rise." },
@@ -446,26 +442,9 @@ function App() {
   };
 
 
-  // 4AM proof-of-wakeup state
-  const [proof, setProof] = useState<null | {
-    mode: "time" | "choose" | "quiz" | "scan" | "result";
-    wakePts?: number;
-    wakeTime?: string;
-    wakeLine?: string;
-    subject?: "math" | "physics";
-    question?: string;
-    answer?: number;
-    input?: string;
-    correct?: boolean;
-    startedAt?: number;
-    firstKeyMs?: number;
-    keyTimes?: number[];
-    corrections?: number;
-    verdict?: WakeVerdict;
-    wrong?: number;
-
-  }>(null);
-
+  const [showWake, setShowWake] = useState(false);
+  const [wakeState, setWakeState] = useState<AlarmState | null>(null);
+  const readAlarm = useServerFn(readWakeState);
   const [ringtone, setRingtone] = useState<string>(() => {
     if (typeof window === "undefined") return "superloud";
     const saved = localStorage.getItem("dwt_ringtone");
@@ -483,55 +462,23 @@ function App() {
   };
   const stopPreview = () => { stopAlarmAudio(); setPreviewId(null); };
 
-  // ---- wake plan (tier + tone + verification mode saved for today) ----
-  const [wakePlan, setWakePlan] = useState<WakePlan | null>(() => loadPlan());
-  const [wakeMode, setWakeMode] = useState<"math" | "science">(() => loadPlan()?.mode ?? "math");
-  const [wakeSaved, setWakeSaved] = useState(false);
-  const [wakeAlarm, setWakeAlarm] = useState<WakePlan | null>(null);
-
-  const saveWakePlan = async (w: { time: string; pts: number; line: string }, reminderEnabled = true, sleepGoal = "20:30", selectedTone = ringtone, selectedMode = wakeMode) => {
-    const plan: WakePlan = {
-      // the plan targets the NEXT occurrence of that hour, never a time already past today
-      date: nextPlanDate(w.time), tier: w.time, pts: w.pts, line: w.line, tone: selectedTone, mode: selectedMode,
-    };
-    stopPreview();
-    savePlan(plan);
-    setWakePlan(plan);
-    setWakeSaved(true);
-    if (reminderEnabled) await scheduleNativeAlarm(plan);
-    else await cancelNativeAlarm();
-    // persist the plan on the account so it survives reinstall / new device
-    const { data: alarmId, error } = await (supabase as any)
-      .rpc("save_wake_plan", { _slot: plan.tier, _tone: plan.tone, _mode: plan.mode });
-    if (error) throw new Error(error.message);
-    const { error: updateError } = await supabase.from("alarms").update({
-      recovery_enabled: reminderEnabled,
-      sleep_recommendation: sleepGoal,
-    }).eq("id", alarmId);
-    if (updateError) throw new Error(updateError.message);
-    toast.success(`${plan.tier} wake protocol armed`, { description: "The verification screen opens at that time." });
-    setTimeout(() => setWakeSaved(false), 900);
-  };
-
-  // fires the full-screen takeover at the saved time while the app is open
+  const [wakeMode, setWakeMode] = useState<"math" | "science">("math");
   useEffect(() => {
-    if (!wakePlan || wakeAlarm) return;
-    const check = () => {
-      if (isStalePlan(wakePlan)) { void rearmWakePlan(wakePlan).then(setWakePlan); return; }
-      if (shouldFire(wakePlan)) {
-        markFired(wakePlan);
-        setProof(null);
-        setWakeAlarm(wakePlan);
-      }
+    let live = true;
+    const refreshAlarm = async () => {
+      if (!myId) return;
+      try {
+        const state = await readAlarm();
+        if (!live) return;
+        webAlarmScheduler.synchronize(state);
+        setWakeState(state);
+        if (state.settings) { setRingtone(state.settings.tone); setWakeMode(state.settings.mode); }
+      } catch { /* readiness displays connection errors */ }
     };
-    check();
-    const id = window.setInterval(check, 10000);
-    window.addEventListener("focus", check);
-    document.addEventListener("visibilitychange", check);
-    return () => { window.clearInterval(id); window.removeEventListener("focus", check); document.removeEventListener("visibilitychange", check); };
-  }, [wakePlan, wakeAlarm]);
-
-
+    void refreshAlarm();
+    window.addEventListener("axen:wake-updated", refreshAlarm);
+    return () => { live = false; window.removeEventListener("axen:wake-updated", refreshAlarm); };
+  }, [myId, readAlarm]);
 
   const theme = THEMES[themeKey];
   const G = theme.accent;
@@ -543,46 +490,7 @@ function App() {
 
 
 
-  const buildQuestion = (subject: "math" | "physics") => {
-    if (subject === "math") {
-      const ops = [
-        () => { const a = 12 + Math.floor(Math.random()*40); const b = 5 + Math.floor(Math.random()*30); return { q: `${a} + ${b} = ?`, a: a+b }; },
-        () => { const a = 40 + Math.floor(Math.random()*50); const b = 5 + Math.floor(Math.random()*30); return { q: `${a} − ${b} = ?`, a: a-b }; },
-        () => { const a = 3 + Math.floor(Math.random()*11); const b = 3 + Math.floor(Math.random()*11); return { q: `${a} × ${b} = ?`, a: a*b }; },
-        () => { const b = 3 + Math.floor(Math.random()*9); const r = 2 + Math.floor(Math.random()*10); return { q: `${b*r} ÷ ${b} = ?`, a: r }; },
-      ];
-      return ops[Math.floor(Math.random()*ops.length)]();
-    }
-    const ops = [
-      () => { const m = 2 + Math.floor(Math.random()*8); const a = 2 + Math.floor(Math.random()*8); return { q: `Force = mass × acceleration. m=${m}kg, a=${a}m/s². F = ? (N)`, a: m*a }; },
-      () => { const d = 20 + Math.floor(Math.random()*80); const t = 2 + Math.floor(Math.random()*8); return { q: `Speed = distance ÷ time. d=${d*t}m, t=${t}s. Speed = ? (m/s)`, a: d }; },
-      () => { const m = 2 + Math.floor(Math.random()*8); const g = 10; const h = 2 + Math.floor(Math.random()*8); return { q: `PE = m·g·h. m=${m}kg, g=${g}, h=${h}m. PE = ? (J)`, a: m*g*h }; },
-      () => { const v = 2 + Math.floor(Math.random()*10); const m = 2 + Math.floor(Math.random()*8); return { q: `Momentum p = m·v. m=${m}kg, v=${v}m/s. p = ? (kg·m/s)`, a: m*v }; },
-    ];
-    return ops[Math.floor(Math.random()*ops.length)]();
-  };
-
-  // live alarm: loops at 200% boosted volume until the user dismisses it
-  const stopAlarm = () => stopAlarmAudio();
-  const startAlarm = () => {
-    const r = RINGTONES.find(x => x.id === ringtone) || RINGTONES[0];
-    startAlarmAudio(r.url);
-  };
   useEffect(() => () => stopAlarmAudio(), []);
-
-
-  const startProof = (subject: "math" | "physics") => {
-    const { q, a } = buildQuestion(subject);
-    setPreviewId(null);
-    startAlarm();
-    setProof(p => ({
-      ...(p || {}), mode: "quiz", subject, question: q, answer: a, input: "",
-      startedAt: Date.now(), keyTimes: [], corrections: 0, firstKeyMs: undefined, wrong: 0,
-    }));
-  };
-
-
-  const wakeTask = tasks.find(t => /wake/i.test(t.name)) || tasks[0];
 
   const completeTaskRpc = async (uuid: string, overridePts?: number) => {
     if (typeof overridePts === "number") {
@@ -625,34 +533,10 @@ function App() {
     });
   };
 
-  /** Credits a solved wake challenge server-side: once per day, including the linked Wake task. */
-  const completeWakeProtocol = async (slot: string) => {
-    const uuid = (wakeTask as any)?._uuid as string | undefined;
-    const { data, error } = await (supabase as any).rpc("complete_wake_protocol", {
-      _slot: slot,
-      _task_id: uuid ?? null,
-    });
-    if (error) {
-      console.error(error);
-      toast.error("Could not credit the wake protocol", { description: error.message });
-      return 0;
-    }
-    const row = Array.isArray(data) ? data[0] : data;
-    if (row) { setCoins(row.coins ?? 0); setStreak(row.streak ?? 0); }
-    if (uuid) setTasks(p => p.map(t => ((t as any)._uuid === uuid ? { ...t, done: true } : t)));
-    const awarded = Number(row?.awarded ?? 0);
-    if (awarded > 0) {
-      const today = new Date().toISOString().slice(0, 10);
-      setLife(prev => prev ? { ...prev, bestStreak: Math.max(prev.bestStreak, Number(row?.longest_streak ?? row?.streak ?? 0)), lifetimeCoins: prev.lifetimeCoins + awarded, heat: prev.heat.map(h => (h.date === today ? { ...h, count: h.count + 1 } : h)) } : prev);
-      toast.success(`+${awarded} coins · wake challenge complete`);
-    } else toast.success("Wake protocol already completed today");
-    return awarded;
-  };
   const completeHabitFromProfile = async (uuid: string) => {
     const t = tasks.find(x => (x as any)._uuid === uuid);
     if (t && /wake/i.test(t.name)) {
-      const plan = wakePlan && !isStalePlan(wakePlan) ? wakePlan : null;
-      setProof(plan ? { mode: "time", wakeTime: plan.tier, wakePts: plan.pts, wakeLine: plan.line } : { mode: "time" });
+      setShowWake(true);
       return;
     }
     await completeTaskRpc(uuid);
@@ -752,49 +636,6 @@ function App() {
   };
 
 
-  const submitProof = () => {
-    if (!proof || proof.mode !== "quiz") return;
-    const now = Date.now();
-    const correct = Number(proof.input) === proof.answer;
-
-    // WRONG → the alarm keeps ringing. New question, no escape.
-    if (!correct) {
-      const next = buildQuestion(proof.subject ?? "math");
-      toast.error("Wrong answer — the alarm keeps ringing", { description: "Solve the new problem to silence it." });
-      if (!isAlarmPlaying()) startAlarm();
-      setProof({
-        ...proof,
-        question: next.q, answer: next.a, input: "",
-        wrong: (proof.wrong ?? 0) + 1,
-        corrections: (proof.corrections ?? 0) + 1,
-      });
-      return;
-    }
-
-    // CORRECT → only now is the alarm allowed to stop.
-    stopAlarm();
-    const started = proof.startedAt ?? now;
-    const times = proof.keyTimes ?? [];
-    const gaps = times.slice(1).map((t, i) => t - times[i]);
-    const verdict = analyzeWake({
-      firstKeyMs: proof.firstKeyMs ?? now - started,
-      totalMs: now - started,
-      keyGaps: gaps,
-      corrections: proof.corrections ?? 0,
-      correct,
-      claimed: proof.wakeTime || "4AM",
-      hour: new Date().getHours(),
-    });
-    setProof({ ...proof, mode: "scan", correct, verdict });
-    setTimeout(() => {
-      setProof(p => (p && p.mode === "scan" ? { ...p, mode: "result" } : p));
-      if (verdict.awake && wakeTask && !wakeTask.done) {
-        void completeWakeProtocol(proof.wakeTime || wakePlan?.tier || "4AM");
-      }
-    }, 2800);
-  };
-
-
   const verifyKindFor = (name: string): VerifyKind | null => {
     if (/focus|study|read/i.test(name)) return "focus";
     return null;
@@ -812,8 +653,7 @@ function App() {
     const t = tasks.find(x => x.id === id);
     if (!t || t.done) return;
     if (/wake/i.test(t.name)) {
-      const plan = wakePlan && !isStalePlan(wakePlan) ? wakePlan : null;
-      setProof(plan ? { mode: "time", wakeTime: plan.tier, wakePts: plan.pts, wakeLine: plan.line } : { mode: "time" });
+      setShowWake(true);
       return;
     }
     if (/top\s?3|top three missions/i.test(t.name)) {
@@ -1011,7 +851,7 @@ function App() {
                 tasks={tasks} tick={tick} onScan={scanTask} onFocusComplete={onFocusComplete} onMusicReward={onMusicReward}
                 onBuyShield={buyShield}
                 reminderTasks={tasks.map(t => ({ uuid: (t as any)._uuid as string, name: t.name, done: t.done }))}
-                wakeSet={!!wakePlan && !isStalePlan(wakePlan)}
+                wakeSet={!!wakeState?.settings?.enabled && !!wakeState.settings.next_fire_at && webAlarmScheduler.ready}
                 hasPaidFocus={ent.isPremium}
                 onUnlockFocus={() => setShowPaywall(true)}
               />
@@ -1138,192 +978,19 @@ function App() {
       </div>
 
 
-      {proof?.mode === "time" && (
+      {showWake && (
         <WakeProtocol
           options={WAKE_OPTIONS}
           tones={RINGTONES}
-          initialTier={proof.wakeTime ?? wakePlan?.tier}
+          initialTier={wakeState?.settings ? `${Number.parseInt(wakeState.settings.time, 10)}AM` : undefined}
           initialTone={ringtone}
           initialMode={wakeMode}
           coins={coins}
           streak={streak}
           bestStreak={life?.bestStreak ?? streak}
-          onClose={() => { stopPreview(); setProof(null); }}
+          onClose={() => { stopPreview(); setShowWake(false); }}
           onTone={pickRingtone}
           onMode={setWakeMode}
-          onSave={saveWakePlan}
-          onCheckIn={async slot => {
-            const option = WAKE_OPTIONS.find(item => item.time === slot);
-            setProof({ mode: "choose", wakeTime: slot, wakePts: option?.pts, wakeLine: option?.line });
-            return 0;
-          }}
-        />
-      )}
-
-      {/* Existing challenge and analysis flow remains unchanged. */}
-      {proof && proof.mode !== "time" && (
-        <div onClick={() => proof.mode === "result" && setProof(null)} style={{
-          position: "fixed", inset: 0, zIndex: 999, background: "rgba(0,0,0,0.85)",
-          backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center",
-          padding: 16, overflowY: "auto", animation: "fadeUp 0.25s ease-out",
-        }}>
-          <div onClick={e => e.stopPropagation()} style={{
-            width: "100%", maxWidth: 380, maxHeight: "88dvh", overflowY: "auto", background: "rgba(10,10,25,0.95)",
-            border: `1px solid ${G}77`, borderLeft: `3px solid ${G}`,
-            padding: 20, boxShadow: `0 10px 60px ${G}55, inset 0 1px 0 ${G}33`,
-            fontFamily: AX.font,
-          }}>
-            <div style={{ fontSize: 10, letterSpacing: 4, color: G, marginBottom: 6 }}>
-              ▸ {proof.wakeTime || "04:00"} PROTOCOL
-            </div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", letterSpacing: 2, marginBottom: 4, textShadow: `0 0 12px ${G}` }}>
-              PROVE YOU ARE AWAKE
-            </div>
-            <div style={{ fontSize: 11, color: "#888", marginBottom: 18, lineHeight: 1.5 }}>
-              Sleeping minds cannot solve. Answer correctly to earn <span style={{ color: G }}>+{proof.wakePts ?? 10} coins</span>.
-            </div>
-
-            {proof.mode === "choose" && (
-              <>
-                <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 2, marginBottom: 10 }}>CHOOSE YOUR PROOF</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  {(["math", "physics"] as const).map(s => (
-                    <button key={s} onClick={() => startProof(s)} style={{
-                      padding: "16px 8px", background: `linear-gradient(135deg, ${G}22, transparent)`,
-                      border: `1px solid ${G}66`, color: "#fff", cursor: "pointer",
-                      fontFamily: AX.font, fontSize: 13, fontWeight: 700, letterSpacing: 2,
-                    }}>
-                      <div style={{ fontSize: 26, marginBottom: 6 }}>{s === "math" ? "🧮" : "⚛️"}</div>
-                      {s.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-                <button onClick={() => { stopPreview(); setProof({ mode: "time" }); }} style={{
-                  marginTop: 14, width: "100%", padding: 8, background: "transparent",
-                  border: "1px solid #333", color: "#888", cursor: "pointer",
-                  fontFamily: AX.font, fontSize: 10, letterSpacing: 2,
-                }}>← BACK</button>
-              </>
-            )}
-
-            {proof.mode === "quiz" && (
-              <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                  <div style={{ fontSize: 9, color: G, letterSpacing: 3 }}>
-                    {proof.subject === "math" ? "🧮 MATH" : "⚛️ PHYSICS"}
-                  </div>
-                  <div style={{ fontSize: 9, color: "#ff4466", letterSpacing: 2, animation: "pulse 1s infinite" }}>🔔 ALARM RINGING</div>
-                </div>
-                <div style={{
-                  padding: 16, background: "rgba(0,0,0,0.5)", border: `1px solid ${G}44`,
-                  fontSize: 15, color: "#fff", marginBottom: 14, lineHeight: 1.5, textAlign: "center", fontWeight: 700,
-                }}>{proof.question}</div>
-                <input
-                  autoFocus type="number" inputMode="numeric" value={proof.input ?? ""}
-                  onChange={e => {
-                    const now = Date.now();
-                    const prev = proof.input ?? "";
-                    setProof({
-                      ...proof,
-                      input: e.target.value,
-                      keyTimes: [...(proof.keyTimes ?? []), now],
-                      firstKeyMs: proof.firstKeyMs ?? now - (proof.startedAt ?? now),
-                      corrections: (proof.corrections ?? 0) + (e.target.value.length < prev.length ? 1 : 0),
-                    });
-                  }}
-                  onKeyDown={e => e.key === "Enter" && submitProof()}
-                  placeholder="Your answer"
-                  style={{
-                    width: "100%", padding: "12px 14px", background: "rgba(0,0,0,0.6)",
-                    border: `1px solid ${G}66`, color: "#fff", fontFamily: AX.font,
-                    fontSize: 18, letterSpacing: 2, textAlign: "center", outline: "none",
-                    boxSizing: "border-box", marginBottom: 12,
-                  }}
-                />
-                <button onClick={submitProof} disabled={!proof.input} style={{
-                  width: "100%", padding: 12, background: proof.input ? `linear-gradient(90deg, ${G}, ${G2})` : "#222",
-                  border: "none", color: proof.input ? "#000" : "#555", cursor: proof.input ? "pointer" : "not-allowed",
-                  fontFamily: AX.font, fontSize: 12, fontWeight: 900, letterSpacing: 3,
-                  boxShadow: proof.input ? `0 0 20px ${G}66` : "none",
-                }}>SUBMIT PROOF</button>
-                {!!proof.wrong && (
-                  <div style={{ marginTop: 10, fontSize: 10, color: "#ff4466", letterSpacing: 1.5, textAlign: "center" }}>
-                    {proof.wrong} WRONG {proof.wrong === 1 ? "ATTEMPT" : "ATTEMPTS"} · ALARM STILL RINGING
-                  </div>
-                )}
-                <div style={{ marginTop: 10, fontSize: 9, color: "#555", letterSpacing: 1.5, textAlign: "center", lineHeight: 1.6 }}>
-                  🔒 LOCKED — THE ALARM ONLY STOPS ON A CORRECT ANSWER
-                </div>
-              </>
-            )}
-
-            {proof.mode === "scan" && (
-              <div style={{ padding: "6px 0" }}>
-                <div style={{ position: "relative", height: 90, border: `1px solid ${G}44`, background: "rgba(0,0,0,0.5)", overflow: "hidden", marginBottom: 14 }}>
-                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34 }}>🧠</div>
-                  <div style={{ position: "absolute", left: 0, right: 0, height: 26, background: `linear-gradient(180deg, transparent, ${G}55, transparent)`, animation: "scan-sweep 1.2s linear infinite" }} />
-                </div>
-                <div style={{ fontSize: 11, color: "#fff", letterSpacing: 3, fontWeight: 900, textAlign: "center", marginBottom: 10 }}>AI WAKE SENSOR · ANALYSING</div>
-                {(proof.verdict?.factors ?? []).map((f, i) => (
-                  <div key={f.label} style={{
-                    display: "flex", justifyContent: "space-between", fontSize: 10, letterSpacing: 1.5,
-                    padding: "6px 8px", marginBottom: 4, background: "rgba(0,0,0,0.4)",
-                    border: `1px solid ${f.ok ? G + "55" : "#ff446655"}`,
-                    animation: `fadeUp 0.3s ease-out ${i * 0.25}s both`,
-                  }}>
-                    <span style={{ color: "#999" }}>{f.ok ? "◉" : "○"} {f.label}</span>
-                    <span style={{ color: f.ok ? G : "#ff4466" }}>{f.value}</span>
-                  </div>
-                ))}
-                <div style={{ fontSize: 9, color: "#666", letterSpacing: 2, textAlign: "center", marginTop: 10 }}>ON-DEVICE · NO DATA LEAVES YOUR PHONE</div>
-              </div>
-            )}
-
-
-            {proof.mode === "result" && (
-              <div style={{ textAlign: "center", padding: "10px 0" }}>
-                <div style={{ fontSize: 48, marginBottom: 10 }}>{proof.verdict?.awake ? "✅" : "❌"}</div>
-                <div style={{ fontSize: 18, fontWeight: 900, color: proof.verdict?.awake ? G : "#ff4466", letterSpacing: 2, marginBottom: 8 }}>
-                  {proof.verdict?.awake ? "AWAKE CONFIRMED" : "NOT CONFIRMED"}
-                </div>
-                <div style={{ fontSize: 10, color: "#888", letterSpacing: 2, marginBottom: 10 }}>
-                  AI CONFIDENCE <span style={{ color: proof.verdict?.awake ? G : "#ff4466", fontWeight: 900 }}>{proof.verdict?.score ?? 0}%</span>
-                </div>
-                <div style={{ height: 6, background: "#0a0a15", border: `1px solid ${G}22`, marginBottom: 14, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${proof.verdict?.score ?? 0}%`, background: `linear-gradient(90deg,${G},${G2})`, boxShadow: `0 0 10px ${G}`, transition: "width 0.6s" }} />
-                </div>
-                <div style={{ fontSize: 11, color: "#aaa", marginBottom: 16, lineHeight: 1.5 }}>
-                  {proof.verdict?.awake
-                    ? <>+{proof.wakePts ?? 10} coins added. {proof.wakeLine || "You rose while the world slept."}</>
-                    : proof.correct
-                      ? <>Answer was right, but the sensor read sleepy signals. Try again fully awake.</>
-                      : <>Correct answer was <span style={{ color: G }}>{proof.answer}</span>. No coins — but the discipline still counts.</>}
-                </div>
-                <button onClick={() => setProof(null)} style={{
-                  width: "100%", padding: 10, background: `linear-gradient(90deg, ${G}, ${G2})`,
-                  border: "none", color: "#000", cursor: "pointer",
-                  fontFamily: AX.font, fontSize: 11, fontWeight: 900, letterSpacing: 3,
-                }}>CONTINUE</button>
-              </div>
-
-            )}
-          </div>
-        </div>
-      )}
-
-      {wakeAlarm && (
-        <WakeVerify
-          tier={wakeAlarm.tier}
-          pts={wakeAlarm.pts}
-          line={wakeAlarm.line}
-          mode={wakeAlarm.mode}
-          toneUrl={(RINGTONES.find(r => r.id === wakeAlarm.tone) || RINGTONES[0]).url}
-          onVerified={() => {
-            const slot = wakeAlarm.tier;
-            setWakeAlarm(null);
-            void rearmWakePlan(wakeAlarm).then(setWakePlan);
-            void completeWakeProtocol(slot);
-          }}
         />
       )}
 
