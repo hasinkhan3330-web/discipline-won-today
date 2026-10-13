@@ -31,12 +31,19 @@ export function AlarmScreen() {
   const refresh = useCallback(async () => {
     try {
       const state = await read(); webAlarmScheduler.synchronize(state); setLoaded(true);
-      if (state.event) { setEvent(state.event); if (state.event.status === "ringing") await webAlarmScheduler.ring(tones[state.event.tone] ?? superloud.url); }
+      if (state.event) {
+        setEvent(state.event);
+        if (state.event.status === "ringing") await webAlarmScheduler.ring(tones[state.event.tone] ?? superloud.url);
+        else if (state.event.status === "solved") {
+          webAlarmScheduler.stopVerified();
+          setResult({ solved: true, correct: true, awarded: 0, result: state.event.result ?? "daily_claimed", event: state.event });
+        }
+      } else setEvent(null);
     } catch { setError("Connection needed to verify the alarm. Reconnect and try again."); }
   }, [read]);
   useEffect(() => { void refresh(); const id = window.setInterval(refresh, 5000); return () => clearInterval(id); }, [refresh]);
   useEffect(() => {
-    if (!event || result?.solved) return;
+    if (event?.status !== "ringing" || result?.solved) return;
     const pop = () => { window.history.pushState({ wake: true }, "", "/alarm"); };
     const unload = (e: BeforeUnloadEvent) => { e.preventDefault(); };
     window.history.pushState({ wake: true }, "", "/alarm");
@@ -49,7 +56,7 @@ export function AlarmScreen() {
     try {
       const response = await submit({ data: { eventId: event.id, version: event.question.version, answer: value } });
       setEvent(response.event); setAnswer("");
-      if (response.solved) { webAlarmScheduler.stopVerified(); setResult(response); }
+      if (response.solved) { webAlarmScheduler.stopVerified(); setResult(response); window.dispatchEvent(new Event("axen:wake-updated")); }
       else setError(response.correct ? "One correct. Solve the next question." : "Incorrect. The alarm keeps ringing. Solve the new question.");
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Verification failed. The alarm keeps ringing."); await refresh(); }
     finally { setBusy(false); }

@@ -12,7 +12,7 @@ export function WakeReadiness({ onReady }: { onReady: (ready: boolean) => void }
   const [subscribed, setSubscribed] = useState(false);
   const [installed, setInstalled] = useState(false);
   const [ios, setIos] = useState(false);
-  const [overnight, setOvernight] = useState(false);
+  const [overnight, setOvernight] = useState(webAlarmScheduler.ready);
   const [lock, setLock] = useState(false);
   const [error, setError] = useState("");
   const [testing, setTesting] = useState(false);
@@ -48,8 +48,8 @@ export function WakeReadiness({ onReady }: { onReady: (ready: boolean) => void }
   }, [overnight, testing, read, navigate]);
   const start = async () => {
     setError("");
-    try { const ready = await webAlarmScheduler.startOvernight(); setOvernight(ready.audio); setLock(ready.wakeLock); onReady(ready.audio); }
-    catch { setError("Audio could not start. Check browser permissions and keep a backup alarm."); }
+    try { const ready = await webAlarmScheduler.startOvernight(); setOvernight(ready.audio); setLock(ready.wakeLock); onReady(ready.audio); window.dispatchEvent(new Event("axen:wake-updated")); return ready.audio; }
+    catch { setError("Audio could not start. Check browser permissions and keep a backup alarm."); return false; }
   };
   const enablePush = async () => {
     setError("");
@@ -71,7 +71,7 @@ export function WakeReadiness({ onReady }: { onReady: (ready: boolean) => void }
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Notifications could not be enabled."); }
   };
   const runTest = async () => {
-    await start();
+    if (!await start()) return;
     try { await test(); setTesting(true); } catch (reason) { setError(reason instanceof Error ? reason.message : "Test could not start."); }
   };
   return <>
