@@ -148,6 +148,13 @@
       "when": 1791708039896,
       "tag": "0020_wake_verified_rewards_and_push_queue",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791942079916,
+      "tag": "0021_wake_legacy_completion_and_field_guards",
+      "breakpoints": true
     }
   ]
 }
