@@ -155,6 +155,13 @@
       "when": 1791942079916,
       "tag": "0021_wake_legacy_completion_and_field_guards",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1791942154539,
+      "tag": "0022_wake_reopen_score_and_question_hardening",
+      "breakpoints": true
     }
   ]
 }
