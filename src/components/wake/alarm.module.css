@@ -13,7 +13,7 @@
 .error { color: var(--wake-error); font-size: 14px; }
 .options { display: grid; gap: 10px; }
 .clock { font-family: Orbitron, sans-serif; font-size: 44px; font-variant-numeric: tabular-nums; color: var(--wake-muted); }
-.readiness { --wake-muted: #a2b0c4; --wake-line: #29384b; --wake-error: #ff9d9d; display: grid; gap: 12px; font-size: 12px; color: var(--wake-muted); padding: 16px 0; border-top: 1px solid var(--wake-line); }
+.readiness { --wake-bg: #070a12; --wake-fg: #edf3fb; --wake-panel: #121a28; --wake-muted: #a2b0c4; --wake-line: #29384b; --wake-error: #ff9d9d; display: grid; gap: 12px; font-size: 12px; color: var(--wake-muted); padding: 16px 0; border-top: 1px solid var(--wake-line); }
 .readiness ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
 .readiness li { display: flex; justify-content: space-between; gap: 12px; }
 .readiness button { width: 100%; }

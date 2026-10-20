@@ -1,10 +1,13 @@
 # AXEN VERIFIED DISCIPLINE SYSTEM — Task Roadmap
 
 ## Real 4AM web alarm
-- [ ] Server scheduling, private challenge history, verified solve and existing-ledger daily rewards
-- [ ] Wake-only saved UI, Overnight Mode, readiness/test and authenticated ringing route
-- [ ] Push subscription/outbox, bounded processors and private monitoring
-- [ ] Bun/server/browser/load checks and honest verification report; no publication
+- [x] Server scheduling, private challenge history, verified solve and existing-ledger daily rewards; isolated ownership/concurrency tests passed.
+- [x] Wake-only saved UI, Overnight Mode, readiness/test and authenticated ringing route; signed-in 10-second wrong/reload/solve flow passed at 360/390/430px.
+- [x] Private 400-question source-backed bank, five categories and two-answer gate; full exhaustion and reset tests passed. Independent human review remains unverified.
+- [x] Push subscription/outbox, bounded processor and private monitoring implemented; readiness explicitly says delivery inactive.
+- [x] Bun/server/browser checks and honest report in docs/wake-alarm-verification.md; no publication.
+- [ ] Closed-app push activation — blocked on separately approved publication and private-secret scheduler provisioning; physical push/audio checks require real devices.
+- [ ] 100,000/min throughput acceptance — isolated fixture setup exceeded 600 seconds; no batch timings or zero-duplicate load result established. Requires a completed provisioned benchmark.
 
 ## Zen-only eclipse screenshot rebuild
 - [x] Replace Zen presentation with supplied eclipse SVG and selection layout; preserve existing session/audio/settings handlers and isolate styles/fonts to Zen. Existing hook default remains 10 minutes to avoid changing session logic; selecting 5 uses real state.

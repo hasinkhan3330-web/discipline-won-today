@@ -20,8 +20,12 @@ export const Route = createFileRoute("/api/public/wake/process")({
     const jobs = data as unknown as import("@/lib/wake-push.server").PushJob[];
     const results = await Promise.all(jobs.map(async job => {
       const { data: current } = await supabaseAdmin.from("alarm_events").select("status").eq("id", job.event_id).maybeSingle();
-      if (current?.status !== "ringing") return 0;
-      const status = await sendWakePush(job);
+      if (current?.status !== "ringing") {
+        await supabaseAdmin.rpc("wake_finish_push", { _id: job.id, _lease: job.lease_token, _http: 0 });
+        return 0;
+      }
+      let status = 0;
+      try { status = await sendWakePush(job); } catch { /* finish every claim, including encryption/configuration failures */ }
       await supabaseAdmin.rpc("wake_finish_push", { _id: job.id, _lease: job.lease_token, _http: status });
       return status;
     }));
