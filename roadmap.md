@@ -6,6 +6,7 @@
 - [x] Private 400-question source-backed bank, five categories and two-answer gate; full exhaustion and reset tests passed. Independent human review remains unverified.
 - [x] Push subscription/outbox, bounded processor and private monitoring implemented; readiness explicitly says delivery inactive.
 - [x] Bun/server/browser checks and honest report in docs/wake-alarm-verification.md; no publication.
+- [x] Privacy hardening: table rights revoked, push payload allowlist, no device caching, offline answer queue, live science capture (14/14 pass).
 - [ ] Closed-app push activation — blocked on separately approved publication and private-secret scheduler provisioning; physical push/audio checks require real devices.
 - [ ] 100,000/min throughput acceptance — isolated fixture setup exceeded 600 seconds; no batch timings or zero-duplicate load result established. Requires a completed provisioned benchmark.
 
