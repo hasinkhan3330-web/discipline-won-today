@@ -1635,6 +1635,7 @@ export type Database = {
           options: Json | null
           question_text: string
           subject: string
+          wake_category: string | null
           wake_only: boolean
         }
         Insert: {
@@ -1648,6 +1649,7 @@ export type Database = {
           options?: Json | null
           question_text: string
           subject: string
+          wake_category?: string | null
           wake_only?: boolean
         }
         Update: {
@@ -1661,6 +1663,7 @@ export type Database = {
           options?: Json | null
           question_text?: string
           subject?: string
+          wake_category?: string | null
           wake_only?: boolean
         }
         Relationships: []

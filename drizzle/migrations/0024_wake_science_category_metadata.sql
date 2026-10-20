@@ -1,0 +1,4 @@
+ALTER TABLE public.quiz_questions ADD COLUMN IF NOT EXISTS wake_category text;
+CREATE INDEX wake_science_active_category ON public.quiz_questions(wake_category) WHERE wake_only AND is_active;
+COMMENT ON COLUMN public.quiz_questions.wake_category IS 'Wake-only science category: chemistry, biology, physics, earth or astronomy. Existing shared quiz subject and public queries stay unchanged.';
+DO $$ DECLARE body text; BEGIN SELECT pg_get_functiondef('public.wake_save_settings(time,time,text,text,boolean,boolean,smallint)'::regprocedure) INTO body; body:=replace(body,'PERFORM pg_advisory_xact_lock(hashtextextended(u::text,74011));','IF _mode=''science'' AND (SELECT count(*) FROM public.quiz_questions WHERE wake_only AND is_active AND subject=''science'' AND fact_source IS NOT NULL)<400 THEN RAISE EXCEPTION ''Science bank is not ready. Use Math for now''; END IF; PERFORM pg_advisory_xact_lock(hashtextextended(u::text,74011));'); EXECUTE body; END; $$;

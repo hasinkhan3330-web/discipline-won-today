@@ -79,9 +79,9 @@ export function WakeReadiness({ onReady }: { onReady: (ready: boolean) => void }
       <strong>ALARM READINESS</strong>
       <ul><li><span>Notifications</span><b>{permission}</b></li><li><span>Push subscription</span><b>{subscribed ? "Subscribed · delivery inactive" : "Not subscribed"}</b></li>{ios && <li><span>Home Screen installation</span><b>{installed ? "Installed" : "Required for push"}</b></li>}<li><span>Overnight Mode</span><b>{overnight ? lock ? "On · screen lock active" : "On · screen lock unavailable" : "Off"}</b></li><li><span>Phone volume</span><b>Check volume and silent mode</b></li></ul>
       {ios && !installed && <p className={styles.install}>On iOS 16.4 or later: open AXEN in Safari, tap Share → Add to Home Screen, then open the installed app and enable notifications.</p>}
-      <Button variant="outline" onClick={enablePush}>Enable backup notifications</Button>
-      <Button variant="outline" onClick={start}>Start Overnight Mode</Button>
-      <Button variant="outline" disabled={testing} onClick={runTest}>{testing ? "Test alarm scheduled…" : "Test alarm in 10 seconds"}</Button>
+      <Button className={styles.command} onClick={enablePush}>Enable backup notifications</Button>
+      <Button className={styles.command} onClick={start}>Start Overnight Mode</Button>
+      <Button className={styles.command} disabled={testing} onClick={runTest}>{testing ? "Test alarm scheduled…" : "Test alarm in 10 seconds"}</Button>
       <p className={styles.warning}>Browser alarms can't be guaranteed on every phone. Keep a backup alarm until your test works.</p>
       {error && <p className={styles.error} role="alert">{error}</p>}
     </section>

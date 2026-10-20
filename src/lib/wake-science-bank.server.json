@@ -1,0 +1,6402 @@
+[
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Hydrogen?",
+    "options": [
+      "Li",
+      "He",
+      "Be",
+      "H"
+    ],
+    "correct_answer": "3",
+    "explanation": "H. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Helium?",
+    "options": [
+      "H",
+      "He",
+      "Be",
+      "Li"
+    ],
+    "correct_answer": "1",
+    "explanation": "He. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Lithium?",
+    "options": [
+      "Li",
+      "He",
+      "Be",
+      "H"
+    ],
+    "correct_answer": "0",
+    "explanation": "Li. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Beryllium?",
+    "options": [
+      "Be",
+      "Li",
+      "H",
+      "He"
+    ],
+    "correct_answer": "0",
+    "explanation": "Be. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Boron?",
+    "options": [
+      "Li",
+      "He",
+      "H",
+      "B"
+    ],
+    "correct_answer": "3",
+    "explanation": "B. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Carbon?",
+    "options": [
+      "H",
+      "He",
+      "Li",
+      "C"
+    ],
+    "correct_answer": "3",
+    "explanation": "C. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Nitrogen?",
+    "options": [
+      "He",
+      "H",
+      "Li",
+      "N"
+    ],
+    "correct_answer": "3",
+    "explanation": "N. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Oxygen?",
+    "options": [
+      "O",
+      "He",
+      "Li",
+      "H"
+    ],
+    "correct_answer": "0",
+    "explanation": "O. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Fluorine?",
+    "options": [
+      "Li",
+      "H",
+      "He",
+      "F"
+    ],
+    "correct_answer": "3",
+    "explanation": "F. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Neon?",
+    "options": [
+      "Li",
+      "H",
+      "Ne",
+      "He"
+    ],
+    "correct_answer": "2",
+    "explanation": "Ne. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Sodium?",
+    "options": [
+      "Na",
+      "Li",
+      "He",
+      "H"
+    ],
+    "correct_answer": "0",
+    "explanation": "Na. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Magnesium?",
+    "options": [
+      "Mg",
+      "H",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "0",
+    "explanation": "Mg. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Aluminium?",
+    "options": [
+      "H",
+      "Al",
+      "Li",
+      "He"
+    ],
+    "correct_answer": "1",
+    "explanation": "Al. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Silicon?",
+    "options": [
+      "H",
+      "Si",
+      "Li",
+      "He"
+    ],
+    "correct_answer": "1",
+    "explanation": "Si. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Phosphorus?",
+    "options": [
+      "He",
+      "Li",
+      "P",
+      "H"
+    ],
+    "correct_answer": "2",
+    "explanation": "P. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Sulfur?",
+    "options": [
+      "H",
+      "S",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "1",
+    "explanation": "S. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Chlorine?",
+    "options": [
+      "H",
+      "Li",
+      "Cl",
+      "He"
+    ],
+    "correct_answer": "2",
+    "explanation": "Cl. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Argon?",
+    "options": [
+      "H",
+      "Li",
+      "He",
+      "Ar"
+    ],
+    "correct_answer": "3",
+    "explanation": "Ar. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Potassium?",
+    "options": [
+      "K",
+      "H",
+      "Li",
+      "He"
+    ],
+    "correct_answer": "0",
+    "explanation": "K. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Calcium?",
+    "options": [
+      "Ca",
+      "Li",
+      "H",
+      "He"
+    ],
+    "correct_answer": "0",
+    "explanation": "Ca. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Scandium?",
+    "options": [
+      "H",
+      "He",
+      "Li",
+      "Sc"
+    ],
+    "correct_answer": "3",
+    "explanation": "Sc. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Titanium?",
+    "options": [
+      "Li",
+      "Ti",
+      "H",
+      "He"
+    ],
+    "correct_answer": "1",
+    "explanation": "Ti. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Vanadium?",
+    "options": [
+      "He",
+      "V",
+      "H",
+      "Li"
+    ],
+    "correct_answer": "1",
+    "explanation": "V. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Chromium?",
+    "options": [
+      "Li",
+      "H",
+      "He",
+      "Cr"
+    ],
+    "correct_answer": "3",
+    "explanation": "Cr. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Manganese?",
+    "options": [
+      "Mn",
+      "H",
+      "Li",
+      "He"
+    ],
+    "correct_answer": "0",
+    "explanation": "Mn. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Iron?",
+    "options": [
+      "Fe",
+      "He",
+      "Li",
+      "H"
+    ],
+    "correct_answer": "0",
+    "explanation": "Fe. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Cobalt?",
+    "options": [
+      "Co",
+      "Li",
+      "H",
+      "He"
+    ],
+    "correct_answer": "0",
+    "explanation": "Co. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Nickel?",
+    "options": [
+      "He",
+      "H",
+      "Li",
+      "Ni"
+    ],
+    "correct_answer": "3",
+    "explanation": "Ni. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Copper?",
+    "options": [
+      "He",
+      "Li",
+      "Cu",
+      "H"
+    ],
+    "correct_answer": "2",
+    "explanation": "Cu. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Zinc?",
+    "options": [
+      "Li",
+      "H",
+      "Zn",
+      "He"
+    ],
+    "correct_answer": "2",
+    "explanation": "Zn. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Gallium?",
+    "options": [
+      "Li",
+      "H",
+      "He",
+      "Ga"
+    ],
+    "correct_answer": "3",
+    "explanation": "Ga. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Germanium?",
+    "options": [
+      "Ge",
+      "H",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "0",
+    "explanation": "Ge. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Arsenic?",
+    "options": [
+      "He",
+      "Li",
+      "As",
+      "H"
+    ],
+    "correct_answer": "2",
+    "explanation": "As. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Selenium?",
+    "options": [
+      "Se",
+      "H",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "0",
+    "explanation": "Se. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Bromine?",
+    "options": [
+      "H",
+      "He",
+      "Li",
+      "Br"
+    ],
+    "correct_answer": "3",
+    "explanation": "Br. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Krypton?",
+    "options": [
+      "H",
+      "Li",
+      "Kr",
+      "He"
+    ],
+    "correct_answer": "2",
+    "explanation": "Kr. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Rubidium?",
+    "options": [
+      "H",
+      "Li",
+      "Rb",
+      "He"
+    ],
+    "correct_answer": "2",
+    "explanation": "Rb. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Strontium?",
+    "options": [
+      "Li",
+      "He",
+      "Sr",
+      "H"
+    ],
+    "correct_answer": "2",
+    "explanation": "Sr. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Yttrium?",
+    "options": [
+      "H",
+      "Y",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "1",
+    "explanation": "Y. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Zirconium?",
+    "options": [
+      "Li",
+      "Zr",
+      "He",
+      "H"
+    ],
+    "correct_answer": "1",
+    "explanation": "Zr. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Niobium?",
+    "options": [
+      "H",
+      "Li",
+      "He",
+      "Nb"
+    ],
+    "correct_answer": "3",
+    "explanation": "Nb. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Molybdenum?",
+    "options": [
+      "H",
+      "He",
+      "Li",
+      "Mo"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mo. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Technetium?",
+    "options": [
+      "He",
+      "H",
+      "Tc",
+      "Li"
+    ],
+    "correct_answer": "2",
+    "explanation": "Tc. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Ruthenium?",
+    "options": [
+      "Ru",
+      "H",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "0",
+    "explanation": "Ru. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Rhodium?",
+    "options": [
+      "H",
+      "Rh",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "1",
+    "explanation": "Rh. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Palladium?",
+    "options": [
+      "He",
+      "Li",
+      "H",
+      "Pd"
+    ],
+    "correct_answer": "3",
+    "explanation": "Pd. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Silver?",
+    "options": [
+      "H",
+      "Li",
+      "Ag",
+      "He"
+    ],
+    "correct_answer": "2",
+    "explanation": "Ag. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Cadmium?",
+    "options": [
+      "Cd",
+      "Li",
+      "He",
+      "H"
+    ],
+    "correct_answer": "0",
+    "explanation": "Cd. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Indium?",
+    "options": [
+      "He",
+      "Li",
+      "H",
+      "In"
+    ],
+    "correct_answer": "3",
+    "explanation": "In. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Tin?",
+    "options": [
+      "He",
+      "Li",
+      "H",
+      "Sn"
+    ],
+    "correct_answer": "3",
+    "explanation": "Sn. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Antimony?",
+    "options": [
+      "He",
+      "Sb",
+      "Li",
+      "H"
+    ],
+    "correct_answer": "1",
+    "explanation": "Sb. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Tellurium?",
+    "options": [
+      "H",
+      "Li",
+      "Te",
+      "He"
+    ],
+    "correct_answer": "2",
+    "explanation": "Te. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Iodine?",
+    "options": [
+      "He",
+      "H",
+      "I",
+      "Li"
+    ],
+    "correct_answer": "2",
+    "explanation": "I. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Xenon?",
+    "options": [
+      "Xe",
+      "Li",
+      "He",
+      "H"
+    ],
+    "correct_answer": "0",
+    "explanation": "Xe. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Cesium?",
+    "options": [
+      "H",
+      "He",
+      "Li",
+      "Cs"
+    ],
+    "correct_answer": "3",
+    "explanation": "Cs. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Barium?",
+    "options": [
+      "Li",
+      "Ba",
+      "H",
+      "He"
+    ],
+    "correct_answer": "1",
+    "explanation": "Ba. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Lanthanum?",
+    "options": [
+      "He",
+      "H",
+      "Li",
+      "La"
+    ],
+    "correct_answer": "3",
+    "explanation": "La. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Cerium?",
+    "options": [
+      "Li",
+      "H",
+      "Ce",
+      "He"
+    ],
+    "correct_answer": "2",
+    "explanation": "Ce. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Praseodymium?",
+    "options": [
+      "H",
+      "Pr",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "1",
+    "explanation": "Pr. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Neodymium?",
+    "options": [
+      "Li",
+      "H",
+      "He",
+      "Nd"
+    ],
+    "correct_answer": "3",
+    "explanation": "Nd. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Promethium?",
+    "options": [
+      "H",
+      "Pm",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "1",
+    "explanation": "Pm. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Samarium?",
+    "options": [
+      "Sm",
+      "Li",
+      "H",
+      "He"
+    ],
+    "correct_answer": "0",
+    "explanation": "Sm. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Europium?",
+    "options": [
+      "H",
+      "Li",
+      "Eu",
+      "He"
+    ],
+    "correct_answer": "2",
+    "explanation": "Eu. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Gadolinium?",
+    "options": [
+      "H",
+      "Gd",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "1",
+    "explanation": "Gd. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Terbium?",
+    "options": [
+      "H",
+      "He",
+      "Li",
+      "Tb"
+    ],
+    "correct_answer": "3",
+    "explanation": "Tb. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Dysprosium?",
+    "options": [
+      "Dy",
+      "H",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "0",
+    "explanation": "Dy. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Holmium?",
+    "options": [
+      "Li",
+      "H",
+      "Ho",
+      "He"
+    ],
+    "correct_answer": "2",
+    "explanation": "Ho. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Erbium?",
+    "options": [
+      "He",
+      "Li",
+      "Er",
+      "H"
+    ],
+    "correct_answer": "2",
+    "explanation": "Er. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Thulium?",
+    "options": [
+      "He",
+      "H",
+      "Tm",
+      "Li"
+    ],
+    "correct_answer": "2",
+    "explanation": "Tm. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Ytterbium?",
+    "options": [
+      "Yb",
+      "He",
+      "Li",
+      "H"
+    ],
+    "correct_answer": "0",
+    "explanation": "Yb. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Lutetium?",
+    "options": [
+      "Lu",
+      "H",
+      "Li",
+      "He"
+    ],
+    "correct_answer": "0",
+    "explanation": "Lu. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Hafnium?",
+    "options": [
+      "Li",
+      "Hf",
+      "H",
+      "He"
+    ],
+    "correct_answer": "1",
+    "explanation": "Hf. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Tantalum?",
+    "options": [
+      "H",
+      "Ta",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "1",
+    "explanation": "Ta. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Tungsten?",
+    "options": [
+      "Li",
+      "W",
+      "He",
+      "H"
+    ],
+    "correct_answer": "1",
+    "explanation": "W. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Rhenium?",
+    "options": [
+      "H",
+      "He",
+      "Li",
+      "Re"
+    ],
+    "correct_answer": "3",
+    "explanation": "Re. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Osmium?",
+    "options": [
+      "Os",
+      "Li",
+      "He",
+      "H"
+    ],
+    "correct_answer": "0",
+    "explanation": "Os. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Iridium?",
+    "options": [
+      "H",
+      "Ir",
+      "He",
+      "Li"
+    ],
+    "correct_answer": "1",
+    "explanation": "Ir. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Platinum?",
+    "options": [
+      "He",
+      "Li",
+      "H",
+      "Pt"
+    ],
+    "correct_answer": "3",
+    "explanation": "Pt. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Gold?",
+    "options": [
+      "Li",
+      "He",
+      "Au",
+      "H"
+    ],
+    "correct_answer": "2",
+    "explanation": "Au. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "chemistry",
+    "question_text": "Which chemical symbol represents Mercury?",
+    "options": [
+      "He",
+      "Li",
+      "H",
+      "Hg"
+    ],
+    "correct_answer": "3",
+    "explanation": "Hg. Source: https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "fact_source": "https://iupac.org/what-we-do/periodic-table-of-elements/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UUU specify?",
+    "options": [
+      "Serine",
+      "Phenylalanine",
+      "Tyrosine",
+      "Leucine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Phenylalanine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UUC specify?",
+    "options": [
+      "Phenylalanine",
+      "Tyrosine",
+      "Serine",
+      "Leucine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Phenylalanine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UUA specify?",
+    "options": [
+      "Serine",
+      "Phenylalanine",
+      "Leucine",
+      "Tyrosine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Leucine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UUG specify?",
+    "options": [
+      "Tyrosine",
+      "Leucine",
+      "Serine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Leucine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UCU specify?",
+    "options": [
+      "Tyrosine",
+      "Serine",
+      "Leucine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Serine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UCC specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Serine",
+      "Tyrosine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Serine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UCA specify?",
+    "options": [
+      "Serine",
+      "Tyrosine",
+      "Phenylalanine",
+      "Leucine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Serine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UCG specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Serine",
+      "Tyrosine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Serine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UAU specify?",
+    "options": [
+      "Tyrosine",
+      "Serine",
+      "Leucine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Tyrosine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UAC specify?",
+    "options": [
+      "Serine",
+      "Leucine",
+      "Tyrosine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Tyrosine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UAA specify?",
+    "options": [
+      "Stop signal",
+      "Leucine",
+      "Phenylalanine",
+      "Serine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Stop signal. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UAG specify?",
+    "options": [
+      "Serine",
+      "Stop signal",
+      "Leucine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Stop signal. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UGU specify?",
+    "options": [
+      "Cysteine",
+      "Phenylalanine",
+      "Serine",
+      "Leucine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Cysteine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UGC specify?",
+    "options": [
+      "Serine",
+      "Cysteine",
+      "Leucine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Cysteine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UGA specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Serine",
+      "Stop signal"
+    ],
+    "correct_answer": "3",
+    "explanation": "Stop signal. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon UGG specify?",
+    "options": [
+      "Phenylalanine",
+      "Serine",
+      "Leucine",
+      "Tryptophan"
+    ],
+    "correct_answer": "3",
+    "explanation": "Tryptophan. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CUU specify?",
+    "options": [
+      "Phenylalanine",
+      "Serine",
+      "Tyrosine",
+      "Leucine"
+    ],
+    "correct_answer": "3",
+    "explanation": "Leucine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CUC specify?",
+    "options": [
+      "Leucine",
+      "Phenylalanine",
+      "Tyrosine",
+      "Serine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Leucine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CUA specify?",
+    "options": [
+      "Serine",
+      "Tyrosine",
+      "Leucine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Leucine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CUG specify?",
+    "options": [
+      "Tyrosine",
+      "Phenylalanine",
+      "Serine",
+      "Leucine"
+    ],
+    "correct_answer": "3",
+    "explanation": "Leucine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CCU specify?",
+    "options": [
+      "Serine",
+      "Phenylalanine",
+      "Leucine",
+      "Proline"
+    ],
+    "correct_answer": "3",
+    "explanation": "Proline. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CCC specify?",
+    "options": [
+      "Leucine",
+      "Proline",
+      "Serine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Proline. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CCA specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Proline",
+      "Serine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Proline. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CCG specify?",
+    "options": [
+      "Phenylalanine",
+      "Proline",
+      "Serine",
+      "Leucine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Proline. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CAU specify?",
+    "options": [
+      "Histidine",
+      "Serine",
+      "Phenylalanine",
+      "Leucine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Histidine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CAC specify?",
+    "options": [
+      "Phenylalanine",
+      "Serine",
+      "Leucine",
+      "Histidine"
+    ],
+    "correct_answer": "3",
+    "explanation": "Histidine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CAA specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Glutamine",
+      "Serine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Glutamine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CAG specify?",
+    "options": [
+      "Leucine",
+      "Phenylalanine",
+      "Glutamine",
+      "Serine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Glutamine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CGU specify?",
+    "options": [
+      "Arginine",
+      "Leucine",
+      "Phenylalanine",
+      "Serine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Arginine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CGC specify?",
+    "options": [
+      "Arginine",
+      "Serine",
+      "Leucine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Arginine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CGA specify?",
+    "options": [
+      "Arginine",
+      "Leucine",
+      "Phenylalanine",
+      "Serine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Arginine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon CGG specify?",
+    "options": [
+      "Serine",
+      "Leucine",
+      "Arginine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Arginine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AUU specify?",
+    "options": [
+      "Serine",
+      "Leucine",
+      "Isoleucine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Isoleucine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AUC specify?",
+    "options": [
+      "Isoleucine",
+      "Serine",
+      "Leucine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Isoleucine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AUA specify?",
+    "options": [
+      "Phenylalanine",
+      "Isoleucine",
+      "Serine",
+      "Leucine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Isoleucine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AUG specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Methionine",
+      "Serine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Methionine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon ACU specify?",
+    "options": [
+      "Serine",
+      "Threonine",
+      "Leucine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Threonine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon ACC specify?",
+    "options": [
+      "Serine",
+      "Phenylalanine",
+      "Threonine",
+      "Leucine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Threonine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon ACA specify?",
+    "options": [
+      "Serine",
+      "Phenylalanine",
+      "Leucine",
+      "Threonine"
+    ],
+    "correct_answer": "3",
+    "explanation": "Threonine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon ACG specify?",
+    "options": [
+      "Phenylalanine",
+      "Serine",
+      "Threonine",
+      "Leucine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Threonine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AAU specify?",
+    "options": [
+      "Leucine",
+      "Serine",
+      "Phenylalanine",
+      "Asparagine"
+    ],
+    "correct_answer": "3",
+    "explanation": "Asparagine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AAC specify?",
+    "options": [
+      "Leucine",
+      "Asparagine",
+      "Phenylalanine",
+      "Serine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Asparagine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AAA specify?",
+    "options": [
+      "Phenylalanine",
+      "Lysine",
+      "Leucine",
+      "Serine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Lysine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AAG specify?",
+    "options": [
+      "Serine",
+      "Phenylalanine",
+      "Leucine",
+      "Lysine"
+    ],
+    "correct_answer": "3",
+    "explanation": "Lysine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AGU specify?",
+    "options": [
+      "Serine",
+      "Tyrosine",
+      "Phenylalanine",
+      "Leucine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Serine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AGC specify?",
+    "options": [
+      "Leucine",
+      "Tyrosine",
+      "Phenylalanine",
+      "Serine"
+    ],
+    "correct_answer": "3",
+    "explanation": "Serine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AGA specify?",
+    "options": [
+      "Phenylalanine",
+      "Serine",
+      "Arginine",
+      "Leucine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Arginine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon AGG specify?",
+    "options": [
+      "Leucine",
+      "Serine",
+      "Phenylalanine",
+      "Arginine"
+    ],
+    "correct_answer": "3",
+    "explanation": "Arginine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GUU specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Valine",
+      "Serine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Valine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GUC specify?",
+    "options": [
+      "Phenylalanine",
+      "Valine",
+      "Serine",
+      "Leucine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Valine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GUA specify?",
+    "options": [
+      "Phenylalanine",
+      "Valine",
+      "Serine",
+      "Leucine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Valine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GUG specify?",
+    "options": [
+      "Phenylalanine",
+      "Valine",
+      "Leucine",
+      "Serine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Valine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GCU specify?",
+    "options": [
+      "Alanine",
+      "Serine",
+      "Leucine",
+      "Phenylalanine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Alanine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GCC specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Serine",
+      "Alanine"
+    ],
+    "correct_answer": "3",
+    "explanation": "Alanine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GCA specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Alanine",
+      "Serine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Alanine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GCG specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Alanine",
+      "Serine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Alanine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GAU specify?",
+    "options": [
+      "Leucine",
+      "Serine",
+      "Phenylalanine",
+      "Aspartic acid"
+    ],
+    "correct_answer": "3",
+    "explanation": "Aspartic acid. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GAC specify?",
+    "options": [
+      "Leucine",
+      "Serine",
+      "Aspartic acid",
+      "Phenylalanine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Aspartic acid. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GAA specify?",
+    "options": [
+      "Phenylalanine",
+      "Glutamic acid",
+      "Serine",
+      "Leucine"
+    ],
+    "correct_answer": "1",
+    "explanation": "Glutamic acid. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GAG specify?",
+    "options": [
+      "Glutamic acid",
+      "Phenylalanine",
+      "Serine",
+      "Leucine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Glutamic acid. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GGU specify?",
+    "options": [
+      "Glycine",
+      "Phenylalanine",
+      "Leucine",
+      "Serine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Glycine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GGC specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Serine",
+      "Glycine"
+    ],
+    "correct_answer": "3",
+    "explanation": "Glycine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GGA specify?",
+    "options": [
+      "Phenylalanine",
+      "Leucine",
+      "Glycine",
+      "Serine"
+    ],
+    "correct_answer": "2",
+    "explanation": "Glycine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "In the standard genetic code, what does RNA codon GGG specify?",
+    "options": [
+      "Glycine",
+      "Serine",
+      "Phenylalanine",
+      "Leucine"
+    ],
+    "correct_answer": "0",
+    "explanation": "Glycine. Source: https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "fact_source": "https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 10 A bases on one strand. Which base pairs with each A?",
+    "options": [
+      "T",
+      "A",
+      "G",
+      "C"
+    ],
+    "correct_answer": "0",
+    "explanation": "T. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 20 A bases on one strand. Which base pairs with each A?",
+    "options": [
+      "G",
+      "A",
+      "C",
+      "T"
+    ],
+    "correct_answer": "3",
+    "explanation": "T. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 30 A bases on one strand. Which base pairs with each A?",
+    "options": [
+      "A",
+      "T",
+      "G",
+      "C"
+    ],
+    "correct_answer": "1",
+    "explanation": "T. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 40 A bases on one strand. Which base pairs with each A?",
+    "options": [
+      "A",
+      "T",
+      "G",
+      "C"
+    ],
+    "correct_answer": "1",
+    "explanation": "T. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 10 C bases on one strand. Which base pairs with each C?",
+    "options": [
+      "T",
+      "G",
+      "A",
+      "C"
+    ],
+    "correct_answer": "1",
+    "explanation": "G. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 20 C bases on one strand. Which base pairs with each C?",
+    "options": [
+      "G",
+      "A",
+      "T",
+      "C"
+    ],
+    "correct_answer": "0",
+    "explanation": "G. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 30 C bases on one strand. Which base pairs with each C?",
+    "options": [
+      "G",
+      "A",
+      "C",
+      "T"
+    ],
+    "correct_answer": "0",
+    "explanation": "G. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 40 C bases on one strand. Which base pairs with each C?",
+    "options": [
+      "G",
+      "T",
+      "A",
+      "C"
+    ],
+    "correct_answer": "0",
+    "explanation": "G. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 10 G bases on one strand. Which base pairs with each G?",
+    "options": [
+      "A",
+      "C",
+      "G",
+      "T"
+    ],
+    "correct_answer": "1",
+    "explanation": "C. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 20 G bases on one strand. Which base pairs with each G?",
+    "options": [
+      "A",
+      "T",
+      "C",
+      "G"
+    ],
+    "correct_answer": "2",
+    "explanation": "C. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 30 G bases on one strand. Which base pairs with each G?",
+    "options": [
+      "C",
+      "G",
+      "A",
+      "T"
+    ],
+    "correct_answer": "0",
+    "explanation": "C. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 40 G bases on one strand. Which base pairs with each G?",
+    "options": [
+      "A",
+      "T",
+      "C",
+      "G"
+    ],
+    "correct_answer": "2",
+    "explanation": "C. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 10 T bases on one strand. Which base pairs with each T?",
+    "options": [
+      "T",
+      "A",
+      "G",
+      "C"
+    ],
+    "correct_answer": "1",
+    "explanation": "A. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 20 T bases on one strand. Which base pairs with each T?",
+    "options": [
+      "T",
+      "C",
+      "A",
+      "G"
+    ],
+    "correct_answer": "2",
+    "explanation": "A. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 30 T bases on one strand. Which base pairs with each T?",
+    "options": [
+      "G",
+      "T",
+      "C",
+      "A"
+    ],
+    "correct_answer": "3",
+    "explanation": "A. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "biology",
+    "question_text": "A DNA segment has 40 T bases on one strand. Which base pairs with each T?",
+    "options": [
+      "A",
+      "C",
+      "T",
+      "G"
+    ],
+    "correct_answer": "0",
+    "explanation": "A. Source: https://www.genome.gov/genetics-glossary/Base-Pair",
+    "fact_source": "https://www.genome.gov/genetics-glossary/Base-Pair",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 2 kg has acceleration 2 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "6",
+      "5",
+      "7",
+      "4"
+    ],
+    "correct_answer": "3",
+    "explanation": "4. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 3 W for 3 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "12",
+      "9",
+      "11",
+      "10"
+    ],
+    "correct_answer": "1",
+    "explanation": "9. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 16 kg and volume is 4 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "6",
+      "5",
+      "7",
+      "4"
+    ],
+    "correct_answer": "3",
+    "explanation": "4. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 5 kg has acceleration 5 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "25",
+      "27",
+      "26",
+      "28"
+    ],
+    "correct_answer": "0",
+    "explanation": "25. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 6 W for 6 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "39",
+      "38",
+      "36",
+      "37"
+    ],
+    "correct_answer": "2",
+    "explanation": "36. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 49 kg and volume is 7 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "8",
+      "10",
+      "7",
+      "9"
+    ],
+    "correct_answer": "2",
+    "explanation": "7. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 8 kg has acceleration 8 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "65",
+      "66",
+      "67",
+      "64"
+    ],
+    "correct_answer": "3",
+    "explanation": "64. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 9 W for 9 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "82",
+      "83",
+      "84",
+      "81"
+    ],
+    "correct_answer": "3",
+    "explanation": "81. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 100 kg and volume is 10 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "12",
+      "11",
+      "10",
+      "13"
+    ],
+    "correct_answer": "2",
+    "explanation": "10. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 11 kg has acceleration 2 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "22",
+      "25",
+      "24",
+      "23"
+    ],
+    "correct_answer": "0",
+    "explanation": "22. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 12 W for 3 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "36",
+      "37",
+      "38",
+      "39"
+    ],
+    "correct_answer": "0",
+    "explanation": "36. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 52 kg and volume is 4 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "14",
+      "15",
+      "13",
+      "16"
+    ],
+    "correct_answer": "2",
+    "explanation": "13. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 14 kg has acceleration 5 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "70",
+      "71",
+      "73",
+      "72"
+    ],
+    "correct_answer": "0",
+    "explanation": "70. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 15 W for 6 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "92",
+      "91",
+      "90",
+      "93"
+    ],
+    "correct_answer": "2",
+    "explanation": "90. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 112 kg and volume is 7 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "19",
+      "18",
+      "17",
+      "16"
+    ],
+    "correct_answer": "3",
+    "explanation": "16. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 17 kg has acceleration 8 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "138",
+      "137",
+      "139",
+      "136"
+    ],
+    "correct_answer": "3",
+    "explanation": "136. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 18 W for 9 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "165",
+      "164",
+      "163",
+      "162"
+    ],
+    "correct_answer": "3",
+    "explanation": "162. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 190 kg and volume is 10 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "22",
+      "20",
+      "21",
+      "19"
+    ],
+    "correct_answer": "3",
+    "explanation": "19. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 20 kg has acceleration 2 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "41",
+      "43",
+      "42",
+      "40"
+    ],
+    "correct_answer": "3",
+    "explanation": "40. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 21 W for 3 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "66",
+      "65",
+      "64",
+      "63"
+    ],
+    "correct_answer": "3",
+    "explanation": "63. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 88 kg and volume is 4 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "25",
+      "23",
+      "22",
+      "24"
+    ],
+    "correct_answer": "2",
+    "explanation": "22. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 23 kg has acceleration 5 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "117",
+      "118",
+      "115",
+      "116"
+    ],
+    "correct_answer": "2",
+    "explanation": "115. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 24 W for 6 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "144",
+      "146",
+      "145",
+      "147"
+    ],
+    "correct_answer": "0",
+    "explanation": "144. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 175 kg and volume is 7 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "27",
+      "26",
+      "28",
+      "25"
+    ],
+    "correct_answer": "3",
+    "explanation": "25. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 26 kg has acceleration 8 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "209",
+      "208",
+      "211",
+      "210"
+    ],
+    "correct_answer": "1",
+    "explanation": "208. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 27 W for 9 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "246",
+      "243",
+      "244",
+      "245"
+    ],
+    "correct_answer": "1",
+    "explanation": "243. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 280 kg and volume is 10 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "29",
+      "28",
+      "30",
+      "31"
+    ],
+    "correct_answer": "1",
+    "explanation": "28. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 29 kg has acceleration 2 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "60",
+      "59",
+      "61",
+      "58"
+    ],
+    "correct_answer": "3",
+    "explanation": "58. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 30 W for 3 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "90",
+      "91",
+      "92",
+      "93"
+    ],
+    "correct_answer": "0",
+    "explanation": "90. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 124 kg and volume is 4 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "32",
+      "33",
+      "34",
+      "31"
+    ],
+    "correct_answer": "3",
+    "explanation": "31. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 32 kg has acceleration 5 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "160",
+      "163",
+      "161",
+      "162"
+    ],
+    "correct_answer": "0",
+    "explanation": "160. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 33 W for 6 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "199",
+      "201",
+      "200",
+      "198"
+    ],
+    "correct_answer": "3",
+    "explanation": "198. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 238 kg and volume is 7 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "37",
+      "34",
+      "36",
+      "35"
+    ],
+    "correct_answer": "1",
+    "explanation": "34. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 35 kg has acceleration 8 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "280",
+      "283",
+      "281",
+      "282"
+    ],
+    "correct_answer": "0",
+    "explanation": "280. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 36 W for 9 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "327",
+      "324",
+      "325",
+      "326"
+    ],
+    "correct_answer": "1",
+    "explanation": "324. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 370 kg and volume is 10 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "40",
+      "37",
+      "38",
+      "39"
+    ],
+    "correct_answer": "1",
+    "explanation": "37. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 38 kg has acceleration 2 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "76",
+      "79",
+      "77",
+      "78"
+    ],
+    "correct_answer": "0",
+    "explanation": "76. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 39 W for 3 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "117",
+      "120",
+      "119",
+      "118"
+    ],
+    "correct_answer": "0",
+    "explanation": "117. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 160 kg and volume is 4 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "40",
+      "43",
+      "41",
+      "42"
+    ],
+    "correct_answer": "0",
+    "explanation": "40. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 41 kg has acceleration 5 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "207",
+      "205",
+      "206",
+      "208"
+    ],
+    "correct_answer": "1",
+    "explanation": "205. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 42 W for 6 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "252",
+      "255",
+      "253",
+      "254"
+    ],
+    "correct_answer": "0",
+    "explanation": "252. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 301 kg and volume is 7 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "44",
+      "46",
+      "45",
+      "43"
+    ],
+    "correct_answer": "3",
+    "explanation": "43. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 44 kg has acceleration 8 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "353",
+      "352",
+      "355",
+      "354"
+    ],
+    "correct_answer": "1",
+    "explanation": "352. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 45 W for 9 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "405",
+      "408",
+      "406",
+      "407"
+    ],
+    "correct_answer": "0",
+    "explanation": "405. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 460 kg and volume is 10 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "46",
+      "49",
+      "48",
+      "47"
+    ],
+    "correct_answer": "0",
+    "explanation": "46. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 47 kg has acceleration 2 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "97",
+      "96",
+      "94",
+      "95"
+    ],
+    "correct_answer": "2",
+    "explanation": "94. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 48 W for 3 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "144",
+      "146",
+      "145",
+      "147"
+    ],
+    "correct_answer": "0",
+    "explanation": "144. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 196 kg and volume is 4 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "50",
+      "49",
+      "52",
+      "51"
+    ],
+    "correct_answer": "1",
+    "explanation": "49. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 50 kg has acceleration 5 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "251",
+      "253",
+      "250",
+      "252"
+    ],
+    "correct_answer": "2",
+    "explanation": "250. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 51 W for 6 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "308",
+      "306",
+      "307",
+      "309"
+    ],
+    "correct_answer": "1",
+    "explanation": "306. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 364 kg and volume is 7 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "55",
+      "54",
+      "52",
+      "53"
+    ],
+    "correct_answer": "2",
+    "explanation": "52. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 53 kg has acceleration 8 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "425",
+      "426",
+      "424",
+      "427"
+    ],
+    "correct_answer": "2",
+    "explanation": "424. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 54 W for 9 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "488",
+      "486",
+      "489",
+      "487"
+    ],
+    "correct_answer": "1",
+    "explanation": "486. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 550 kg and volume is 10 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "58",
+      "57",
+      "56",
+      "55"
+    ],
+    "correct_answer": "3",
+    "explanation": "55. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 56 kg has acceleration 2 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "113",
+      "115",
+      "112",
+      "114"
+    ],
+    "correct_answer": "2",
+    "explanation": "112. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 57 W for 3 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "172",
+      "171",
+      "174",
+      "173"
+    ],
+    "correct_answer": "1",
+    "explanation": "171. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 232 kg and volume is 4 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "58",
+      "59",
+      "61",
+      "60"
+    ],
+    "correct_answer": "0",
+    "explanation": "58. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 59 kg has acceleration 5 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "297",
+      "298",
+      "295",
+      "296"
+    ],
+    "correct_answer": "2",
+    "explanation": "295. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 60 W for 6 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "362",
+      "363",
+      "360",
+      "361"
+    ],
+    "correct_answer": "2",
+    "explanation": "360. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 427 kg and volume is 7 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "63",
+      "64",
+      "61",
+      "62"
+    ],
+    "correct_answer": "2",
+    "explanation": "61. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 62 kg has acceleration 8 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "496",
+      "497",
+      "499",
+      "498"
+    ],
+    "correct_answer": "0",
+    "explanation": "496. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 63 W for 9 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "567",
+      "569",
+      "568",
+      "570"
+    ],
+    "correct_answer": "0",
+    "explanation": "567. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 640 kg and volume is 10 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "64",
+      "65",
+      "66",
+      "67"
+    ],
+    "correct_answer": "0",
+    "explanation": "64. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 65 kg has acceleration 2 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "133",
+      "131",
+      "132",
+      "130"
+    ],
+    "correct_answer": "3",
+    "explanation": "130. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 66 W for 3 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "198",
+      "199",
+      "200",
+      "201"
+    ],
+    "correct_answer": "0",
+    "explanation": "198. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 268 kg and volume is 4 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "69",
+      "70",
+      "68",
+      "67"
+    ],
+    "correct_answer": "3",
+    "explanation": "67. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 68 kg has acceleration 5 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "342",
+      "341",
+      "340",
+      "343"
+    ],
+    "correct_answer": "2",
+    "explanation": "340. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 69 W for 6 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "417",
+      "415",
+      "414",
+      "416"
+    ],
+    "correct_answer": "2",
+    "explanation": "414. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 490 kg and volume is 7 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "70",
+      "71",
+      "73",
+      "72"
+    ],
+    "correct_answer": "0",
+    "explanation": "70. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 71 kg has acceleration 8 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "568",
+      "571",
+      "569",
+      "570"
+    ],
+    "correct_answer": "0",
+    "explanation": "568. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 72 W for 9 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "648",
+      "649",
+      "650",
+      "651"
+    ],
+    "correct_answer": "0",
+    "explanation": "648. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 730 kg and volume is 10 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "73",
+      "74",
+      "75",
+      "76"
+    ],
+    "correct_answer": "0",
+    "explanation": "73. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 74 kg has acceleration 2 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "150",
+      "148",
+      "151",
+      "149"
+    ],
+    "correct_answer": "1",
+    "explanation": "148. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 75 W for 3 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "225",
+      "226",
+      "228",
+      "227"
+    ],
+    "correct_answer": "0",
+    "explanation": "225. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 304 kg and volume is 4 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "77",
+      "76",
+      "79",
+      "78"
+    ],
+    "correct_answer": "1",
+    "explanation": "76. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 77 kg has acceleration 5 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "386",
+      "385",
+      "388",
+      "387"
+    ],
+    "correct_answer": "1",
+    "explanation": "385. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 78 W for 6 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "470",
+      "468",
+      "471",
+      "469"
+    ],
+    "correct_answer": "1",
+    "explanation": "468. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Mass is 553 kg and volume is 7 m\u00b3. Using density = mass/volume, what is density in kg/m\u00b3?",
+    "options": [
+      "82",
+      "79",
+      "81",
+      "80"
+    ],
+    "correct_answer": "1",
+    "explanation": "79. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "A body of mass 80 kg has acceleration 8 m/s\u00b2. Using net force F = ma, what is F in newtons?",
+    "options": [
+      "641",
+      "642",
+      "640",
+      "643"
+    ],
+    "correct_answer": "2",
+    "explanation": "640. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "physics",
+    "question_text": "Constant power is 81 W for 9 s. Using E = Pt, what is energy E in joules?",
+    "options": [
+      "729",
+      "731",
+      "732",
+      "730"
+    ],
+    "correct_answer": "0",
+    "explanation": "729. Source: https://openstax.org/details/books/college-physics-2e",
+    "fact_source": "https://openstax.org/details/books/college-physics-2e",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "What is the Mohs hardness of Talc?",
+    "options": [
+      "2",
+      "1",
+      "3",
+      "4"
+    ],
+    "correct_answer": "1",
+    "explanation": "1. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "What is the Mohs hardness of Gypsum?",
+    "options": [
+      "2",
+      "4",
+      "1",
+      "3"
+    ],
+    "correct_answer": "0",
+    "explanation": "2. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "What is the Mohs hardness of Calcite?",
+    "options": [
+      "1",
+      "3",
+      "4",
+      "2"
+    ],
+    "correct_answer": "1",
+    "explanation": "3. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "What is the Mohs hardness of Fluorite?",
+    "options": [
+      "3",
+      "4",
+      "1",
+      "2"
+    ],
+    "correct_answer": "1",
+    "explanation": "4. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "What is the Mohs hardness of Apatite?",
+    "options": [
+      "2",
+      "1",
+      "3",
+      "5"
+    ],
+    "correct_answer": "3",
+    "explanation": "5. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "What is the Mohs hardness of Orthoclase feldspar?",
+    "options": [
+      "2",
+      "6",
+      "3",
+      "1"
+    ],
+    "correct_answer": "1",
+    "explanation": "6. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "What is the Mohs hardness of Quartz?",
+    "options": [
+      "1",
+      "2",
+      "7",
+      "3"
+    ],
+    "correct_answer": "2",
+    "explanation": "7. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "What is the Mohs hardness of Topaz?",
+    "options": [
+      "2",
+      "3",
+      "8",
+      "1"
+    ],
+    "correct_answer": "2",
+    "explanation": "8. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "What is the Mohs hardness of Corundum?",
+    "options": [
+      "3",
+      "1",
+      "9",
+      "2"
+    ],
+    "correct_answer": "2",
+    "explanation": "9. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "What is the Mohs hardness of Diamond?",
+    "options": [
+      "3",
+      "2",
+      "1",
+      "10"
+    ],
+    "correct_answer": "3",
+    "explanation": "10. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Calcite, Fluorite?",
+    "options": [
+      "Talc",
+      "Gypsum",
+      "Fluorite",
+      "Calcite"
+    ],
+    "correct_answer": "2",
+    "explanation": "Fluorite. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Calcite, Apatite?",
+    "options": [
+      "Gypsum",
+      "Calcite",
+      "Apatite",
+      "Talc"
+    ],
+    "correct_answer": "2",
+    "explanation": "Apatite. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Calcite, Orthoclase feldspar?",
+    "options": [
+      "Calcite",
+      "Gypsum",
+      "Talc",
+      "Orthoclase feldspar"
+    ],
+    "correct_answer": "3",
+    "explanation": "Orthoclase feldspar. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Calcite, Quartz?",
+    "options": [
+      "Calcite",
+      "Talc",
+      "Quartz",
+      "Gypsum"
+    ],
+    "correct_answer": "2",
+    "explanation": "Quartz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Calcite, Topaz?",
+    "options": [
+      "Topaz",
+      "Talc",
+      "Gypsum",
+      "Calcite"
+    ],
+    "correct_answer": "0",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Calcite, Corundum?",
+    "options": [
+      "Corundum",
+      "Gypsum",
+      "Talc",
+      "Calcite"
+    ],
+    "correct_answer": "0",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Calcite, Diamond?",
+    "options": [
+      "Diamond",
+      "Gypsum",
+      "Talc",
+      "Calcite"
+    ],
+    "correct_answer": "0",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Fluorite, Apatite?",
+    "options": [
+      "Apatite",
+      "Talc",
+      "Gypsum",
+      "Fluorite"
+    ],
+    "correct_answer": "0",
+    "explanation": "Apatite. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Fluorite, Orthoclase feldspar?",
+    "options": [
+      "Gypsum",
+      "Fluorite",
+      "Orthoclase feldspar",
+      "Talc"
+    ],
+    "correct_answer": "2",
+    "explanation": "Orthoclase feldspar. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Fluorite, Quartz?",
+    "options": [
+      "Gypsum",
+      "Quartz",
+      "Fluorite",
+      "Talc"
+    ],
+    "correct_answer": "1",
+    "explanation": "Quartz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Fluorite, Topaz?",
+    "options": [
+      "Gypsum",
+      "Talc",
+      "Topaz",
+      "Fluorite"
+    ],
+    "correct_answer": "2",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Fluorite, Corundum?",
+    "options": [
+      "Fluorite",
+      "Talc",
+      "Corundum",
+      "Gypsum"
+    ],
+    "correct_answer": "2",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Fluorite, Diamond?",
+    "options": [
+      "Talc",
+      "Gypsum",
+      "Fluorite",
+      "Diamond"
+    ],
+    "correct_answer": "3",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Apatite, Orthoclase feldspar?",
+    "options": [
+      "Gypsum",
+      "Orthoclase feldspar",
+      "Talc",
+      "Apatite"
+    ],
+    "correct_answer": "1",
+    "explanation": "Orthoclase feldspar. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Apatite, Quartz?",
+    "options": [
+      "Quartz",
+      "Apatite",
+      "Talc",
+      "Gypsum"
+    ],
+    "correct_answer": "0",
+    "explanation": "Quartz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Apatite, Topaz?",
+    "options": [
+      "Talc",
+      "Topaz",
+      "Gypsum",
+      "Apatite"
+    ],
+    "correct_answer": "1",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Apatite, Corundum?",
+    "options": [
+      "Talc",
+      "Corundum",
+      "Gypsum",
+      "Apatite"
+    ],
+    "correct_answer": "1",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Apatite, Diamond?",
+    "options": [
+      "Gypsum",
+      "Diamond",
+      "Apatite",
+      "Talc"
+    ],
+    "correct_answer": "1",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Orthoclase feldspar, Quartz?",
+    "options": [
+      "Talc",
+      "Gypsum",
+      "Orthoclase feldspar",
+      "Quartz"
+    ],
+    "correct_answer": "3",
+    "explanation": "Quartz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Orthoclase feldspar, Topaz?",
+    "options": [
+      "Topaz",
+      "Orthoclase feldspar",
+      "Talc",
+      "Gypsum"
+    ],
+    "correct_answer": "0",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Orthoclase feldspar, Corundum?",
+    "options": [
+      "Orthoclase feldspar",
+      "Corundum",
+      "Talc",
+      "Gypsum"
+    ],
+    "correct_answer": "1",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Orthoclase feldspar, Diamond?",
+    "options": [
+      "Gypsum",
+      "Orthoclase feldspar",
+      "Talc",
+      "Diamond"
+    ],
+    "correct_answer": "3",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Quartz, Topaz?",
+    "options": [
+      "Talc",
+      "Gypsum",
+      "Topaz",
+      "Quartz"
+    ],
+    "correct_answer": "2",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Quartz, Corundum?",
+    "options": [
+      "Gypsum",
+      "Talc",
+      "Corundum",
+      "Quartz"
+    ],
+    "correct_answer": "2",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Quartz, Diamond?",
+    "options": [
+      "Talc",
+      "Diamond",
+      "Quartz",
+      "Gypsum"
+    ],
+    "correct_answer": "1",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Topaz, Corundum?",
+    "options": [
+      "Gypsum",
+      "Talc",
+      "Corundum",
+      "Topaz"
+    ],
+    "correct_answer": "2",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Topaz, Diamond?",
+    "options": [
+      "Talc",
+      "Diamond",
+      "Topaz",
+      "Gypsum"
+    ],
+    "correct_answer": "1",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Gypsum, Corundum, Diamond?",
+    "options": [
+      "Diamond",
+      "Gypsum",
+      "Talc",
+      "Corundum"
+    ],
+    "correct_answer": "0",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Fluorite, Apatite?",
+    "options": [
+      "Talc",
+      "Apatite",
+      "Calcite",
+      "Fluorite"
+    ],
+    "correct_answer": "1",
+    "explanation": "Apatite. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Fluorite, Orthoclase feldspar?",
+    "options": [
+      "Calcite",
+      "Talc",
+      "Orthoclase feldspar",
+      "Fluorite"
+    ],
+    "correct_answer": "2",
+    "explanation": "Orthoclase feldspar. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Fluorite, Quartz?",
+    "options": [
+      "Fluorite",
+      "Calcite",
+      "Quartz",
+      "Talc"
+    ],
+    "correct_answer": "2",
+    "explanation": "Quartz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Fluorite, Topaz?",
+    "options": [
+      "Fluorite",
+      "Talc",
+      "Calcite",
+      "Topaz"
+    ],
+    "correct_answer": "3",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Fluorite, Corundum?",
+    "options": [
+      "Calcite",
+      "Talc",
+      "Corundum",
+      "Fluorite"
+    ],
+    "correct_answer": "2",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Fluorite, Diamond?",
+    "options": [
+      "Calcite",
+      "Talc",
+      "Fluorite",
+      "Diamond"
+    ],
+    "correct_answer": "3",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Apatite, Orthoclase feldspar?",
+    "options": [
+      "Talc",
+      "Calcite",
+      "Apatite",
+      "Orthoclase feldspar"
+    ],
+    "correct_answer": "3",
+    "explanation": "Orthoclase feldspar. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Apatite, Quartz?",
+    "options": [
+      "Quartz",
+      "Apatite",
+      "Talc",
+      "Calcite"
+    ],
+    "correct_answer": "0",
+    "explanation": "Quartz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Apatite, Topaz?",
+    "options": [
+      "Apatite",
+      "Calcite",
+      "Topaz",
+      "Talc"
+    ],
+    "correct_answer": "2",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Apatite, Corundum?",
+    "options": [
+      "Calcite",
+      "Apatite",
+      "Corundum",
+      "Talc"
+    ],
+    "correct_answer": "2",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Apatite, Diamond?",
+    "options": [
+      "Diamond",
+      "Calcite",
+      "Talc",
+      "Apatite"
+    ],
+    "correct_answer": "0",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Orthoclase feldspar, Quartz?",
+    "options": [
+      "Talc",
+      "Calcite",
+      "Orthoclase feldspar",
+      "Quartz"
+    ],
+    "correct_answer": "3",
+    "explanation": "Quartz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Orthoclase feldspar, Topaz?",
+    "options": [
+      "Orthoclase feldspar",
+      "Topaz",
+      "Calcite",
+      "Talc"
+    ],
+    "correct_answer": "1",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Orthoclase feldspar, Corundum?",
+    "options": [
+      "Talc",
+      "Calcite",
+      "Corundum",
+      "Orthoclase feldspar"
+    ],
+    "correct_answer": "2",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Orthoclase feldspar, Diamond?",
+    "options": [
+      "Orthoclase feldspar",
+      "Diamond",
+      "Talc",
+      "Calcite"
+    ],
+    "correct_answer": "1",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Quartz, Topaz?",
+    "options": [
+      "Calcite",
+      "Talc",
+      "Quartz",
+      "Topaz"
+    ],
+    "correct_answer": "3",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Quartz, Corundum?",
+    "options": [
+      "Calcite",
+      "Corundum",
+      "Talc",
+      "Quartz"
+    ],
+    "correct_answer": "1",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Quartz, Diamond?",
+    "options": [
+      "Calcite",
+      "Talc",
+      "Quartz",
+      "Diamond"
+    ],
+    "correct_answer": "3",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Topaz, Corundum?",
+    "options": [
+      "Talc",
+      "Topaz",
+      "Calcite",
+      "Corundum"
+    ],
+    "correct_answer": "3",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Topaz, Diamond?",
+    "options": [
+      "Topaz",
+      "Talc",
+      "Calcite",
+      "Diamond"
+    ],
+    "correct_answer": "3",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Calcite, Corundum, Diamond?",
+    "options": [
+      "Corundum",
+      "Calcite",
+      "Talc",
+      "Diamond"
+    ],
+    "correct_answer": "3",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Apatite, Orthoclase feldspar?",
+    "options": [
+      "Orthoclase feldspar",
+      "Apatite",
+      "Fluorite",
+      "Talc"
+    ],
+    "correct_answer": "0",
+    "explanation": "Orthoclase feldspar. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Apatite, Quartz?",
+    "options": [
+      "Talc",
+      "Quartz",
+      "Apatite",
+      "Fluorite"
+    ],
+    "correct_answer": "1",
+    "explanation": "Quartz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Apatite, Topaz?",
+    "options": [
+      "Apatite",
+      "Talc",
+      "Fluorite",
+      "Topaz"
+    ],
+    "correct_answer": "3",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Apatite, Corundum?",
+    "options": [
+      "Corundum",
+      "Apatite",
+      "Fluorite",
+      "Talc"
+    ],
+    "correct_answer": "0",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Apatite, Diamond?",
+    "options": [
+      "Diamond",
+      "Fluorite",
+      "Talc",
+      "Apatite"
+    ],
+    "correct_answer": "0",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Orthoclase feldspar, Quartz?",
+    "options": [
+      "Quartz",
+      "Talc",
+      "Fluorite",
+      "Orthoclase feldspar"
+    ],
+    "correct_answer": "0",
+    "explanation": "Quartz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Orthoclase feldspar, Topaz?",
+    "options": [
+      "Fluorite",
+      "Orthoclase feldspar",
+      "Talc",
+      "Topaz"
+    ],
+    "correct_answer": "3",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Orthoclase feldspar, Corundum?",
+    "options": [
+      "Talc",
+      "Corundum",
+      "Fluorite",
+      "Orthoclase feldspar"
+    ],
+    "correct_answer": "1",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Orthoclase feldspar, Diamond?",
+    "options": [
+      "Diamond",
+      "Orthoclase feldspar",
+      "Fluorite",
+      "Talc"
+    ],
+    "correct_answer": "0",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Quartz, Topaz?",
+    "options": [
+      "Quartz",
+      "Talc",
+      "Topaz",
+      "Fluorite"
+    ],
+    "correct_answer": "2",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Quartz, Corundum?",
+    "options": [
+      "Corundum",
+      "Quartz",
+      "Fluorite",
+      "Talc"
+    ],
+    "correct_answer": "0",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Quartz, Diamond?",
+    "options": [
+      "Quartz",
+      "Fluorite",
+      "Diamond",
+      "Talc"
+    ],
+    "correct_answer": "2",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Topaz, Corundum?",
+    "options": [
+      "Fluorite",
+      "Corundum",
+      "Talc",
+      "Topaz"
+    ],
+    "correct_answer": "1",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Topaz, Diamond?",
+    "options": [
+      "Topaz",
+      "Fluorite",
+      "Diamond",
+      "Talc"
+    ],
+    "correct_answer": "2",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Fluorite, Corundum, Diamond?",
+    "options": [
+      "Diamond",
+      "Fluorite",
+      "Talc",
+      "Corundum"
+    ],
+    "correct_answer": "0",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Apatite, Orthoclase feldspar, Quartz?",
+    "options": [
+      "Quartz",
+      "Orthoclase feldspar",
+      "Apatite",
+      "Talc"
+    ],
+    "correct_answer": "0",
+    "explanation": "Quartz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Apatite, Orthoclase feldspar, Topaz?",
+    "options": [
+      "Orthoclase feldspar",
+      "Topaz",
+      "Talc",
+      "Apatite"
+    ],
+    "correct_answer": "1",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Apatite, Orthoclase feldspar, Corundum?",
+    "options": [
+      "Apatite",
+      "Corundum",
+      "Talc",
+      "Orthoclase feldspar"
+    ],
+    "correct_answer": "1",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Apatite, Orthoclase feldspar, Diamond?",
+    "options": [
+      "Diamond",
+      "Apatite",
+      "Talc",
+      "Orthoclase feldspar"
+    ],
+    "correct_answer": "0",
+    "explanation": "Diamond. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Apatite, Quartz, Topaz?",
+    "options": [
+      "Talc",
+      "Topaz",
+      "Apatite",
+      "Quartz"
+    ],
+    "correct_answer": "1",
+    "explanation": "Topaz. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "earth",
+    "question_text": "Which has the greatest Mohs hardness: Talc, Apatite, Quartz, Corundum?",
+    "options": [
+      "Talc",
+      "Corundum",
+      "Quartz",
+      "Apatite"
+    ],
+    "correct_answer": "1",
+    "explanation": "Corundum. Source: https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "fact_source": "https://pubs.usgs.gov/gip/gemstones/mineral.html",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Counting the eight planets outward from the Sun, what is the position of Mercury?",
+    "options": [
+      "3",
+      "2",
+      "4",
+      "1"
+    ],
+    "correct_answer": "3",
+    "explanation": "1. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Counting the eight planets outward from the Sun, what is the position of Venus?",
+    "options": [
+      "2",
+      "1",
+      "3",
+      "4"
+    ],
+    "correct_answer": "0",
+    "explanation": "2. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Counting the eight planets outward from the Sun, what is the position of Earth?",
+    "options": [
+      "4",
+      "1",
+      "2",
+      "3"
+    ],
+    "correct_answer": "3",
+    "explanation": "3. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Counting the eight planets outward from the Sun, what is the position of Mars?",
+    "options": [
+      "4",
+      "2",
+      "3",
+      "1"
+    ],
+    "correct_answer": "0",
+    "explanation": "4. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Counting the eight planets outward from the Sun, what is the position of Jupiter?",
+    "options": [
+      "3",
+      "2",
+      "1",
+      "5"
+    ],
+    "correct_answer": "3",
+    "explanation": "5. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Counting the eight planets outward from the Sun, what is the position of Saturn?",
+    "options": [
+      "1",
+      "3",
+      "2",
+      "6"
+    ],
+    "correct_answer": "3",
+    "explanation": "6. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Counting the eight planets outward from the Sun, what is the position of Uranus?",
+    "options": [
+      "1",
+      "7",
+      "3",
+      "2"
+    ],
+    "correct_answer": "1",
+    "explanation": "7. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Counting the eight planets outward from the Sun, what is the position of Neptune?",
+    "options": [
+      "2",
+      "1",
+      "8",
+      "3"
+    ],
+    "correct_answer": "2",
+    "explanation": "8. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Earth, Mars?",
+    "options": [
+      "Mars",
+      "Earth",
+      "Mercury",
+      "Venus"
+    ],
+    "correct_answer": "2",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Earth, Jupiter?",
+    "options": [
+      "Jupiter",
+      "Earth",
+      "Venus",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Earth, Saturn?",
+    "options": [
+      "Mercury",
+      "Saturn",
+      "Earth",
+      "Venus"
+    ],
+    "correct_answer": "0",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Earth, Uranus?",
+    "options": [
+      "Earth",
+      "Uranus",
+      "Venus",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Earth, Neptune?",
+    "options": [
+      "Earth",
+      "Venus",
+      "Neptune",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Mars, Jupiter?",
+    "options": [
+      "Venus",
+      "Jupiter",
+      "Mercury",
+      "Mars"
+    ],
+    "correct_answer": "2",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Mars, Saturn?",
+    "options": [
+      "Mars",
+      "Mercury",
+      "Saturn",
+      "Venus"
+    ],
+    "correct_answer": "1",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Mars, Uranus?",
+    "options": [
+      "Venus",
+      "Mars",
+      "Uranus",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Mars, Neptune?",
+    "options": [
+      "Mars",
+      "Venus",
+      "Neptune",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Jupiter, Saturn?",
+    "options": [
+      "Mercury",
+      "Venus",
+      "Jupiter",
+      "Saturn"
+    ],
+    "correct_answer": "0",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Jupiter, Uranus?",
+    "options": [
+      "Venus",
+      "Uranus",
+      "Mercury",
+      "Jupiter"
+    ],
+    "correct_answer": "2",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Jupiter, Neptune?",
+    "options": [
+      "Neptune",
+      "Mercury",
+      "Jupiter",
+      "Venus"
+    ],
+    "correct_answer": "1",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Saturn, Uranus?",
+    "options": [
+      "Venus",
+      "Mercury",
+      "Saturn",
+      "Uranus"
+    ],
+    "correct_answer": "1",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Saturn, Neptune?",
+    "options": [
+      "Venus",
+      "Neptune",
+      "Saturn",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Venus, Uranus, Neptune?",
+    "options": [
+      "Neptune",
+      "Venus",
+      "Uranus",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Earth, Mars, Jupiter?",
+    "options": [
+      "Jupiter",
+      "Mars",
+      "Earth",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Earth, Mars, Saturn?",
+    "options": [
+      "Mars",
+      "Saturn",
+      "Mercury",
+      "Earth"
+    ],
+    "correct_answer": "2",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Earth, Mars, Uranus?",
+    "options": [
+      "Mars",
+      "Mercury",
+      "Earth",
+      "Uranus"
+    ],
+    "correct_answer": "1",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Earth, Mars, Neptune?",
+    "options": [
+      "Mercury",
+      "Mars",
+      "Earth",
+      "Neptune"
+    ],
+    "correct_answer": "0",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Earth, Jupiter, Saturn?",
+    "options": [
+      "Earth",
+      "Mercury",
+      "Saturn",
+      "Jupiter"
+    ],
+    "correct_answer": "1",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Earth, Jupiter, Uranus?",
+    "options": [
+      "Earth",
+      "Jupiter",
+      "Mercury",
+      "Uranus"
+    ],
+    "correct_answer": "2",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Earth, Jupiter, Neptune?",
+    "options": [
+      "Neptune",
+      "Mercury",
+      "Earth",
+      "Jupiter"
+    ],
+    "correct_answer": "1",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Earth, Saturn, Uranus?",
+    "options": [
+      "Earth",
+      "Uranus",
+      "Saturn",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Earth, Saturn, Neptune?",
+    "options": [
+      "Saturn",
+      "Mercury",
+      "Neptune",
+      "Earth"
+    ],
+    "correct_answer": "1",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Earth, Uranus, Neptune?",
+    "options": [
+      "Earth",
+      "Neptune",
+      "Uranus",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Mars, Jupiter, Saturn?",
+    "options": [
+      "Jupiter",
+      "Mars",
+      "Mercury",
+      "Saturn"
+    ],
+    "correct_answer": "2",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Mars, Jupiter, Uranus?",
+    "options": [
+      "Uranus",
+      "Jupiter",
+      "Mercury",
+      "Mars"
+    ],
+    "correct_answer": "2",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Mars, Jupiter, Neptune?",
+    "options": [
+      "Jupiter",
+      "Mercury",
+      "Mars",
+      "Neptune"
+    ],
+    "correct_answer": "1",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Mars, Saturn, Uranus?",
+    "options": [
+      "Saturn",
+      "Uranus",
+      "Mars",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Mars, Saturn, Neptune?",
+    "options": [
+      "Mars",
+      "Saturn",
+      "Neptune",
+      "Mercury"
+    ],
+    "correct_answer": "3",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Mars, Uranus, Neptune?",
+    "options": [
+      "Neptune",
+      "Mars",
+      "Mercury",
+      "Uranus"
+    ],
+    "correct_answer": "2",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Jupiter, Saturn, Uranus?",
+    "options": [
+      "Saturn",
+      "Mercury",
+      "Jupiter",
+      "Uranus"
+    ],
+    "correct_answer": "1",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Jupiter, Saturn, Neptune?",
+    "options": [
+      "Neptune",
+      "Saturn",
+      "Mercury",
+      "Jupiter"
+    ],
+    "correct_answer": "2",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Jupiter, Uranus, Neptune?",
+    "options": [
+      "Uranus",
+      "Mercury",
+      "Neptune",
+      "Jupiter"
+    ],
+    "correct_answer": "1",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mercury, Saturn, Uranus, Neptune?",
+    "options": [
+      "Saturn",
+      "Mercury",
+      "Uranus",
+      "Neptune"
+    ],
+    "correct_answer": "1",
+    "explanation": "Mercury. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Earth, Mars, Jupiter?",
+    "options": [
+      "Mars",
+      "Jupiter",
+      "Earth",
+      "Venus"
+    ],
+    "correct_answer": "3",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Earth, Mars, Saturn?",
+    "options": [
+      "Earth",
+      "Venus",
+      "Mars",
+      "Saturn"
+    ],
+    "correct_answer": "1",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Earth, Mars, Uranus?",
+    "options": [
+      "Mars",
+      "Uranus",
+      "Earth",
+      "Venus"
+    ],
+    "correct_answer": "3",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Earth, Mars, Neptune?",
+    "options": [
+      "Mars",
+      "Venus",
+      "Neptune",
+      "Earth"
+    ],
+    "correct_answer": "1",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Earth, Jupiter, Saturn?",
+    "options": [
+      "Venus",
+      "Jupiter",
+      "Earth",
+      "Saturn"
+    ],
+    "correct_answer": "0",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Earth, Jupiter, Uranus?",
+    "options": [
+      "Venus",
+      "Jupiter",
+      "Earth",
+      "Uranus"
+    ],
+    "correct_answer": "0",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Earth, Jupiter, Neptune?",
+    "options": [
+      "Jupiter",
+      "Earth",
+      "Venus",
+      "Neptune"
+    ],
+    "correct_answer": "2",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Earth, Saturn, Uranus?",
+    "options": [
+      "Saturn",
+      "Venus",
+      "Earth",
+      "Uranus"
+    ],
+    "correct_answer": "1",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Earth, Saturn, Neptune?",
+    "options": [
+      "Saturn",
+      "Neptune",
+      "Venus",
+      "Earth"
+    ],
+    "correct_answer": "2",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Earth, Uranus, Neptune?",
+    "options": [
+      "Neptune",
+      "Earth",
+      "Uranus",
+      "Venus"
+    ],
+    "correct_answer": "3",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Mars, Jupiter, Saturn?",
+    "options": [
+      "Saturn",
+      "Jupiter",
+      "Mars",
+      "Venus"
+    ],
+    "correct_answer": "3",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Mars, Jupiter, Uranus?",
+    "options": [
+      "Mars",
+      "Uranus",
+      "Venus",
+      "Jupiter"
+    ],
+    "correct_answer": "2",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Mars, Jupiter, Neptune?",
+    "options": [
+      "Venus",
+      "Neptune",
+      "Mars",
+      "Jupiter"
+    ],
+    "correct_answer": "0",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Mars, Saturn, Uranus?",
+    "options": [
+      "Saturn",
+      "Venus",
+      "Uranus",
+      "Mars"
+    ],
+    "correct_answer": "1",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Mars, Saturn, Neptune?",
+    "options": [
+      "Mars",
+      "Saturn",
+      "Neptune",
+      "Venus"
+    ],
+    "correct_answer": "3",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Mars, Uranus, Neptune?",
+    "options": [
+      "Venus",
+      "Uranus",
+      "Neptune",
+      "Mars"
+    ],
+    "correct_answer": "0",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Jupiter, Saturn, Uranus?",
+    "options": [
+      "Venus",
+      "Saturn",
+      "Jupiter",
+      "Uranus"
+    ],
+    "correct_answer": "0",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Jupiter, Saturn, Neptune?",
+    "options": [
+      "Saturn",
+      "Venus",
+      "Jupiter",
+      "Neptune"
+    ],
+    "correct_answer": "1",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Jupiter, Uranus, Neptune?",
+    "options": [
+      "Venus",
+      "Uranus",
+      "Neptune",
+      "Jupiter"
+    ],
+    "correct_answer": "0",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Venus, Saturn, Uranus, Neptune?",
+    "options": [
+      "Neptune",
+      "Uranus",
+      "Venus",
+      "Saturn"
+    ],
+    "correct_answer": "2",
+    "explanation": "Venus. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Earth, Mars, Jupiter, Saturn?",
+    "options": [
+      "Earth",
+      "Saturn",
+      "Jupiter",
+      "Mars"
+    ],
+    "correct_answer": "0",
+    "explanation": "Earth. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Earth, Mars, Jupiter, Uranus?",
+    "options": [
+      "Earth",
+      "Uranus",
+      "Mars",
+      "Jupiter"
+    ],
+    "correct_answer": "0",
+    "explanation": "Earth. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Earth, Mars, Jupiter, Neptune?",
+    "options": [
+      "Earth",
+      "Jupiter",
+      "Neptune",
+      "Mars"
+    ],
+    "correct_answer": "0",
+    "explanation": "Earth. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Earth, Mars, Saturn, Uranus?",
+    "options": [
+      "Earth",
+      "Mars",
+      "Uranus",
+      "Saturn"
+    ],
+    "correct_answer": "0",
+    "explanation": "Earth. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Earth, Mars, Saturn, Neptune?",
+    "options": [
+      "Earth",
+      "Mars",
+      "Saturn",
+      "Neptune"
+    ],
+    "correct_answer": "0",
+    "explanation": "Earth. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Earth, Mars, Uranus, Neptune?",
+    "options": [
+      "Mars",
+      "Earth",
+      "Neptune",
+      "Uranus"
+    ],
+    "correct_answer": "1",
+    "explanation": "Earth. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Earth, Jupiter, Saturn, Uranus?",
+    "options": [
+      "Saturn",
+      "Jupiter",
+      "Uranus",
+      "Earth"
+    ],
+    "correct_answer": "3",
+    "explanation": "Earth. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Earth, Jupiter, Saturn, Neptune?",
+    "options": [
+      "Earth",
+      "Saturn",
+      "Neptune",
+      "Jupiter"
+    ],
+    "correct_answer": "0",
+    "explanation": "Earth. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Earth, Jupiter, Uranus, Neptune?",
+    "options": [
+      "Uranus",
+      "Neptune",
+      "Jupiter",
+      "Earth"
+    ],
+    "correct_answer": "3",
+    "explanation": "Earth. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Earth, Saturn, Uranus, Neptune?",
+    "options": [
+      "Neptune",
+      "Saturn",
+      "Uranus",
+      "Earth"
+    ],
+    "correct_answer": "3",
+    "explanation": "Earth. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mars, Jupiter, Saturn, Uranus?",
+    "options": [
+      "Mars",
+      "Saturn",
+      "Jupiter",
+      "Uranus"
+    ],
+    "correct_answer": "0",
+    "explanation": "Mars. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mars, Jupiter, Saturn, Neptune?",
+    "options": [
+      "Mars",
+      "Saturn",
+      "Neptune",
+      "Jupiter"
+    ],
+    "correct_answer": "0",
+    "explanation": "Mars. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mars, Jupiter, Uranus, Neptune?",
+    "options": [
+      "Mars",
+      "Jupiter",
+      "Neptune",
+      "Uranus"
+    ],
+    "correct_answer": "0",
+    "explanation": "Mars. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Mars, Saturn, Uranus, Neptune?",
+    "options": [
+      "Neptune",
+      "Saturn",
+      "Mars",
+      "Uranus"
+    ],
+    "correct_answer": "2",
+    "explanation": "Mars. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which listed planet is nearest to the Sun in orbital order: Jupiter, Saturn, Uranus, Neptune?",
+    "options": [
+      "Neptune",
+      "Uranus",
+      "Saturn",
+      "Jupiter"
+    ],
+    "correct_answer": "3",
+    "explanation": "Jupiter. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which is the largest planet in the Solar System?",
+    "options": [
+      "Earth",
+      "Venus",
+      "Mercury",
+      "Jupiter"
+    ],
+    "correct_answer": "3",
+    "explanation": "Jupiter. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  },
+  {
+    "subject": "astronomy",
+    "question_text": "Which is the second-largest planet in the Solar System?",
+    "options": [
+      "Earth",
+      "Mercury",
+      "Saturn",
+      "Venus"
+    ],
+    "correct_answer": "2",
+    "explanation": "Saturn. Source: https://science.nasa.gov/solar-system/planets/",
+    "fact_source": "https://science.nasa.gov/solar-system/planets/",
+    "wake_only": true,
+    "is_active": true,
+    "difficulty": "medium"
+  }
+]

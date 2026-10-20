@@ -34,13 +34,13 @@ export function AlarmScreen() {
       if (state.event) {
         setEvent(state.event);
         if (state.event.status === "ringing") await webAlarmScheduler.ring(tones[state.event.tone] ?? superloud.url);
-        else if (state.event.status === "solved") {
+        else if (state.event.status === "solved" && !result?.solved) {
           webAlarmScheduler.stopVerified();
           setResult({ solved: true, correct: true, awarded: 0, result: state.event.result ?? "daily_claimed", event: state.event });
         }
       } else setEvent(null);
     } catch { setError("Connection needed to verify the alarm. Reconnect and try again."); }
-  }, [read]);
+  }, [read, result?.solved]);
   useEffect(() => { void refresh(); const id = window.setInterval(refresh, 5000); return () => clearInterval(id); }, [refresh]);
   useEffect(() => {
     if (event?.status !== "ringing" || result?.solved) return;
