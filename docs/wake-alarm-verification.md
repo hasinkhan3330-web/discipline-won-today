@@ -54,5 +54,12 @@ No publication, deployment, native packaging, auth changes, unrelated screen red
 - Explanation is returned only in the reply to a correct submission, for the question just answered. Wrong answers return `explanation: null`.
 - Client bundle scan: 445 files, 0/400 bank questions, 0/400 explanations, 0 private column names.
 - Live browser capture (temporary account, deleted): 647 responses, 0 with private field names, 0 pre-solve with hash/explanation.
-- Note: live grants SELECT on `alarm_events`, `wake_question_history`, `quiz_questions` to anon/authenticated; RLS with no matching policy returns 0 rows. Revoking those grants would add a second layer (not applied).
-- UNVERIFIED: live science MCQ browser capture; physical devices; push payloads in a real delivery (push inactive).
+- UNVERIFIED: physical devices; push payloads in a real delivery (push inactive).
+
+## Privacy hardening follow-up (2026-10-20)
+1. **Table rights revoked.** Migration `0026_wake_revoke_private_table_grants` removes all anon/authenticated rights on `alarm_events`, `wake_question_history`, `quiz_questions` (live ACL now: postgres, service_role, sandbox_exec only). RLS stays on as layer 2. Test: direct reads by both roles fail with 42501; a rolled-back temporary grant still sees 0 rows.
+2. **Push payload.** Body is built by `wakePushMessage()` from an explicit allowlist: `eventId, round, url` only — no question fields at all, no answer/index/hash/explanation; notification text is fixed. Extra fields on a job row cannot be forwarded (`tests/wake-push-payload.test.ts`). Real provider delivery remains UNVERIFIED (push inactive).
+3. **On-device caching.** None exists: no question pre-fetch, no Cache Storage, no IndexedDB, and the worker has no fetch handler. Live capture snapshots (scheduled/ringing/solved) held only the sign-in session and router scroll key — no question text, answer, hash or explanation.
+4. **Offline answers.** Queued in memory on the alarm screen (never stored on the device), answer buttons locked, notice shown, retried on reconnect and at 2/4/8/16/30s. Only a server-confirmed solve stops the alarm; server rejections are shown, not retried (`tests/wake-offline-queue.test.ts`). Live: server unchanged while offline; delivered exactly once after reconnect.
+5. **Live science capture** (`WAKE_LIVE_CAPTURE=1`, driver `tests/wake-live-capture.py`, preview app on the live backend, throwaway account deleted): 637 responses, 0 private field names, 6 science questions with exactly the allowlisted keys and 4 options, hashes in 0 responses, explanations in 0 pre-answer responses, wrong-answer explanation never sent. Full file: 14 pass, 0 fail, 362 expectations.
+- UNVERIFIED: capture against the published domain (wake feature not published yet), physical phones.
