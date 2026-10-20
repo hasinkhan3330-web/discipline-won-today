@@ -11,6 +11,8 @@
 
 - Wake Protocol completion uses the existing math/science alarm challenge with no camera or selfie verification, preserving user privacy and the established alarm experience.
 - Wake alarms use a server-owned occurrence and private question state behind an AlarmScheduler adapter; only verified server solves finalize the existing wake session and coin ledger, preventing client timing/answer bypasses.
+- Wake science uses the existing private quiz rows with wake-only category/source metadata; the server-only bank is never imported by browser modules, so answer keys stay private.
+- Wake push delivery remains explicitly inactive until the new authenticated-secret callback is published and its scheduler is activated; subscription alone never implies closed-app readiness.
 - Rank coin badges use the signed-in, leaderboard-scoped `rank_verification_badges` lookup and profile coin balance, not leaderboard DP or client-calculated rewards, so badge thresholds match the displayed coin count without changing ranking.
 - Accountability commitments, aggregate partner stats, fixed nudges, emergency alerts, and verified check-ins use the existing authenticated `send_accountability_nudge` RPC, keeping one server-authoritative partner boundary without exposing raw partner rows.
 
