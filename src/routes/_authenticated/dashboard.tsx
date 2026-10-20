@@ -477,7 +477,9 @@ function App() {
     };
     void refreshAlarm();
     window.addEventListener("axen:wake-updated", refreshAlarm);
-    return () => { live = false; window.removeEventListener("axen:wake-updated", refreshAlarm); };
+    const solved = () => { void refreshAll(); };
+    window.addEventListener("axen:wake-solved", solved);
+    return () => { live = false; window.removeEventListener("axen:wake-updated", refreshAlarm); window.removeEventListener("axen:wake-solved", solved); };
   }, [myId, readAlarm]);
 
   const theme = THEMES[themeKey];

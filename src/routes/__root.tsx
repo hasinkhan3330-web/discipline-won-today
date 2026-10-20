@@ -45,8 +45,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "AXEN Habit & Discipline" },
       { name: "twitter:description", content: "Ultra-futuristic discipline tracker. Sign in to start your streak, missions, and cosmic meditation." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c0e4d78-f84f-44e6-9584-e7f572e4decc/id-preview-86879ee9--c14c9cb8-3c47-4db8-a3b5-dee64dd2f905.lovable.app-1784981303889.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/1c0e4d78-f84f-44e6-9584-e7f572e4decc/id-preview-86879ee9--c14c9cb8-3c47-4db8-a3b5-dee64dd2f905.lovable.app-1784981303889.png" },
     ],
     links: [
       {

@@ -56,7 +56,7 @@ export function AlarmScreen() {
     try {
       const response = await submit({ data: { eventId: event.id, version: event.question.version, answer: value } });
       setEvent(response.event); setAnswer("");
-      if (response.solved) { webAlarmScheduler.stopVerified(); setResult(response); window.dispatchEvent(new Event("axen:wake-updated")); }
+      if (response.solved) { webAlarmScheduler.stopVerified(); setResult(response); window.dispatchEvent(new Event("axen:wake-updated")); window.dispatchEvent(new Event("axen:wake-solved")); }
       else setError(response.correct ? "One correct. Solve the next question." : "Incorrect. The alarm keeps ringing. Solve the new question.");
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Verification failed. The alarm keeps ringing."); await refresh(); }
     finally { setBusy(false); }
