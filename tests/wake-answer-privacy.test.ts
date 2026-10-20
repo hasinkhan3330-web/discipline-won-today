@@ -132,11 +132,35 @@ db("science MCQ: options only, index key hidden; post-answer explanation never c
   console.log("  science question keys:", sorted(q).join(","), "| options:", q.options.length);
 });
 
-db("direct reads return zero private rows even with the live table grants", async () => {
+const PRIVATE_TABLES = ["alarm_events", "wake_question_history", "quiz_questions"];
+
+db("layer 1: anon and authenticated hold no table rights at all on the private tables", async () => {
+  // Mirrors live after migration 0026 (REVOKE ALL ... FROM anon, authenticated).
+  const rows = await db_()`SELECT t, r, has_table_privilege(r, 'public.'||t, 'SELECT') s, has_table_privilege(r, 'public.'||t, 'INSERT') i,
+    has_table_privilege(r, 'public.'||t, 'UPDATE') u, has_table_privilege(r, 'public.'||t, 'DELETE') d
+    FROM unnest(${PRIVATE_TABLES}::text[]) t, unnest(array['anon','authenticated']) r`;
+  for (const row of rows) expect([row.s, row.i, row.u, row.d]).toEqual([false, false, false, false]);
+  const denied: string[] = [];
+  for (const role of ["authenticated", "anon"]) for (const t of PRIVATE_TABLES) {
+    const err = await db_().begin(async tx => {
+      await tx.unsafe(`SET LOCAL ROLE ${role}`);
+      await tx`SELECT set_config('request.jwt.claim.sub',${MATH_USER},true)`;
+      await tx.unsafe(`SELECT count(*) FROM public.${t}`);
+    }).then(() => null, (e: { code?: string }) => e);
+    expect(err?.code).toBe("42501"); // permission denied, before RLS is even consulted
+    denied.push(`${role}.${t}`);
+  }
+  console.log("  permission denied (42501):", denied.join(", "));
+  // Service role (private processor) keeps its access.
+  const svc = await db_()`SELECT bool_and(has_table_privilege('service_role','public.'||t,'SELECT')) ok FROM unnest(${PRIVATE_TABLES}::text[]) t`;
+  expect(svc[0]?.ok).toBe(true);
+});
+
+db("layer 2: even if a grant were restored, RLS still returns zero private rows", async () => {
   const sentinel = new Error("rollback");
   let counts: Record<string, number> = {};
   await db_().begin(async tx => {
-    // Live grants SELECT on these tables to anon/authenticated; mirror that, then rely on RLS (no policies).
+    // Temporarily re-grant (rolled back) to prove RLS alone would still hide every row.
     await tx.unsafe("GRANT SELECT ON public.alarm_events, public.wake_question_history, public.quiz_questions TO anon, authenticated");
     for (const role of ["authenticated", "anon"]) {
       await tx.unsafe(`SET LOCAL ROLE ${role}`);
@@ -151,10 +175,154 @@ db("direct reads return zero private rows even with the live table grants", asyn
   const owned = Number((await db_()`SELECT count(*) AS n FROM public.alarm_events WHERE user_id=${MATH_USER}`)[0]?.n);
   expect(owned).toBeGreaterThan(0);
   for (const n of Object.values(counts)) expect(n).toBe(0);
-  console.log("  visible rows:", JSON.stringify(counts), "| rows that exist for this user:", owned);
+  console.log("  visible rows with a temporary grant:", JSON.stringify(counts), "| rows that exist for this user:", owned);
   await expect(as(MATH_USER, `SELECT public.wake_event_payload('${math.eventId}')`)).rejects.toThrow();
   await expect(as(MATH_USER, `SELECT public.wake_issue_question('${math.eventId}')`)).rejects.toThrow();
 });
+
+// ---------------------------------------------------------------------------
+// Live-site capture, Science (MCQ) question. Opt-in: WAKE_LIVE_CAPTURE=1.
+// Drives the running app on the live backend with a throwaway account through
+// tests/wake-live-capture.py (Playwright), then asserts on every response body the
+// browser received and on device storage. The account and all its rows are deleted.
+// ---------------------------------------------------------------------------
+const live = process.env.WAKE_LIVE_CAPTURE === "1";
+const liveTest = live ? test : test.skip;
+type LiveSecret = Secret & { label: string; answered_at: number; outcome: "wrong" | "correct_1_of_2" | "solve"; question_text: string };
+type LiveCapture = {
+  event_id: string;
+  responses: Array<{ i: number; phase: string; url: string; status: number; body: string }>;
+  secrets: LiveSecret[];
+  storage: Record<string, { localStorage: Record<string, string>; sessionStorage: Record<string, string>; indexedDB: string[]; cacheStorage: unknown[]; cacheNames: string[]; serviceWorkers: unknown[] }>;
+  offline: Record<string, unknown>;
+  final: { status: string; coins_awarded: number; reward_result: string };
+  cleanup: Record<string, number | string>;
+};
+let cap: LiveCapture | null = null;
+function capture(): LiveCapture {
+  if (cap) return cap;
+  const out = "/tmp/wake-live-capture/capture.json";
+  const run = Bun.spawnSync(["python3", join(import.meta.dir, "wake-live-capture.py")], { env: { ...process.env, WAKE_LIVE_CAPTURE_OUT: out }, stdout: "pipe", stderr: "pipe", timeout: 280_000 });
+  if (!existsSync(out)) throw new Error(`live capture produced no output: ${run.stderr.toString().slice(-800)}`);
+  cap = JSON.parse(readFileSync(out, "utf8")) as LiveCapture;
+  if (run.exitCode !== 0) throw new Error(`live capture failed: ${run.stderr.toString().slice(-800)}`);
+  return cap;
+}
+/** Decodes TanStack server-function (seroval) bodies into plain values. */
+function decodeSeroval(n: unknown): unknown {
+  if (!n || typeof n !== "object") return n;
+  const x = n as { t: number; s?: unknown; a?: unknown[]; p?: { k: string[]; v: unknown[] } };
+  switch (x.t) {
+    case 0: case 1: return x.s;
+    case 2: return [null, undefined, true, false][x.s as number];
+    case 9: return (x.a ?? []).map(decodeSeroval);
+    case 10: case 11: return Object.fromEntries((x.p?.k ?? []).map((k, i) => [k, decodeSeroval(x.p!.v[i])]));
+    default: return { __seroval_type: x.t };
+  }
+}
+function objects(v: unknown, out: Record<string, unknown>[] = []) {
+  if (Array.isArray(v)) v.forEach(x => objects(x, out));
+  else if (v && typeof v === "object") { out.push(v as Record<string, unknown>); Object.values(v).forEach(x => objects(x, out)); }
+  return out;
+}
+/** Longest plain-text run of an explanation, so escaping in transport cannot hide a match. */
+function fragment(text: string) {
+  return text.split(/[^A-Za-z0-9 ,.;:()-]/).sort((a, b) => b.length - a.length)[0]!.trim();
+}
+const PRIVATE_MARKERS = ["question_answer", "question_explanation", "question_hash", "correct_answer", "wake-science-bank", "wake_issue_question"];
+
+liveTest("live science: no captured response contains a private field name", () => {
+  const c = capture();
+  expect(c.responses.length).toBeGreaterThan(50);
+  const hits = c.responses.filter(r => PRIVATE_MARKERS.some(m => r.body.includes(m)));
+  expect(hits.map(h => h.url)).toEqual([]);
+  console.log(`  ${c.responses.length} live responses captured, ${hits.length} contain a private field name`);
+}, 300_000);
+
+liveTest("live science: wake responses return exactly the allowlisted fields (MCQ options, no key)", () => {
+  const c = capture();
+  const wake = c.responses.filter(r => r.url.includes("/_serverFn/") && r.body.startsWith("{")).map(r => ({ r, v: decodeSeroval(JSON.parse(r.body)) }));
+  const all = wake.flatMap(w => objects(w.v));
+  const questions = all.filter(o => "correct_in_row" in o && "version" in o);
+  const events = all.filter(o => "scheduled_for" in o && "tone" in o);
+  const states = all.filter(o => "server_now" in o);
+  const submissions = all.filter(o => "solved" in o && "event" in o);
+  expect(questions.length).toBeGreaterThan(0);
+  for (const q of questions) {
+    expect(sorted(q)).toEqual(QUESTION_KEYS);
+    expect(q.type).toBe("science");
+    expect(q.options as unknown[]).toHaveLength(4);
+  }
+  for (const e of events) expect(sorted(e)).toEqual(EVENT_KEYS);
+  for (const s of states) expect(sorted(s)).toEqual(STATE_KEYS);
+  for (const s of submissions) expect(sorted(s)).toEqual(s.solved ? SOLVED_SUBMISSION_KEYS : UNSOLVED_SUBMISSION_KEYS);
+  const wrong = submissions.find(s => s.solved === false && s.correct === false);
+  expect(wrong?.explanation).toBeNull();
+  const solved = submissions.find(s => s.solved === true);
+  expect((solved?.event as { question: unknown }).question).toBeNull();
+  for (const k of new Set(all.flatMap(o => Object.keys(o)))) expect(/answer|hash|solution|key/i.test(k)).toBe(false);
+  console.log(`  ${wake.length} wake responses decoded: ${questions.length} science questions, ${submissions.length} submissions`);
+  console.log("  question keys:", sorted(questions[0]!).join(","), "| options:", (questions[0]!.options as unknown[]).length);
+  console.log("  wrong-answer response keys:", sorted(wrong!).join(","), "| explanation:", wrong!.explanation);
+}, 300_000);
+
+liveTest("live science: no hash ever, and no explanation before its question is answered", () => {
+  const c = capture();
+  expect(c.secrets.map(s => s.outcome)).toEqual(["wrong", "correct_1_of_2", "solve"]);
+  for (const s of c.secrets) {
+    const frag = fragment(s.question_explanation);
+    expect(frag.length).toBeGreaterThan(15);
+    expect(c.responses.some(r => r.body.includes(s.question_hash))).toBe(false);
+    const before = c.responses.filter(r => r.i < s.answered_at && r.body.includes(frag));
+    expect(before.length).toBe(0);
+    const after = c.responses.filter(r => r.i >= s.answered_at && r.body.includes(frag)).length;
+    if (s.outcome === "wrong") expect(after).toBe(0); // wrong answers never reveal the explanation
+    else expect(after).toBeGreaterThan(0); // positive control: the detector does find a real explanation
+    console.log(`  ${s.label}: hash in 0 responses; explanation in 0 pre-answer responses, ${after} after`);
+  }
+}, 300_000);
+
+liveTest("live science: device storage holds no question, answer, hash or explanation", () => {
+  const c = capture();
+  expect(Object.keys(c.storage)).toEqual(["scheduled", "ringing", "solved"]);
+  for (const [phase, snap] of Object.entries(c.storage)) {
+    const text = JSON.stringify(snap);
+    for (const m of PRIVATE_MARKERS) expect(text.includes(m)).toBe(false);
+    for (const s of c.secrets) {
+      expect(text.includes(s.question_hash)).toBe(false);
+      expect(text.includes(fragment(s.question_explanation))).toBe(false);
+      expect(text.includes(s.question_text)).toBe(false); // nothing about the question is cached on the device
+    }
+    expect(snap.cacheNames).toEqual([]);
+    expect(snap.cacheStorage).toEqual([]);
+    expect(snap.serviceWorkers).toEqual([]);
+    console.log(`  ${phase}: localStorage keys [${Object.keys(snap.localStorage).join(", ")}], sessionStorage keys [${Object.keys(snap.sessionStorage).join(", ")}], IndexedDB [${snap.indexedDB.join(", ")}], Cache Storage ${snap.cacheNames.length}`);
+  }
+}, 300_000);
+
+liveTest("live: offline answer is queued, keeps ringing, and reaches the server once after reconnect", () => {
+  const o = capture().offline;
+  expect(o.notice_visible).toBe(true);
+  expect(o.buttons_disabled).toBe(true);
+  expect(o.awake_shown_while_offline).toBe(false);
+  expect(o.server_status_while_offline).toBe("ringing");
+  expect(o.server_version_while_offline).toBe(o.queued_version); // server never saw it while offline
+  expect(o.server_correct_in_row_while_offline).toBe(0);
+  expect(o.after_reconnect_version).toBe((o.queued_version as number) + 1); // delivered exactly once
+  expect(o.after_reconnect_correct_in_row).toBe(1);
+  expect(o.notice_gone).toBe(true);
+  expect(o.ui_shows_one_of_two).toBe(true);
+  console.log("  offline:", JSON.stringify(o));
+}, 300_000);
+
+liveTest("live: test alarm solved with no reward and the throwaway account fully deleted", () => {
+  const c = capture();
+  expect(c.final).toEqual({ status: "solved", coins_awarded: 0, reward_result: "test_alarm" });
+  const { auth_user_http, ...rows } = c.cleanup;
+  expect(auth_user_http).toBe(404);
+  for (const n of Object.values(rows)) expect(n).toBe(0);
+  console.log("  final:", JSON.stringify(c.final), "| leftover rows:", JSON.stringify(rows), "| auth user:", auth_user_http);
+}, 300_000);
 
 // Client bundle: requires `vite build` first. Fails (not skips) when dist/client is missing.
 test("client bundle contains no answer keys, explanations or private bank", () => {
