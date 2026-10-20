@@ -137,7 +137,7 @@ db("direct reads return zero private rows even with the live table grants", asyn
   let counts: Record<string, number> = {};
   await db_().begin(async tx => {
     // Live grants SELECT on these tables to anon/authenticated; mirror that, then rely on RLS (no policies).
-    await tx.unsafe("GRANT SELECT ON public.alarm_events, public.wake_question_history TO anon, authenticated");
+    await tx.unsafe("GRANT SELECT ON public.alarm_events, public.wake_question_history, public.quiz_questions TO anon, authenticated");
     for (const role of ["authenticated", "anon"]) {
       await tx.unsafe(`SET LOCAL ROLE ${role}`);
       await tx`SELECT set_config('request.jwt.claim.sub',${MATH_USER},true)`;
