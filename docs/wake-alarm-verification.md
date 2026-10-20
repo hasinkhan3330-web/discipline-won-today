@@ -48,3 +48,11 @@ Authenticated server functions validate the bearer through existing middleware a
 Browsers cannot prevent closure, power-off, OS mute, permission rejection or notification suppression. Push cannot force open a page or guarantee looping audio. iOS push needs an installed Home Screen app on iOS 16.4+. Keep an independent phone alarm. Minute checks would run 1,440 times/day and may increase Cloud costs once activated.
 
 No publication, deployment, native packaging, auth changes, unrelated screen redesign or unrelated reward changes were performed. The feature remains **partially delivered**, with closed-app activation, independent science review and throughput/device acceptance outstanding.
+## Answer-key privacy (2026-10-20)
+- `tests/wake-answer-privacy.test.ts` (disposable DB, functions md5-identical to live): 7 pass, 0 fail, 176 expectations.
+- Question fields sent to the browser: `id, version, text, options, type, correct_in_row` (options null for math; question null unless ringing).
+- Explanation is returned only in the reply to a correct submission, for the question just answered. Wrong answers return `explanation: null`.
+- Client bundle scan: 445 files, 0/400 bank questions, 0/400 explanations, 0 private column names.
+- Live browser capture (temporary account, deleted): 647 responses, 0 with private field names, 0 pre-solve with hash/explanation.
+- Note: live grants SELECT on `alarm_events`, `wake_question_history`, `quiz_questions` to anon/authenticated; RLS with no matching policy returns 0 rows. Revoking those grants would add a second layer (not applied).
+- UNVERIFIED: live science MCQ browser capture; physical devices; push payloads in a real delivery (push inactive).
