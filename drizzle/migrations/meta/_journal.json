@@ -183,6 +183,13 @@
       "when": 1792482650755,
       "tag": "0025_wake_timezone_safe_retry",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1792485837373,
+      "tag": "0026_wake_revoke_private_table_grants",
+      "breakpoints": true
     }
   ]
 }
