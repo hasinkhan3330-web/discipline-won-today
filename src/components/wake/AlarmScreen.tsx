@@ -50,17 +50,41 @@ export function AlarmScreen() {
     window.addEventListener("popstate", pop); window.addEventListener("beforeunload", unload);
     return () => { window.removeEventListener("popstate", pop); window.removeEventListener("beforeunload", unload); };
   }, [event?.id, result?.solved]);
-  const send = async (value: string) => {
-    if (!event?.question || busy) return;
-    setBusy(true); setError("");
+  // Offline answers wait in memory only and are retried; only a server-confirmed solve stops the alarm.
+  const [pending, setPending] = useState<PendingAnswer | null>(null);
+  const pendingRef = useRef<PendingAnswer | null>(null), attempts = useRef(0), retryTimer = useRef<number | null>(null), inFlight = useRef(false);
+  const clearRetry = () => { if (retryTimer.current !== null) window.clearTimeout(retryTimer.current); retryTimer.current = null; };
+  const deliver = useCallback(async (item: PendingAnswer) => {
+    if (inFlight.current) return;
+    inFlight.current = true; setBusy(true); clearRetry();
     try {
-      const response = await submit({ data: { eventId: event.id, version: event.question.version, answer: value } });
-      setEvent(response.event); setAnswer("");
+      const outcome = await trySendAnswer(item, x => submit({ data: x }), () => navigator.onLine);
+      if (outcome.kind === "queued") {
+        pendingRef.current = item; setPending(item); attempts.current += 1;
+        retryTimer.current = window.setTimeout(() => { if (pendingRef.current) void deliverRef.current(pendingRef.current); }, retryDelayMs(attempts.current));
+        return;
+      }
+      pendingRef.current = null; setPending(null); attempts.current = 0;
+      if (outcome.kind === "rejected") { setError(outcome.message); await refresh(); return; }
+      const response = outcome.response;
+      setEvent(response.event); setAnswer(""); setError("");
       if (response.solved) { webAlarmScheduler.stopVerified(); setResult(response); window.dispatchEvent(new Event("axen:wake-updated")); window.dispatchEvent(new Event("axen:wake-solved")); }
       else setError(response.correct ? "One correct. Solve the next question." : "Incorrect. The alarm keeps ringing. Solve the new question.");
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Verification failed. The alarm keeps ringing."); await refresh(); }
-    finally { setBusy(false); }
+    } finally { inFlight.current = false; setBusy(false); }
+  }, [submit, refresh]);
+  const deliverRef = useRef(deliver);
+  deliverRef.current = deliver;
+  useEffect(() => {
+    const online = () => { if (pendingRef.current) void deliverRef.current(pendingRef.current); };
+    window.addEventListener("online", online);
+    return () => { window.removeEventListener("online", online); clearRetry(); };
+  }, []);
+  const send = async (value: string) => {
+    if (!event?.question || busy || pendingRef.current) return;
+    setError("");
+    await deliver({ eventId: event.id, version: event.question.version, answer: value });
   };
+  const locked = busy || pending !== null;
   return <div className={styles.surface} role="dialog" aria-modal="true" aria-label="Wake verification"><div className={styles.inner}>
     <p className={styles.muted}>AXEN · {event?.is_test ? "TEST ALARM" : "WAKE PROTOCOL"}</p>
     <h1 className={styles.title}>{result?.solved ? "AWAKE CONFIRMED" : "WAKE UP"}</h1>
