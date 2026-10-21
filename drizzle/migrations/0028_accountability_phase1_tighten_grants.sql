@@ -1,0 +1,2 @@
+REVOKE ALL ON public.pact_stakes, public.pact_disputes, public.trust_events, public.cofocus_sessions, public.recovery_choices, public.partner_messages, public.commitment_reminders FROM anon;
+REVOKE INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER ON public.pact_stakes, public.pact_disputes, public.trust_events, public.cofocus_sessions, public.recovery_choices, public.partner_messages, public.commitment_reminders FROM authenticated;
