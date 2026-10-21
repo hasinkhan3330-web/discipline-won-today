@@ -640,6 +640,68 @@ export type Database = {
         }
         Relationships: []
       }
+      cofocus_sessions: {
+        Row: {
+          connection_id: string
+          created_at: string
+          ends_at: string | null
+          guest_checkin: string | null
+          guest_id: string
+          guest_seen_at: string | null
+          host_checkin: string | null
+          host_id: string
+          host_seen_at: string | null
+          id: string
+          minutes: number
+          quiet_mode: boolean
+          starts_at: string | null
+          status: string
+          task_title: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          ends_at?: string | null
+          guest_checkin?: string | null
+          guest_id: string
+          guest_seen_at?: string | null
+          host_checkin?: string | null
+          host_id: string
+          host_seen_at?: string | null
+          id?: string
+          minutes: number
+          quiet_mode?: boolean
+          starts_at?: string | null
+          status?: string
+          task_title: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          ends_at?: string | null
+          guest_checkin?: string | null
+          guest_id?: string
+          guest_seen_at?: string | null
+          host_checkin?: string | null
+          host_id?: string
+          host_seen_at?: string | null
+          id?: string
+          minutes?: number
+          quiet_mode?: boolean
+          starts_at?: string | null
+          status?: string
+          task_title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cofocus_sessions_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "accountability_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       coin_transactions: {
         Row: {
           amount: number
@@ -678,6 +740,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      commitment_reminders: {
+        Row: {
+          contract_id: string
+          created_at: string
+          fire_at: string
+          id: string
+          idempotency_key: string
+          kind: string
+          sent_at: string | null
+          status: string
+          timezone: string
+          user_id: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          fire_at: string
+          id?: string
+          idempotency_key: string
+          kind?: string
+          sent_at?: string | null
+          status?: string
+          timezone: string
+          user_id: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          fire_at?: string
+          id?: string
+          idempotency_key?: string
+          kind?: string
+          sent_at?: string | null
+          status?: string
+          timezone?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commitment_reminders_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "daily_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contract_events: {
         Row: {
@@ -779,8 +888,11 @@ export type Database = {
           comeback_started_at: string | null
           completed_at: string | null
           created_at: string
+          deadline_at: string | null
           difficulty: number
+          done_criteria: string | null
           expires_at: string | null
+          fallback_action: string | null
           goal_id: string | null
           id: string
           is_recovery: boolean
@@ -811,8 +923,11 @@ export type Database = {
           comeback_started_at?: string | null
           completed_at?: string | null
           created_at?: string
+          deadline_at?: string | null
           difficulty?: number
+          done_criteria?: string | null
           expires_at?: string | null
+          fallback_action?: string | null
           goal_id?: string | null
           id?: string
           is_recovery?: boolean
@@ -843,8 +958,11 @@ export type Database = {
           comeback_started_at?: string | null
           completed_at?: string | null
           created_at?: string
+          deadline_at?: string | null
           difficulty?: number
+          done_criteria?: string | null
           expires_at?: string | null
+          fallback_action?: string | null
           goal_id?: string | null
           id?: string
           is_recovery?: boolean
@@ -1265,6 +1383,57 @@ export type Database = {
           },
         ]
       }
+      pact_disputes: {
+        Row: {
+          closes_at: string
+          id: string
+          opened_at: string
+          opened_by: string
+          pact_id: string
+          proof_id: string
+          reason: string
+          resolution: string | null
+          resolved_at: string | null
+        }
+        Insert: {
+          closes_at: string
+          id?: string
+          opened_at?: string
+          opened_by: string
+          pact_id: string
+          proof_id: string
+          reason: string
+          resolution?: string | null
+          resolved_at?: string | null
+        }
+        Update: {
+          closes_at?: string
+          id?: string
+          opened_at?: string
+          opened_by?: string
+          pact_id?: string
+          proof_id?: string
+          reason?: string
+          resolution?: string | null
+          resolved_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pact_disputes_pact_id_fkey"
+            columns: ["pact_id"]
+            isOneToOne: false
+            referencedRelation: "pact_stakes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pact_disputes_proof_id_fkey"
+            columns: ["proof_id"]
+            isOneToOne: false
+            referencedRelation: "proof_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pact_nudges: {
         Row: {
           created_at: string
@@ -1296,6 +1465,120 @@ export type Database = {
             columns: ["pact_id"]
             isOneToOne: false
             referencedRelation: "accountability_pacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pact_stakes: {
+        Row: {
+          cancel_requested_by: string | null
+          connection_id: string
+          created_at: string
+          creator_accepted_at: string | null
+          creator_contract_id: string
+          creator_id: string
+          id: string
+          outcome: string | null
+          partner_accepted_at: string | null
+          partner_contract_id: string | null
+          partner_id: string
+          settled_at: string | null
+          stake_coins: number
+          state: string
+          terms_version: number
+          updated_at: string
+        }
+        Insert: {
+          cancel_requested_by?: string | null
+          connection_id: string
+          created_at?: string
+          creator_accepted_at?: string | null
+          creator_contract_id: string
+          creator_id: string
+          id?: string
+          outcome?: string | null
+          partner_accepted_at?: string | null
+          partner_contract_id?: string | null
+          partner_id: string
+          settled_at?: string | null
+          stake_coins: number
+          state?: string
+          terms_version?: number
+          updated_at?: string
+        }
+        Update: {
+          cancel_requested_by?: string | null
+          connection_id?: string
+          created_at?: string
+          creator_accepted_at?: string | null
+          creator_contract_id?: string
+          creator_id?: string
+          id?: string
+          outcome?: string | null
+          partner_accepted_at?: string | null
+          partner_contract_id?: string | null
+          partner_id?: string
+          settled_at?: string | null
+          stake_coins?: number
+          state?: string
+          terms_version?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pact_stakes_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "accountability_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pact_stakes_creator_contract_id_fkey"
+            columns: ["creator_contract_id"]
+            isOneToOne: false
+            referencedRelation: "daily_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pact_stakes_partner_contract_id_fkey"
+            columns: ["partner_contract_id"]
+            isOneToOne: false
+            referencedRelation: "daily_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_messages: {
+        Row: {
+          body: string
+          connection_id: string
+          created_at: string
+          id: string
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          connection_id: string
+          created_at?: string
+          id?: string
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          connection_id?: string
+          created_at?: string
+          id?: string
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_messages_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "accountability_connections"
             referencedColumns: ["id"]
           },
         ]
@@ -1668,6 +1951,47 @@ export type Database = {
         }
         Relationships: []
       }
+      recovery_choices: {
+        Row: {
+          action: string
+          completed_at: string | null
+          contract_id: string
+          created_at: string
+          id: string
+          reason: string
+          restart_minutes: number | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          completed_at?: string | null
+          contract_id: string
+          created_at?: string
+          id?: string
+          reason: string
+          restart_minutes?: number | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          completed_at?: string | null
+          contract_id?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          restart_minutes?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recovery_choices_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "daily_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recovery_events: {
         Row: {
           created_at: string
@@ -1897,6 +2221,33 @@ export type Database = {
           sort_order?: number
           started_on?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trust_events: {
+        Row: {
+          id: string
+          kept: boolean
+          kind: string
+          occurred_at: string
+          ref_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          kept: boolean
+          kind: string
+          occurred_at?: string
+          ref_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          kept?: boolean
+          kind?: string
+          occurred_at?: string
+          ref_id?: string
           user_id?: string
         }
         Relationships: []
@@ -2135,6 +2486,10 @@ export type Database = {
       accept_accountability_invite: {
         Args: { _token_hash: string }
         Returns: string
+      }
+      acct_is_party: {
+        Args: { _connection: string; _uid: string }
+        Returns: boolean
       }
       activate_axen_plan: { Args: { _answers: Json }; Returns: undefined }
       apply_daily_penalty: {
@@ -2615,8 +2970,11 @@ export type Database = {
           comeback_started_at: string | null
           completed_at: string | null
           created_at: string
+          deadline_at: string | null
           difficulty: number
+          done_criteria: string | null
           expires_at: string | null
+          fallback_action: string | null
           goal_id: string | null
           id: string
           is_recovery: boolean
