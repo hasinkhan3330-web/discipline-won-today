@@ -40,7 +40,7 @@ CREATE TABLE public.pact_stakes (
   partner_id uuid NOT NULL,
   creator_contract_id uuid NOT NULL REFERENCES public.daily_contracts(id),
   partner_contract_id uuid REFERENCES public.daily_contracts(id),
-  stake_coins integer NOT NULL CHECK (stake_coins BETWEEN 1 AND 500),
+  stake_coins integer NOT NULL CHECK (stake_coins BETWEEN 10 AND 500),
   terms_version integer NOT NULL DEFAULT 1,
   creator_accepted_at timestamptz,
   partner_accepted_at timestamptz,
@@ -63,7 +63,7 @@ ALTER TABLE public.pact_stakes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY pact_stakes_party_read ON public.pact_stakes FOR SELECT TO authenticated
   USING (auth.uid() = creator_id OR auth.uid() = partner_id);
 
--- 4. Exactly-once coin movements for stakes (existing ledger)
+-- 4. Exactly-once coin movements for stakes (existing ledger: public.coin_transactions, columns user_id, reason, ref_id — confirmed)
 CREATE UNIQUE INDEX coin_pact_once ON public.coin_transactions(user_id, reason, ref_id)
   WHERE reason IN ('pact_hold','pact_refund','pact_payout');
 
