@@ -218,6 +218,13 @@
       "when": 1793545653732,
       "tag": "0030_realtime_add_entitlements_payments_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1793550509660,
+      "tag": "0031_revoke_anon_default_grants",
+      "breakpoints": true
     }
   ]
 }
