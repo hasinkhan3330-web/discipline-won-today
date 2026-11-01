@@ -211,6 +211,13 @@
       "when": 1793533819837,
       "tag": "0029_wake_skip_zero_xp_score",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1793545653732,
+      "tag": "0030_realtime_add_entitlements_payments_profiles",
+      "breakpoints": true
     }
   ]
 }
