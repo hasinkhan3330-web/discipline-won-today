@@ -7,7 +7,12 @@ export type PendingAnswer = { eventId: string; version: number; answer: string }
 export type SendOutcome<T> =
   | { kind: "sent"; response: T }
   | { kind: "queued" }
-  | { kind: "rejected"; message: string };
+  | { kind: "rejected"; message: string; retry?: boolean };
+
+/** Messages the wake server raises on purpose; anything else (e.g. raw database errors) is never shown. */
+const KNOWN_SERVER_MESSAGES = /^(Challenge changed\. Reload the current question\.|Please wait before another answer|invalid answer|alarm not found|not authenticated)$/;
+export const WAKE_FRIENDLY_ERROR = "Couldn't verify just now, retrying… The alarm keeps ringing until it's confirmed.";
+export const WAKE_SERVER_RETRIES = 3;
 
 const OFFLINE_MESSAGE = /failed to fetch|load failed|networkerror|network request failed|network connection was lost|internet connection appears to be offline/i;
 
@@ -32,6 +37,9 @@ export async function trySendAnswer<T>(item: PendingAnswer, submit: (item: Pendi
     return { kind: "sent", response: await submit(item) };
   } catch (reason) {
     if (isConnectionFailure(reason, online())) return { kind: "queued" };
-    return { kind: "rejected", message: reason instanceof Error ? reason.message : "Verification failed. The alarm keeps ringing." };
+    const raw = reason instanceof Error ? reason.message : String(reason ?? "");
+    if (KNOWN_SERVER_MESSAGES.test(raw)) return { kind: "rejected", message: raw };
+    console.error("[wake] answer verification failed", reason);
+    return { kind: "rejected", message: WAKE_FRIENDLY_ERROR, retry: true };
   }
 }

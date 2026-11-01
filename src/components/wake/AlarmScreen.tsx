@@ -6,7 +6,7 @@ import { CoinBadge } from "@/components/CoinBadge";
 import { readWakeState, submitWakeAnswer } from "@/lib/wake.functions";
 import { webAlarmScheduler } from "@/lib/web-alarm-scheduler";
 import { WAKE_REASONS } from "@/lib/wake-rules";
-import { retryDelayMs, trySendAnswer, type PendingAnswer } from "@/lib/wake-answer-queue";
+import { retryDelayMs, trySendAnswer, WAKE_SERVER_RETRIES, type PendingAnswer } from "@/lib/wake-answer-queue";
 import type { AlarmEvent, AlarmSubmission } from "@/lib/wake-types";
 import styles from "./alarm.module.css";
 import superloud from "@/assets/ringtones/the_cutie_pie-super-loud-ahh-alarm-165805_1.mp3.asset.json";
@@ -60,7 +60,8 @@ export function AlarmScreen() {
     inFlight.current = true; setBusy(true); clearRetry();
     try {
       const outcome = await trySendAnswer(item, x => submit({ data: x }), () => navigator.onLine);
-      if (outcome.kind === "queued") {
+      if (outcome.kind === "queued" || (outcome.kind === "rejected" && outcome.retry && attempts.current < WAKE_SERVER_RETRIES)) {
+        if (outcome.kind === "rejected") setError(outcome.message);
         pendingRef.current = item; setPending(item); attempts.current += 1;
         retryTimer.current = window.setTimeout(() => { if (pendingRef.current) void deliverRef.current(pendingRef.current); }, retryDelayMs(attempts.current));
         return;
