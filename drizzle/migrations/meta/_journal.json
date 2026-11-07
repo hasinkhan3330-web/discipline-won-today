@@ -232,6 +232,13 @@
       "when": 1794069695935,
       "tag": "0032_accountability_rebuild_tier1",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1794069923106,
+      "tag": "0033_acct_revoke_my_invites",
+      "breakpoints": true
     }
   ]
 }

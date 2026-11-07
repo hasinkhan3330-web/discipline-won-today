@@ -2631,6 +2631,7 @@ export type Database = {
       acct_pair_streak: { Args: never; Returns: Json }
       acct_partner_checkin_status: { Args: never; Returns: Json }
       acct_partner_garden_stage: { Args: never; Returns: Json }
+      acct_revoke_my_invites: { Args: never; Returns: number }
       acct_send_cheer: { Args: { _kind: string }; Returns: boolean }
       acct_user_today: { Args: { _uid: string }; Returns: string }
       acct_weekly_report: { Args: never; Returns: Json }
