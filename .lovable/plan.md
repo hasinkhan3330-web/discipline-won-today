@@ -19,6 +19,11 @@ Scope: only You → Accountability, its sheets and needed backend. Home, Rank, Z
 - Screens in priority order: Home + week strip + no-partner/invite/Go solo → 3-step Pact Creator (one-time, today/tomorrow) → proof, review (+ Ask clarification via existing composer), Recovery (Restart, 15-min Comeback, Reschedule, Pause; Reduce only if existing restart exists) → daily check-in with cheers → garden + pair streak milestone → weekly report with share image.
 - Loading, empty, error and denied states; no overflow at 360px.
 
+## Your three conditions
+1. Invite screen shows the real 24-hour expiry, never 48h.
+2. Partner tree and partner check-in return data only when an accepted connection exists between the two users; the tree also needs that user's "show my tree" on. Tested with two partners and a non-partner (gets nothing).
+3. Cheers and clarification messages use additive schema only; no existing function or trigger edited.
+
 ## Tests
 Two-account partner flows; anon denied on all new functions; cross-user reads blocked; Home card ↔ Accountability pacts; garden thresholds; milestone shown once; empty weekly report; both themes; Comeback, nudges and Trust unchanged.
 
