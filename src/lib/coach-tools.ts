@@ -3,7 +3,7 @@
 import { COACH_PLAN_MODEL, PROVIDER_ENDPOINTS, type CoachModelConfig } from "@/lib/coach-config";
 import {
   enforcePlanRules, isPlanLength, profileConfidence, lowestSlot, localDay, isValidTimezone,
-  dayIndex, taskName, type Slots, type CoachPlan,
+  dayIndex, taskName, type Slot, type Slots, type CoachPlan,
 } from "@/lib/coach-plan-rules";
 
 export const COACH_SYSTEM_V2 = `You are AXEN Coach, a personal discipline coach inside the AXEN app. You are not a chatbot; you behave like a skilled human coach who knows this user well.
@@ -255,5 +255,3 @@ export async function materializeToday(ctx: Ctx): Promise<{ added: number; day: 
   }
   return { added, day: idx + 1 };
 }
-
-type Slot = { value: unknown; confidence: number };
