@@ -19,7 +19,8 @@
 .chip { background: var(--a-chip); color: var(--a-text); border-radius: 20px; padding: 4px 10px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; border: 0; }
 .chipWarn { color: var(--a-warn); }
 .chipOk { color: var(--a-ok); }
-.iconBtn { background: var(--a-chip); color: var(--a-text); border: 0; width: 32px; height: 32px; border-radius: 50%; display: inline-grid; place-items: center; cursor: pointer; }
+.chipMuted { color: var(--a-muted); }
+.iconBtn { background: var(--a-card); color: var(--a-text); border: 1px solid var(--a-border); width: 36px; height: 36px; border-radius: 50%; display: inline-grid; place-items: center; cursor: pointer; }
 .menu { position: absolute; right: 0; top: 40px; z-index: 20; background: var(--a-card); border: 1px solid var(--a-border); border-radius: 16px; padding: 6px; min-width: 230px; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
 .menu button, .menu label { display: flex; width: 100%; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 10px; background: none; border: 0; color: var(--a-text); font: inherit; font-size: 13px; text-align: left; cursor: pointer; border-radius: 10px; }
 .menu button:hover { background: var(--a-chip); }
@@ -47,7 +48,8 @@
 .todayCopy { min-width: 0; flex: 1; }
 .mini { background: var(--a-card); border: 1px solid var(--a-border); border-radius: 22px; padding: 12px 8px; display: grid; justify-items: center; gap: 4px; text-align: center; color: var(--a-text); font: inherit; cursor: default; min-width: 0; }
 button.mini { cursor: pointer; }
-.miniNum { font-size: 18px; font-weight: 500; }
+.miniNum { font-size: 18px; font-weight: 500; line-height: 1.2; }
+.mini .muted { font-size: 12px; }
 .ringWrap { position: relative; display: inline-grid; place-items: center; flex: none; }
 .ringCenter { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
 .ringProg { transition: stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1); }

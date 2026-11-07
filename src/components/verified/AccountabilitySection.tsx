@@ -144,7 +144,7 @@ export function AccountabilitySection() {
   const [now, setNow] = useState(() => Date.now());
   type View = "home" | "creator" | "review" | "recovery" | "checkin" | "garden" | "report" | "proofs" | "partner";
   const [view, setView] = useState<View>("home");
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">("light");
   const [coins, setCoins] = useState(0);
   const [weekMap, setWeekMap] = useState<Record<string, "done" | "missed" | "planned">>({});
   const [garden, setGarden] = useState<Garden | null>(null);
@@ -222,7 +222,7 @@ export function AccountabilitySection() {
   useEffect(() => {
     mounted.current = true; void load();
     try {
-      if (localStorage.getItem("axen.acct.theme") === "light") setTheme("light");
+      if (localStorage.getItem("axen.acct.theme") === "dark") setTheme("dark");
       const q = new URLSearchParams(window.location.search).get("acct_code") ?? sessionStorage.getItem("axen.acct.code");
       if (q) { setEntry(q.replace(/[^0-9A-Fa-f]/g, "").slice(0, 32)); sessionStorage.removeItem("axen.acct.code"); }
     } catch { /* storage unavailable */ }
@@ -398,11 +398,11 @@ export function AccountabilitySection() {
       <h2 className={s.title}>Accountability</h2>
       <div className={s.chips}>
         <span className={s.chip} aria-label={`${streak} day streak`}><Flame size={13} />{streak}</span>
-        <span className={s.chip}>{coins} coins</span>
         <button className={s.iconBtn} aria-label="More options" aria-expanded={menu} onClick={() => setMenu(v => !v)}><MoreHorizontal size={16} /></button>
       </div>
       {menu && (
         <div className={s.menu} role="menu">
+          <button role="menuitem" onClick={() => { setMenu(false); setView("report"); }}>Weekly report<ChevronRight size={15} /></button>
           <button role="menuitem" onClick={toggleTheme}>{theme === "dark" ? "Light theme" : "Dark theme"}{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}</button>
           <label>Show my tree to my partner<input type="checkbox" checked={showTree} onChange={e => void saveShowTree(e.target.checked)} /></label>
           {me && <>
@@ -496,35 +496,38 @@ export function AccountabilitySection() {
       <WeekStrip days={weekDays(new Date(), weekMap)} />
 
       <div className={s.card}>
-        {contract ? <>
-          <div className={s.todayCard}>
-            <ARing size={92} stroke={9} value={totalToday ? doneToday / totalToday : 0} label={`${doneToday} of ${totalToday} pacts done`}><span style={{ fontSize: 22, fontWeight: 500 }}>{doneToday}/{Math.max(totalToday, 1)}</span></ARing>
-            <div className={s.todayCopy}>
+        <div className={s.todayCard}>
+          <ARing size={92} stroke={9} value={totalToday ? doneToday / totalToday : 0} label={`${doneToday} of ${totalToday} pacts done`}><span style={{ fontSize: 22, fontWeight: 500 }}>{doneToday}/{totalToday}</span></ARing>
+          <div className={s.todayCopy}>
+            {contract ? <>
               <div className={s.muted}>{contract.is_recovery ? "Today's comeback" : "Today's pacts"}</div>
               <div className={s.big}>{contract.title}</div>
               <div className={s.chips} style={{ justifyContent: "flex-start" }}>
-                <span className={s.chip}>{minutes} min · {fmtTime(contract.scheduled_at)}</span>
-                {contract.paused_at && <span className={`${s.chip} ${s.chipWarn}`}>Paused</span>}
+                <span className={`${s.chip} ${s.chipWarn}`}>{(contract as any).deadline_at ? `Due ${fmtTime((contract as any).deadline_at)}` : "No deadline"}</span>
+                {contract.paused_at && <span className={s.chip}>Paused</span>}
                 {contract.is_recovery && contract.status === "rewarded" && <span className={`${s.chip} ${s.chipOk}`}>Recovered</span>}
               </div>
-            </div>
+            </> : <>
+              <div className={s.muted}>Today's pacts</div>
+              <div className={s.big}>Nothing planned yet</div>
+            </>}
           </div>
-          {session && state === "SESSION_LIVE" && <Ring session={contract.is_recovery && contract.comeback_started_at && contract.comeback_ends_at ? { ...session, startedAt: new Date(contract.comeback_started_at).getTime(), expectedEndAt: new Date(contract.comeback_ends_at).getTime() } : session} now={now} />}
-          {contract.minimum_version && state === "BEFORE_SESSION" && <div className={s.muted} style={{ marginTop: 8 }}>Minimum version: {contract.minimum_version}</div>}
-          <div style={{ marginTop: 8 }}>{statusLine}</div>
-          <div className={s.row2}>{primary ?? <button className={btn} onClick={() => setView("checkin")}>Check in</button>}{primary ? <button className={ghost} onClick={() => setView("checkin")}>Check in</button> : <button className={ghost} onClick={() => setView("report")}>Weekly report</button>}</div>
-          {["draft", "scheduled"].includes(contract.status) && !contract.is_recovery && <div className={s.row2}><button className={ghost} onClick={() => void setPaused(!contract.paused_at)} disabled={busy}>{contract.paused_at ? "Resume" : "Pause"}</button><button className={ghost} onClick={() => void endPact()} disabled={busy}>End pact</button></div>}
-        </> : <>
-          <div className={s.big}>Nothing planned yet</div>
-          <div className={s.muted}>Pacts you create here also appear on Home.</div>
-          <div className={s.stack}><button className={btn} onClick={() => setView("creator")}>Create your first pact</button></div>
-        </>}
+        </div>
+        {contract && session && state === "SESSION_LIVE" && <Ring session={contract.is_recovery && contract.comeback_started_at && contract.comeback_ends_at ? { ...session, startedAt: new Date(contract.comeback_started_at).getTime(), expectedEndAt: new Date(contract.comeback_ends_at).getTime() } : session} now={now} />}
+        {contract?.minimum_version && state === "BEFORE_SESSION" && <div className={s.muted} style={{ marginTop: 8 }}>Minimum version: {contract.minimum_version}</div>}
+        {contract && statusLine && <div style={{ marginTop: 8 }}>{statusLine}</div>}
+        <div className={s.row2}>
+          {!contract ? <button className={btn} onClick={() => setView("creator")}>Create a pact</button>
+            : primary ?? <button className={btn} disabled>Start session</button>}
+          <button className={ghost} onClick={() => setView("checkin")}>Check in</button>
+        </div>
+        {contract && ["draft", "scheduled"].includes(contract.status) && !contract.is_recovery && <div className={s.row2}><button className={ghost} onClick={() => void setPaused(!contract.paused_at)} disabled={busy}>{contract.paused_at ? "Resume" : "Pause"}</button><button className={ghost} onClick={() => void endPact()} disabled={busy}>End pact</button></div>}
       </div>
 
       <div className={s.row3}>
         <div className={s.mini}><ARing size={44} stroke={10} value={me ? Math.min(1, (pair?.streak ?? 0) / 7) : 0} /><span className={s.miniNum}>{me ? pair?.streak ?? 0 : "—"}</span><span className={s.muted}>Pair streak</span></div>
-        <button className={s.mini} onClick={() => setView("review")}><ARing size={44} stroke={10} value={partnerPending ? 1 : 0} /><span className={s.miniNum}>{partnerPending}</span><span className={s.muted}>Pending reviews</span></button>
-        <button className={s.mini} onClick={() => setWhyOpen(v => !v)} aria-expanded={whyOpen} aria-label={`Trust ${trustLabel}. Why?`}><ARing size={44} stroke={10} value={(trust?.score ?? 0) / 100} /><span className={s.miniNum}>{trust?.score ?? "—"}</span><span className={s.muted}>{trustLabel}</span></button>
+        <button className={s.mini} onClick={() => setView("review")}><ARing size={44} stroke={10} value={partnerPending ? 1 : 0} /><span className={s.miniNum}>{partnerPending}</span><span className={s.muted}>Pending</span></button>
+        <button className={s.mini} onClick={() => setWhyOpen(v => !v)} aria-expanded={whyOpen} aria-label={`Trust ${trustLabel}. Why?`}><ARing size={44} stroke={10} value={(trust?.score ?? 0) / 100} /><span className={s.miniNum}>{trustLabel}</span><span className={s.muted}>Trust</span></button>
       </div>
       {whyOpen && <div className={s.card} aria-live="polite"><span className={s.label}>Trust — why?</span><TrustWhy trust={trust} /></div>}
 
@@ -534,10 +537,10 @@ export function AccountabilitySection() {
           <div style={{ minWidth: 0 }}>
             <div className={s.muted}>Focus garden</div>
             <div className={s.big}>{garden?.stage_name ?? "Seed"}</div>
-            <div className={s.muted}>{garden ? (garden.resting ? "Your tree is resting. Finish one pact to help it grow." : garden.due === 0 && garden.score === 0 ? "Finish one pact to help it grow." : `Score ${garden.score}. ${garden.points_to_next ? `${garden.points_to_next} points to next stage.` : "Top stage reached."}`) : "Loading…"}</div>
+            <div className={s.muted}>{garden ? `Score ${garden.score}. ${garden.points_to_next ? `${garden.points_to_next} points to next stage.` : "Top stage reached."}` : "Loading…"}</div>
           </div>
         </div>
-        {partnerStage && <div className={s.gardenSquad}><Tree stage={partnerStage.stage} width={34} /><span className={s.muted}>{name}'s tree · {partnerStage.stage_name}</span></div>}
+        {partnerStage && <div className={s.gardenSquad}><Tree stage={partnerStage.stage} width={34} /><span className={s.muted}>Partner's garden</span></div>}
       </button>
 
       {me ? (
@@ -545,8 +548,8 @@ export function AccountabilitySection() {
           <div className={s.partner}>
             <div className={s.avatar}>{me.partner_avatar ? <img src={me.partner_avatar} alt="" /> : (name ?? "P").slice(0, 1)}</div>
             <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 15, fontWeight: 500 }}>{name}</div>
-              <div className={s.muted}>{partnerCheck?.checked_in ? (partnerCheck.completed ? "Checked in · done today" : "Checked in today") : "Not checked in yet"}</div></div>
-            <span className={`${s.chip} ${myProof?.partner_review_status === "pending" ? s.chipWarn : s.chipOk}`}>{myProof?.partner_review_status === "pending" ? "Awaiting review" : "Connected"}</span>
+              <div className={s.muted}>{partnerCheck?.checked_in ? (partnerCheck.completed ? "Task done today" : "Working on today's task") : `Partner since ${new Date(me.since).toLocaleDateString([], { month: "short", day: "numeric" })}`}</div></div>
+            <span className={`${s.chip} ${partnerCheck?.checked_in ? s.chipOk : s.chipMuted}`}>{partnerCheck?.checked_in ? "Checked in" : "Not checked in yet"}</span>
           </div>
         </button>
       ) : (
@@ -572,10 +575,9 @@ export function AccountabilitySection() {
       )}
 
       <div className={`${s.card} ${s.list}`}>
-        <button className={s.listRow} onClick={() => setView("partner")}><span>Check-ins</span><small>{details?.checked_in_today ? "Checked in" : me ? "Open" : "No partner"} <ChevronRight size={14} /></small></button>
+        <button className={s.listRow} onClick={() => setView("partner")}><span>Check-ins</span><small>{details?.checked_in_today ? "Done today" : me ? "Open" : "No partner"} <ChevronRight size={14} /></small></button>
         <button className={s.listRow} onClick={() => setView("proofs")}><span>Proof history</span><small>{proofs.filter(p => p.partner_review_status === "confirmed").length} confirmed <ChevronRight size={14} /></small></button>
-        <button className={s.listRow} onClick={() => setView("recovery")}><span>Recovery</span><small>{contract?.status === "missed" && !hasRecovery ? "Available" : "Not needed"} <ChevronRight size={14} /></small></button>
-        <button className={s.listRow} onClick={() => setView("report")}><span>Weekly report</span><small><ChevronRight size={14} /></small></button>
+        <button className={s.listRow} onClick={() => setView("recovery")}><span>Recovery</span><small>{contract?.status === "missed" && !hasRecovery ? "Available" : hasRecovery ? "Recovered" : "Not needed"} <ChevronRight size={14} /></small></button>
       </div>
 
       <button className={s.fab} onClick={() => setView("creator")}><Plus size={16} /> New pact</button>
