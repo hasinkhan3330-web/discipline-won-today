@@ -238,7 +238,7 @@ export function VoiceCoach() {
       }
       const apiVersion = ephemeral ? "v1alpha" : "v1beta";
       const ws = new WebSocket(
-        `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.${apiVersion}.GenerativeService.BidiGenerateContent?${credentialParam}=${encodeURIComponent(apiKey)}`,
+        `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.${apiVersion}.GenerativeService.${ephemeral ? "BidiGenerateContentConstrained" : "BidiGenerateContent"}?${credentialParam}=${encodeURIComponent(apiKey)}`,
       );
       wsRef.current = ws;
       playerRef.current = new PcmPlayer(24000);
@@ -398,6 +398,7 @@ export function VoiceCoach() {
         if (controller.signal.aborted || session !== sessionRef.current) return;
         if (wsRef.current !== ws) return;
         if (event.code !== 1000) {
+          console.warn("[voice] Live connection closed by Google", event.code, event.reason);
           const failedBeforeStart = !greetedRef.current;
           // Credential problems never reach the user as raw Google wording.
           const friendly = /api key|unregistered|unauthenticated|permission/i.test(event.reason)

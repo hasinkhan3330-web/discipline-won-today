@@ -85,7 +85,7 @@ async function ephemeralTokenAccepted(token: string): Promise<boolean> {
       };
       try {
         socket = new SocketClass(
-          `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?access_token=${encodeURIComponent(token)}`,
+          `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`,
         );
       } catch {
         // Runtime does not allow outbound client sockets — keep the working path.
