@@ -72,6 +72,7 @@ serverTest("another user cannot write my coach profile or plans", async () => {
 });
 
 serverTest("materializing the same day twice creates no duplicate tasks", async () => {
+  const before = (await admin.from("tasks").select("id").eq("user_id", A.id)).data!.length;
   const first = await materializeToday({ supabase: A.c, userId: A.id } as any);
   const second = await materializeToday({ supabase: A.c, userId: A.id } as any);
   expect(first.added).toBe(2);
@@ -79,7 +80,7 @@ serverTest("materializing the same day twice creates no duplicate tasks", async 
   const rows = await admin.from("coach_plan_materialized").select("task_id").eq("plan_id", planId);
   expect(rows.data).toHaveLength(2);
   const all = await admin.from("tasks").select("id,name").eq("user_id", A.id);
-  expect(all.data).toHaveLength(3); // 2 plan tasks + the user's own habit
+  expect(all.data).toHaveLength(before + 2); // exactly the 2 plan tasks, added once
 });
 
 serverTest("retiring old plan tasks never touches the user's own habits", async () => {
