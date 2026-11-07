@@ -221,6 +221,11 @@ export function AccountabilitySection() {
 
   useEffect(() => {
     mounted.current = true; void load();
+    try {
+      if (localStorage.getItem("axen.acct.theme") === "light") setTheme("light");
+      const q = new URLSearchParams(window.location.search).get("acct_code") ?? sessionStorage.getItem("axen.acct.code");
+      if (q) { setEntry(q.replace(/[^0-9A-Fa-f]/g, "").slice(0, 32)); sessionStorage.removeItem("axen.acct.code"); }
+    } catch { /* storage unavailable */ }
     const on = () => void load();
     window.addEventListener(NUDGE_EVENT, on); window.addEventListener("axen:contract-changed", on);
     return () => { mounted.current = false; window.removeEventListener(NUDGE_EVENT, on); window.removeEventListener("axen:contract-changed", on); localStorage.setItem(NUDGE_SEEN_KEY, String(Date.now())); };
