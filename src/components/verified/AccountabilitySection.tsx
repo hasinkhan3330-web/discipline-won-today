@@ -315,6 +315,8 @@ export function AccountabilitySection() {
       .then(({ data }) => { if (mounted.current) setInvitePending(data?.[0]?.expires_at ?? null); });
   }, [me, code]);
 
+  const rootRef = useRef<HTMLElement | null>(null);
+  useEffect(() => { rootRef.current?.scrollIntoView?.({ block: "start" }); }, [view]);
   const toggleTheme = () => { const t = theme === "dark" ? "light" : "dark"; setTheme(t); try { localStorage.setItem("axen.acct.theme", t); } catch { /* ignore */ } };
   const saveShowTree = async (v: boolean) => {
     setShowTree(v);
@@ -350,7 +352,7 @@ export function AccountabilitySection() {
   });
 
   const rootStyle = { "--acct-line": "var(--a-border)", "--acct-accent": "var(--a-ring)", "--acct-text": "var(--a-text)", "--acct-muted": "var(--a-muted)" } as React.CSSProperties;
-  const shellProps = { className: s.root, "data-theme": theme, style: rootStyle, "aria-label": "Accountability" } as const;
+  const shellProps = { ref: rootRef, className: s.root, "data-theme": theme, style: rootStyle, "aria-label": "Accountability" } as const;
 
   if (me === undefined) return <section {...shellProps}><div className={s.head}><h2 className={s.title}>Accountability</h2></div><div aria-busy="true"><div className={s.skel} style={{ height: 44 }} /><div className={s.skel} style={{ height: 130 }} /><div className={s.skel} /><div className={s.skel} /></div></section>;
 

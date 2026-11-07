@@ -89,10 +89,8 @@ export function PactCreator({ hasPartner, onBack, onSaved }: { hasPartner: boole
         <div className={s.segs}>{CATEGORIES.map(c => <button key={c} className={`${s.seg} ${f.category === c ? s.segOn : ""}`} onClick={() => set("category", c)}>{c}</button>)}</div>
         <span className={s.label} style={{ marginTop: 10 }}>When (one-time pact)</span>
         <div className={s.segs}>{(["today", "tomorrow"] as const).map(d => <button key={d} className={`${s.seg} ${f.day === d ? s.segOn : ""}`} onClick={() => pickDay(d)}>{d === "today" ? "Today" : "Tomorrow"}</button>)}</div>
-        <div className={s.row2}>
-          <label><span className={s.label}>Start</span><input type="datetime-local" className={s.input} value={f.start} onChange={e => set("start", e.target.value)} /></label>
-          <label><span className={s.label}>Deadline</span><input type="datetime-local" className={s.input} value={f.deadline} onChange={e => set("deadline", e.target.value)} /></label>
-        </div>
+        <label className={s.field}><span className={s.label}>Start</span><input type="datetime-local" className={s.input} value={f.start} onChange={e => set("start", e.target.value)} /></label>
+        <label className={s.field}><span className={s.label}>Deadline</span><input type="datetime-local" className={s.input} value={f.deadline} onChange={e => set("deadline", e.target.value)} /></label>
         <label className={s.field}><span className={s.label}>Session length (minutes)</span>
           <input type="number" min={5} max={240} className={s.input} value={f.minutes} onChange={e => set("minutes", Number(e.target.value))} /></label>
       </div>}

@@ -33,10 +33,10 @@
 .ghost { background: var(--a-card); color: var(--a-text); border: 1px solid var(--a-border); }
 .selected { border: 1.5px solid var(--a-selected); }
 .danger { color: var(--a-danger); }
-.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
 .row3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
 .stack { display: grid; gap: 8px; margin-top: 10px; }
-.input { width: 100%; background: var(--a-card); color: var(--a-text); border: 1px solid var(--a-border); border-radius: 16px; padding: 12px; font: inherit; font-size: 13px; }
+.input { width: 100%; min-width: 0; max-width: 100%; background: var(--a-card); color: var(--a-text); border: 1px solid var(--a-border); border-radius: 16px; padding: 12px; font: inherit; font-size: 13px; }
 .input:focus { outline: none; border-color: var(--a-selected); }
 .field { display: block; margin-top: 10px; }
 .list { padding: 0 14px; }
