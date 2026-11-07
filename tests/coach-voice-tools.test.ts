@@ -57,9 +57,9 @@ test("a failing tool returns an error response instead of breaking the session",
 });
 test(`plan building is blocked below ${PLAN_READY_CONFIDENCE}% profile confidence`, () => {
   expect(canBuildPlan({})).toBe(false);
-  const half = Object.fromEntries(["goal", "daily_time_available", "daily_schedule", "energy_peak"].map((k) => [k, { value: "x", confidence: 1 }]));
+  const half = Object.fromEntries(["goal", "daily_time_available", "wake_time", "energy_peak"].map((k) => [k, { value: "x", confidence: 1 }]));
   expect(canBuildPlan(half)).toBe(false);
-  const most = Object.fromEntries(["goal", "daily_time_available", "daily_schedule", "energy_peak", "distraction_trigger", "wake_time"].map((k) => [k, { value: "x", confidence: 1 }]));
+  const most = Object.fromEntries(["goal", "daily_time_available", "sleep_time", "intensity", "distraction_trigger", "wake_time"].map((k) => [k, { value: "x", confidence: 1 }]));
   expect(canBuildPlan(most)).toBe(true);
 });
 

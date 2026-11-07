@@ -140,6 +140,9 @@ export const getLiveSession = createServerFn({ method: "POST" })
       ),
     ]);
 
+    const { profileContextBlock } = await import("@/lib/coach-tools");
+    const profileBlock = await profileContextBlock({ supabase: context.supabase, userId: context.userId }, "voice");
+
     let ephemeral: string | null = null;
     if (minted) {
       if (ephemeralSupported === null || Date.now() - probedAt >= 30 * 60_000) {
@@ -160,6 +163,7 @@ export const getLiveSession = createServerFn({ method: "POST" })
       ephemeral: true,
       model: LIVE_MODEL,
       context: coachContext,
+      profileBlock,
     };
   });
 

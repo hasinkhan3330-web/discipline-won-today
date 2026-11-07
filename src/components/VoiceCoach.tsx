@@ -265,6 +265,7 @@ export function VoiceCoach() {
         ephemeral,
         model,
         context: snapshot,
+        profileBlock,
       } = await getSession({});
       if (controller.signal.aborted || session !== sessionRef.current) return;
       if (typeof apiKey !== "string" || apiKey.length === 0) {
@@ -278,9 +279,10 @@ export function VoiceCoach() {
       playerRef.current = new PcmPlayer(24000);
 
       const KB = buildCoachKnowledge();
+      if (!profileBlock) throw new Error("Couldn’t load your profile. Tap to retry.");
       const instruction = snapshot
-        ? `${VOICE_SYSTEM_V2}\n\n${KB}\n\nAXEN_COACH_CONTEXT (private, never read aloud):\n${JSON.stringify(snapshot)}`
-        : `${VOICE_SYSTEM_V2}\n\n${KB}\n\nAXEN_COACH_CONTEXT is unavailable for this session. Do not state any statistic; call get_user_context before referencing data.`;
+        ? `${VOICE_SYSTEM_V2}\n\n${KB}\n\n${profileBlock}\n\nAXEN_COACH_CONTEXT (private, never read aloud):\n${JSON.stringify(snapshot)}`
+        : `${VOICE_SYSTEM_V2}\n\n${KB}\n\n${profileBlock}\n\nAXEN_COACH_CONTEXT is unavailable for this session. Do not state any statistic; call get_user_context before referencing data.`;
 
       ws.onopen = () => {
         if (controller.signal.aborted || session !== sessionRef.current) {

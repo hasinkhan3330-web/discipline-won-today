@@ -3,7 +3,7 @@ import { COACH_SYSTEM_V2, COACH_TOOL_DEFS, COACH_TOOL_NAMES, runCoachTool } from
 
 export const MAX_VOICE_TOOL_CALLS_PER_TURN = 6;
 
-const SLOT_KEYS = ["goal", "daily_time_available", "daily_schedule", "energy_peak", "distraction_trigger", "wake_time", "sleep_time", "coach_style", "age_range", "intensity", "other"];
+const SLOT_KEYS = ["goal", "daily_time_available", "daily_schedule", "energy_peak", "distraction_trigger", "wake_time", "sleep_time", "coach_style", "age_range", "intensity", "weakest_habit", "other"];
 
 /** JSON-schema → Gemini OpenAPI subset (uppercase types, no additionalProperties, no untyped values). */
 function toGemini(schema: any): any {

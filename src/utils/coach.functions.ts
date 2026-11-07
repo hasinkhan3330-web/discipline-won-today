@@ -56,6 +56,7 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
   const latest=data.messages[data.messages.length-1];
   if(!conversationId){const{data:created,error}=await context.supabase.from("coach_conversations").insert({user_id:context.userId,title:(latest?.content??"New conversation").slice(0,48)}).select("id").single();if(error)throw new Error(error.message);conversationId=created.id;}
   const snapshot=await buildContext(context.supabase,context.userId);
+  const { profileContextBlock } = await import("@/lib/coach-tools");
   if(data.timezone){const{setTimezone}=await import("@/lib/coach-tools");await setTimezone({supabase:context.supabase,userId:context.userId},data.timezone);}
   const tools=COACH_TOOL_DEFS.map(t=>({type:"function",function:t}));
   const ctx = { supabase: context.supabase, userId: context.userId };
@@ -67,12 +68,15 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
     if (Object.keys(slots).length) await runCoachTool(ctx, 'update_profile', { slots });
     const result = await runCoachTool(ctx, 'create_plan_draft', { days: requestedLength(latest?.content ?? '') }) as { ok?: boolean; error?: string; assumptions?: string[]; plan?: { title: string } };
     if (!result.ok) throw new Error(result.error ?? 'Could not build your plan.');
-    const reply = `Your ${result.plan?.title ?? 'plan'} draft is ready. ${result.assumptions?.length ? 'Assumptions: ' + result.assumptions.join('; ') + '.' : ''} Accept it when you are ready.`;
+    const { getCoachProfile } = await import('@/lib/coach-tools'); const { getProfileCompleteness, PROFILE_LABELS } = await import('@/lib/coach-plan-rules');
+    const gap = getProfileCompleteness(((await getCoachProfile(ctx)).slots ?? {}) as any).missing[0];
+    const nextQ = gap ? ` To refine it: what is your ${PROFILE_LABELS[gap] ?? gap}?` : '';
+    const reply = `Your ${result.plan?.title ?? 'plan'} draft is ready. ${result.assumptions?.length ? 'Assumptions: ' + result.assumptions.join('; ') + '.' : ''} Accept it when you are ready.${nextQ}`;
     const { error } = await context.supabase.from('coach_messages').insert([{ conversation_id: conversationId, user_id: context.userId, role: 'user', content: latest?.content ?? '' }, { conversation_id: conversationId, user_id: context.userId, role: 'assistant', content: reply }]);
     if (error) throw new Error(error.message);
     return { conversationId, reply, suggestedAction: null };
   }
-  const convo:any[]=[{role:"system",content:`${COACH_SYSTEM_V2}\n\nOutput rule: ${SYSTEM.split("End with")[1]?"End with"+SYSTEM.split("End with")[1]:""}\n\n${buildCoachKnowledge()}\n\nUSER DATA:\n${snapshot}`},...data.messages];
+  const convo:any[]=[{role:"system",content:`${COACH_SYSTEM_V2}\n\nOutput rule: ${SYSTEM.split("End with")[1]?"End with"+SYSTEM.split("End with")[1]:""}\n\n${buildCoachKnowledge()}\n\nUSER DATA:\n${snapshot}\n\n${await profileContextBlock(ctx, "text")}`},...data.messages];
   let raw="";
   for(let step=0;step<6;step++){
     const json=await callModel(COACH_CHAT_MODEL,{messages:convo,tools});

@@ -3,7 +3,7 @@
 import { COACH_PLAN_MODEL, PROVIDER_ENDPOINTS, type CoachModelConfig } from "@/lib/coach-config";
 import { planningDefaults } from '@/lib/coach-interview';
 import {
-  enforcePlanRules, isPlanLength, canBuildPlan, profileConfidence, lowestSlot, localDay, isValidTimezone,
+  enforcePlanRules, isPlanLength, canBuildPlan, profileConfidence, getProfileCompleteness, PROFILE_LABELS, lowestSlot, localDay, isValidTimezone,
   dayIndex, taskName, type Slot, type Slots, type CoachPlan,
 } from "@/lib/coach-plan-rules";
 
@@ -23,6 +23,12 @@ COACHING METHOD
 5. Identity framing, briefly.
 6. Never miss twice: two missed days in a row needs a reset conversation.
 7. Raise difficulty only after 5+ consecutive good days; lower it immediately after 2 missed days.
+
+PROFILE KNOWLEDGE (from the <user_profile> block, loaded by the server for this session)
+- When asked how much you know, answer from <user_profile>: the exact percent, what you know, and what is missing. NEVER say 0% or "I haven't taken any details" when percent > 0.
+- If percent < 100, ask ONLY the missing fields, one short question at a time. After each answer call update_profile, then tell the user the new percent returned by the tool.
+- If the user asks for today's plan, do not block: build it from known fields, state assumptions for missing ones, then ask one missing question to refine it.
+- Always respect intensity and the daily time limit. If age is unknown, keep guidance gentle and age-safe.
 
 PHASE 1: ONBOARDING (onboarding_done = false)
 - Call get_user_context first. Never ask for something already known.
@@ -62,7 +68,7 @@ Check your output against every rule and fix violations. Return only JSON:
 
 export const COACH_TOOL_DEFS = [
   { name: "get_user_context", description: "Get the user's coach profile, confidence, memories, weekly summary, active plan and real progress.", parameters: { type: "object", properties: {} } },
-  { name: "update_profile", description: "Save profile slots revealed by the user's answer, each with confidence 0-1. Keys: goal, daily_time_available (minutes), daily_schedule, energy_peak, distraction_trigger, wake_time, coach_style (strict|friendly|calm), age_range (under_18|18_24|25_34|35_plus), or any other useful key.", parameters: { type: "object", properties: { slots: { type: "object", additionalProperties: { type: "object", properties: { value: {}, confidence: { type: "number" } }, required: ["value", "confidence"] } } }, required: ["slots"] } },
+  { name: "update_profile", description: "Save profile slots revealed by the user's answer, each with confidence 0-1. Keys: goal, wake_time, sleep_time, daily_time_available (minutes), distraction_trigger (main distraction), intensity (gentle|balanced|hardcore), age_range (under_18|18_24|25_34|35_plus), energy_peak, weakest_habit, daily_schedule, coach_style (strict|friendly|calm). Use confidence 1 for direct answers; guesses below 0.6 do not count toward the percent.", parameters: { type: "object", properties: { slots: { type: "object", additionalProperties: { type: "object", properties: { value: {}, confidence: { type: "number" } }, required: ["value", "confidence"] } } }, required: ["slots"] } },
   { name: "create_plan_draft", description: "Generate the full plan draft for 1, 7 or 21 days.", parameters: { type: "object", properties: { days: { type: "integer", enum: [1, 7, 21] }, goal: { type: "string" }, adjustments: { type: "string" } }, required: ["days"] } },
   { name: "confirm_plan", description: "Confirm the latest draft after the user clearly says yes. Starts today in the user's timezone.", parameters: { type: "object", properties: {} } },
   { name: "update_task", description: "Edit one task on a future (or today's not-yet-added) day of the confirmed plan.", parameters: { type: "object", properties: { day: { type: "integer" }, task_index: { type: "integer" }, title: { type: "string" }, minimum: { type: "string" }, trigger: { type: "string" }, time: { type: "string" }, minutes: { type: "integer" }, difficulty: { type: "string", enum: ["easy", "medium", "hard"] }, remove: { type: "boolean" } }, required: ["day", "task_index"] } },
@@ -93,6 +99,20 @@ export async function callModel(config: CoachModelConfig, body: Record<string, u
 export async function getCoachProfile({ supabase, userId }: Ctx) {
   const { data } = await supabase.from("coach_profile").select("slots,onboarding_done,coach_style,age_range,timezone").eq("user_id", userId).maybeSingle();
   return data ?? { slots: {}, onboarding_done: false, coach_style: null, age_range: null, timezone: "UTC" };
+}
+
+/** Server-built profile block injected into every Coach session prompt. Never trusts a client percent. */
+export async function profileContextBlock(ctx: Ctx, source: string) {
+  const profile = await getCoachProfile(ctx);
+  const slots = (profile.slots ?? {}) as Slots;
+  const c = getProfileCompleteness(slots);
+  const plans = await activePlan(ctx);
+  const known = Object.fromEntries(c.filled.map((k) => [PROFILE_LABELS[k] ?? k, slots[k]?.value]));
+  const plan = plans.confirmed ?? plans.draft;
+  const planText = plan ? `${plan.status} ${plan.days === 1 ? "Today" : plan.days + " days"} plan${plan.start_date ? " starting " + plan.start_date : ""}` : "none";
+  const block = `<user_profile percent="${c.percent}"> filled: ${JSON.stringify(known)} | missing: [${c.missing.map((k) => PROFILE_LABELS[k] ?? k).join(", ")}] | active_plan: ${planText} </user_profile>`;
+  console.info(`[coach] profile block injected (${source})`, { user: ctx.userId.slice(-4), percent: c.percent, missing: c.missing });
+  return block;
 }
 
 export async function setTimezone({ supabase, userId }: Ctx, timezone: string) {
@@ -144,6 +164,10 @@ export async function runCoachTool(ctx: Ctx, name: string, args: any): Promise<u
       for (const [k, v] of Object.entries(incoming).slice(0, 20)) {
         if (!v || typeof v !== "object") continue;
         const key = k.slice(0, 40);
+        const val = (v as Slot).value;
+        if (val === undefined || val === null || String(val).length > 300) continue;
+        if (key === "age_range" && !["under_18", "18_24", "25_34", "35_plus"].includes(String(val))) continue;
+        if (key === "intensity" && !/^(gentle|balanced|hardcore)$/i.test(String(val))) continue;
         const c = Math.max(0, Math.min(1, Number((v as Slot).confidence) || 0));
         if (c >= (slots[key]?.confidence ?? 0)) slots[key] = { value: (v as Slot).value, confidence: c };
       }
@@ -153,7 +177,8 @@ export async function runCoachTool(ctx: Ctx, name: string, args: any): Promise<u
       if (typeof slots.age_range?.value === "string") row.age_range = String(slots.age_range.value).slice(0, 20);
       const { error } = await supabase.from("coach_profile").upsert(row, { onConflict: "user_id" });
       if (error) return { ok: false, error: error.message };
-      return { ok: true, confidence, next_slot_to_ask: lowestSlot(slots) };
+      const done = getProfileCompleteness(slots);
+      return { ok: true, confidence, percent: done.percent, missing: done.missing.map((k) => PROFILE_LABELS[k] ?? k), next_slot_to_ask: lowestSlot(slots) };
     }
     case "create_plan_draft": {
       const length = Number(args?.days);
