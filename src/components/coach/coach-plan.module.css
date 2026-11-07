@@ -22,3 +22,11 @@
 .error { margin: 0; font-size: 12px; color: var(--destructive); }
 .full { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
 .full > li { display: grid; gap: 4px; font-size: 13px; }
+.setup { display: grid; gap: 12px; width: 100%; max-height: 60vh; overflow-y: auto; padding: 14px; border-radius: 8px; background: var(--background); color: var(--foreground); border: 1px solid var(--border); }
+.setupGroup { border: 0; padding: 0; min-width: 0; }
+.setupGroup legend { font-size: 12px; margin-bottom: 6px; }
+.options { display: flex; flex-wrap: wrap; gap: 6px; }
+.options button { height: auto; min-height: 40px; white-space: normal; }
+.options button[aria-pressed="true"] { background: var(--primary); color: var(--primary-foreground); }
+.answers { display: flex; gap: 12px; width: 100%; }
+.answers button { flex: 1; min-height: 48px; }

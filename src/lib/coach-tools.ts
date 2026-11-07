@@ -1,6 +1,7 @@
 // Coach v2 tool implementations. Called only from server-function handlers with the
 // signed-in user's RLS-scoped client. No tool can complete a task or award coins.
 import { COACH_PLAN_MODEL, PROVIDER_ENDPOINTS, type CoachModelConfig } from "@/lib/coach-config";
+import { planningDefaults } from '@/lib/coach-interview';
 import {
   enforcePlanRules, isPlanLength, canBuildPlan, profileConfidence, lowestSlot, localDay, isValidTimezone,
   dayIndex, taskName, type Slot, type Slots, type CoachPlan,
@@ -28,7 +29,7 @@ PHASE 1: ONBOARDING (onboarding_done = false)
 - After EVERY answer call update_profile with all slots it revealed, with confidence 0-1.
 - Next question = the required slot with the lowest confidence, phrased using what you know.
 - Vague answer ("kuch bhi", "pata nahi"): offer 2-3 concrete options.
-- At 70%+ confidence: summarize the user in 2 sentences ("Toh main samjha: ..."), ask if right, then ask plan length: Today (1 day), 7 days or 21 days. No other lengths exist.
+- If the user explicitly asks for a plan, STOP interviewing: save all revealed facts with update_profile, then call create_plan_draft immediately. Also stop after 6 interview questions (3 after quick setup). Use Today if no length is given. The 70% threshold applies ONLY to the Build my plan button, never to typed or spoken requests. Explain the returned assumptions honestly. Never ask for known quick-setup answers.
 
 PHASE 2: PLANNING
 - Before calling create_plan_draft say a short line like "Ek minute, tera plan bana raha hoon."
@@ -157,23 +158,24 @@ export async function runCoachTool(ctx: Ctx, name: string, args: any): Promise<u
     case "create_plan_draft": {
       const length = Number(args?.days);
       if (!isPlanLength(length)) return { ok: false, error: "Plan length must be 1, 7 or 21 days." };
-      if (!canBuildPlan(profile.slots as Slots)) return { ok: false, needs_interview: true, confidence: profileConfidence(profile.slots as Slots), next_slot: lowestSlot(profile.slots as Slots), error: "Not enough known yet. Ask the next interview question (one at a time) about next_slot, save answers with update_profile, then build." };
+      const prepared = planningDefaults(profile.slots as Slots);
       const prog = await progress(ctx, tz);
-      const minutes = Number((profile.slots as Slots).daily_time_available?.value) || 30;
+      const minutes = Number(prepared.slots.daily_time_available?.value) || 30;
       const json = await callModel(COACH_PLAN_MODEL, {
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: PLAN_PROMPT },
-          { role: "user", content: JSON.stringify({ profile: profile.slots, age_range: profile.age_range, requested_days: length, goal: args?.goal ?? (profile.slots as Slots).goal?.value ?? null, adjustments: args?.adjustments ?? null, last_week_progress: prog }) },
+          { role: "user", content: JSON.stringify({ profile: prepared.slots, assumptions: prepared.assumptions, age_range: profile.age_range ?? 'unknown: gentle guidance', requested_days: length, goal: args?.goal ?? prepared.slots.goal?.value, adjustments: args?.adjustments ?? null, last_week_progress: prog }) },
         ],
       });
       let raw: any = {};
       try { raw = JSON.parse(String(json?.choices?.[0]?.message?.content ?? "{}").replace(/^```(json)?|```$/g, "")); } catch { return { ok: false, error: "Plan generation returned invalid data; try again." }; }
       const plan = enforcePlanRules(raw, length, minutes);
+      if (prepared.assumptions.length) plan.summary = `${plan.summary}\nAssumptions: ${prepared.assumptions.join('; ')}.`;
       await supabase.from("coach_plans").update({ status: "archived", updated_at: new Date().toISOString() }).eq("user_id", userId).eq("status", "draft");
       const { data, error } = await supabase.from("coach_plans").insert({ user_id: userId, status: "draft", days: length, goal: args?.goal ?? null, plan }).select("id").single();
       if (error) return { ok: false, error: error.message };
-      return { ok: true, plan_id: data.id, plan };
+      return { ok: true, plan_id: data.id, plan, assumptions: prepared.assumptions };
     }
     case "confirm_plan": {
       const { draft } = await activePlan(ctx);
