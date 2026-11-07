@@ -190,6 +190,116 @@ export type Database = {
         }
         Relationships: []
       }
+      acct_checkins: {
+        Row: {
+          action: string | null
+          completed: boolean
+          created_at: string
+          day: string
+          id: string
+          needs_help: boolean
+          next_step: string | null
+          user_id: string
+        }
+        Insert: {
+          action?: string | null
+          completed?: boolean
+          created_at?: string
+          day: string
+          id?: string
+          needs_help?: boolean
+          next_step?: string | null
+          user_id?: string
+        }
+        Update: {
+          action?: string | null
+          completed?: boolean
+          created_at?: string
+          day?: string
+          id?: string
+          needs_help?: boolean
+          next_step?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      acct_cheers: {
+        Row: {
+          connection_id: string
+          created_at: string
+          day: string
+          id: string
+          kind: string
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          day?: string
+          id?: string
+          kind: string
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          day?: string
+          id?: string
+          kind?: string
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acct_cheers_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "accountability_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      acct_milestones_seen: {
+        Row: {
+          kind: string
+          milestone: number
+          seen_at: string
+          user_id: string
+        }
+        Insert: {
+          kind: string
+          milestone: number
+          seen_at?: string
+          user_id?: string
+        }
+        Update: {
+          kind?: string
+          milestone?: number
+          seen_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      acct_settings: {
+        Row: {
+          show_tree: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          show_tree?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          show_tree?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       alarm_events: {
         Row: {
           alarm_id: string
@@ -891,12 +1001,18 @@ export type Database = {
           deadline_at: string | null
           difficulty: number
           done_criteria: string | null
+          evidence_required: string
           expires_at: string | null
           fallback_action: string | null
           goal_id: string | null
           id: string
           is_recovery: boolean
+          is_solo: boolean
           local_day: string
+          minimum_version: string | null
+          obstacles: string | null
+          partner_visibility: string
+          paused_at: string | null
           planned_seconds: number
           private_note: string | null
           proof_method: string
@@ -926,12 +1042,18 @@ export type Database = {
           deadline_at?: string | null
           difficulty?: number
           done_criteria?: string | null
+          evidence_required?: string
           expires_at?: string | null
           fallback_action?: string | null
           goal_id?: string | null
           id?: string
           is_recovery?: boolean
+          is_solo?: boolean
           local_day: string
+          minimum_version?: string | null
+          obstacles?: string | null
+          partner_visibility?: string
+          paused_at?: string | null
           planned_seconds: number
           private_note?: string | null
           proof_method: string
@@ -961,12 +1083,18 @@ export type Database = {
           deadline_at?: string | null
           difficulty?: number
           done_criteria?: string | null
+          evidence_required?: string
           expires_at?: string | null
           fallback_action?: string | null
           goal_id?: string | null
           id?: string
           is_recovery?: boolean
+          is_solo?: boolean
           local_day?: string
+          minimum_version?: string | null
+          obstacles?: string | null
+          partner_visibility?: string
+          paused_at?: string | null
           planned_seconds?: number
           private_note?: string | null
           proof_method?: string
@@ -2487,10 +2615,26 @@ export type Database = {
         Args: { _token_hash: string }
         Returns: string
       }
+      acct_active_partner: {
+        Args: { _uid: string }
+        Returns: {
+          connection_id: string
+          partner_id: string
+        }[]
+      }
+      acct_garden_for: { Args: { _uid: string }; Returns: Json }
+      acct_garden_score: { Args: never; Returns: Json }
       acct_is_party: {
         Args: { _connection: string; _uid: string }
         Returns: boolean
       }
+      acct_pair_streak: { Args: never; Returns: Json }
+      acct_partner_checkin_status: { Args: never; Returns: Json }
+      acct_partner_garden_stage: { Args: never; Returns: Json }
+      acct_revoke_my_invites: { Args: never; Returns: number }
+      acct_send_cheer: { Args: { _kind: string }; Returns: boolean }
+      acct_user_today: { Args: { _uid: string }; Returns: string }
+      acct_weekly_report: { Args: never; Returns: Json }
       activate_axen_plan: { Args: { _answers: Json }; Returns: undefined }
       apply_daily_penalty: {
         Args: never
@@ -2973,12 +3117,18 @@ export type Database = {
           deadline_at: string | null
           difficulty: number
           done_criteria: string | null
+          evidence_required: string
           expires_at: string | null
           fallback_action: string | null
           goal_id: string | null
           id: string
           is_recovery: boolean
+          is_solo: boolean
           local_day: string
+          minimum_version: string | null
+          obstacles: string | null
+          partner_visibility: string
+          paused_at: string | null
           planned_seconds: number
           private_note: string | null
           proof_method: string
