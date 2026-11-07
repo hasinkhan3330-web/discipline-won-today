@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Flame, ChevronRight, Plus, Moon, Sun } from "lucide-react";
+import s from "./acct/acct.module.css";
+import { ARing, Tree, WeekStrip, SubHeader, weekDays, ymd } from "./acct/AcctUI";
+import { CheckinScreen, GardenScreen, MilestoneCelebration, PactCreator, ReportScreen, TrustWhy, type Garden } from "./acct/AcctScreens";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -139,6 +142,18 @@ export function AccountabilitySection() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  type View = "home" | "creator" | "review" | "recovery" | "checkin" | "garden" | "report" | "proofs" | "partner";
+  const [view, setView] = useState<View>("home");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [coins, setCoins] = useState(0);
+  const [weekMap, setWeekMap] = useState<Record<string, "done" | "missed" | "planned">>({});
+  const [garden, setGarden] = useState<Garden | null>(null);
+  const [partnerStage, setPartnerStage] = useState<{ stage: number; stage_name: string } | null>(null);
+  const [pair, setPair] = useState<{ streak: number; milestone: number | null } | null>(null);
+  const [showTree, setShowTree] = useState(true);
+  const [partnerCheck, setPartnerCheck] = useState<{ checked_in: boolean; completed: boolean } | null>(null);
+  const [todayList, setTodayList] = useState<ContractRow[]>([]);
+  const [celebrate, setCelebrate] = useState<number | null>(null);
   const lock = useRef(false);
   const mounted = useRef(false);
   const mkInvite = useServerFn(createInvite);
@@ -158,11 +173,33 @@ export function AccountabilitySection() {
         supabase.from("proof_submissions").select("id,contract_id,proof_type,created_at,partner_review_status,reviewed_at,review_note").eq("user_id", uid).order("created_at", { ascending: false }).limit(10),
         (supabase.rpc as any)("get_trust_summary"),
         (supabase.rpc as any)("get_partner_reviews"),
-        supabase.from("profiles").select("streak").eq("id", uid).maybeSingle(),
+        supabase.from("profiles").select("streak,coins").eq("id", uid).maybeSingle(),
         supabase.from("recovery_events").select("original_contract_id").eq("user_id", uid).limit(50),
       ]);
       if (!mounted.current) return;
       const list = (cRes.data ?? []) as ContractRow[];
+      setTodayList(list.filter(x => !x.is_recovery));
+      setCoins((prof.data as any)?.coins ?? 0);
+      // secondary panels: failures here never block the main screen
+      const t = new Date(); const mon = new Date(t); mon.setDate(t.getDate() - ((t.getDay() + 6) % 7));
+      const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+      void Promise.all([
+        supabase.from("daily_contracts").select("local_day,status,is_recovery").eq("user_id", uid).gte("local_day", ymd(mon)).lte("local_day", ymd(sun)).neq("status", "cancelled"),
+        supabase.rpc("acct_garden_score"), supabase.rpc("acct_partner_garden_stage"), supabase.rpc("acct_pair_streak"),
+        supabase.from("acct_settings").select("show_tree").eq("user_id", uid).maybeSingle(), supabase.rpc("acct_partner_checkin_status"),
+      ]).then(([wk, g, pg, ps, st, pc]) => {
+        if (!mounted.current) return;
+        const m: Record<string, "done" | "missed" | "planned"> = {};
+        for (const r of (wk.data ?? []) as any[]) {
+          const v = ["verified", "rewarded"].includes(r.status) ? "done" : r.status === "missed" ? "missed" : "planned";
+          if (m[r.local_day] !== "done") m[r.local_day] = v === "missed" && m[r.local_day] ? m[r.local_day] : v;
+        }
+        setWeekMap(m);
+        setGarden((g.data as any) ?? null); setPartnerStage((pg.data as any) ?? null);
+        const p = (ps.data as any) ?? null; setPair(p);
+        if (p?.milestone) setCelebrate(p.milestone);
+        setShowTree(st.data ? !!st.data.show_tree : true); setPartnerCheck((pc.data as any) ?? null);
+      }).catch(() => {});
       const c = list.find(x => x.is_recovery && x.status !== "missed") ?? list[0] ?? null;
       setContract(c);
       setProofs((pRes.data ?? []) as Proof[]);
