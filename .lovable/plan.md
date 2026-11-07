@@ -1,31 +1,27 @@
-# Accountability one-shot build (replaces all earlier Batch A / stake SQL)
+# AXEN Coach v2 upgrade (additive only)
 
-Scope: only You → Accountability, its sheets and needed backend. Home, Rank, Zen, Stats, Coach, Home Contract card, 4AM, Verified Rank List, banner and bottom nav untouched. No stakes, Match me, squads, AI coach, Work Together, presence, Supporter, rest days, 12h auto-confirm, or coin/XP/rank/seal changes.
+Goal: when a new user opens AXEN, the Coach learns about them (target ~70–90% of key details) through a short, personal chat, then builds and starts their day plan. Everything else in AXEN stays exactly as it is.
 
-## Known facts from read-only checks
-- Contracts are written directly by the Home card; the existing guard only blocks server-owned fields, so the 6 new fields pass through the same path (no guard change needed).
-- Invites already use 128-bit random codes, stored hashed; existing create/accept kept as-is (24h expiry stays).
-- User-side completion time = completed session end or first proof submission.
+## What stays untouched
+Home, Zen, Rank, Stats, Accountability, You tabs, bottom nav, theme, auth, subscriptions, coins/XP/rank/seal rules, existing tasks and existing Coach chat history. The Coach screen keeps its current look; only its brain and a small "Your plan" card are added.
 
-## Backend (one additive migration, applied directly)
-- Contracts: add `is_solo`, `partner_visibility`, `minimum_version` (≤140), `obstacles` (≤280), `evidence_required`, `paused_at`.
-- `acct_checkins` (owner read/write, one per day) and `acct_milestones_seen` (owner only), plus an owner settings row for "show my tree to my partner" (default on).
-- Read-only functions, each checks the signed-in user, `search_path=''`, no anon access: `acct_garden_score`, `acct_partner_garden_stage`, `acct_pair_streak`, `acct_partner_checkin_status`, `acct_weekly_report`, `acct_mark_milestone_seen`.
-- Garden: 85% on-time share of due pacts (Recovered = 60%), 15% check-in days, −10 per overdue pending pact, stages Seed/Sapling/Young/Lush/Ancient at 0/20/40/60/80; computed on read.
-- No existing function or trigger edited. Verify with `has_function_privilege()` afterwards.
+## What the user will experience
+1. **Getting to know you (onboarding):** Coach asks one question at a time, in Hindi / Hinglish / English, never repeating anything already known (it first reads the user's existing profile, habits and history). Vague answers get 2–3 options. A small "Coach knows you: 64%" bar shows progress.
+2. **Summary + length:** at ~70%+ it says "Toh main samjha: …", asks if right, then 7 / 21 / 90 days.
+3. **Plan draft:** max 3 tasks/day in week 1, each with a trigger and a 2-minute minimum version, one distraction fix, lighter review days. User can say "change X"; nothing is saved until a clear yes.
+4. **Plan starts today:** on yes, today's tasks are added to the user's normal habit list (same coins rules as existing tasks — easy/medium/hard use current amounts, no new rewards).
+5. **Daily coaching:** morning top task, evening check-in, no-shame missed-day help, reset after 2 missed days, weekly review every 7 days. Coach can add, edit, reschedule — never marks anything done.
+6. **Memory:** Coach remembers wins, failure patterns and preferences across sessions.
+7. **Safety:** habit coach only, gentle for under-18, care + helpline message on distress.
 
-## App (Accountability-only files)
-- Scoped dark (default) + light tokens with a header switch; card, pill, input, list, ring, week strip, tree components.
-- Screens in priority order: Home + week strip + no-partner/invite/Go solo → 3-step Pact Creator (one-time, today/tomorrow) → proof, review (+ Ask clarification via existing composer), Recovery (Restart, 15-min Comeback, Reschedule, Pause; Reduce only if existing restart exists) → daily check-in with cheers → garden + pair streak milestone → weekly report with share image.
-- Loading, empty, error and denied states; no overflow at 360px.
+## Technical details
+- New tables (additive, owner-only RLS, no anon): `coach_profile` (slots JSON with per-slot confidence, onboarding_done, coach_style, age_range), `coach_plans` (draft/confirmed JSON, days, start date). Reuse existing `coach_notes` for memory (types win / failure_pattern / preference / weekly_review).
+- `src/utils/coach.functions.ts`: replace the system prompt with the v2 prompt from your pack and add tool calling via the AI gateway: `get_user_context` (profile, last 10 memories, weekly summary, real progress from existing reads in `coach-context.functions.ts`), `update_profile`, `create_plan_draft` (second model call with the v2 plan prompt + self-check, validated with a schema: ≤3 tasks wk1, minutes ≤ available time), `confirm_plan`, `update_task`, `reschedule_tasks`, `save_coach_memory`, `get_progress`. All run server-side as the signed-in user; no tool can complete a task or award coins.
+- Confirmed plan inserts rows into the existing `tasks` table using the current insert path, so economy guards stay in charge.
+- `VoiceCoach` live session gets the same v2 prompt text; no UI redesign.
+- UI additions only inside Coach: confidence bar, plan draft card with Accept / Change buttons.
+- Tests: rule tests (≤3 tasks/day week 1, total minutes ≤ available, every task has minimum version, coach cannot mark done, other users can't read profile/plan) plus a scripted run of the 10 personas from your pack with replies saved for review.
 
-## Your three conditions
-1. Invite screen shows the real 24-hour expiry, never 48h.
-2. Partner tree and partner check-in return data only when an accepted connection exists between the two users; the tree also needs that user's "show my tree" on. Tested with two partners and a non-partner (gets nothing).
-3. Cheers and clarification messages use additive schema only; no existing function or trigger edited.
-
-## Tests
-Two-account partner flows; anon denied on all new functions; cross-user reads blocked; Home card ↔ Accountability pacts; garden thresholds; milestone shown once; empty weekly report; both themes; Comeback, nudges and Trust unchanged.
-
-## Final report
-What was built, what was skipped and why, assumptions made.
+## Not possible / honest limits
+- The Coach can only "know" what the user tells it or what AXEN already stores; it cannot read the phone or other apps.
+- Plan quality depends on the AI; the persona test is how we check it, and I'll show you the replies.
