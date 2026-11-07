@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getCoachV2State, runCoachToolFn } from "@/utils/coach-v2.functions";
-import type { CoachPlan } from "@/lib/coach-plan-rules";
+import { PLAN_READY_CONFIDENCE, type CoachPlan } from "@/lib/coach-plan-rules";
 import s from "./coach-plan.module.css";
 
 type PlanRow = { id: string; status: string; days: number; plan: CoachPlan; start_date: string | null } | null;
@@ -9,16 +9,18 @@ type State = { confidence: number; nextSlot: string | null; draft: PlanRow; conf
 const LENGTHS = [{ days: 1, label: "Today" }, { days: 7, label: "7 days" }, { days: 21, label: "21 days" }] as const;
 const tz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } };
 
-export function CoachPlanPanel({ refreshKey, onAskChange }: { refreshKey: number; onAskChange: (text: string) => void }) {
+export function CoachPlanPanel({ refreshKey, onAskChange, onSend }: { refreshKey: number; onAskChange: (text: string) => void; onSend: (text: string) => void }) {
   const load = useServerFn(getCoachV2State); const run = useServerFn(runCoachToolFn);
   const [state, setState] = useState<State | null>(null);
   const [length, setLength] = useState<1 | 7 | 21>(7);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [full, setFull] = useState(false);
 
   const refresh = useCallback(() => load({ data: { timezone: tz() } }).then((r) => setState(r as State)).catch(() => {}), [load]);
   useEffect(() => { void refresh(); }, [refresh, refreshKey]);
+  useEffect(() => { const h = () => void refresh(); window.addEventListener("axen:coach-plan-changed", h); return () => window.removeEventListener("axen:coach-plan-changed", h); }, [refresh]);
 
   const act = async (name: "create_plan_draft" | "confirm_plan", args: Record<string, unknown> = {}) => {
     setBusy(name); setError(null);
@@ -40,13 +42,13 @@ export function CoachPlanPanel({ refreshKey, onAskChange }: { refreshKey: number
       </button>
       {open && (
         <div className={s.body}>
-          {pct < 70 && <p className={s.hint}>Chat a little more so your plan fits you. The coach still can build one now.</p>}
+          {pct < PLAN_READY_CONFIDENCE && <p className={s.hint}>Chat a little more so your plan fits you. The coach will ask a few questions first, then build it.</p>}
           {!state.draft && (
             <>
               <div className={s.lengths} role="radiogroup" aria-label="Plan length">
                 {LENGTHS.map((l) => <button key={l.days} role="radio" aria-checked={length === l.days} className={length === l.days ? s.on : ""} onClick={() => setLength(l.days)}>{l.label}</button>)}
               </div>
-              <button className={s.primary} disabled={!!busy} onClick={() => act("create_plan_draft", { days: length })}>{busy === "create_plan_draft" ? "Building your plan…" : state.confirmed ? "Build a new plan" : "Build my plan"}</button>
+              <button className={s.primary} disabled={!!busy} onClick={() => pct < PLAN_READY_CONFIDENCE ? onSend(`I want a ${length === 1 ? "plan for today" : `${length}-day plan`}. Ask me what you still need to know first, one question at a time.`) : act("create_plan_draft", { days: length })}>{busy === "create_plan_draft" ? "Building your plan…" : state.confirmed ? "Build a new plan" : "Build my plan"}</button>
             </>
           )}
           {plan && (
@@ -57,6 +59,16 @@ export function CoachPlanPanel({ refreshKey, onAskChange }: { refreshKey: number
                 {(plan.days[0]?.tasks ?? []).map((t, i) => <li key={i}><span>{t.title}</span><small>{t.minutes} min · tiny version: {t.minimum}</small></li>)}
               </ul>
               {shown!.days > 1 && <p className={s.more}>Day 1 shown. {shown!.days - 1} more days are ready; each day's tasks are added to your habits that morning.</p>}
+              {plan.days.length > 1 && <button className={s.ghost} onClick={() => setFull((f) => !f)} aria-expanded={full}>{full ? "Hide full plan" : "View full plan"}</button>}
+              {full && (
+                <ol className={s.full}>
+                  {plan.days.map((d) => (
+                    <li key={d.day}><b>Day {d.day}{d.review ? " · review" : ""}</b>
+                      {d.tasks.length ? <ul className={s.tasks}>{d.tasks.map((t, i) => <li key={i}><span>{t.title}</span><small>{t.minutes} min · tiny version: {t.minimum}</small></li>)}</ul> : <small className={s.more}>Rest / no tasks</small>}
+                    </li>
+                  ))}
+                </ol>
+              )}
               {shown!.status === "draft" && (
                 <div className={s.row}>
                   <button className={s.primary} disabled={!!busy} onClick={() => act("confirm_plan")}>{busy === "confirm_plan" ? "Starting…" : "Accept plan"}</button>

@@ -2,7 +2,7 @@
 // signed-in user's RLS-scoped client. No tool can complete a task or award coins.
 import { COACH_PLAN_MODEL, PROVIDER_ENDPOINTS, type CoachModelConfig } from "@/lib/coach-config";
 import {
-  enforcePlanRules, isPlanLength, profileConfidence, lowestSlot, localDay, isValidTimezone,
+  enforcePlanRules, isPlanLength, canBuildPlan, profileConfidence, lowestSlot, localDay, isValidTimezone,
   dayIndex, taskName, type Slot, type Slots, type CoachPlan,
 } from "@/lib/coach-plan-rules";
 
@@ -157,6 +157,7 @@ export async function runCoachTool(ctx: Ctx, name: string, args: any): Promise<u
     case "create_plan_draft": {
       const length = Number(args?.days);
       if (!isPlanLength(length)) return { ok: false, error: "Plan length must be 1, 7 or 21 days." };
+      if (!canBuildPlan(profile.slots as Slots)) return { ok: false, needs_interview: true, confidence: profileConfidence(profile.slots as Slots), next_slot: lowestSlot(profile.slots as Slots), error: "Not enough known yet. Ask the next interview question (one at a time) about next_slot, save answers with update_profile, then build." };
       const prog = await progress(ctx, tz);
       const minutes = Number((profile.slots as Slots).daily_time_available?.value) || 30;
       const json = await callModel(COACH_PLAN_MODEL, {

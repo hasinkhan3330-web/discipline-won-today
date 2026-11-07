@@ -15,6 +15,10 @@ export function profileConfidence(slots: Slots): number {
   return Math.round((total / REQUIRED_SLOTS.length) * 100);
 }
 
+/** Below this profile confidence the Coach keeps interviewing instead of building a plan. */
+export const PLAN_READY_CONFIDENCE = 70;
+export function canBuildPlan(slots: Slots): boolean { return profileConfidence(slots) >= PLAN_READY_CONFIDENCE; }
+
 export function lowestSlot(slots: Slots): string | null {
   let best: string | null = null; let low = 2;
   for (const key of REQUIRED_SLOTS) { const c = Number(slots[key]?.confidence ?? 0); if (c < low) { low = c; best = key; } }
