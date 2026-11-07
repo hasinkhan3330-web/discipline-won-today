@@ -225,6 +225,13 @@
       "when": 1793550509660,
       "tag": "0031_revoke_anon_default_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1794069695935,
+      "tag": "0032_accountability_rebuild_tier1",
+      "breakpoints": true
     }
   ]
 }
