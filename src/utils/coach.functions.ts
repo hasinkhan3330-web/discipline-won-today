@@ -2,10 +2,12 @@ import { buildCoachKnowledge } from "@/lib/coach-knowledge";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { COACH_CHAT_MODEL } from "@/lib/coach-config";
+import { COACH_SYSTEM_V2, COACH_TOOL_DEFS, callModel, runCoachTool } from "@/lib/coach-tools";
 
 export type CoachMessage = { id?: string; role: "user" | "assistant"; content: string; suggestedAction?: { type: "create_habit" | "open_focus"; label: string; value?: string } | null };
 const messageSchema = z.object({ role: z.enum(["user","assistant"]), content: z.string().min(1).max(2000) });
-const inputSchema = z.object({ messages: z.array(messageSchema).min(1).max(12), conversationId: z.string().uuid().nullable().optional() });
+const inputSchema = z.object({ messages: z.array(messageSchema).min(1).max(12), conversationId: z.string().uuid().nullable().optional(), timezone: z.string().max(64).optional() });
 
 async function buildContext(supabase:any,userId:string){
   const today=new Date().toISOString().slice(0,10); const since=new Date(Date.now()-29*86400000).toISOString().slice(0,10);
@@ -53,9 +55,20 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
   const latest=data.messages[data.messages.length-1];
   if(!conversationId){const{data:created,error}=await context.supabase.from("coach_conversations").insert({user_id:context.userId,title:(latest?.content??"New conversation").slice(0,48)}).select("id").single();if(error)throw new Error(error.message);conversationId=created.id;}
   const snapshot=await buildContext(context.supabase,context.userId);
-  const response=await fetch("https://ai.gateway.lovable.dev/v1/chat/completions",{method:"POST",headers:{"Content-Type":"application/json","Lovable-API-Key":apiKey,"X-Lovable-AIG-SDK":"fetch"},body:JSON.stringify({model:"google/gemini-3.8-flash",messages:[{role:"system",content:`${SYSTEM}\n\n${buildCoachKnowledge()}\n\nUSER DATA:\n${snapshot}`},...data.messages]})});
-  if(response.status===429)throw new Error("The coach is busy right now — try again in a moment."); if(response.status===402)throw new Error("AI usage credits have run out for this app."); if(!response.ok)throw new Error(`The coach could not answer (${response.status}).`);
-  const json=await response.json() as any; const raw=json?.choices?.[0]?.message?.content?.trim(); if(!raw)throw new Error("The coach returned an empty answer."); const parsed=parseReply(raw);
+  if(data.timezone){const{setTimezone}=await import("@/lib/coach-tools");await setTimezone({supabase:context.supabase,userId:context.userId},data.timezone);}
+  const tools=COACH_TOOL_DEFS.map(t=>({type:"function",function:t}));
+  const convo:any[]=[{role:"system",content:`${COACH_SYSTEM_V2}\n\nOutput rule: ${SYSTEM.split("End with")[1]?"End with"+SYSTEM.split("End with")[1]:""}\n\n${buildCoachKnowledge()}\n\nUSER DATA:\n${snapshot}`},...data.messages];
+  let raw="";
+  for(let step=0;step<6;step++){
+    const json=await callModel(COACH_CHAT_MODEL,{messages:convo,tools});
+    const msg=json?.choices?.[0]?.message; const calls=msg?.tool_calls??[];
+    if(!calls.length){raw=String(msg?.content??"").trim();break;}
+    convo.push({role:"assistant",content:msg.content??"",tool_calls:calls});
+    for(const call of calls){let args={};try{args=JSON.parse(call.function?.arguments||"{}");}catch{}
+      let result:unknown;try{result=await runCoachTool({supabase:context.supabase,userId:context.userId},call.function?.name,args);}catch(e:any){result={ok:false,error:e?.message??"tool failed"};}
+      convo.push({role:"tool",tool_call_id:call.id,content:JSON.stringify(result).slice(0,12000)});}
+  }
+  if(!raw)throw new Error("The coach returned an empty answer."); const parsed=parseReply(raw);
   const {error:writeError}=await context.supabase.from("coach_messages").insert([{conversation_id:conversationId,user_id:context.userId,role:"user",content:latest?.content??""},{conversation_id:conversationId,user_id:context.userId,role:"assistant",content:parsed.content,suggested_action:parsed.suggestedAction}]);
   if(writeError)throw new Error(writeError.message);
   return{conversationId,reply:parsed.content,suggestedAction:parsed.suggestedAction};
