@@ -2,27 +2,40 @@
 export const PLAN_LENGTHS = [1, 7, 21] as const;
 export type PlanLength = (typeof PLAN_LENGTHS)[number];
 
-export const REQUIRED_SLOTS = [
-  "goal", "daily_time_available", "daily_schedule", "energy_peak",
-  "distraction_trigger", "wake_time", "coach_style", "age_range",
-] as const;
+
 
 export type Slot = { value: unknown; confidence: number };
 export type Slots = Record<string, Slot>;
 
-export function profileConfidence(slots: Slots): number {
-  const total = REQUIRED_SLOTS.reduce((sum, key) => sum + Math.max(0, Math.min(1, Number(slots[key]?.confidence ?? 0))), 0);
-  return Math.round((total / REQUIRED_SLOTS.length) * 100);
+/** Single source of truth for "Coach knows you %": used by the bar and every Coach prompt. */
+export const PROFILE_WEIGHTS = {
+  goal: 15, wake_time: 10, sleep_time: 10, daily_time_available: 15, distraction_trigger: 15,
+  intensity: 10, age_range: 10, energy_peak: 5, weakest_habit: 10,
+} as const;
+export const PROFILE_LABELS: Record<string, string> = {
+  goal: "goal", wake_time: "wake time", sleep_time: "sleep time", daily_time_available: "daily time available",
+  distraction_trigger: "main distraction", intensity: "intensity", age_range: "age", energy_peak: "energy peak", weakest_habit: "weakest habit",
+};
+/** A slot counts only when the user actually gave it (confidence >= 0.6); assumed/guessed values never count. */
+export function isFilled(slot: Slot | undefined): boolean {
+  const v = slot?.value;
+  return v !== undefined && v !== null && String(v).trim() !== "" && Number(slot?.confidence ?? 0) >= 0.6;
 }
+export function getProfileCompleteness(slots: Slots | null | undefined) {
+  const s = slots ?? {}; const filled: string[] = []; const missing: string[] = []; let percent = 0;
+  for (const [key, w] of Object.entries(PROFILE_WEIGHTS)) {
+    if (isFilled(s[key])) { filled.push(key); percent += w; } else missing.push(key);
+  }
+  return { percent, filled, missing };
+}
+export function profileConfidence(slots: Slots): number { return getProfileCompleteness(slots).percent; }
 
 /** Confidence gate applies only to the Build my plan button. */
 export const PLAN_READY_CONFIDENCE = 70;
 export function canBuildPlan(slots: Slots): boolean { return profileConfidence(slots) >= PLAN_READY_CONFIDENCE; }
 
 export function lowestSlot(slots: Slots): string | null {
-  let best: string | null = null; let low = 2;
-  for (const key of REQUIRED_SLOTS) { const c = Number(slots[key]?.confidence ?? 0); if (c < low) { low = c; best = key; } }
-  return low >= 0.9 ? null : best;
+  return getProfileCompleteness(slots).missing[0] ?? null;
 }
 
 export type PlanTask = { title: string; minimum: string; trigger: string; time?: string; minutes: number; difficulty: "easy" | "medium" | "hard" };
