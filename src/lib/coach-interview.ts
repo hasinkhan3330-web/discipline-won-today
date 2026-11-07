@@ -20,8 +20,8 @@ export function spokenSlots(text: string): Slots {
   const wake = text.match(/wake(?:\s+up)?\s+(?:at\s+)?(\d{1,2}(?::\d{2})?\s*[ap]\.?m\.?)/i);
   const sleep = text.match(/sleep\s+(?:at\s+)?(\d{1,2}(?::\d{2})?\s*[ap]\.?m\.?)/i);
   const hours = text.match(/(?:do|have|available|spend)\s+(\d+(?:\.\d+)?)\s*hours?/i);
-  if (wake) save('wake_time', wake[1]);
-  if (sleep) save('sleep_time', sleep[1]);
+  if (wake) save('wake_time', wake[1]?.replace(/\.$/, ''));
+  if (sleep) save('sleep_time', sleep[1]?.replace(/\.$/, ''));
   if (wake || sleep) save('daily_schedule', text);
   if (hours) save('daily_time_available', Number(hours[1]) * 60);
   if (/physics\s+numericals/i.test(text)) save('goal', 'Physics numericals');

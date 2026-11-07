@@ -146,7 +146,7 @@ export function VoiceCoach() {
   const transcriptRef = useRef('');
   const outputRef = useRef('');
   const queueRef = useRef<Promise<unknown>>(Promise.resolve());
-  const draftRef = useRef<Record<string, unknown> | null>(null);
+  const draftRef = useRef<Record<string, any> | null>(null);
   const execute = (calls: Array<{ id?: string; name: string; args: Record<string, unknown> }>) => {
     const job = queueRef.current.catch(() => {}).then(async () => {
       for (const call of calls) console.info('[voice] toolCall', { name: call.name, args: call.args });
@@ -159,6 +159,7 @@ export function VoiceCoach() {
           out.functionResponses.push(...response.functionResponses);
           if (call.name === 'create_plan_draft') draftRef.current = response.functionResponses[0]?.response ?? null;
         }
+        if (call.name === 'update_profile') window.dispatchEvent(new Event('axen:coach-plan-changed'));
       }
       for (const response of out.functionResponses) {
         console.info('[voice] toolResponse', { name: response.name, args: calls.find(c => c.id === response.id)?.args, ...response.response });
