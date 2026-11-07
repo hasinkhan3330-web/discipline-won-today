@@ -78,8 +78,6 @@ serverTest("materializing the same day twice creates no duplicate tasks", async 
   expect(second.added).toBe(0);
   const rows = await admin.from("coach_plan_materialized").select("task_id").eq("plan_id", planId);
   expect(rows.data).toHaveLength(2);
-  const tasks = await admin.from("tasks").select("id").eq("user_id", A.id).in("name", rows.data!.map(() => "x").length ? [] : []);
-  void tasks;
   const all = await admin.from("tasks").select("id,name").eq("user_id", A.id);
   expect(all.data).toHaveLength(3); // 2 plan tasks + the user's own habit
 });
