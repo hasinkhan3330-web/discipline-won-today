@@ -34,3 +34,4 @@
 - Text and voice Coach share one 8-tool set (`COACH_TOOL_DEFS` / `runCoachTool`); voice adapts it in `coach-voice-tools.ts` and runs tool calls server-side. Why: one server-authoritative action path, no mark-done or coin tools.
 - Voice sessions hand the browser only ephemeral Gemini tokens, never the permanent key. Why: keys must not reach the client.
 - Coach quick setup saves owner-scoped profile slots without inference; voice tool batches are serialized and notify the shared plan panel after writes. Why: prevent overlapping profile writes and stale confidence.
+- Coach "knows you %" comes only from getProfileCompleteness over coach_profile slots; every text/voice session gets a server-built <user_profile> block (re-fetched on reconnect). Why: UI and Coach must never disagree or trust a client percent.
