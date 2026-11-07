@@ -525,9 +525,9 @@ export function AccountabilitySection() {
       </div>
 
       <div className={s.row3}>
-        <div className={s.mini}><ARing size={44} stroke={10} value={me ? Math.min(1, (pair?.streak ?? 0) / 7) : 0} /><span className={s.miniNum}>{me ? pair?.streak ?? 0 : "—"}</span><span className={s.muted}>Pair streak</span></div>
-        <button className={s.mini} onClick={() => setView("review")}><ARing size={44} stroke={10} value={partnerPending ? 1 : 0} /><span className={s.miniNum}>{partnerPending}</span><span className={s.muted}>Pending</span></button>
-        <button className={s.mini} onClick={() => setWhyOpen(v => !v)} aria-expanded={whyOpen} aria-label={`Trust ${trustLabel}. Why?`}><ARing size={44} stroke={10} value={(trust?.score ?? 0) / 100} /><span className={s.miniNum}>{trustLabel}</span><span className={s.muted}>Trust</span></button>
+        <div className={s.mini}><ARing size={44} stroke={6} value={me ? Math.min(1, (pair?.streak ?? 0) / 7) : 0} /><span className={s.miniNum}>{me ? pair?.streak ?? 0 : "—"}</span><span className={s.muted}>Pair streak</span></div>
+        <button className={s.mini} onClick={() => setView("review")}><ARing size={44} stroke={6} value={partnerPending ? 1 : 0} /><span className={s.miniNum}>{partnerPending}</span><span className={s.muted}>Pending</span></button>
+        <button className={s.mini} onClick={() => setWhyOpen(v => !v)} aria-expanded={whyOpen} aria-label={`Trust ${trustLabel}. Why?`}><ARing size={44} stroke={6} value={(trust?.score ?? 0) / 100} /><span className={s.miniNum}>{trustLabel}</span><span className={s.muted}>Trust</span></button>
       </div>
       {whyOpen && <div className={s.card} aria-live="polite"><span className={s.label}>Trust — why?</span><TrustWhy trust={trust} /></div>}
 
