@@ -199,7 +199,7 @@ export function VoiceCoach() {
     const session = sessionRef.current;
     const controller = new AbortController();
     abortRef.current = controller;
-    setError(null);
+    if (!isRetry) setError(null);
     setStatus("connecting");
     haptic("tap");
     try {
