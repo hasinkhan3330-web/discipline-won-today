@@ -141,6 +141,7 @@ export function VoiceCoach() {
   const [setupOpen, setSetupOpen] = useState(false);
   const [setupDone, setSetupDone] = useState(false);
   const [yesNo, setYesNo] = useState(false);
+  const [building, setBuilding] = useState(false);
   const questionsRef = useRef(0);
   const transcriptRef = useRef('');
   const outputRef = useRef('');
@@ -149,7 +150,16 @@ export function VoiceCoach() {
   const execute = (calls: Array<{ id?: string; name: string; args: Record<string, unknown> }>) => {
     const job = queueRef.current.catch(() => {}).then(async () => {
       for (const call of calls) console.info('[voice] toolCall', { name: call.name, args: call.args });
-      const out = await runVoiceTools({ data: { calls } });
+      const out = { functionResponses: [] as Array<{ id?: string; name: string; response: Record<string, any> }> };
+      for (const call of calls) {
+        if (call.name === 'create_plan_draft' && draftRef.current?.result?.ok === true) {
+          out.functionResponses.push({ id: call.id, name: call.name, response: draftRef.current });
+        } else {
+          const response = await runVoiceTools({ data: { calls: [call] } });
+          out.functionResponses.push(...response.functionResponses);
+          if (call.name === 'create_plan_draft') draftRef.current = response.functionResponses[0]?.response ?? null;
+        }
+      }
       for (const response of out.functionResponses) {
         console.info('[voice] toolResponse', { name: response.name, args: calls.find(c => c.id === response.id)?.args, ...response.response });
         if (response.name === 'create_plan_draft') draftRef.current = response.response;
@@ -164,8 +174,9 @@ export function VoiceCoach() {
     const slots = spokenSlots(text);
     if (Object.keys(slots).length) await execute([{ id: crypto.randomUUID(), name: 'update_profile', args: { slots } }]);
     if (shouldDraft(text, questionsRef.current, setupDone) && !draftRef.current) {
-      setSpeaking(true);
-      await execute([{ id: crypto.randomUUID(), name: 'create_plan_draft', args: { days: requestedLength(text) } }]);
+      setBuilding(true);
+      try { await execute([{ id: crypto.randomUUID(), name: 'create_plan_draft', args: { days: requestedLength(text) } }]); }
+      finally { setBuilding(false); }
     }
   };
 
@@ -448,6 +459,7 @@ export function VoiceCoach() {
   return (
     <>
     {setupOpen && <CoachQuickSetup onDone={() => { setSetupOpen(false); setSetupDone(true); }} />}
+    {building && <p className={s.hint}>Give me a minute, I'm building your plan.</p>}
     {live && yesNo && <div className={s.answers}>{['Yes', 'No'].map(answer => <Button key={answer} onClick={() => {
       setYesNo(false);
       wsRef.current?.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: answer }] }], turnComplete: true } }));
