@@ -375,60 +375,6 @@ export function VoiceCoach() {
         release();
       };
     } catch (cause) {
-            responses = calls.map((c) => ({ id: c.id, name: c.name, response: { ok: false, error: cause instanceof Error ? cause.message : "unavailable" } }));
-          }
-          if (calls.some((c) => ["update_profile", "create_plan_draft", "confirm_plan", "update_task", "reschedule_tasks"].includes(c.name))) {
-            window.dispatchEvent(new Event("axen:coach-plan-changed"));
-          }
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ toolResponse: { functionResponses: responses } }));
-          }
-        }
-        if (message.serverContent?.turnComplete) turnCallsRef.current = 0;
-        if (message.serverContent?.interrupted) {
-          playerRef.current?.clear();
-          setSpeaking(false);
-        }
-        const parts = message.serverContent?.modelTurn?.parts ?? [];
-        for (const part of parts) {
-          const audio = part?.inlineData?.data;
-          if (audio) {
-            playerRef.current?.push(base64ToFloat32(audio));
-            setSpeaking(true);
-          }
-        }
-        if (message.serverContent?.turnComplete) setSpeaking(false);
-      };
-
-      ws.onerror = () => {
-        if (controller.signal.aborted || session !== sessionRef.current) return;
-        setError("The voice connection dropped. Check your network and try again.");
-        release("error");
-      };
-      ws.onclose = (event) => {
-        if (controller.signal.aborted || session !== sessionRef.current) return;
-        if (wsRef.current !== ws) return;
-        if (event.code !== 1000) {
-          console.warn("[voice] Live connection closed by Google", event.code, event.reason);
-          const failedBeforeStart = !greetedRef.current;
-          // Credential problems never reach the user as raw Google wording.
-          const friendly = /api key|unregistered|unauthenticated|permission/i.test(event.reason)
-            ? "Couldn’t start a secure coach session. Tap to retry."
-            : event.reason || "The voice session ended unexpectedly.";
-          if (failedBeforeStart && !retriedRef.current) {
-            // One clean retry with a freshly minted credential, never a loop.
-            retriedRef.current = true;
-            release("connecting");
-            void start(true);
-            return;
-          }
-          setError(friendly);
-          release("error");
-          return;
-        }
-        release();
-      };
-    } catch (cause) {
       if (controller.signal.aborted || session !== sessionRef.current) return;
       const raw = cause instanceof Error ? cause.message : "";
       const message =
