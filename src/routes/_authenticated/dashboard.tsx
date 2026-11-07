@@ -55,6 +55,7 @@ import { WakeProtocol } from "@/components/WakeProtocol";
 import { readWakeState } from "@/lib/wake.functions";
 import { webAlarmScheduler } from "@/lib/web-alarm-scheduler";
 import type { AlarmState } from "@/lib/wake-types";
+import { materializeCoachToday } from "@/utils/coach-v2.functions";
 
 const WAKE_OPTIONS = [
   { time: "4AM", pts: 10, tag: "ELITE", line: "The world sleeps. You rise." },
@@ -201,6 +202,8 @@ function App() {
 
     // Pre-signup quiz answers cached before the account existed — write them once.
     await flushQuizToProfile(uid).catch(() => false);
+    // Coach plan: add today's plan tasks once (user's own timezone). Silent; never blocks loading.
+    await materializeCoachToday({ data: { timezone: (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } })() } }).catch(() => null);
 
     const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
       supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url, shields, onboarded, referred_by, preferred_name, age_range, acquisition_source, primary_goal, first_habit, social_hours_daily, biggest_distraction, wake_time, sleep_time, consistency_days, routine_breaker, preferred_focus_time, commitment_milestone, onboarding_step").eq("id", uid).maybeSingle(),

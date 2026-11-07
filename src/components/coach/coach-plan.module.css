@@ -1,0 +1,22 @@
+.panel { width: 100%; border-radius: 16px; background: color-mix(in oklab, var(--background) 72%, transparent); border: 1px solid color-mix(in oklab, var(--foreground) 14%, transparent); backdrop-filter: blur(14px); color: var(--foreground); overflow: hidden; }
+.head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; }
+.label { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.bar { flex: 1; height: 6px; border-radius: 99px; background: color-mix(in oklab, var(--foreground) 14%, transparent); overflow: hidden; }
+.bar > span { display: block; height: 100%; border-radius: inherit; background: var(--primary); transition: width .4s ease; }
+.pct { font-size: 12px; font-variant-numeric: tabular-nums; opacity: .8; }
+.body { padding: 0 12px 12px; display: grid; gap: 10px; max-height: 46vh; overflow-y: auto; }
+.hint, .more, .summary { margin: 0; font-size: 12px; line-height: 1.4; opacity: .75; }
+.lengths { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.lengths button, .ghost { padding: 8px 4px; border-radius: 10px; border: 1px solid color-mix(in oklab, var(--foreground) 18%, transparent); background: transparent; color: inherit; font: inherit; font-size: 13px; cursor: pointer; }
+.lengths .on { border-color: var(--primary); background: color-mix(in oklab, var(--primary) 20%, transparent); }
+.primary { padding: 10px; border-radius: 10px; border: 0; background: var(--primary); color: var(--primary-foreground); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.primary:disabled, .ghost:disabled { opacity: .55; cursor: default; }
+.card { display: grid; gap: 8px; padding: 10px; border-radius: 12px; background: color-mix(in oklab, var(--foreground) 6%, transparent); }
+.cardTop { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; font-size: 14px; min-width: 0; }
+.cardTop b { overflow-wrap: anywhere; }
+.tag { font-size: 11px; opacity: .7; white-space: nowrap; }
+.tasks { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.tasks li { display: grid; gap: 2px; font-size: 13px; }
+.tasks small { font-size: 11px; opacity: .7; overflow-wrap: anywhere; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.error { margin: 0; font-size: 12px; color: var(--destructive); }
