@@ -1,7 +1,8 @@
 import { buildCoachKnowledge } from "@/lib/coach-knowledge";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getLiveSession } from "@/utils/voice.functions";
+import { getLiveSession, runVoiceToolCall } from "@/utils/voice.functions";
+import { VOICE_SYSTEM_V2, VOICE_TOOL_DECLARATIONS, MAX_VOICE_TOOL_CALLS_PER_TURN } from "@/lib/coach-voice-tools";
 import {
   getCoachContext,
   getLeaderboardPosition,
@@ -114,6 +115,8 @@ export function VoiceCoach() {
   const fetchToday = useServerFn(getTodayProgress);
   const fetchRank = useServerFn(getLeaderboardPosition);
   const saveSummary = useServerFn(saveCoachSessionSummary);
+  const runVoiceTools = useServerFn(runVoiceToolCall);
+  const turnCallsRef = useRef(0);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
@@ -242,8 +245,8 @@ export function VoiceCoach() {
 
       const KB = buildCoachKnowledge();
       const instruction = snapshot
-        ? `${SYSTEM}\n\n${KB}\n\nAXEN_COACH_CONTEXT (private, never read aloud):\n${JSON.stringify(snapshot)}`
-        : `${SYSTEM}\n\n${KB}\n\nAXEN_COACH_CONTEXT is unavailable for this session. Do not state any statistic; call get_axen_coach_context before referencing data.`;
+        ? `${VOICE_SYSTEM_V2}\n\n${KB}\n\nAXEN_COACH_CONTEXT (private, never read aloud):\n${JSON.stringify(snapshot)}`
+        : `${VOICE_SYSTEM_V2}\n\n${KB}\n\nAXEN_COACH_CONTEXT is unavailable for this session. Do not state any statistic; call get_user_context before referencing data.`;
 
       ws.onopen = () => {
         if (controller.signal.aborted || session !== sessionRef.current) {
@@ -257,7 +260,7 @@ export function VoiceCoach() {
               generationConfig: { responseModalities: ["AUDIO"] },
               systemInstruction: { parts: [{ text: instruction }] },
               realtimeInputConfig: { automaticActivityDetection: { disabled: true } },
-              tools: TOOLS,
+              tools: VOICE_TOOL_DECLARATIONS,
               inputAudioTranscription: {},
               outputAudioTranscription: {},
               contextWindowCompression: { slidingWindow: {} },
@@ -352,26 +355,25 @@ export function VoiceCoach() {
           );
         }
         if (message.toolCall?.functionCalls?.length) {
-          const responses = await Promise.all(
-            message.toolCall.functionCalls.map(async (call) => {
-              try {
-                const result = await runTool(call.name ?? "", call.args ?? {});
-                return { id: call.id, name: call.name, response: { result } };
-              } catch (cause) {
-                return {
-                  id: call.id,
-                  name: call.name,
-                  response: {
-                    error: cause instanceof Error ? cause.message : "unavailable",
-                  },
-                };
-              }
-            }),
-          );
+          // Same 8 Coach tools as text, run on the server as the signed-in user; max 6 per turn.
+          const calls = message.toolCall.functionCalls.map((call) => ({ id: call.id, name: call.name ?? "", args: call.args ?? {} }));
+          const allowed = Math.max(0, MAX_VOICE_TOOL_CALLS_PER_TURN - turnCallsRef.current);
+          turnCallsRef.current += calls.length;
+          let responses: Array<{ id?: string; name: string; response: Record<string, unknown> }>;
+          try {
+            const head = allowed > 0 ? (await runVoiceTools({ data: { calls: calls.slice(0, allowed) } })).functionResponses : [];
+            responses = [...head, ...calls.slice(allowed).map((c) => ({ id: c.id, name: c.name, response: { ok: false, error: "Too many tool calls this turn." } }))];
+          } catch (cause) {
+            responses = calls.map((c) => ({ id: c.id, name: c.name, response: { ok: false, error: cause instanceof Error ? cause.message : "unavailable" } }));
+          }
+          if (calls.some((c) => ["update_profile", "create_plan_draft", "confirm_plan", "update_task", "reschedule_tasks"].includes(c.name))) {
+            window.dispatchEvent(new Event("axen:coach-plan-changed"));
+          }
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ toolResponse: { functionResponses: responses } }));
           }
         }
+        if (message.serverContent?.turnComplete) turnCallsRef.current = 0;
         if (message.serverContent?.interrupted) {
           playerRef.current?.clear();
           setSpeaking(false);
