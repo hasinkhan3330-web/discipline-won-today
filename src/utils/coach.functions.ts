@@ -56,6 +56,7 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
   const latest=data.messages[data.messages.length-1];
   if(!conversationId){const{data:created,error}=await context.supabase.from("coach_conversations").insert({user_id:context.userId,title:(latest?.content??"New conversation").slice(0,48)}).select("id").single();if(error)throw new Error(error.message);conversationId=created.id;}
   const snapshot=await buildContext(context.supabase,context.userId);
+  const { profileContextBlock } = await import("@/lib/coach-tools");
   if(data.timezone){const{setTimezone}=await import("@/lib/coach-tools");await setTimezone({supabase:context.supabase,userId:context.userId},data.timezone);}
   const tools=COACH_TOOL_DEFS.map(t=>({type:"function",function:t}));
   const ctx = { supabase: context.supabase, userId: context.userId };
@@ -72,7 +73,7 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
     if (error) throw new Error(error.message);
     return { conversationId, reply, suggestedAction: null };
   }
-  const convo:any[]=[{role:"system",content:`${COACH_SYSTEM_V2}\n\nOutput rule: ${SYSTEM.split("End with")[1]?"End with"+SYSTEM.split("End with")[1]:""}\n\n${buildCoachKnowledge()}\n\nUSER DATA:\n${snapshot}`},...data.messages];
+  const convo:any[]=[{role:"system",content:`${COACH_SYSTEM_V2}\n\nOutput rule: ${SYSTEM.split("End with")[1]?"End with"+SYSTEM.split("End with")[1]:""}\n\n${buildCoachKnowledge()}\n\nUSER DATA:\n${snapshot}\n\n${await profileContextBlock(ctx, "text")}`},...data.messages];
   let raw="";
   for(let step=0;step<6;step++){
     const json=await callModel(COACH_CHAT_MODEL,{messages:convo,tools});
