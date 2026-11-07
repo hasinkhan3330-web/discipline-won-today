@@ -13,6 +13,9 @@ import { PcmPlayer, base64ToFloat32, floatToPcm16Base64 } from "@/lib/live-audio
 import { haptic } from "@/lib/haptics";
 import { Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CoachQuickSetup } from '@/components/coach/CoachQuickSetup';
+import { shouldDraft, requestedLength, spokenSlots } from '@/lib/coach-interview';
+import s from '@/components/coach/coach-plan.module.css';
 
 type Status = "idle" | "connecting" | "live" | "error";
 type FunctionCall = { id?: string; name?: string; args?: Record<string, unknown> };
@@ -22,6 +25,8 @@ type LiveMessage = {
   sessionResumptionUpdate?: { newHandle?: string; resumable?: boolean };
   toolCall?: { functionCalls?: FunctionCall[] };
   serverContent?: {
+    inputTranscription?: { text?: string; finished?: boolean };
+    outputTranscription?: { text?: string; finished?: boolean };
     interrupted?: boolean;
     turnComplete?: boolean;
     modelTurn?: { parts?: Array<{ inlineData?: { data?: string } }> };
@@ -133,6 +138,36 @@ export function VoiceCoach() {
   const greetedRef = useRef(false);
   const resumeRef = useRef<string | null>(null);
   const retriedRef = useRef(false);
+  const [setupOpen, setSetupOpen] = useState(false);
+  const [setupDone, setSetupDone] = useState(false);
+  const [yesNo, setYesNo] = useState(false);
+  const questionsRef = useRef(0);
+  const transcriptRef = useRef('');
+  const outputRef = useRef('');
+  const queueRef = useRef<Promise<unknown>>(Promise.resolve());
+  const draftRef = useRef<Record<string, unknown> | null>(null);
+  const execute = (calls: Array<{ id?: string; name: string; args: Record<string, unknown> }>) => {
+    const job = queueRef.current.catch(() => {}).then(async () => {
+      for (const call of calls) console.info('[voice] toolCall', { name: call.name, args: call.args });
+      const out = await runVoiceTools({ data: { calls } });
+      for (const response of out.functionResponses) {
+        console.info('[voice] toolResponse', { name: response.name, args: calls.find(c => c.id === response.id)?.args, ...response.response });
+        if (response.name === 'create_plan_draft') draftRef.current = response.response;
+      }
+      window.dispatchEvent(new Event('axen:coach-plan-changed'));
+      return out;
+    });
+    queueRef.current = job;
+    return job;
+  };
+  const handleAnswer = async (text: string) => {
+    const slots = spokenSlots(text);
+    if (Object.keys(slots).length) await execute([{ id: crypto.randomUUID(), name: 'update_profile', args: { slots } }]);
+    if (shouldDraft(text, questionsRef.current, setupDone) && !draftRef.current) {
+      setSpeaking(true);
+      await execute([{ id: crypto.randomUUID(), name: 'create_plan_draft', args: { days: requestedLength(text) } }]);
+    }
+  };
 
   const release = (nextStatus: Status = "idle") => {
     sessionRef.current += 1;
@@ -196,6 +231,7 @@ export function VoiceCoach() {
   const start = async (isRetry = false) => {
     release();
     if (!isRetry) retriedRef.current = false;
+    if (!isRetry) { questionsRef.current = 0; draftRef.current = null; transcriptRef.current = ''; outputRef.current = ''; turnCallsRef.current = 0; }
     const session = sessionRef.current;
     const controller = new AbortController();
     abortRef.current = controller;
@@ -307,7 +343,7 @@ export function VoiceCoach() {
           ws.send(
             JSON.stringify({
               clientContent: {
-                turns: [{ role: "user", parts: [{ text: "SESSION_START" }] }],
+                turns: [{ role: "user", parts: [{ text: setupDone ? "SESSION_START: Quick setup is saved. Call get_user_context. Ask only remaining gaps, at most 3 questions, then build Today with defaults. Before building say: Give me a minute, I'm building your plan." : "SESSION_START" }] }],
                 turnComplete: true,
               },
             }),
@@ -320,7 +356,7 @@ export function VoiceCoach() {
           turnCallsRef.current += calls.length;
           let responses: Array<{ id?: string; name: string; response: Record<string, unknown> }>;
           try {
-            const head = allowed > 0 ? (await runVoiceTools({ data: { calls: calls.slice(0, allowed) } })).functionResponses : [];
+            const head = allowed > 0 ? (await execute(calls.slice(0, allowed))).functionResponses : [];
             responses = [...head, ...calls.slice(allowed).map((c) => ({ id: c.id, name: c.name, response: { ok: false, error: "Too many tool calls this turn." } }))];
           } catch (cause) {
             responses = calls.map((c) => ({ id: c.id, name: c.name, response: { ok: false, error: cause instanceof Error ? cause.message : "unavailable" } }));
@@ -331,6 +367,21 @@ export function VoiceCoach() {
           if (ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ toolResponse: { functionResponses: responses } }));
           }
+        }
+        const input = message.serverContent?.inputTranscription;
+        if (input?.text) transcriptRef.current += input.text;
+        if (input?.finished && transcriptRef.current) {
+          const text = transcriptRef.current; transcriptRef.current = '';
+          await handleAnswer(text);
+        }
+        const output = message.serverContent?.outputTranscription;
+        if (output?.text) outputRef.current += output.text;
+        if (message.serverContent?.turnComplete) {
+          if (transcriptRef.current) { const text = transcriptRef.current; transcriptRef.current = ''; await handleAnswer(text); }
+          const answer = outputRef.current; outputRef.current = '';
+          setYesNo(/\?|yes or no|haan.*naa/i.test(answer) && /\b(?:do|did|are|is|can|would|will|should|right|okay|yes|no)\b|kya|sahi|theek/i.test(answer));
+          if (/\?|kya/i.test(answer)) questionsRef.current += 1;
+          if (shouldDraft('', questionsRef.current, setupDone) && !draftRef.current) await handleAnswer('Create my plan');
         }
         if (message.serverContent?.turnComplete) turnCallsRef.current = 0;
         if (message.serverContent?.interrupted) {
@@ -384,7 +435,8 @@ export function VoiceCoach() {
             ? "Please sign in again to start your coach."
             : /api key|not configured|temporarily unavailable/i.test(raw)
               ? "AI Coach is temporarily unavailable. Please try again shortly."
-              : raw || "Couldn’t start a secure coach session. Tap to retry.";
+              : "Couldn’t start a secure coach session. Tap to retry.";
+      console.warn('[voice] session error', raw);
       setError(message);
       release("error");
     }
@@ -394,6 +446,12 @@ export function VoiceCoach() {
   const busy = status === "connecting";
 
   return (
+    <>
+    {setupOpen && <CoachQuickSetup onDone={() => { setSetupOpen(false); setSetupDone(true); }} />}
+    {live && yesNo && <div className={s.answers}>{['Yes', 'No'].map(answer => <Button key={answer} onClick={() => {
+      setYesNo(false);
+      wsRef.current?.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: answer }] }], turnComplete: true } }));
+    }}>{answer}</Button>)}</div>}
     <div className={`voice-console ${live ? "voice-console--live" : ""}`}>
       <div className="voice-console__copy">
         <span>
@@ -414,7 +472,7 @@ export function VoiceCoach() {
       </div>
       <Button
         type="button"
-        onClick={() => (live ? release() : start())}
+        onClick={() => { if (live) release(); else if (!setupDone) setSetupOpen(true); else void start(); }}
         disabled={busy}
         className="voice-console__button"
         aria-label={live ? "End voice session" : "Start voice session"}
@@ -423,5 +481,6 @@ export function VoiceCoach() {
       </Button>
       {error && <p className="voice-console__error">{error}</p>}
     </div>
+    </>
   );
 }
