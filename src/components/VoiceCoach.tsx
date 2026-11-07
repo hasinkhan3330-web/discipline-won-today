@@ -306,6 +306,7 @@ export function VoiceCoach() {
           (window as typeof window & { webkitAudioContext: typeof AudioContext })
             .webkitAudioContext;
         const context = new AudioContextClass({ sampleRate: 16000 });
+        void context.resume();
         micCtxRef.current = context;
         const source = context.createMediaStreamSource(stream);
         const processor = context.createScriptProcessor(2048, 1, 1);
