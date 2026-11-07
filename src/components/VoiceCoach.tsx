@@ -134,19 +134,6 @@ export function VoiceCoach() {
   const resumeRef = useRef<string | null>(null);
   const retriedRef = useRef(false);
 
-  const sendActivity = (socket: WebSocket, active: boolean) => {
-    if (socket.readyState !== WebSocket.OPEN || activityRef.current === active) return;
-    socket.send(
-      JSON.stringify({ realtimeInput: active ? { activityStart: {} } : { activityEnd: {} } }),
-    );
-    activityRef.current = active;
-    silenceStartedRef.current = null;
-    if (active) {
-      playerRef.current?.clear();
-      setSpeaking(false);
-    }
-  };
-
   const release = (nextStatus: Status = "idle") => {
     sessionRef.current += 1;
     abortRef.current?.abort();
@@ -155,9 +142,8 @@ export function VoiceCoach() {
     wsRef.current = null;
     if (socket?.readyState === WebSocket.OPEN) {
       try {
-        // A complete manual activity pulse cancels any model turn before close.
-        socket.send(JSON.stringify({ realtimeInput: { activityStart: {} } }));
-        socket.send(JSON.stringify({ realtimeInput: { activityEnd: {} } }));
+        // Automatic activity detection is on: only signal that the mic stream ended.
+        socket.send(JSON.stringify({ realtimeInput: { audioStreamEnd: true } }));
       } catch {
         /* socket closed between the readyState check and send */
       }
@@ -259,7 +245,6 @@ export function VoiceCoach() {
               model,
               generationConfig: { responseModalities: ["AUDIO"] },
               systemInstruction: { parts: [{ text: instruction }] },
-              realtimeInputConfig: { automaticActivityDetection: { disabled: true } },
               tools: VOICE_TOOL_DECLARATIONS,
               inputAudioTranscription: {},
               outputAudioTranscription: {},
@@ -286,32 +271,6 @@ export function VoiceCoach() {
             return;
           }
           const samples = event.inputBuffer.getChannelData(0);
-          let energy = 0;
-          for (let index = 0; index < samples.length; index += 1) {
-            const sample = samples[index] ?? 0;
-            energy += sample * sample;
-          }
-          const rms = Math.sqrt(energy / samples.length);
-          const now = performance.now();
-          // While the coach is speaking, require clearly louder speech so that
-          // speaker bleed / echo cannot chop the reply into fragments.
-          const coachSpeaking = playerRef.current?.isPlaying ?? false;
-          const openThreshold = coachSpeaking ? 0.09 : 0.03;
-          if (rms >= openThreshold) {
-            // Speech must be sustained (~200 ms) before we cut the coach off.
-            loudStartedRef.current ??= now;
-            if (activityRef.current || now - loudStartedRef.current >= 200) {
-              sendActivity(ws, true);
-            }
-            silenceStartedRef.current = null;
-          } else {
-            loudStartedRef.current = null;
-            if (activityRef.current) {
-              silenceStartedRef.current ??= now;
-              if (now - silenceStartedRef.current >= 700) sendActivity(ws, false);
-            }
-          }
-          if (!activityRef.current) return;
           const data = floatToPcm16Base64(samples);
           ws.send(
             JSON.stringify({
@@ -364,6 +323,58 @@ export function VoiceCoach() {
             const head = allowed > 0 ? (await runVoiceTools({ data: { calls: calls.slice(0, allowed) } })).functionResponses : [];
             responses = [...head, ...calls.slice(allowed).map((c) => ({ id: c.id, name: c.name, response: { ok: false, error: "Too many tool calls this turn." } }))];
           } catch (cause) {
+            responses = calls.map((c) => ({ id: c.id, name: c.name, response: { ok: false, error: cause instanceof Error ? cause.message : "unavailable" } }));
+          }
+          if (calls.some((c) => ["update_profile", "create_plan_draft", "confirm_plan", "update_task", "reschedule_tasks"].includes(c.name))) {
+            window.dispatchEvent(new Event("axen:coach-plan-changed"));
+          }
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ toolResponse: { functionResponses: responses } }));
+          }
+        }
+        if (message.serverContent?.turnComplete) turnCallsRef.current = 0;
+        if (message.serverContent?.interrupted) {
+          playerRef.current?.clear();
+          setSpeaking(false);
+        }
+        const parts = message.serverContent?.modelTurn?.parts ?? [];
+        for (const part of parts) {
+          const audio = part?.inlineData?.data;
+          if (audio) {
+            playerRef.current?.push(base64ToFloat32(audio));
+            setSpeaking(true);
+          }
+        }
+        if (message.serverContent?.turnComplete) setSpeaking(false);
+      };
+
+      const lost = (raw: string) => {
+        // Raw Google wording goes to the console only, never to the user.
+        console.warn("[voice] Live connection lost", raw);
+        if (!retriedRef.current) {
+          retriedRef.current = true;
+          setError("Coach lost connection, reconnecting...");
+          release("connecting");
+          void start(true); // fresh token is minted by getSession
+          return;
+        }
+        setError("Coach lost connection. Tap to retry.");
+        release("error");
+      };
+      ws.onerror = () => {
+        if (controller.signal.aborted || session !== sessionRef.current) return;
+        lost("websocket error");
+      };
+      ws.onclose = (event) => {
+        if (controller.signal.aborted || session !== sessionRef.current) return;
+        if (wsRef.current !== ws) return;
+        if (event.code !== 1000) {
+          lost(`close ${event.code} ${event.reason}`);
+          return;
+        }
+        release();
+      };
+    } catch (cause) {
             responses = calls.map((c) => ({ id: c.id, name: c.name, response: { ok: false, error: cause instanceof Error ? cause.message : "unavailable" } }));
           }
           if (calls.some((c) => ["update_profile", "create_plan_draft", "confirm_plan", "update_task", "reschedule_tasks"].includes(c.name))) {
