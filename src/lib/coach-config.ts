@@ -8,7 +8,7 @@ export const COACH_CHAT_MODEL: CoachModelConfig = { provider: "lovable-gateway",
 export const COACH_PLAN_MODEL: CoachModelConfig = { provider: "lovable-gateway", model: "google/gemini-3.8-flash" };
 
 /** Model used by the VoiceCoach live session (stage 3). */
-export const COACH_LIVE_MODEL = "gemini-live-2.5-flash";
+export const COACH_LIVE_MODEL = "models/gemini-2.5-flash-native-audio-latest";
 
 export const PROVIDER_ENDPOINTS: Record<CoachModelConfig["provider"], string> = {
   "lovable-gateway": "https://ai.gateway.lovable.dev/v1/chat/completions",

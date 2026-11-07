@@ -1,12 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { COACH_LIVE_MODEL } from "@/lib/coach-config";
+import { z } from "zod";
+import { runVoiceToolCalls } from "@/lib/coach-voice-tools";
 import { buildCoachContext, type CoachContext } from "@/utils/coach-context.functions";
 
 /**
  * Live-audio model. The requested "gemini-2.5-flash-native-audio-preview" alias
  * is not served by bidiGenerateContent; "-latest" is the current live alias.
  */
-export const LIVE_MODEL = "models/gemini-2.5-flash-native-audio-latest";
+export const LIVE_MODEL = COACH_LIVE_MODEL;
 
 /** Best-effort per-user throttle (per server instance). */
 const starts = new Map<string, number[]>();
@@ -149,11 +152,24 @@ export const getLiveSession = createServerFn({ method: "POST" })
       }
     }
 
+    // Ephemeral tokens only: the permanent key never reaches the browser.
+    if (!ephemeral) throw new Error("Couldn’t start a secure coach session. Tap to retry.");
     return {
-      apiKey: ephemeral ?? apiKey,
-      credentialParam: ephemeral ? ("access_token" as const) : ("key" as const),
-      ephemeral: ephemeral !== null,
+      apiKey: ephemeral,
+      credentialParam: "access_token" as const,
+      ephemeral: true,
       model: LIVE_MODEL,
       context: coachContext,
     };
+  });
+
+/** Runs one Gemini Live toolCall batch as the signed-in user and returns the functionResponses. */
+export const runVoiceToolCall = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ calls: z.array(z.object({ id: z.string().max(200).optional(), name: z.string().max(80), args: z.record(z.string(), z.any()).optional() })).max(20) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: premium } = await context.supabase.rpc("has_premium_access", { _user_id: context.userId });
+    if (!premium) throw new Error("Voice Coach is part of AXEN PRO.");
+    const out = await runVoiceToolCalls({ supabase: context.supabase, userId: context.userId }, data.calls);
+    return JSON.parse(JSON.stringify(out)) as { functionResponses: Array<{ id?: string; name: string; response: Record<string, any> }> };
   });

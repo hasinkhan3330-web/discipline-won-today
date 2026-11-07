@@ -2,7 +2,7 @@
 // signed-in user's RLS-scoped client. No tool can complete a task or award coins.
 import { COACH_PLAN_MODEL, PROVIDER_ENDPOINTS, type CoachModelConfig } from "@/lib/coach-config";
 import {
-  enforcePlanRules, isPlanLength, profileConfidence, lowestSlot, localDay, isValidTimezone,
+  enforcePlanRules, isPlanLength, canBuildPlan, profileConfidence, lowestSlot, localDay, isValidTimezone,
   dayIndex, taskName, type Slot, type Slots, type CoachPlan,
 } from "@/lib/coach-plan-rules";
 
