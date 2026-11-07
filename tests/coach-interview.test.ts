@@ -31,3 +31,12 @@ test('defaults are disclosed, never treated as learned answers', () => {
   expect(result.assumptions).toContain('wake time: 07:00');
   expect(result.assumptions).not.toContain('daily time available: 30');
 });
+import { getProfileCompleteness } from '../src/lib/coach-plan-rules';
+test('quick setup fields give exactly 75%, age adds 10, guesses do not count', () => {
+  const one = { value: 'x', confidence: 1 };
+  const quick = { goal: one, wake_time: one, sleep_time: one, daily_time_available: one, distraction_trigger: one, intensity: one, energy_peak: { value: 'Morning', confidence: 0 } };
+  const r = getProfileCompleteness(quick);
+  expect(r.percent).toBe(75);
+  expect(r.missing).toEqual(['age_range', 'energy_peak', 'weakest_habit']);
+  expect(getProfileCompleteness({ ...quick, age_range: { value: '18_24', confidence: 1 } }).percent).toBe(85);
+});

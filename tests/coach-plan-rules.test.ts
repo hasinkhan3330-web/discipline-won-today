@@ -40,6 +40,6 @@ describe("coach plan rules", () => {
   });
   test("confidence reaches 100 only when all required slots are certain", () => {
     expect(profileConfidence({})).toBe(0);
-    expect(profileConfidence({ goal: { value: "x", confidence: 1 } })).toBe(13);
+    expect(profileConfidence({ goal: { value: "x", confidence: 1 } })).toBe(15);
   });
 });

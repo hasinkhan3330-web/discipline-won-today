@@ -68,7 +68,10 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
     if (Object.keys(slots).length) await runCoachTool(ctx, 'update_profile', { slots });
     const result = await runCoachTool(ctx, 'create_plan_draft', { days: requestedLength(latest?.content ?? '') }) as { ok?: boolean; error?: string; assumptions?: string[]; plan?: { title: string } };
     if (!result.ok) throw new Error(result.error ?? 'Could not build your plan.');
-    const reply = `Your ${result.plan?.title ?? 'plan'} draft is ready. ${result.assumptions?.length ? 'Assumptions: ' + result.assumptions.join('; ') + '.' : ''} Accept it when you are ready.`;
+    const { getCoachProfile } = await import('@/lib/coach-tools'); const { getProfileCompleteness, PROFILE_LABELS } = await import('@/lib/coach-plan-rules');
+    const gap = getProfileCompleteness(((await getCoachProfile(ctx)).slots ?? {}) as any).missing[0];
+    const nextQ = gap ? ` To refine it: what is your ${PROFILE_LABELS[gap] ?? gap}?` : '';
+    const reply = `Your ${result.plan?.title ?? 'plan'} draft is ready. ${result.assumptions?.length ? 'Assumptions: ' + result.assumptions.join('; ') + '.' : ''} Accept it when you are ready.${nextQ}`;
     const { error } = await context.supabase.from('coach_messages').insert([{ conversation_id: conversationId, user_id: context.userId, role: 'user', content: latest?.content ?? '' }, { conversation_id: conversationId, user_id: context.userId, role: 'assistant', content: reply }]);
     if (error) throw new Error(error.message);
     return { conversationId, reply, suggestedAction: null };
