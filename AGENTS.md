@@ -28,3 +28,5 @@
 
 - Completion coin rewards reuse the existing ledger and balance through private serialized award logic; stored reward timezone and scoped unique keys prevent daily replay without changing XP/recovery.
 - Coin amounts use the scoped CoinBadge and animate only server-confirmed award identities; no global theme or shared controls are restyled.
+
+- Accountability visuals live only in `src/components/verified/acct/` (CSS module tokens on the screen root); pacts stay rows in `daily_contracts` so Home and Accountability share one source of truth. Why: no leakage to shared styles and no parallel pact system.

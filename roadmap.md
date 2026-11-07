@@ -85,3 +85,8 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Scoped badge and coin display replacements
 - [x] Server local-day limits, Zen lifecycle, Contract and Top 3 awards
 - [x] Automated and authenticated server proof; cleanup and report (`docs/coin-rewards-verification.md`; physical-device/midnight/motion checks remain manual)
+
+## Accountability one-shot rebuild (Tier 1 subset)
+- [x] Scoped dark/light design, Home, week strip, invite (24h, share, revoke) + Go solo, 3-step one-time Pact Creator on existing contracts, proof/review/recovery, daily check-in + cheers, garden, pair streak milestone, weekly report.
+- [x] 14 server/pure tests (tests/accountability-rebuild.test.ts) with three temporary accounts; anon denied on all new functions; test accounts removed.
+- [ ] Not built by request: stakes, Match me, squads, AI coach, Work Together, presence, Supporter, rest days, 12h auto-confirm.
