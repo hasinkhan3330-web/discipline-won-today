@@ -90,3 +90,8 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [x] Scoped dark/light design, Home, week strip, invite (24h, share, revoke) + Go solo, 3-step one-time Pact Creator on existing contracts, proof/review/recovery, daily check-in + cheers, garden, pair streak milestone, weekly report.
 - [x] 14 server/pure tests (tests/accountability-rebuild.test.ts) with three temporary accounts; anon denied on all new functions; test accounts removed.
 - [ ] Not built by request: stakes, Match me, squads, AI coach, Work Together, presence, Supporter, rest days, 12h auto-confirm.
+
+## AI Coach v2 (3 stages, stop after each)
+- [x] Stage 1: coach profile (with timezone), plans (1/7/21), daily idempotent task add, memory; v2 prompt + tools in text Coach; model/provider config constants.
+- [ ] Stage 2: Coach UI — length selector, confidence bar, plan card (waits for user test of stage 1).
+- [ ] Stage 3: VoiceCoach Live tool calling with ephemeral tokens (waits for stage 2).
