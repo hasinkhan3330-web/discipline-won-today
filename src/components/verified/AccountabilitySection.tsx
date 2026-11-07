@@ -403,7 +403,7 @@ export function AccountabilitySection() {
       {menu && (
         <div className={s.menu} role="menu">
           <button role="menuitem" onClick={() => { setMenu(false); setView("report"); }}>Weekly report<ChevronRight size={15} /></button>
-          <button role="menuitem" onClick={toggleTheme}>{theme === "dark" ? "Light theme" : "Dark theme"}{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}</button>
+          <button role="menuitem" onClick={() => { setMenu(false); toggleTheme(); }}>{theme === "dark" ? "Light theme" : "Dark theme"}{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}</button>
           <label>Show my tree to my partner<input type="checkbox" checked={showTree} onChange={e => void saveShowTree(e.target.checked)} /></label>
           {me && <>
             <label>Share my pact progress<input type="checkbox" checked={me.my_sharing} disabled={busy} onChange={e => void setPref({ _share: e.target.checked })} /></label>
