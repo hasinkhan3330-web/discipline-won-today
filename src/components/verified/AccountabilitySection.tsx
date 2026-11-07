@@ -307,178 +307,278 @@ export function AccountabilitySection() {
     if (error) toast.error("Could not update"); else { setMenu(false); toast.success(block ? "Partner blocked" : "Partner removed"); await changed(); }
   });
 
-  if (me === undefined) return <section className="acct" aria-label="Accountability" aria-busy="true"><h2 className="acct-title">Accountability</h2><div className="acct-sub">Loading…</div></section>;
+  const [invitePending, setInvitePending] = useState<string | null>(null);
+  useEffect(() => {
+    if (me !== null) return;
+    void supabase.from("accountability_invites").select("expires_at").is("accepted_at", null).is("revoked_at", null)
+      .gt("expires_at", new Date().toISOString()).order("created_at", { ascending: false }).limit(1)
+      .then(({ data }) => { if (mounted.current) setInvitePending(data?.[0]?.expires_at ?? null); });
+  }, [me, code]);
+
+  const toggleTheme = () => { const t = theme === "dark" ? "light" : "dark"; setTheme(t); try { localStorage.setItem("axen.acct.theme", t); } catch { /* ignore */ } };
+  const saveShowTree = async (v: boolean) => {
+    setShowTree(v);
+    const { data: u } = await supabase.auth.getUser();
+    const { error } = await supabase.from("acct_settings").upsert({ user_id: u.user?.id, show_tree: v, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+    if (error) { setShowTree(!v); toast.error("Could not save"); }
+  };
+  const closeMilestone = async () => {
+    const m = celebrate; setCelebrate(null);
+    if (m) await supabase.from("acct_milestones_seen").insert({ kind: "pair_streak", milestone: m });
+  };
+  const revokeInvite = () => run(async () => {
+    const { error } = await supabase.rpc("acct_revoke_my_invites");
+    if (error) toast.error("Could not revoke"); else { setCode(null); setInvitePending(null); toast.success("Invite revoked"); }
+  });
+  const shareInvite = async () => {
+    if (!code) return;
+    const link = `${window.location.origin}/dashboard?acct_code=${code}`;
+    const text = `Be my AXEN accountability partner. Open You → Accountability and enter code ${code} (valid 24 hours): ${link}`;
+    const nav = navigator as any;
+    if (nav.share) { try { await nav.share({ text }); } catch { /* cancelled */ } }
+    else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+  };
+  const setPaused = (paused: boolean) => run(async () => {
+    if (!contract) return;
+    const { data, error } = await supabase.from("daily_contracts").update({ paused_at: paused ? new Date().toISOString() : null }).eq("id", contract.id).select("id").maybeSingle();
+    if (error || !data) toast.error("This pact can't be paused now."); else { toast.success(paused ? "Pact paused" : "Pact resumed"); await changed(); }
+  });
+  const endPact = () => run(async () => {
+    if (!contract || !window.confirm("End this pact? This can't be undone.")) return;
+    const { data, error } = await supabase.from("daily_contracts").update({ status: "cancelled" }).eq("id", contract.id).select("id").maybeSingle();
+    if (error || !data) toast.error("This pact can't be ended now."); else { toast.success("Pact ended"); await changed(); }
+  });
+
+  const rootStyle = { "--acct-line": "var(--a-border)", "--acct-accent": "var(--a-ring)", "--acct-text": "var(--a-text)", "--acct-muted": "var(--a-muted)" } as React.CSSProperties;
+  const shellProps = { className: s.root, "data-theme": theme, style: rootStyle, "aria-label": "Accountability" } as const;
+
+  if (me === undefined) return <section {...shellProps}><div className={s.head}><h2 className={s.title}>Accountability</h2></div><div aria-busy="true"><div className={s.skel} style={{ height: 44 }} /><div className={s.skel} style={{ height: 130 }} /><div className={s.skel} /><div className={s.skel} /></div></section>;
 
   const name = me ? safeName(me.partner_name, "Partner") : null;
   const minutes = contract ? Math.round(contract.planned_seconds / 60) : 0;
-  const trustChip = trust?.score != null ? { v: String(trust.score), l: "Trust" } : { v: "Building", l: "Trust" };
+  const doneToday = todayList.filter(c => ["verified", "rewarded"].includes(c.status)).length;
+  const totalToday = todayList.length;
+  const trustLabel = trust?.score == null ? "Building" : trust.score >= 80 ? "Reliable" : trust.score >= 50 ? "Steady" : "Growing";
+  const back = () => setView("home");
 
   let primary: React.ReactNode = null;
   let statusLine: React.ReactNode = null;
+  const btn = s.btn, ghost = `${s.btn} ${s.ghost}`;
   switch (state) {
-    case "BEFORE_SESSION": primary = <button className="acct-btn" onClick={() => void start()} disabled={busy}>Start proof session</button>; break;
-    case "STARTING": primary = <button className="acct-btn" disabled aria-busy="true">Starting…</button>; break;
-    case "SESSION_LIVE": primary = <button className="acct-btn" onClick={() => void endSession()} disabled={busy}>{session && now >= session.expectedEndAt ? "Finish session" : "End session"}</button>; break;
-    case "ENDING": primary = <button className="acct-btn" disabled aria-busy="true">Saving…</button>; break;
+    case "BEFORE_SESSION": primary = <button className={btn} onClick={() => void start()} disabled={busy || !!contract?.paused_at}>Start session</button>; break;
+    case "STARTING": primary = <button className={btn} disabled aria-busy="true">Starting…</button>; break;
+    case "SESSION_LIVE": primary = <button className={btn} onClick={() => void endSession()} disabled={busy}>{session && now >= session.expectedEndAt ? "Finish session" : "End session"}</button>; break;
+    case "ENDING": primary = <button className={btn} disabled aria-busy="true">Saving…</button>; break;
     case "PROOF_REQUIRED":
-      statusLine = <><div className="acct-status">{PROOF_LABEL.recorded.label}</div><div className="acct-sub">{PROOF_LABEL.recorded.help}</div></>;
-      primary = <button className="acct-btn" onClick={() => setProofOpen(true)} disabled={busy}>Submit proof</button>; break;
-    case "PARTNER_REVIEW": primary = <button className="acct-btn" onClick={() => setOpen("review")}>Review proof</button>; break;
-    case "AWAITING_REVIEW": statusLine = <><div className="acct-status">{PROOF_LABEL.pending.label}</div><div className="acct-sub">{PROOF_LABEL.pending.help}</div></>; break;
+      statusLine = <div className={s.muted}>{PROOF_LABEL.recorded.label}. {PROOF_LABEL.recorded.help}</div>;
+      primary = <button className={btn} onClick={() => setProofOpen(true)} disabled={busy}>Submit proof</button>; break;
+    case "PARTNER_REVIEW": primary = <button className={btn} onClick={() => setView("review")}>Review proof</button>; break;
+    case "AWAITING_REVIEW": statusLine = <div className={s.muted}>{PROOF_LABEL.pending.label}. {PROOF_LABEL.pending.help} A slow review never counts against you.</div>; break;
     case "MORE_DETAIL":
-      statusLine = <><div className="acct-status">{PROOF_LABEL.asked.label}</div><div className="acct-sub">{myProof?.review_note ? `“${myProof.review_note}”` : PROOF_LABEL.asked.help}</div>
-        <label className="acct-sub" style={{ display: "block", marginTop: 10 }}>Add a short note<textarea className="acct-input" rows={2} maxLength={280} value={note} onChange={e => setNote(e.target.value)} /></label></>;
-      primary = <button className="acct-btn" onClick={() => void ownerAction("resubmit")} disabled={busy || note.trim().length < 3}>Send more detail</button>; break;
+      statusLine = <><div className={s.muted}>{PROOF_LABEL.asked.label}{myProof?.review_note ? `: “${myProof.review_note}”` : ""}</div>
+        <label className={s.field}><span className={s.label}>Add a short note</span><textarea className={s.input} rows={2} maxLength={280} value={note} onChange={e => setNote(e.target.value)} /></label></>;
+      primary = <button className={btn} onClick={() => void ownerAction("resubmit")} disabled={busy || note.trim().length < 3}>Send more detail</button>; break;
     case "DISPUTED":
-      statusLine = <><div className="acct-status">{PROOF_LABEL.disputed.label}</div><div className="acct-sub">{PROOF_LABEL.disputed.help}</div></>;
-      primary = <button className="acct-btn ghost" onClick={() => void ownerAction("resolve")} disabled={busy}>Mark as self-reported</button>; break;
-    case "VERIFIED": statusLine = <><div className="acct-status">{PROOF_LABEL.confirmed.label}</div><div className="acct-sub">Confirmed {myProof?.reviewed_at ? fmtWhen(myProof.reviewed_at) : ""}. Nice work today.</div></>; break;
-    case "SELF_REPORTED": statusLine = <><div className="acct-status">{PROOF_LABEL.self_reported.label}</div><div className="acct-sub">{PROOF_LABEL.self_reported.help}</div></>; break;
-    case "RECOVERED": statusLine = <><div className="acct-status">{PROOF_LABEL.recovered.label}</div><div className="acct-sub">{PROOF_LABEL.recovered.help}{contract?.status === "rewarded" && contract.is_recovery ? ` +${contract.xp_awarded} XP · +${contract.coins_awarded} coins` : ""}</div></>; break;
+      statusLine = <div className={s.muted}>{PROOF_LABEL.disputed.label}. {PROOF_LABEL.disputed.help}</div>;
+      primary = <button className={ghost} onClick={() => void ownerAction("resolve")} disabled={busy}>Mark as self-reported</button>; break;
+    case "VERIFIED": statusLine = <div className={s.green}>{PROOF_LABEL.confirmed.label}{myProof?.reviewed_at ? ` · ${fmtWhen(myProof.reviewed_at)}` : ""}</div>; break;
+    case "SELF_REPORTED": statusLine = <div className={s.muted}>{PROOF_LABEL.self_reported.label}. {PROOF_LABEL.self_reported.help}</div>; break;
+    case "RECOVERED": statusLine = <div className={s.green}>Recovered{contract?.status === "rewarded" && contract.is_recovery ? ` · +${contract.xp_awarded} XP · +${contract.coins_awarded} coins` : ""}</div>; break;
     case "RECOVERY_AVAILABLE":
-      statusLine = <div className="acct-sub">{hasRecovery ? "You already used the comeback for this pact. Tomorrow is a fresh start." : "Missed the window? Make a comeback with a short focused session."}</div>;
-      if (!hasRecovery) primary = <button className="acct-btn" onClick={() => void comeback()} disabled={busy}>Start comeback</button>; break;
-    case "NO_PACT": statusLine = <div className="acct-sub">No pact today. Set one from Home whenever you're ready.</div>; break;
-    default: statusLine = <div className="acct-sub">Today's pact is closed. See you tomorrow.</div>;
+      statusLine = <div className={s.muted}>Progress isn't perfection. Let's make your next step easier.</div>;
+      primary = <button className={btn} onClick={() => setView("recovery")}>See recovery options</button>; break;
+    case "NO_PACT": break;
+    default: statusLine = <div className={s.muted}>Today's pact is closed. See you tomorrow.</div>;
   }
 
-  const rowMeta = {
-    checkins: details?.checked_in_today ? "Checked in" : me ? "Open" : "No partner",
-    proofs: `${proofs.filter(p => p.partner_review_status === "confirmed").length} confirmed`,
-    recovery: contract?.status === "missed" && !hasRecovery ? "Available" : "Not needed",
-  };
-
-  return (
-    <section className="acct" aria-label="Accountability">
-      <div className="acct-head" style={{ position: "relative" }}>
-        <div>
-          <div className="acct-label">AXEN</div>
-          <h2 className="acct-title">Accountability</h2>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-            <span className="acct-pill" data-on={!!contract && !["missed", "cancelled"].includes(contract.status)}>{contract ? "Pact active" : "No active pact"}</span>
-            {name && <span className="acct-pill">With {name}</span>}
-          </div>
-        </div>
-        {me && <button className="acct-btn ghost" style={{ width: 48, minHeight: 48, marginTop: 0, padding: 0 }} aria-label="More options" aria-expanded={menu} onClick={() => setMenu(v => !v)}><MoreHorizontal size={20} /></button>}
-        {menu && me && (
-          <div className="acct-menu" role="menu">
+  const header = (
+    <div className={s.head}>
+      <h2 className={s.title}>Accountability</h2>
+      <div className={s.chips}>
+        <span className={s.chip} aria-label={`${streak} day streak`}><Flame size={13} />{streak}</span>
+        <span className={s.chip}>{coins} coins</span>
+        <button className={s.iconBtn} aria-label="More options" aria-expanded={menu} onClick={() => setMenu(v => !v)}><MoreHorizontal size={16} /></button>
+      </div>
+      {menu && (
+        <div className={s.menu} role="menu">
+          <button role="menuitem" onClick={toggleTheme}>{theme === "dark" ? "Light theme" : "Dark theme"}{theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}</button>
+          <label>Show my tree to my partner<input type="checkbox" checked={showTree} onChange={e => void saveShowTree(e.target.checked)} /></label>
+          {me && <>
             <label>Share my pact progress<input type="checkbox" checked={me.my_sharing} disabled={busy} onChange={e => void setPref({ _share: e.target.checked })} /></label>
             <label>Mute nudges<input type="checkbox" checked={me.i_muted} disabled={busy} onChange={e => void setPref({ _mute: e.target.checked })} /></label>
             <button role="menuitem" onClick={() => void endPartner(false)} disabled={busy}>Remove partner</button>
-            <button role="menuitem" style={{ color: "#FF9B9B" }} onClick={() => void endPartner(true)} disabled={busy}>Block & report</button>
+            <button role="menuitem" className={s.danger} onClick={() => void endPartner(true)} disabled={busy}>Block & report</button>
+          </>}
+        </div>
+      )}
+    </div>
+  );
+
+  const proofSheet = proofOpen && contract && <ContractProofSheet contract={contract} onClose={() => setProofOpen(false)} onDone={() => { setProofOpen(false); void changed(); }} />;
+
+  if (view === "creator") return <section {...shellProps}><PactCreator hasPartner={!!me} onBack={back} onSaved={() => { back(); void load(); }} /></section>;
+  if (view === "checkin") return <section {...shellProps}><CheckinScreen hasPartner={!!me} onBack={back} onDone={() => { back(); void load(); }} /></section>;
+  if (view === "garden") return <section {...shellProps}><GardenScreen garden={garden} partnerStage={partnerStage} showTree={showTree} onToggleShow={v => void saveShowTree(v)} onBack={back} /></section>;
+  if (view === "report") return <section {...shellProps}><ReportScreen trust={trust} onBack={back} /></section>;
+
+  if (view === "review") {
+    const pend = reviews.filter(r => r.review_status === "pending");
+    const hist = reviews.filter(r => r.review_status !== "pending");
+    return <section {...shellProps}>
+      <SubHeader title="Review center" onBack={back} right={pend.length ? <span className={`${s.chip} ${s.chipWarn}`}>{pend.length} pending</span> : undefined} />
+      {!me && <div className={s.card} role="alert">Connect a partner to review proof.</div>}
+      {pend.map(r => (
+        <div key={r.proof_id} className={s.card}>
+          <div className={s.partner}><div className={s.avatar}>{safeName(r.owner_name, "P").slice(0, 1)}</div>
+            <div style={{ minWidth: 0 }}><div style={{ fontWeight: 500 }}>{safeName(r.owner_name, "Partner")}</div><div className={s.muted}>{r.title} · {fmtWhen(r.submitted_at)}</div></div></div>
+          <div className={s.evidence}>Session {r.elapsed_minutes}/{r.planned_minutes} min · {r.proof_type.replace("_", " ")}{r.evidence ? <><br />“{r.evidence}”</> : null}</div>
+          <div className={s.muted} style={{ marginTop: 6 }}>Hint only — you decide.</div>
+          <label className={s.field}><span className={s.label}>Note or clarification question</span><input className={s.input} maxLength={280} value={note} onChange={e => setNote(e.target.value)} /></label>
+          <div className={s.stack}>
+            <button className={btn} onClick={() => void review(r.proof_id, "verify")} disabled={busy}>Approve</button>
+            <div className={s.row2} style={{ marginTop: 0 }}>
+              <button className={ghost} onClick={() => void review(r.proof_id, "ask")} disabled={busy || r.asked_once || note.trim().length < 3}>{r.asked_once ? "Already asked" : "Ask clarification"}</button>
+              <button className={ghost} onClick={() => void review(r.proof_id, "cannot_verify")} disabled={busy}>Can't verify</button>
+            </div>
           </div>
-        )}
-      </div>
-      {err && <div role="alert" className="acct-sub">{err}</div>}
-
-      <div className="acct-hero">
-        <div className="acct-label">{contract?.is_recovery ? "Today's comeback" : "Today's pact"}</div>
-        {contract ? <>
-          <div className="acct-pact">{contract.title} · {minutes} min</div>
-          <div className="acct-sub">{fmtTime(contract.scheduled_at)}{name ? ` · with ${name}` : " · private"}</div>
-          {state === "BEFORE_SESSION" && <div className="acct-sub">Success means a {minutes}-minute focused session.</div>}
-        </> : <div className="acct-pact" style={{ fontSize: 18 }}>Nothing planned yet</div>}
-         {session && state === "SESSION_LIVE" && <Ring session={contract?.is_recovery && contract.comeback_started_at && contract.comeback_ends_at ? { ...session, startedAt: new Date(contract.comeback_started_at).getTime(), expectedEndAt: new Date(contract.comeback_ends_at).getTime() } : session} now={now} />}
-        {statusLine}
-        {primary}
-      </div>
-
-      <div className="acct-chips">
-        <div className="acct-chip"><strong className="acct-num">{streak > 0 ? streak : "—"}</strong><span>{streak > 0 ? "Day streak" : "Streak building"}</span></div>
-        <div className="acct-chip"><strong className="acct-num">{partnerPending}</strong><span>{partnerPending === 1 ? "Pending review" : "Pending reviews"}</span></div>
-        <button className="acct-chip" style={{ color: "inherit", cursor: "pointer", font: "inherit" }} onClick={() => setWhyOpen(v => !v)} aria-expanded={whyOpen} aria-label={`Trust ${trustChip.v}. Why?`}>
-          <strong className="acct-num">{trustChip.v}</strong><span>{trustChip.l} · why?</span>
-        </button>
-      </div>
-      {whyOpen && trust && (
-        <div className="acct-hero" style={{ marginTop: 10 }} aria-live="polite">
-          <div className="acct-label">How trust works</div>
-          {trust.score == null
-            ? <div className="acct-sub">Still building trust — a number appears after {trust.threshold} partner-reviewed sessions ({trust.reviewed} so far).</div>
-            : <div className="acct-sub">Based on how many of your reviewed sessions your partner confirmed, with a small bonus for starting on time and a small dip for sessions ended early.</div>}
-          <div className="acct-sub">Last 60 days: {trust.confirmed} confirmed · {trust.recoveries} {trust.recoveries === 1 ? "comeback" : "comebacks"} · {trust.disputed} disputed · {trust.on_time} on time. Older history stops counting, so it's always possible to rebuild.</div>
-        </div>
-      )}
-
-      {open === "review" && (
-        <div className="acct-panel" aria-label="Partner review">
-          {reviews.filter(r => r.review_status === "pending").map(r => (
-            <div key={r.proof_id} className="acct-item">
-              <div style={{ fontWeight: 700 }}>{safeName(r.owner_name, "Partner")} · {r.title}</div>
-              <div className="acct-sub">{PROOF_LABEL.pending.label} {fmtWhen(r.submitted_at)} · session {r.elapsed_minutes}/{r.planned_minutes} min · {r.proof_type.replace("_", " ")}</div>
-              {r.evidence && <div className="acct-sub" style={{ color: "var(--acct-text)" }}>“{r.evidence}”</div>}
-              <label className="acct-sub" style={{ display: "block", marginTop: 8 }}>Optional note<input className="acct-input" maxLength={280} value={note} onChange={e => setNote(e.target.value)} /></label>
-              <button className="acct-btn" onClick={() => void review(r.proof_id, "verify")} disabled={busy}>Verify</button>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button className="acct-btn ghost" onClick={() => void review(r.proof_id, "ask")} disabled={busy || r.asked_once}>{r.asked_once ? "Already asked" : "Ask once"}</button>
-                <button className="acct-btn ghost" onClick={() => void review(r.proof_id, "cannot_verify")} disabled={busy}>Can't verify</button>
-              </div>
-            </div>
-          ))}
-          {partnerPending === 0 && <div className="acct-sub">Nothing to review right now.</div>}
-        </div>
-      )}
-
-      {!me && (
-        <div className="acct-hero">
-          <div className="acct-label">Add a partner</div>
-          <div className="acct-sub">One partner, private by default. They review only proof you submit — never your notes, coins or full history.</div>
-          {code ? <>
-            <div className="acct-sub">Share this one-time code (valid 24 hours):</div>
-            <div style={{ fontSize: 15, marginTop: 6, wordBreak: "break-all" }} aria-label="Invite code">{code}</div>
-            <button className="acct-btn ghost" onClick={() => { void navigator.clipboard?.writeText(code).then(() => toast.success("Copied")); }}>Copy code</button>
-          </> : <button className="acct-btn" onClick={() => void invite()} disabled={busy}>Create invite</button>}
-          <label className="acct-sub" style={{ display: "block", marginTop: 14 }}>Enter partner's code<input className="acct-input" aria-label="Partner code" value={entry} onChange={e => setEntry(e.target.value)} maxLength={40} /></label>
-          <button className="acct-btn ghost" onClick={() => void join()} disabled={busy || entry.trim().length < 8}>Join</button>
-        </div>
-      )}
-
-      {([["checkins", "Check-ins"], ["proofs", "Proof history"], ["recovery", "Recovery"]] as const).map(([k, label]) => (
-        <div key={k}>
-          <button className="acct-row" aria-expanded={open === k} onClick={() => setOpen(o => o === k ? null : k)}>
-            <span>{label}</span><small>{rowMeta[k]}</small>
-          </button>
-          {open === k && k === "checkins" && (
-            <div className="acct-panel">
-              {!me ? <div className="acct-sub">Connect a partner to check in together.</div> : <>
-                <button className="acct-btn ghost" onClick={() => void send("checkin", null)} disabled={busy || !details?.can_check_in || details.checked_in_today}>{details?.checked_in_today ? "Checked in today" : "Aaj ka task kiya"}</button>
-                <div className="acct-item">
-                  <div className="acct-label">{name}'s week</div>
-                  <div className="acct-sub">{details?.partner_streak ?? 0}-day streak · {details?.partner_weekly_coins ?? 0} coins · {details?.partner_weekly_tasks ?? 0} tasks</div>
-                </div>
-                <div className="acct-item">
-                  <div className="acct-label">Our contract</div>
-                  <textarea className="acct-input" aria-label="My commitment" rows={2} maxLength={100} value={commitment} onChange={e => setCommitment(e.target.value)} />
-                  <div className="acct-sub" style={{ textAlign: "right" }}>{commitment.length}/100</div>
-                  <button className="acct-btn ghost" onClick={() => void send("commitment", commitment)} disabled={busy || commitment === (details?.my_commitment ?? "")}>Save commitment</button>
-                  <div className="acct-sub">{name}: {details?.partner_commitment || "No commitment yet."}</div>
-                </div>
-                <div className="acct-item">
-                  <div className="acct-label">Send a nudge</div>
-                  {NUDGES.map((m, i) => <button key={m} className="acct-btn ghost" aria-label={m} onClick={() => void send("nudge", m)} disabled={busy}>{NUDGE_TEXT[i]}</button>)}
-                  <button className="acct-btn ghost danger" onClick={() => void send("emergency", null)} disabled={busy}>Emergency nudge</button>
-                </div>
-              </>}
-            </div>
-          )}
-          {open === k && k === "proofs" && (
-            <div className="acct-panel">
-              {proofs.length === 0 && <div className="acct-sub">No proof yet. Your first session will show up here.</div>}
-              {proofs.map(p => {
-                const l = PROOF_LABEL[p.partner_review_status ?? "self_reported"] ?? PROOF_LABEL.self_reported;
-                return <div key={p.id} className="acct-item"><div style={{ fontWeight: 600 }}>{l.label}</div><div className="acct-sub">{fmtWhen(p.created_at)} · {p.proof_type.replace("_", " ")}{p.reviewed_at ? ` · reviewed ${fmtWhen(p.reviewed_at)}` : ""}</div></div>;
-              })}
-            </div>
-          )}
-          {open === k && k === "recovery" && (
-            <div className="acct-panel"><div className="acct-sub">
-              {contract?.status === "missed" && !hasRecovery ? "Missed the window? Start again with a 15 minutes focused session — use the button above." : "Comebacks are 15 minutes and appear here when a pact is missed. They're labelled Recovered, never perfect, and there's no penalty."}
-            </div></div>
-          )}
         </div>
       ))}
+      {me && pend.length === 0 && <div className={s.card}><div className={s.muted}>Nothing to review right now.</div></div>}
+      {hist.length > 0 && <div className={`${s.card} ${s.list}`}>{hist.map(r => <div key={r.proof_id} className={s.listRow} style={{ cursor: "default" }}><span>{r.title}</span><small>{PROOF_LABEL[r.review_status]?.label ?? r.review_status}</small></div>)}</div>}
+    </section>;
+  }
 
-      {proofOpen && contract && <ContractProofSheet contract={contract} onClose={() => setProofOpen(false)} onDone={() => { setProofOpen(false); void changed(); }} />}
+  if (view === "proofs") return <section {...shellProps}>
+    <SubHeader title="Proof history" onBack={back} />
+    <div className={`${s.card} ${s.list}`}>
+      {proofs.length === 0 && <div className={s.muted} style={{ padding: "13px 0" }}>No proof yet. Your first session will show up here.</div>}
+      {proofs.map(p => { const l = PROOF_LABEL[p.partner_review_status ?? "self_reported"] ?? PROOF_LABEL.self_reported;
+        return <div key={p.id} className={s.listRow} style={{ cursor: "default" }}><span>{l.label}<div className={s.muted}>{fmtWhen(p.created_at)} · {p.proof_type.replace("_", " ")}</div></span><small>{p.reviewed_at ? "Reviewed" : ""}</small></div>; })}
+    </div>
+    <div className={s.muted}>Your partner sees only proof you submit.</div>
+  </section>;
+
+  if (view === "recovery") return <section {...shellProps}>
+    <SubHeader title="Recovery" onBack={back} />
+    <div className={s.card}><div className={s.big}>Progress isn't perfection. Let's make your next step easier.</div><div className={s.muted}>Recovered pacts are labelled Recovered and counted separately. Your achievements are safe.</div></div>
+    <div className={`${s.card} ${s.list}`}>
+      {contract?.status === "missed" && !hasRecovery
+        ? <button className={s.listRow} onClick={() => void comeback()} disabled={busy}><span>15-minute Comeback</span><small>Start <ChevronRight size={14} /></small></button>
+        : <div className={s.listRow} style={{ cursor: "default" }}><span>15-minute Comeback</span><small>{hasRecovery ? "Used for this pact" : "Not needed"}</small></div>}
+      <button className={s.listRow} onClick={() => setView("creator")}><span>Reschedule</span><small>New pact <ChevronRight size={14} /></small></button>
+      {contract && ["draft", "scheduled"].includes(contract.status) && <button className={s.listRow} onClick={() => void setPaused(!contract.paused_at)} disabled={busy}><span>{contract.paused_at ? "Resume the pact" : "Pause the pact"}</span><small><ChevronRight size={14} /></small></button>}
+    </div>
+  </section>;
+
+  if (view === "partner") return <section {...shellProps}>
+    <SubHeader title="Check-ins" onBack={back} />
+    <button className={btn} onClick={() => setView("checkin")}>Daily check-in</button>
+    {me && <div className={s.card} style={{ marginTop: 10 }}>
+      <button className={ghost} onClick={() => void send("checkin", null)} disabled={busy || !details?.can_check_in || details.checked_in_today}>{details?.checked_in_today ? "Told partner today" : "Aaj ka task kiya"}</button>
+      <div className={s.item} style={{ marginTop: 12 }}><span className={s.label}>{name}'s week</span><div>{details?.partner_streak ?? 0}-day streak · {details?.partner_weekly_tasks ?? 0} tasks</div></div>
+      <div className={s.item}><span className={s.label}>Our contract</span>
+        <textarea className={s.input} aria-label="My commitment" rows={2} maxLength={100} value={commitment} onChange={e => setCommitment(e.target.value)} />
+        <div className={s.muted} style={{ textAlign: "right" }}>{commitment.length}/100</div>
+        <button className={ghost} onClick={() => void send("commitment", commitment)} disabled={busy || commitment === (details?.my_commitment ?? "")}>Save commitment</button>
+        <div className={s.muted} style={{ marginTop: 6 }}>{name}: {details?.partner_commitment || "No commitment yet."}</div></div>
+      <div className={s.item}><span className={s.label}>Send a nudge</span><div className={s.stack} style={{ marginTop: 0 }}>
+        {NUDGES.map((m, i) => <button key={m} className={ghost} aria-label={m} onClick={() => void send("nudge", m)} disabled={busy}>{NUDGE_TEXT[i]}</button>)}
+        <button className={`${ghost} ${s.danger}`} onClick={() => void send("emergency", null)} disabled={busy}>Emergency nudge</button></div></div>
+    </div>}
+  </section>;
+
+  return (
+    <section {...shellProps}>
+      {header}
+      {err && <div role="alert" className={s.card}>{err}</div>}
+      <WeekStrip days={weekDays(new Date(), weekMap)} />
+
+      <div className={s.card}>
+        {contract ? <>
+          <div className={s.todayCard}>
+            <ARing size={92} stroke={9} value={totalToday ? doneToday / totalToday : 0} label={`${doneToday} of ${totalToday} pacts done`}><span style={{ fontSize: 22, fontWeight: 500 }}>{doneToday}/{Math.max(totalToday, 1)}</span></ARing>
+            <div className={s.todayCopy}>
+              <div className={s.muted}>{contract.is_recovery ? "Today's comeback" : "Today's pacts"}</div>
+              <div className={s.big}>{contract.title}</div>
+              <div className={s.chips} style={{ justifyContent: "flex-start" }}>
+                <span className={s.chip}>{minutes} min · {fmtTime(contract.scheduled_at)}</span>
+                {contract.paused_at && <span className={`${s.chip} ${s.chipWarn}`}>Paused</span>}
+                {contract.is_recovery && contract.status === "rewarded" && <span className={`${s.chip} ${s.chipOk}`}>Recovered</span>}
+              </div>
+            </div>
+          </div>
+          {session && state === "SESSION_LIVE" && <Ring session={contract.is_recovery && contract.comeback_started_at && contract.comeback_ends_at ? { ...session, startedAt: new Date(contract.comeback_started_at).getTime(), expectedEndAt: new Date(contract.comeback_ends_at).getTime() } : session} now={now} />}
+          {contract.minimum_version && state === "BEFORE_SESSION" && <div className={s.muted} style={{ marginTop: 8 }}>Minimum version: {contract.minimum_version}</div>}
+          <div style={{ marginTop: 8 }}>{statusLine}</div>
+          <div className={s.row2}>{primary ?? <button className={btn} onClick={() => setView("checkin")}>Check in</button>}{primary ? <button className={ghost} onClick={() => setView("checkin")}>Check in</button> : <button className={ghost} onClick={() => setView("report")}>Weekly report</button>}</div>
+          {["draft", "scheduled"].includes(contract.status) && !contract.is_recovery && <div className={s.row2}><button className={ghost} onClick={() => void setPaused(!contract.paused_at)} disabled={busy}>{contract.paused_at ? "Resume" : "Pause"}</button><button className={ghost} onClick={() => void endPact()} disabled={busy}>End pact</button></div>}
+        </> : <>
+          <div className={s.big}>Nothing planned yet</div>
+          <div className={s.muted}>Pacts you create here also appear on Home.</div>
+          <div className={s.stack}><button className={btn} onClick={() => setView("creator")}>Create your first pact</button></div>
+        </>}
+      </div>
+
+      <div className={s.row3}>
+        <div className={s.mini}><ARing size={44} stroke={10} value={me ? Math.min(1, (pair?.streak ?? 0) / 7) : 0} /><span className={s.miniNum}>{me ? pair?.streak ?? 0 : "—"}</span><span className={s.muted}>Pair streak</span></div>
+        <button className={s.mini} onClick={() => setView("review")}><ARing size={44} stroke={10} value={partnerPending ? 1 : 0} /><span className={s.miniNum}>{partnerPending}</span><span className={s.muted}>Pending reviews</span></button>
+        <button className={s.mini} onClick={() => setWhyOpen(v => !v)} aria-expanded={whyOpen} aria-label={`Trust ${trustLabel}. Why?`}><ARing size={44} stroke={10} value={(trust?.score ?? 0) / 100} /><span className={s.miniNum}>{trust?.score ?? "—"}</span><span className={s.muted}>{trustLabel}</span></button>
+      </div>
+      {whyOpen && <div className={s.card} aria-live="polite"><span className={s.label}>Trust — why?</span><TrustWhy trust={trust} /></div>}
+
+      <button className={s.card} style={{ width: "100%", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer" }} onClick={() => setView("garden")}>
+        <div className={s.garden}>
+          <Tree stage={garden?.stage ?? 1} width={64} height={72} />
+          <div style={{ minWidth: 0 }}>
+            <div className={s.muted}>Focus garden</div>
+            <div className={s.big}>{garden?.stage_name ?? "Seed"}</div>
+            <div className={s.muted}>{garden ? (garden.resting ? "Your tree is resting. Finish one pact to help it grow." : garden.due === 0 && garden.score === 0 ? "Finish one pact to help it grow." : `Score ${garden.score}. ${garden.points_to_next ? `${garden.points_to_next} points to next stage.` : "Top stage reached."}`) : "Loading…"}</div>
+          </div>
+        </div>
+        {partnerStage && <div className={s.gardenSquad}><Tree stage={partnerStage.stage} width={34} /><span className={s.muted}>{name}'s tree · {partnerStage.stage_name}</span></div>}
+      </button>
+
+      {me ? (
+        <button className={s.card} style={{ width: "100%", textAlign: "left", color: "inherit", font: "inherit", cursor: "pointer" }} onClick={() => setView("partner")}>
+          <div className={s.partner}>
+            <div className={s.avatar}>{me.partner_avatar ? <img src={me.partner_avatar} alt="" /> : (name ?? "P").slice(0, 1)}</div>
+            <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontSize: 15, fontWeight: 500 }}>{name}</div>
+              <div className={s.muted}>{partnerCheck?.checked_in ? (partnerCheck.completed ? "Checked in · done today" : "Checked in today") : "Not checked in yet"}</div></div>
+            <span className={`${s.chip} ${myProof?.partner_review_status === "pending" ? s.chipWarn : s.chipOk}`}>{myProof?.partner_review_status === "pending" ? "Awaiting review" : "Connected"}</span>
+          </div>
+        </button>
+      ) : (
+        <div className={s.card}>
+          <div className={s.big}>Pick your partner</div>
+          <div className={s.muted}>Private by default. A partner reviews only proof you submit — never notes, coins or full history.</div>
+          <div className={`${s.list}`} style={{ padding: 0, marginTop: 6 }}>
+            <div className={`${s.listRow} ${s.selected}`} style={{ border: 0, cursor: "default" }}><span>Invite a friend</span><small>{code || invitePending ? "Invitation pending" : "No partner"}</small></div>
+          </div>
+          {code ? <>
+            <div className={s.evidence} aria-label="Invite code" style={{ wordBreak: "break-all", fontSize: 14 }}>{code}</div>
+            <div className={s.muted} style={{ marginTop: 6 }}>One-time code, valid 24 hours.</div>
+            <div className={s.row2}><button className={ghost} onClick={() => { void navigator.clipboard?.writeText(code).then(() => toast.success("Copied")); }}>Copy</button><button className={btn} onClick={() => void shareInvite()}>Share</button></div>
+            <button className={`${ghost} ${s.danger}`} style={{ marginTop: 8 }} onClick={() => void revokeInvite()} disabled={busy}>Revoke invite</button>
+          </> : invitePending ? <>
+            <div className={s.muted} style={{ marginTop: 6 }}>Invitation pending · expires {fmtWhen(invitePending)}. Codes are shown once; revoke to make a new one.</div>
+            <button className={`${ghost} ${s.danger}`} style={{ marginTop: 8 }} onClick={() => void revokeInvite()} disabled={busy}>Revoke invite</button>
+          </> : <div className={s.stack}><button className={btn} onClick={() => void invite()} disabled={busy}>Create invite</button></div>}
+          <label className={s.field}><span className={s.label}>Enter partner's code</span><input className={s.input} aria-label="Partner code" value={entry} onChange={e => setEntry(e.target.value)} maxLength={40} /></label>
+          <div className={s.stack}><button className={ghost} onClick={() => void join()} disabled={busy || entry.trim().length < 8}>Join</button></div>
+          <div className={s.listRow} style={{ borderBottom: 0, marginTop: 6 }}><span>Go solo</span><button className={`${s.seg}`} onClick={() => setView("creator")}>Solo pact</button></div>
+        </div>
+      )}
+
+      <div className={`${s.card} ${s.list}`}>
+        <button className={s.listRow} onClick={() => setView("partner")}><span>Check-ins</span><small>{details?.checked_in_today ? "Checked in" : me ? "Open" : "No partner"} <ChevronRight size={14} /></small></button>
+        <button className={s.listRow} onClick={() => setView("proofs")}><span>Proof history</span><small>{proofs.filter(p => p.partner_review_status === "confirmed").length} confirmed <ChevronRight size={14} /></small></button>
+        <button className={s.listRow} onClick={() => setView("recovery")}><span>Recovery</span><small>{contract?.status === "missed" && !hasRecovery ? "Available" : "Not needed"} <ChevronRight size={14} /></small></button>
+        <button className={s.listRow} onClick={() => setView("report")}><span>Weekly report</span><small><ChevronRight size={14} /></small></button>
+      </div>
+
+      <button className={s.fab} onClick={() => setView("creator")}><Plus size={16} /> New pact</button>
+      {proofSheet}
+      {celebrate && <MilestoneCelebration milestone={celebrate} onClose={() => void closeMilestone()} />}
     </section>
   );
 }
