@@ -30,3 +30,6 @@
 - Coin amounts use the scoped CoinBadge and animate only server-confirmed award identities; no global theme or shared controls are restyled.
 
 - Accountability visuals live only in `src/components/verified/acct/` (CSS module tokens on the screen root); pacts stay rows in `daily_contracts` so Home and Accountability share one source of truth. Why: no leakage to shared styles and no parallel pact system.
+
+- Text and voice Coach share one 8-tool set (`COACH_TOOL_DEFS` / `runCoachTool`); voice adapts it in `coach-voice-tools.ts` and runs tool calls server-side. Why: one server-authoritative action path, no mark-done or coin tools.
+- Voice sessions hand the browser only ephemeral Gemini tokens, never the permanent key. Why: keys must not reach the client.
