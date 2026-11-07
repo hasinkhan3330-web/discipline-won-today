@@ -15,7 +15,7 @@ export function profileConfidence(slots: Slots): number {
   return Math.round((total / REQUIRED_SLOTS.length) * 100);
 }
 
-/** Below this profile confidence the Coach keeps interviewing instead of building a plan. */
+/** Confidence gate applies only to the Build my plan button. */
 export const PLAN_READY_CONFIDENCE = 70;
 export function canBuildPlan(slots: Slots): boolean { return profileConfidence(slots) >= PLAN_READY_CONFIDENCE; }
 

@@ -3,7 +3,7 @@ import { COACH_SYSTEM_V2, COACH_TOOL_DEFS, COACH_TOOL_NAMES, runCoachTool } from
 
 export const MAX_VOICE_TOOL_CALLS_PER_TURN = 6;
 
-const SLOT_KEYS = ["goal", "daily_time_available", "daily_schedule", "energy_peak", "distraction_trigger", "wake_time", "coach_style", "age_range", "other"];
+const SLOT_KEYS = ["goal", "daily_time_available", "daily_schedule", "energy_peak", "distraction_trigger", "wake_time", "sleep_time", "coach_style", "age_range", "intensity", "other"];
 
 /** JSON-schema → Gemini OpenAPI subset (uppercase types, no additionalProperties, no untyped values). */
 function toGemini(schema: any): any {
@@ -33,7 +33,7 @@ export const VOICE_SYSTEM_V2 = `${COACH_SYSTEM_V2}
 
 VOICE RULES
 You are speaking, not writing: short natural sentences, no markdown or lists, never read tool names or field names aloud. Speak the user's language (Hindi/Hinglish welcome).
-Interview one question at a time and save answers with update_profile. If create_plan_draft returns needs_interview, keep interviewing about next_slot.
+Interview one question at a time and save ALL revealed answers with update_profile. Stop immediately on an explicit plan request or after 6 questions (3 after quick setup); call create_plan_draft, even below 70%, and explain assumptions. Never repeat known quick-setup questions.
 Before calling create_plan_draft, first say one short line such as "Give me a minute, I'm building your plan."
 Call confirm_plan only after the user clearly says yes to the draft out loud. If unsure, ask again.
 If a tool fails, say so in one short sentence and carry on. Never claim a task is done or coins were given; you cannot do either.

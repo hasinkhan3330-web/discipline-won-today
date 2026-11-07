@@ -18,7 +18,7 @@ export function CoachPlanPanel({ refreshKey, onAskChange, onSend }: { refreshKey
   const [open, setOpen] = useState(false);
   const [full, setFull] = useState(false);
 
-  const refresh = useCallback(() => load({ data: { timezone: tz() } }).then((r) => setState(r as State)).catch(() => {}), [load]);
+  const refresh = useCallback(() => load({ data: { timezone: tz() } }).then((r) => { setState(r as State); if (r.draft) setOpen(true); }).catch(() => {}), [load]);
   useEffect(() => { void refresh(); }, [refresh, refreshKey]);
   useEffect(() => { const h = () => void refresh(); window.addEventListener("axen:coach-plan-changed", h); return () => window.removeEventListener("axen:coach-plan-changed", h); }, [refresh]);
 
@@ -48,7 +48,7 @@ export function CoachPlanPanel({ refreshKey, onAskChange, onSend }: { refreshKey
               <div className={s.lengths} role="radiogroup" aria-label="Plan length">
                 {LENGTHS.map((l) => <button key={l.days} role="radio" aria-checked={length === l.days} className={length === l.days ? s.on : ""} onClick={() => setLength(l.days)}>{l.label}</button>)}
               </div>
-              <button className={s.primary} disabled={!!busy} onClick={() => pct < PLAN_READY_CONFIDENCE ? onSend(`I want a ${length === 1 ? "plan for today" : `${length}-day plan`}. Ask me what you still need to know first, one question at a time.`) : act("create_plan_draft", { days: length })}>{busy === "create_plan_draft" ? "Building your plan…" : state.confirmed ? "Build a new plan" : "Build my plan"}</button>
+              <button className={s.primary} disabled={!!busy || pct < PLAN_READY_CONFIDENCE} onClick={() => act("create_plan_draft", { days: length })}>{busy === "create_plan_draft" ? "Building your plan…" : state.confirmed ? "Build a new plan" : "Build my plan"}</button>
             </>
           )}
           {plan && (

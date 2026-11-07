@@ -92,6 +92,8 @@ Hard gate after each phase: IMPLEMENT → TEST → SECURITY CHECK → MOBILE CHE
 - [ ] Not built by request: stakes, Match me, squads, AI coach, Work Together, presence, Supporter, rest days, 12h auto-confirm.
 
 ## AI Coach v2 (3 stages, stop after each)
+- [x] Coach-only interview bypass/defaults, direct-save quick setup, serialized voice tool logging/refresh; 27 tests pass, temporary accounts deleted. Quick setup reached 75%, no overflow at 360px.
+- [ ] Scripted-audio acceptance blocked: Live connected and microphone sent non-silent frames, but Google returned neither transcripts nor tool calls; voice plan/card acceptance FAIL, not claimed complete.
 - [x] Stage 1: coach profile (with timezone), plans (1/7/21), daily idempotent task add, memory; v2 prompt + tools in text Coach; model/provider config constants.
 - [ ] Stage 2: Coach UI — length selector, confidence bar, plan card (waits for user test of stage 1).
 - [ ] Stage 3: VoiceCoach Live tool calling with ephemeral tokens (waits for stage 2).

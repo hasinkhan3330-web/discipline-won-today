@@ -68,7 +68,7 @@ serverTest("each of the 8 tools answers a simulated toolCall with the id/name/re
   const calls = [
     { id: "c1", name: "get_user_context", args: {} },
     { id: "c2", name: "update_profile", args: { slots: { goal: { value: "Read daily", confidence: 0.9 } } } },
-    { id: "c3", name: "create_plan_draft", args: { days: "7" } },
+    { id: "c3", name: "create_plan_draft", args: { days: "90" } },
     { id: "c4", name: "confirm_plan", args: {} },
     { id: "c5", name: "update_task", args: { day: 2, task_index: 0, title: "x" } },
     { id: "c6", name: "reschedule_tasks", args: { from_day: 2, to_day: 3 } },
@@ -80,7 +80,7 @@ serverTest("each of the 8 tools answers a simulated toolCall with the id/name/re
   for (const r of all) expect(typeof r.response).toBe("object");
   const res = (i: number) => (all[i].response as any).result;
   expect(res(1).ok).toBe(true); // profile saved
-  expect(res(2).needs_interview).toBe(true); // thin profile → keep interviewing, no plan made
+  expect(res(2).ok).toBe(false); // invalid length; confidence no longer blocks explicit requests
   expect(res(3).ok).toBe(false); // nothing to confirm
   expect(res(4).ok).toBe(false); // no confirmed plan
   expect(res(5).ok).toBe(false);
