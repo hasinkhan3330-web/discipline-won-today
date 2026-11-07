@@ -634,6 +634,30 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_memory: {
+        Row: {
+          created_at: string
+          id: string
+          note: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       coach_messages: {
         Row: {
           content: string
@@ -700,6 +724,116 @@ export type Database = {
           note_date?: string
           recommended_focus?: string | null
           summary_text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coach_plan_materialized: {
+        Row: {
+          created_at: string
+          day_index: number
+          id: string
+          local_day: string
+          plan_id: string
+          task_id: string | null
+          task_index: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_index: number
+          id?: string
+          local_day: string
+          plan_id: string
+          task_id?: string | null
+          task_index: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day_index?: number
+          id?: string
+          local_day?: string
+          plan_id?: string
+          task_id?: string | null
+          task_index?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coach_plan_materialized_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "coach_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coach_plans: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          days: number
+          goal: string | null
+          id: string
+          plan: Json
+          start_date: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          days: number
+          goal?: string | null
+          id?: string
+          plan?: Json
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          days?: number
+          goal?: string | null
+          id?: string
+          plan?: Json
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coach_profile: {
+        Row: {
+          age_range: string | null
+          coach_style: string | null
+          onboarding_done: boolean
+          slots: Json
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          age_range?: string | null
+          coach_style?: string | null
+          onboarding_done?: boolean
+          slots?: Json
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          age_range?: string | null
+          coach_style?: string | null
+          onboarding_done?: boolean
+          slots?: Json
+          timezone?: string
           updated_at?: string
           user_id?: string
         }
