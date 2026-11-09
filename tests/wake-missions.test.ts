@@ -118,3 +118,25 @@ test("challenge payload parses only new missions", () => {
   expect(parseChallenge("12 + 3 = ?")).toBeNull();
   expect(parseChallenge('{"mission":"math"}')).toBeNull();
 });
+
+test("typing: many mistakes then fixes still completes; deletions are always allowed", () => {
+  const target = "open your eyes and smile today";
+  let typed = "";
+  for (const ch of "opne") { expect(acceptTypingInput(typed, typed + ch)).toBe(true); typed += ch; }
+  expect(letterStates(typed, target, 2).includes("bad")).toBe(true);
+  while (typed.length > 2) { expect(acceptTypingInput(typed, typed.slice(0, -1), "deleteContentBackward")).toBe(true); typed = typed.slice(0, -1); }
+  for (const ch of target.slice(2)) { expect(acceptTypingInput(typed, typed + ch, "insertText")).toBe(true); typed += ch; }
+  expect(typingComplete(typed, target, 2)).toBe(true);
+});
+test("tiles: several wrong taps across new layouts never block finishing", () => {
+  let s = newTileState(1, rng(11));
+  for (let k = 0; k < 7; k++) { const w = Array.from({ length: 16 }, (_, i) => i).find(i => !s.round.targets.includes(i))!; s = tapTile(s, w, 1, rng(20 + k)).state; }
+  for (const i of s.round.targets) s = tapTile(s, i, 1).state;
+  expect(roundCleared(s)).toBe(true);
+  expect(s.regenerated).toBe(2);
+});
+test("live typing never falls back to the local bank", () => {
+  const src = readFileSync("src/components/wake/missions/MissionRunner.tsx", "utf8");
+  expect(src).toContain("if (!preview) return [];");
+  expect(readFileSync("src/components/wake/AlarmScreen.tsx", "utf8")).not.toMatch(/<MissionRunner[^>]*preview/);
+});

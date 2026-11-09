@@ -1,14 +1,32 @@
--- Rollback for 0036_wake_new_missions + 0037 (run only after switching any shake/typing/tiles alarms back to math).
-DO $r$ DECLARE src text; BEGIN
-  src:=pg_get_functiondef('public.wake_issue_question'::regproc);
-  EXECUTE replace(src,'IF e.question_type IN (''shake'',''typing'',''tiles'') THEN PERFORM public.wake_issue_mission(eid); RETURN; END IF; ','');
-  src:=pg_get_functiondef('public.wake_save_settings'::regproc);
-  EXECUTE replace(src,'_mode NOT IN (''math'',''science'',''shake'',''typing'',''tiles'')','_mode NOT IN (''math'',''science'')');
-END $r$;
+-- Rollback for drizzle/migrations/0036_wake_new_missions.sql and 0037_wake_typing_sentences_private.sql.
+-- Restores wake_issue_question and wake_save_settings byte-for-byte (definitions captured from the live
+-- database immediately before 0036 ran). wake_get_state, wake_event_payload and wake_submit_answer were never changed.
+BEGIN;
+-- 1. Move every alarm and pending occurrence on a new mission back to Math.
+UPDATE public.alarms SET challenge_type='math' WHERE challenge_type IN ('shake','typing','tiles');
+UPDATE public.alarm_events SET question_type='math', question_id=NULL WHERE question_type IN ('shake','typing','tiles') AND status IN ('scheduled','ringing');
+-- 2. Restore the old check constraint.
+ALTER TABLE public.alarms ADD CONSTRAINT alarms_challenge_type_check CHECK ((challenge_type = ANY (ARRAY['math'::text, 'physics'::text, 'science'::text, 'none'::text])));
+ALTER TABLE public.alarms DROP CONSTRAINT alarms_challenge_type_missions_check;
+-- 3. Old bodies, verbatim.
+CREATE OR REPLACE FUNCTION public.wake_issue_question(eid uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$ DECLARE e public.alarm_events; q public.quiz_questions; cycle_no integer; hh text; aa integer; bb integer; cc integer; pick integer; txt text; ans text; explanation text; tries integer:=0; BEGIN SELECT * INTO e FROM public.alarm_events WHERE id=eid FOR UPDATE; PERFORM pg_advisory_xact_lock(hashtextextended(e.user_id::text,74011)); SELECT coalesce(max(cycle),0) INTO cycle_no FROM public.wake_question_history WHERE user_id=e.user_id AND question_type=e.question_type; IF e.question_type='science' THEN SELECT * INTO q FROM public.quiz_questions x WHERE x.wake_only AND x.is_active AND x.subject<>'math' AND NOT EXISTS(SELECT 1 FROM public.wake_question_history h WHERE h.user_id=e.user_id AND h.question_type='science' AND h.cycle=cycle_no AND h.question_hash=md5(x.question_text)) ORDER BY md5(e.user_id::text||e.local_date::text||x.id::text||cycle_no::text) LIMIT 1; IF q.id IS NULL THEN cycle_no:=cycle_no+1; SELECT * INTO q FROM public.quiz_questions x WHERE x.wake_only AND x.is_active AND x.subject<>'math' ORDER BY md5(e.user_id::text||e.local_date::text||x.id::text||cycle_no::text) LIMIT 1; END IF; IF q.id IS NULL THEN RAISE EXCEPTION 'Science bank is not ready'; END IF; txt:=q.question_text; ans:=q.correct_answer; explanation:=q.explanation; hh:=md5(txt); ELSE LOOP tries:=tries+1; aa:=5+floor(random()*CASE e.difficulty WHEN 1 THEN 20 WHEN 2 THEN 80 ELSE 200 END)::integer; bb:=2+floor(random()*12)::integer; cc:=3+floor(random()*20)::integer; pick:=floor(random()*5)::integer; IF pick=0 THEN txt:=aa||' + '||bb||' = ?';ans:=(aa+bb)::text; ELSIF pick=1 THEN txt:='('||aa||' × '||bb||') − '||cc||' = ?';ans:=(aa*bb-cc)::text; ELSIF pick=2 THEN txt:=bb||'x + '||cc||' = '||(bb*aa+cc)||'. x = ?';ans:=aa::text; ELSIF pick=3 THEN txt:='What is '||(bb*5)||'% of '||(aa*20)||'?';ans:=(bb*aa)::text; ELSE txt:='Next number: '||aa||', '||(aa+bb)||', '||(aa+2*bb)||', '||(aa+3*bb)||', ?';ans:=(aa+4*bb)::text; END IF; hh:=md5(txt); EXIT WHEN NOT EXISTS(SELECT 1 FROM public.wake_question_history WHERE user_id=e.user_id AND question_type='math' AND cycle=cycle_no AND question_hash=hh); IF tries=250 THEN cycle_no:=cycle_no+1; END IF; IF tries>500 THEN RAISE EXCEPTION 'Could not issue a unique question'; END IF; END LOOP; explanation:='The correct result is '||ans||'.'; END IF; INSERT INTO public.wake_question_history(user_id,question_hash,question_type,cycle) VALUES(e.user_id,hh,e.question_type,cycle_no); UPDATE public.alarm_events SET question_id=coalesce(q.id,gen_random_uuid()),question_text=txt,question_options=CASE WHEN e.question_type='science' THEN q.options ELSE NULL END,question_answer=ans,question_explanation=explanation,question_hash=hh,question_version=question_version+1,question_cycle=cycle_no WHERE id=eid; END; $function$;
+CREATE OR REPLACE FUNCTION public.wake_save_settings(_time time without time zone, _sleep time without time zone, _tone text, _mode text, _enabled boolean, _repeat boolean, _difficulty smallint)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$ DECLARE u uuid:=auth.uid(); a public.alarms; z text; at_time timestamptz; saved timestamptz; BEGIN IF u IS NULL THEN RAISE EXCEPTION 'not authenticated' USING ERRCODE='42501'; END IF; IF _mode NOT IN ('math','science') OR _difficulty NOT BETWEEN 1 AND 3 OR _tone NOT IN ('superloud','scariest','techno','meduzza','classic','morning','retro','emergency','modern','oppenheimer') THEN RAISE EXCEPTION 'invalid settings'; END IF; IF _mode='science' AND (SELECT count(*) FROM public.quiz_questions WHERE wake_only AND is_active AND subject='science' AND fact_source IS NOT NULL)<400 THEN RAISE EXCEPTION 'Science bank is not ready. Use Math for now'; END IF; PERFORM pg_advisory_xact_lock(hashtextextended(u::text,74011)); IF EXISTS(SELECT 1 FROM public.alarm_events WHERE user_id=u AND status='ringing') THEN RAISE EXCEPTION 'Solve the ringing alarm before changing settings'; END IF; SELECT reward_timezone INTO z FROM public.profiles WHERE id=u; IF EXISTS(SELECT 1 FROM public.alarm_events WHERE user_id=u AND status='scheduled' AND scheduled_for<=now()) THEN RAISE EXCEPTION 'Your alarm is due. Solve it before changing settings'; END IF; SELECT * INTO a FROM public.alarms WHERE user_id=u AND label='AXEN Wake Protocol' ORDER BY created_at LIMIT 1 FOR UPDATE; at_time:=CASE WHEN _enabled THEN public.wake_next_fire(_time,z) ELSE NULL END; saved:=CASE WHEN a.time=_time AND a.is_active=_enabled AND a.wake_repeat_daily=_repeat AND a.wake_timezone=z AND a.tone=_tone AND a.challenge_type=_mode AND a.wake_difficulty=_difficulty THEN coalesce(a.wake_saved_at,now()) ELSE now() END; IF a.id IS NULL THEN INSERT INTO public.alarms(user_id,time,label,tone,days,challenge_type,is_active,sleep_recommendation,recovery_enabled,wake_repeat_daily,wake_difficulty,wake_next_fire_at,wake_saved_at,wake_timezone) VALUES(u,_time,'AXEN Wake Protocol',_tone,'{0,1,2,3,4,5,6}',_mode,_enabled,_sleep,_enabled,_repeat,_difficulty,at_time,saved,z) RETURNING * INTO a; ELSE UPDATE public.alarms SET time=_time,tone=_tone,challenge_type=_mode,is_active=_enabled,sleep_recommendation=_sleep,recovery_enabled=_enabled,wake_repeat_daily=_repeat,wake_difficulty=_difficulty,wake_next_fire_at=at_time,wake_saved_at=saved,wake_timezone=z WHERE id=a.id RETURNING * INTO a; END IF; UPDATE public.alarm_events SET status='expired' WHERE alarm_id=a.id AND status='scheduled' AND NOT is_test AND (scheduled_for IS DISTINCT FROM at_time); IF _enabled THEN PERFORM public.wake_create_occurrence(a.id); END IF; RETURN jsonb_build_object('alarm_id',a.id,'server_now',now(),'next_fire_at',at_time,'timezone',z,'time',a.time,'sleep_time',a.sleep_recommendation,'enabled',a.is_active,'repeat_daily',a.wake_repeat_daily,'tone',a.tone,'mode',a.challenge_type,'difficulty',a.wake_difficulty); END; $function$;
+-- 4. Remove the new functions.
 DROP FUNCTION IF EXISTS public.wake_complete_mission(uuid,integer,jsonb);
 DROP FUNCTION IF EXISTS public.wake_set_mission_options(smallint,text);
 DROP FUNCTION IF EXISTS public.wake_finalize_solve(uuid);
 DROP FUNCTION IF EXISTS public.wake_issue_mission(uuid);
-ALTER TABLE public.alarms ADD CONSTRAINT alarms_challenge_type_check CHECK (challenge_type = ANY (ARRAY['math','physics','science','none']));
-ALTER TABLE public.alarms DROP CONSTRAINT alarms_challenge_type_missions_check;
--- Optional (removes data): DROP TABLE public.wake_typing_sentences; and the added alarm/alarm_events columns.
+COMMIT;
+-- Optional, removes data: DROP TABLE public.wake_typing_sentences;
+-- ALTER TABLE public.alarms DROP COLUMN wake_mission_rounds, DROP COLUMN wake_mission_lang;
+-- ALTER TABLE public.alarm_events DROP COLUMN mission_issued_at, DROP COLUMN mission_rejections, DROP COLUMN mission_last_reject_at;
