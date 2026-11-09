@@ -43,7 +43,7 @@ export function parseDecls(block: string): Array<{ prop: string; value: string; 
 export function scopeSelector(sel: string): string | null {
   return splitTop(sel, ",").map((s) => {
     if (s.includes("data-theme")) return null;
-    if (/^(:root|html)(?![\w-])/.test(s)) return s.replace(/^(:root|html)/, `html${WROOT}`);
+    if (/^(:root|html)(?![\w-])/.test(s)) return s.replace(/^(:root|html)/, (m) => m + WROOT);
     if (/^:host/.test(s)) return null;
     const pe = s.indexOf("::");
     const keep = `:not(:where(${KEEP}, ${KEEP} *))`.replace(":not(", ":where(:not(") + ")";
