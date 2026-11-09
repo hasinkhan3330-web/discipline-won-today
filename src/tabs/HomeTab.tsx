@@ -19,7 +19,7 @@ import type { ContractRow } from "@/lib/verified/contracts";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
   Flame, Footprints, PenLine, Circle, Check, ScanLine, Coins, Zap,
-  ChevronRight, Music2, Target, type LucideIcon,
+  ChevronRight, Target, type LucideIcon,
 } from "lucide-react";
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean; requireScan?: boolean; scanClasses?: string[] };
