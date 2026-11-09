@@ -9,6 +9,14 @@
 ## What stays exactly the same
 - Gemini Live session, its tools and setup, the text coach logic, the profile percentage calculation, Quick setup, the plan panel's data, subscription and auth logic, routing, the database and every other tab.
 
+## Voice stays identical
+- The model stays `models/gemini-2.5-flash-native-audio-latest`. No voiceName or speechConfig is set today, so Google's default voice plays. Both stay exactly as they are, along with the system prompt, language, sample rates, worklets, playback code, session setup and tools.
+- The AnalyserNodes are side branches only: each one is connected from an existing source and never to the speakers. The orb only reads levels.
+
+## Safety switches
+- One constant, `USE_ORB_COACH = true`. Setting it to false brings back the old Coach screen. The old components are kept, not deleted.
+- The strip is hidden and the nav turns accent-coloured only while the Coach tab is active.
+
 ## Technical details
 - New Coach-only files: `src/components/coach/orb/CoachOrbScreen.tsx`, `OrbCanvas.tsx` (a 1:1 port of the reference canvas math: 450 Fibonacci points, dpr capped at 2, smoothing `1-0.0015^dt`, f clamped to 1.1, paused when the tab is hidden, reduced motion respected), and `coach-orb.module.css` (the reference CSS values, scoped with CSS variables `--a/--b/--bg/--card/--pill/--muted/--line`). Manrope is loaded with a `<link>` tag.
 - `VoiceCoach.tsx`: logic stays as it is. Add a small optional `onVoiceState(state, getLevel)` callback and two AnalyserNodes:
