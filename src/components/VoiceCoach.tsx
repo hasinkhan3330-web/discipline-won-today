@@ -1,8 +1,7 @@
-import { buildCoachKnowledge } from "@/lib/coach-knowledge";
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getLiveSession, runVoiceToolCall } from "@/utils/voice.functions";
-import { VOICE_SYSTEM_V2, VOICE_TOOL_DECLARATIONS, MAX_VOICE_TOOL_CALLS_PER_TURN } from "@/lib/coach-voice-tools";
+import { MAX_VOICE_TOOL_CALLS_PER_TURN } from "@/lib/coach-voice-tools";
 import {
   getCoachContext,
   getLeaderboardPosition,
@@ -149,7 +148,6 @@ export function VoiceCoach() {
   const draftRef = useRef<Record<string, any> | null>(null);
   const execute = (calls: Array<{ id?: string; name: string; args: Record<string, unknown> }>) => {
     const job = queueRef.current.catch(() => {}).then(async () => {
-      for (const call of calls) console.info('[voice] toolCall', { name: call.name, args: call.args });
       const out = { functionResponses: [] as Array<{ id?: string; name: string; response: Record<string, any> }> };
       for (const call of calls) {
         if (call.name === 'create_plan_draft' && draftRef.current?.result?.ok === true) {
@@ -162,7 +160,6 @@ export function VoiceCoach() {
         if (call.name === 'update_profile') window.dispatchEvent(new Event('axen:coach-plan-changed'));
       }
       for (const response of out.functionResponses) {
-        console.info('[voice] toolResponse', { name: response.name, args: calls.find(c => c.id === response.id)?.args, ...response.response });
         if (response.name === 'create_plan_draft') draftRef.current = response.response;
       }
       window.dispatchEvent(new Event('axen:coach-plan-changed'));
@@ -264,8 +261,8 @@ export function VoiceCoach() {
         credentialParam,
         ephemeral,
         model,
-        context: snapshot,
         profileBlock,
+        setup,
       } = await getSession({});
       if (controller.signal.aborted || session !== sessionRef.current) return;
       if (typeof apiKey !== "string" || apiKey.length === 0) {
@@ -278,31 +275,15 @@ export function VoiceCoach() {
       wsRef.current = ws;
       playerRef.current = new PcmPlayer(24000);
 
-      const KB = buildCoachKnowledge();
-      if (!profileBlock) throw new Error("Couldn’t load your profile. Tap to retry.");
-      const instruction = snapshot
-        ? `${VOICE_SYSTEM_V2}\n\n${KB}\n\n${profileBlock}\n\nAXEN_COACH_CONTEXT (private, never read aloud):\n${JSON.stringify(snapshot)}`
-        : `${VOICE_SYSTEM_V2}\n\n${KB}\n\n${profileBlock}\n\nAXEN_COACH_CONTEXT is unavailable for this session. Do not state any statistic; call get_user_context before referencing data.`;
+      if (!profileBlock || !setup) throw new Error("Couldn’t load your profile. Tap to retry.");
 
       ws.onopen = () => {
         if (controller.signal.aborted || session !== sessionRef.current) {
           ws.close(1000);
           return;
         }
-        ws.send(
-          JSON.stringify({
-            setup: {
-              model,
-              generationConfig: { responseModalities: ["AUDIO"] },
-              systemInstruction: { parts: [{ text: instruction }] },
-              tools: VOICE_TOOL_DECLARATIONS,
-              inputAudioTranscription: {},
-              outputAudioTranscription: {},
-              contextWindowCompression: { slidingWindow: {} },
-              sessionResumption: resumeRef.current ? { handle: resumeRef.current } : {},
-            },
-          }),
-        );
+        // Server-built setup (profile block + tools), identical to the one locked into the token.
+        ws.send(JSON.stringify({ setup: { ...setup, model } }));
         const AudioContextClass =
           window.AudioContext ||
           (window as typeof window & { webkitAudioContext: typeof AudioContext })
@@ -358,7 +339,7 @@ export function VoiceCoach() {
           ws.send(
             JSON.stringify({
               clientContent: {
-                turns: [{ role: "user", parts: [{ text: setupDone ? "SESSION_START: Quick setup is saved. Call get_user_context. Ask only remaining gaps, at most 3 questions, then build Today with defaults. Before building say: Give me a minute, I'm building your plan." : "SESSION_START" }] }],
+                turns: [{ role: "user", parts: [{ text: "SESSION_START: Call get_profile_status first. Ask only the missing fields, one at a time (at most 3), then build Today with defaults. Before building say: Give me a minute, I'm building your plan." }] }],
                 turnComplete: true,
               },
             }),
