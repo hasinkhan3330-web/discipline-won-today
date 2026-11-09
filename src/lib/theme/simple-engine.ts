@@ -10,6 +10,7 @@ import { mapCustomProperty, mapDeclaration, flattenColorMix } from "./color-map"
 
 const SHEET_ID = "axen-simple-overrides";
 const ROOT = 'html[data-theme="simple"]';
+const WROOT = ':where(html[data-theme="simple"])';
 const KEEP = "[data-simple-keep]";
 const SKIP_VARS = /^--(tw-|color-|background$|foreground$|card|popover|primary|secondary|muted|accent|destructive|border$|input$|ring$|chart-|sidebar|radius|s-)/;
 const SVG_ATTRS = ["fill", "stroke", "stop-color", "flood-color"] as const;
@@ -42,12 +43,12 @@ export function parseDecls(block: string): Array<{ prop: string; value: string; 
 export function scopeSelector(sel: string): string | null {
   return splitTop(sel, ",").map((s) => {
     if (s.includes("data-theme")) return null;
-    if (/^(:root|html)(?![\w-])/.test(s)) return s.replace(/^(:root|html)/, ROOT);
+    if (/^(:root|html)(?![\w-])/.test(s)) return s.replace(/^(:root|html)/, `html${WROOT}`);
     if (/^:host/.test(s)) return null;
     const pe = s.indexOf("::");
-    const keep = `:not(${KEEP} *)`;
+    const keep = `:not(:where(${KEEP}, ${KEEP} *))`.replace(":not(", ":where(:not(") + ")";
     const scoped = pe >= 0 ? s.slice(0, pe) + keep + s.slice(pe) : s + keep;
-    return /^body(?![\w-])/.test(s) ? `${ROOT} ${s}` : `${ROOT} ${scoped}`;
+    return /^body(?![\w-])/.test(s) ? `${WROOT} ${s}` : `${WROOT} ${scoped}`;
   }).filter(Boolean).join(", ") || null;
 }
 
@@ -107,7 +108,7 @@ function collect(rules: CSSRuleList, ctx: Ctx, sink: string[], pass: 0 | 1) {
         if (r instanceof CSSMediaRule) sink.push(`@media ${r.conditionText} { ${inner.join("\n")} }`);
         else if (r instanceof CSSSupportsRule) sink.push(`@supports ${r.conditionText} { ${inner.join("\n")} }`);
         else if (typeof CSSContainerRule !== "undefined" && r instanceof CSSContainerRule) sink.push(`@container ${(r as CSSContainerRule).containerName ?? ""} ${r.conditionText} { ${inner.join("\n")} }`);
-        else sink.push(...inner); // unlayered output beats layered input
+        else { const n = (r as CSSLayerBlockRule).name; if (n) sink.push(`@layer ${n} { ${inner.join("\n")} }`); else sink.push(...inner); }
       }
     }
   }

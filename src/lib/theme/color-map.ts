@@ -163,7 +163,7 @@ export function mapColor(input: string, role: Role): string | null {
 
 /** Replace every literal color in a value for the given role. */
 export function mapValueColors(value: string, role: Role): string {
-  return value.replace(COLOR_RE, (m) => mapColor(m, role) ?? m);
+  return value.replace(COLOR_RE, (m) => { const c = parseColor(m); return !c || c.a <= 0.001 ? m : mapRGBA(c, role); });
 }
 
 /** color-mix(in x, COLOR p%, transparent) -> rgba so alpha math stays correct. */
