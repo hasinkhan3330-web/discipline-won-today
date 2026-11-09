@@ -14,8 +14,8 @@ beforeAll(async () => {
     const r = await admin.auth.admin.createUser({ email: `wake-mission-${crypto.randomUUID()}@example.com`, password: crypto.randomUUID() + "Aa9!", email_confirm: true });
     if (r.error || !r.data.user) throw Error(r.error?.message); users.push(r.data.user.id);
   }
-});
-afterAll(async () => { for (const id of users) await admin?.auth.admin.deleteUser(id); });
+}, 120000);
+afterAll(async () => { for (const id of users) await admin?.auth.admin.deleteUser(id); }, 120000);
 
 class Rollback extends Error {}
 async function inTx(fn: (q: (s: string, uid?: string) => Promise<postgres.RowList<postgres.Row[]>>) => Promise<void>) {
