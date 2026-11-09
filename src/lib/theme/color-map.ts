@@ -207,6 +207,10 @@ export function mapBackground(value: string): string {
   if (keep.length) return keep.join(", ");
   // flat fallback: first opaque stop
   for (const layer of layers) {
+    // glows/washes (radial or fading to transparent) are decoration: drop them
+    if (/radial-gradient/.test(layer) || /transparent/.test(layer)) continue;
+    const cols = (layer.match(COLOR_RE) ?? []).map(parseColor);
+    if (cols.some((c) => c && c.a < 0.5)) continue;
     for (const m of layer.match(COLOR_RE) ?? []) { const c = parseColor(m); if (c && c.a > 0.85) return mapRGBA(c, "bg"); }
   }
   const v = value.match(/var\(--[\w-]+\)/);
