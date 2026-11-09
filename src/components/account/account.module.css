@@ -4,15 +4,18 @@
   --a-line: #232D52; --a-text: #F6F7FC; --a-muted: #A9B0CC; --a-lime: #B6F500;
   --a-lime-hi: #D2FF3D; --a-violet: #8B5CF6; --a-gold: #F5A524; --a-red: #FF6B6B;
   --a-slate: #7C849E; --a-well: #0B1020; --a-on-primary: #05070A;
-  position: relative; min-height: 100%;
-  margin: -16px -16px 0; padding: 20px 20px 112px;
+  position: relative; isolation: isolate; min-height: 100%;
+  padding: 20px 20px 112px; overflow-x: hidden;
   color: var(--a-text);
   font-family: inherit;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.page::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background:
     radial-gradient(120% 50% at 50% -10%, color-mix(in oklab, var(--a-violet) 22%, transparent), transparent 60%),
     radial-gradient(circle, color-mix(in oklab, var(--a-dot) 78%, transparent) 1px, transparent 1.5px) 0 0 / 22px 22px,
     var(--a-bg);
-  display: flex; flex-direction: column; gap: 14px;
 }
 .page * { letter-spacing: normal; }
 
@@ -32,6 +35,7 @@
   box-shadow: 0 12px 28px -18px rgba(0,0,0,.7);
   animation: fadeUp .2s ease-out both;
 }
+.page > :nth-child(1) { animation-delay: 0ms; }
 .page > :nth-child(2) { animation-delay: 30ms; }
 .page > :nth-child(3) { animation-delay: 60ms; }
 .page > :nth-child(4) { animation-delay: 90ms; }
@@ -144,8 +148,9 @@
   --a-text: #111111; --a-muted: #6F6F69; --a-lime: #111111; --a-lime-hi: #111111;
   --a-violet: #3B5BDB; --a-gold: #B26A00; --a-red: #C93A3A; --a-slate: #8F8F89;
   --a-well: #F5F5F3; --a-on-primary: #FFFFFF;
-  background: #F5F5F3; font-family: Inter, system-ui, sans-serif;
+  font-family: Inter, system-ui, sans-serif;
 }
+:global(html[data-theme="simple"]) .page::before { background: #F5F5F3; }
 :global(html[data-theme="simple"]) .card { box-shadow: none; }
 :global(html[data-theme="simple"]) .primary { background: #111111; color: #FFFFFF; border-radius: 999px; }
 :global(html[data-theme="simple"]) .secondary,
