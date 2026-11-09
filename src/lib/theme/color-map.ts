@@ -133,6 +133,7 @@ export function mapRGBA(c: RGBA, role: Role): string {
 
   if (role === "graphic") {
     if (semantic && L > 0.35) return withA(sem(kind, "graphic"), a);
+    if ((kind === "success" || kind === "warning") && L <= 0.35 && toOklch(c).C > 0.05) return sem(kind, "text");
     if (kind === "neutral" || L <= 0.35) {
       if (L < 0.5) return a < 0.6 ? rgba(S.ink, a * 0.12) : S.track;
       return withA(S.ink, a);
