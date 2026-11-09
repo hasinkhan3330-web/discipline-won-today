@@ -9,7 +9,7 @@ import { SENTENCES, type MissionLang } from "@/lib/wake-missions/sentences";
 import styles from "./missions.module.css";
 
 const buzz = (p: number | number[]) => { try { navigator.vibrate?.(p); } catch { /* unsupported */ } };
-type Props = { challenge: MissionChallenge; onComplete: (proof: MissionProof) => void; busy?: boolean };
+type Props = { challenge: MissionChallenge; onComplete: (proof: MissionProof) => void; busy?: boolean; preview?: boolean };
 
 /** Renders one of the three new missions. Parent decides whether this is a live alarm or a preview. */
 export function MissionRunner(props: Props) {
@@ -83,13 +83,15 @@ function ShakeMission({ challenge, onComplete }: Props) {
   </>;
 }
 
-function TypingMission({ challenge, onComplete }: Props) {
+function TypingMission({ challenge, onComplete, preview }: Props) {
   const sentences = useMemo(() => {
+    // Live alarms use only server-issued sentences; the local bank (same source as the server table) is preview-only.
     if (challenge.sentences?.length) return challenge.sentences;
+    if (!preview) return [];
     const lang: MissionLang = typeof navigator !== "undefined" && navigator.language?.toLowerCase().startsWith("hi") ? "hi" : "en";
     const used: string[] = [];
     return Array.from({ length: challenge.rounds }, () => { const s = pickSentence(SENTENCES[lang][challenge.difficulty], used); used.push(s); return s; });
-  }, [challenge]);
+  }, [challenge, preview]);
   const [round, setRound] = useState(0);
   const [typed, setTyped] = useState("");
   const [done_, setDoneTexts] = useState<string[]>([]);
@@ -111,6 +113,7 @@ function TypingMission({ challenge, onComplete }: Props) {
   };
   const states = letterStates(typed, target, challenge.difficulty);
   if (done) return <div className={styles.done} role="status" aria-label="Mission complete"><Check size={72} strokeWidth={3} /></div>;
+  if (!sentences.length) return <p className={styles.err} role="alert">Loading your sentence from the server… The alarm keeps ringing.</p>;
   return <>
     {sentences.length > 1 && <p className={styles.mLevel}>{round + 1}/{sentences.length}</p>}
     <div className={styles.card} aria-label={`Type: ${target}`}>{[...target].map((ch, i) => <span key={i} className={styles[states[i]!]}>{ch}</span>)}</div>

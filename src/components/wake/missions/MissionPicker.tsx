@@ -70,7 +70,7 @@ export function MissionPicker({ mode, onMode, difficulty, onDifficulty, rounds, 
     </div>, document.body)}
     {trial && createPortal(<div className={`${styles.root} ${styles.preview}`} role="dialog" aria-modal="true" aria-label={`${MISSION_META[trial].name} preview`}>
       <div className={styles.previewTop}><span>PREVIEW · no sound · no rewards</span><button type="button" className={styles.ghost} style={{ width: "auto", padding: "0 16px" }} onClick={() => setTrial(null)} aria-label="Close preview"><X size={18} /></button></div>
-      <MissionRunner challenge={{ mission: trial, difficulty: lvl, rounds }} onComplete={() => setTrial(null)} />
+      <MissionRunner preview challenge={{ mission: trial, difficulty: lvl, rounds }} onComplete={() => setTrial(null)} />
     </div>, document.body)}
   </div>;
 }
