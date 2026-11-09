@@ -130,8 +130,8 @@ export function WakeProtocol({
     try {
       onTone(tone);
       onMode(mode);
-      if (isNewMission(mode)) await saveMission({ data: { rounds, lang: navigator.language?.toLowerCase().startsWith("hi") ? "hi" : "en" } }).catch(() => undefined);
       const state = await saveState({ data: { time: wakeTime, sleep: sleepGoal, tone, mode, enabled: reminderEnabled, repeat: repeatDaily, difficulty } });
+      if (isNewMission(mode)) await saveMission({ data: { rounds, lang: navigator.language?.toLowerCase().startsWith("hi") ? "hi" : "en" } });
       webAlarmScheduler.synchronize(state);
       setNextFire(state.settings?.next_fire_at ?? null);
       setTimezone(state.timezone);
