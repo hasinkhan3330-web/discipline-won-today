@@ -109,6 +109,8 @@ export function mapRGBA(c: RGBA, role: Role): string {
 
   if (role === "fg") {
     if (semantic && L > 0.35) return withA(sem(kind, "text"), Math.max(a, 0.85));
+    // dark tinted text sat on a bright same-hue chip in Dark; that chip becomes a soft tint
+    if ((kind === "success" || kind === "warning") && L <= 0.35 && toOklch(c).C > 0.05) return sem(kind, "text");
     if (kind === "neutral" || L <= 0.35) {
       if (L < 0.35) return a < 0.6 ? rgba(S.onInk, a) : S.onInk;
       const eff = L * a + (1 - a) * 0.1; // perceived brightness on dark
@@ -139,7 +141,7 @@ export function mapRGBA(c: RGBA, role: Role): string {
   }
 
   // background
-  if (semantic && L > 0.35) return a < 0.5 ? sem(kind, "tint") : sem(kind, "graphic");
+  if (semantic && L > 0.35) return a < 0.5 || kind !== "danger" ? sem(kind, "tint") : sem(kind, "graphic");
   if (kind === "neutral" || L <= 0.35) {
     if (L < 0.5) {
       if (a < 0.999) {
