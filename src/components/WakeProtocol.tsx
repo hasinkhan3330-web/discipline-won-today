@@ -228,13 +228,6 @@ export function WakeProtocol({
         </div>
 
         {mode === "math" && <label className="wakep__field"><span>Math difficulty</span><select value={difficulty} onChange={e => { setDifficulty(Number(e.target.value)); setSaved(false); }}><option value={1}>Easy</option><option value={2}>Medium</option><option value={3}>Hard</option></select></label>}
-        <WakeReadiness onReady={setReady} />
-
-        <section className="wakep__journey">
-          <header><Sparkles size={16} /><span>MILESTONE JOURNEY</span></header>
-          <div>{MILESTONES.map((milestone, index) => <span key={milestone} className={streak >= milestone ? "is-reached" : ""}><i>{streak >= milestone ? <Check size={12} /> : index + 1}</i><b>{milestone}</b><small>days</small></span>)}</div>
-          <p>Milestones mark consistency—not guaranteed habit-formation dates.</p>
-        </section>
 
         <button type="button" className={`wakep__primary ${status === "success" ? "is-secured" : ""}`} disabled={status === "saving" || status === "success"} onClick={checkIn}>
           {status === "saving" ? "SECURING DAY…" : status === "success" ? <><ShieldCheck size={19} /> DAY SECURED</> : status === "already" || checkedToday ? <><Check size={19} /> ALREADY SECURED</> : "I’M AWAKE"}
