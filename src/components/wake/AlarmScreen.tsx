@@ -3,7 +3,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { CoinBadge } from "@/components/CoinBadge";
-import { readWakeState, submitWakeAnswer } from "@/lib/wake.functions";
+import { readWakeState, submitWakeAnswer, completeWakeMission } from "@/lib/wake.functions";
+import { MissionRunner } from "./missions/MissionRunner";
+import { parseChallenge, type MissionProof } from "@/lib/wake-missions/rules";
 import { webAlarmScheduler } from "@/lib/web-alarm-scheduler";
 import { WAKE_REASONS } from "@/lib/wake-rules";
 import { retryDelayMs, trySendAnswer, WAKE_SERVER_RETRIES, type PendingAnswer } from "@/lib/wake-answer-queue";
@@ -87,6 +89,32 @@ export function AlarmScreen() {
     await deliver({ eventId: event.id, version: event.question.version, answer: value });
   };
   const locked = busy || pending !== null;
+  // New missions (Shake/Typing/Tiles) reuse this ringing screen and the same server-verified stop.
+  const complete = useServerFn(completeWakeMission);
+  const challenge = event?.status === "ringing" ? parseChallenge(event.question?.text) : null;
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (!challenge || result?.solved) return;
+    let lock: WakeLockSentinel | null = null;
+    const take = async () => { try { lock = await navigator.wakeLock?.request("screen") ?? null; } catch { lock = null; } };
+    const vis = () => { if (document.visibilityState === "visible") void take(); };
+    void take(); document.addEventListener("visibilitychange", vis);
+    try { void (screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> }).lock?.("portrait").catch(() => {}); } catch { /* unsupported */ }
+    return () => { document.removeEventListener("visibilitychange", vis); void lock?.release().catch(() => {}); };
+  }, [!!challenge, result?.solved]); // eslint-disable-line react-hooks/exhaustive-deps
+  const finishMission = async (proof: MissionProof) => {
+    if (!event?.question || busy) return;
+    setBusy(true); setError("");
+    try {
+      const response = await complete({ data: { eventId: event.id, version: event.question.version, proof } });
+      setEvent(response.event);
+      if (response.solved) { webAlarmScheduler.stopVerified(); setResult(response); window.dispatchEvent(new Event("axen:wake-updated")); window.dispatchEvent(new Event("axen:wake-solved")); }
+      else { setError("That didn't verify. The alarm keeps ringing — do the mission again."); setAttempt(a => a + 1); }
+    } catch (reason) {
+      setError(reason instanceof Error && /Too many attempts/.test(reason.message) ? reason.message : "Connection needed to verify. The alarm keeps ringing — try again.");
+      setAttempt(a => a + 1);
+    } finally { setBusy(false); }
+  };
   return <div className={styles.surface} role="dialog" aria-modal="true" aria-label="Wake verification"><div className={styles.inner}>
     <p className={styles.muted}>AXEN · {event?.is_test ? "TEST ALARM" : "WAKE PROTOCOL"}</p>
     <h1 className={styles.title}>{result?.solved ? "AWAKE CONFIRMED" : "WAKE UP"}</h1>
@@ -95,6 +123,10 @@ export function AlarmScreen() {
       <p className={styles.muted}>{WAKE_REASONS[result.result ?? ""] ?? "Alarm solved."}</p>
       <p className={styles.muted}>{result.explanation}</p>
       <Button className={styles.command} onClick={() => navigate({ to: "/dashboard" })}>Continue</Button>
+    </> : challenge ? <>
+      <MissionRunner key={`${event?.question?.version}-${attempt}`} challenge={challenge} onComplete={p => void finishMission(p)} busy={busy} />
+      <p className={styles.muted}>NO SNOOZE · NO SKIP</p>
+      {!webAlarmScheduler.ready && <Button className={styles.command} onClick={async () => { try { await webAlarmScheduler.startOvernight(); } catch { setError("Audio is blocked. Check your browser and volume."); } }}>Enable alarm audio</Button>}
     </> : event?.question ? <>
       <div className={styles.question}>{event.question.text}</div>
       {event.question.type === "science" ? <><p className={styles.muted}>{event.question.correct_in_row}/2 correct in a row</p><div className={styles.options}>{event.question.options?.map((o, i) => <Button key={o} className={styles.command} disabled={locked} onClick={() => send(String(i))}>{o}</Button>)}</div></> : <form className={styles.options} onSubmit={e => { e.preventDefault(); void send(answer); }}><input aria-label="Numeric answer" className={styles.input} inputMode="decimal" autoComplete="off" value={answer} disabled={pending !== null} onChange={e => setAnswer(e.target.value)} /><Button className={`${styles.command} ${styles.primary}`} disabled={locked || !answer} type="submit">{pending ? "Waiting for connection…" : busy ? "Checking…" : "Submit answer"}</Button></form>}

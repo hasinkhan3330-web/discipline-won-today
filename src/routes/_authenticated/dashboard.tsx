@@ -465,7 +465,7 @@ function App() {
   };
   const stopPreview = () => { stopAlarmAudio(); setPreviewId(null); };
 
-  const [wakeMode, setWakeMode] = useState<"math" | "science">("math");
+  const [wakeMode, setWakeMode] = useState<"math" | "science" | "shake" | "typing" | "tiles">("math");
   useEffect(() => {
     let live = true;
     const refreshAlarm = async () => {

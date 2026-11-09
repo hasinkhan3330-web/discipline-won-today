@@ -7,11 +7,16 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate } from "@tanstack/react-router";
-import { readWakeState, saveWakeSettings } from "@/lib/wake.functions";
+import { readWakeState, saveWakeSettings, saveWakeMissionOptions } from "@/lib/wake.functions";
 import { webAlarmScheduler } from "@/lib/web-alarm-scheduler";
 import { WakeReadiness } from "@/components/wake/WakeReadiness";
 import { CoinBadge } from "@/components/CoinBadge";
 import { wakeReward } from "@/lib/wake-rules";
+import { MissionPicker } from "@/components/wake/missions/MissionPicker";
+import { isNewMission } from "@/lib/wake-missions/rules";
+
+type Mode = "math" | "science" | "shake" | "typing" | "tiles";
+const MODE_NAME: Record<Mode, string> = { math: "Math", science: "Science", shake: "Shake", typing: "Typing", tiles: "Find Color Tiles" };
 
 export type WakeOption = { time: string; pts: number; tag: string; line: string };
 export type WakeTone = { id: string; name: string; url: string };
@@ -41,13 +46,13 @@ export function WakeProtocol({
   tones: readonly WakeTone[];
   initialTier?: string;
   initialTone: string;
-  initialMode: "math" | "science";
+  initialMode: Mode;
   coins: number;
   streak: number;
   bestStreak: number;
   onClose: () => void;
   onTone: (id: string) => void;
-  onMode: (mode: "math" | "science") => void;
+  onMode: (mode: Mode) => void;
 }) {
   const reduceMotion = useReducedMotion();
   const readState = useServerFn(readWakeState);
@@ -72,6 +77,8 @@ export function WakeProtocol({
   const [timezone, setTimezone] = useState("Asia/Kolkata");
   const [ready, setReady] = useState(webAlarmScheduler.ready);
   const [saved, setSaved] = useState(false);
+  const [rounds, setRounds] = useState(1);
+  const saveMission = useServerFn(saveWakeMissionOptions);
 
   const countdown = useMemo(() => nextFire ? Date.parse(nextFire) - now : 0, [nextFire, now]);
 
@@ -100,6 +107,8 @@ export function WakeProtocol({
         setSleepGoal(state.settings.sleep_time?.slice(0, 5) ?? "20:30");
         setTone(state.settings.tone);
         setMode(state.settings.mode);
+        const { data: opt } = await supabase.from("alarms").select("wake_mission_rounds").eq("id", state.settings.alarm_id).maybeSingle();
+        if (live && opt?.wake_mission_rounds) setRounds(opt.wake_mission_rounds);
         const hour = Number.parseInt(state.settings.time, 10);
         setTier(hour >= 4 && hour <= 7 ? `${hour}AM` : "");
       }
@@ -122,6 +131,7 @@ export function WakeProtocol({
       onTone(tone);
       onMode(mode);
       const state = await saveState({ data: { time: wakeTime, sleep: sleepGoal, tone, mode, enabled: reminderEnabled, repeat: repeatDaily, difficulty } });
+      if (isNewMission(mode)) await saveMission({ data: { rounds, lang: navigator.language?.toLowerCase().startsWith("hi") ? "hi" : "en" } });
       webAlarmScheduler.synchronize(state);
       setNextFire(state.settings?.next_fire_at ?? null);
       setTimezone(state.timezone);
@@ -214,7 +224,7 @@ export function WakeProtocol({
         <div className="wakep__sections">
           {section("sleep", <BedDouble size={19} />, "Sleep Goal", sleepGoal, <label className="wakep__field"><span>Target bedtime</span><input type="time" value={sleepGoal} onChange={event => { setSleepGoal(event.target.value); setSaved(false); }} /></label>)}
           {section("reminder", reminderEnabled ? <Bell size={19} /> : <BellOff size={19} />, "Wake Reminder", reminderEnabled ? `${wakeTime} · On` : "Off", <><div className="wakep__reminder"><label><span>Alarm time</span><input type="time" value={wakeTime} onChange={event => { setWakeTime(event.target.value); const hour = Number.parseInt(event.target.value, 10); setTier(hour >= 4 && hour <= 7 ? `${hour}AM` : ""); setSaved(false); }} /></label><button type="button" role="switch" aria-label="Alarm enabled" aria-checked={reminderEnabled} className={reminderEnabled ? "is-on" : ""} onClick={() => { setReminderEnabled(value => !value); setSaved(false); }}><i /></button></div><label className="wakep__field"><span>Repeat daily</span><input type="checkbox" checked={repeatDaily} onChange={event => { setRepeatDaily(event.target.checked); setSaved(false); }} /></label></>)}
-          {section("evening", <MoonStar size={19} />, "Evening Plan", `${mode === "math" ? "Math" : "Science"} · ${(tones.find(item => item.id === tone)?.name ?? "Alarm").toLowerCase()}`, <><div className="wakep__mode"><button type="button" className={mode === "math" ? "is-selected" : ""} onClick={() => { setMode("math"); setSaved(false); }}>Math</button><button type="button" className={mode === "science" ? "is-selected" : ""} onClick={() => { setMode("science"); setSaved(false); }}>Science</button></div><div className="wakep__tones">{tones.filter(item => !["modern", "oppenheimer"].includes(item.id)).map(item => <button type="button" key={item.id} className={tone === item.id ? "is-selected" : ""} onClick={() => { setTone(item.id); setSaved(false); onTone(item.id); }}><Volume2 size={15} /><span>{item.name}</span>{tone === item.id ? <Check size={15} /> : <Play size={13} />}</button>)}</div></>)}
+          {section("evening", <MoonStar size={19} />, "Evening Plan", `${MODE_NAME[mode]} · ${(tones.find(item => item.id === tone)?.name ?? "Alarm").toLowerCase()}`, <><MissionPicker mode={mode} onMode={m => { setMode(m); setSaved(false); }} difficulty={difficulty} onDifficulty={d => { setDifficulty(d); setSaved(false); }} rounds={rounds} onRounds={r => { setRounds(r); setSaved(false); }} /><div className="wakep__tones">{tones.filter(item => !["modern", "oppenheimer"].includes(item.id)).map(item => <button type="button" key={item.id} className={tone === item.id ? "is-selected" : ""} onClick={() => { setTone(item.id); setSaved(false); onTone(item.id); }}><Volume2 size={15} /><span>{item.name}</span>{tone === item.id ? <Check size={15} /> : <Play size={13} />}</button>)}</div></>)}
         </div>
 
         {mode === "math" && <label className="wakep__field"><span>Math difficulty</span><select value={difficulty} onChange={e => { setDifficulty(Number(e.target.value)); setSaved(false); }}><option value={1}>Easy</option><option value={2}>Medium</option><option value={3}>Hard</option></select></label>}

@@ -312,6 +312,9 @@ export type Database = {
           is_test: boolean
           last_answer_at: string | null
           local_date: string
+          mission_issued_at: string | null
+          mission_last_reject_at: string | null
+          mission_rejections: number
           next_push_at: string | null
           push_round: number
           question_answer: string | null
@@ -344,6 +347,9 @@ export type Database = {
           is_test?: boolean
           last_answer_at?: string | null
           local_date: string
+          mission_issued_at?: string | null
+          mission_last_reject_at?: string | null
+          mission_rejections?: number
           next_push_at?: string | null
           push_round?: number
           question_answer?: string | null
@@ -376,6 +382,9 @@ export type Database = {
           is_test?: boolean
           last_answer_at?: string | null
           local_date?: string
+          mission_issued_at?: string | null
+          mission_last_reject_at?: string | null
+          mission_rejections?: number
           next_push_at?: string | null
           push_round?: number
           question_answer?: string | null
@@ -471,6 +480,8 @@ export type Database = {
           updated_at: string
           user_id: string
           wake_difficulty: number
+          wake_mission_lang: string
+          wake_mission_rounds: number
           wake_next_fire_at: string | null
           wake_repeat_daily: boolean
           wake_saved_at: string | null
@@ -492,6 +503,8 @@ export type Database = {
           updated_at?: string
           user_id: string
           wake_difficulty?: number
+          wake_mission_lang?: string
+          wake_mission_rounds?: number
           wake_next_fire_at?: string | null
           wake_repeat_daily?: boolean
           wake_saved_at?: string | null
@@ -513,6 +526,8 @@ export type Database = {
           updated_at?: string
           user_id?: string
           wake_difficulty?: number
+          wake_mission_lang?: string
+          wake_mission_rounds?: number
           wake_next_fire_at?: string | null
           wake_repeat_daily?: boolean
           wake_saved_at?: string | null
@@ -2703,6 +2718,27 @@ export type Database = {
         }
         Relationships: []
       }
+      wake_typing_sentences: {
+        Row: {
+          body: string
+          difficulty: number
+          id: number
+          lang: string
+        }
+        Insert: {
+          body: string
+          difficulty: number
+          id?: never
+          lang: string
+        }
+        Update: {
+          body?: string
+          difficulty?: number
+          id?: never
+          lang?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_profiles: {
@@ -3339,13 +3375,19 @@ export type Database = {
         }
       }
       wake_claim_push: { Args: { _limit?: number }; Returns: Json }
+      wake_complete_mission: {
+        Args: { _event_id: string; _proof: Json; _version: number }
+        Returns: Json
+      }
       wake_create_occurrence: { Args: { aid: string }; Returns: string }
       wake_event_payload: { Args: { eid: string }; Returns: Json }
+      wake_finalize_solve: { Args: { _event_id: string }; Returns: Json }
       wake_finish_push: {
         Args: { _http: number; _id: string; _lease: string }
         Returns: undefined
       }
       wake_get_state: { Args: never; Returns: Json }
+      wake_issue_mission: { Args: { eid: string }; Returns: undefined }
       wake_issue_question: { Args: { eid: string }; Returns: undefined }
       wake_next_fire: {
         Args: { at_time?: string; t: string; z: string }
@@ -3362,6 +3404,10 @@ export type Database = {
           _tone: string
         }
         Returns: Json
+      }
+      wake_set_mission_options: {
+        Args: { _lang: string; _rounds: number }
+        Returns: undefined
       }
       wake_slot_reward: { Args: { _slot: string }; Returns: number }
       wake_submit_answer: {
