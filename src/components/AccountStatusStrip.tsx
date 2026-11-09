@@ -50,7 +50,7 @@ export function AccountStatusStrip() {
     <div className="ax-status-strip">
       <style>{`body[data-coach-orb="1"] .ax-status-strip{display:none}`}</style>
       {pastDue && (
-        <div style={{
+        <div data-simple-keep="" className="simple:!bg-[#FBEAEA] simple:!text-[#A12D2D] simple:!border-b-[#F2CFCF] simple:[&_a]:!bg-[#A12D2D] simple:[&_a]:!text-white" style={{
           width: "100%", background: "#3a0f0f", color: "#ffb3b3",
           padding: "8px 12px", textAlign: "center",
           fontFamily: "monospace", fontSize: "clamp(9px, 2.8vw, 11px)", letterSpacing: "clamp(1px, 0.4vw, 2px)", fontWeight: 800, overflowWrap: "anywhere",
@@ -61,7 +61,7 @@ export function AccountStatusStrip() {
         </div>
       )}
       {!pastDue && cancelInfo && (
-        <div style={{
+        <div data-simple-keep="" className="simple:!bg-[#FDF1D0] simple:!text-[#7A5C00] simple:!border-b-[#F2E2B0] simple:!tracking-[0.14em] simple:!text-[12px]" style={{
           width: "100%", background: "#3a2a08", color: "#ffd88a",
           padding: "7px 12px", textAlign: "center",
           fontFamily: "monospace", fontSize: "clamp(9px, 2.8vw, 11px)", letterSpacing: "clamp(1px, 0.4vw, 2px)", fontWeight: 800, overflowWrap: "anywhere",

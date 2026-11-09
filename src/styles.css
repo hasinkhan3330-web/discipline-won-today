@@ -3,6 +3,7 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant simple (&:where([data-theme=simple], [data-theme=simple] *));
 
 /*
  * Design system definition.
@@ -3002,3 +3003,46 @@ select {
 .rank-member-seal-tooltip { z-index: 350; width: auto; max-width: 240px; font-size: 12px; padding: 8px 10px; background: #fff; color: #242424; border-color: #ddd; }
 @keyframes rank-seal-appear { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .milestone-seal__sweep { display: none; animation: none; } .rank-people__identity .rank-member-seal { animation: none; } }
+
+
+/* ===== AXEN Simple theme (light). Dark has no data-theme attribute and is untouched. ===== */
+.home-header__actions { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+html[data-simple-pending] body { visibility: hidden; }
+html[data-theme="simple"] {
+  color-scheme: light;
+  background: #F5F5F3;
+  --s-canvas: #F5F5F3; --s-surface: #FFFFFF; --s-surface-2: #F0F0EC; --s-surface-3: #E8E8E3;
+  --s-border: #E7E7E3; --s-border-strong: #D5D5CF; --s-ink: #111111; --s-on-ink: #FFFFFF;
+  --s-ink-2: #55554F; --s-ink-3: #6F6F69; --s-ink-4: #8F8F89; --s-disabled: #C4C4BE;
+  --s-success: #1F6B43; --s-success-bg: #E8F3EC; --s-warning: #8A5A00; --s-warning-bg: #F7F0E1;
+  --s-danger: #C93A3A; --s-danger-bg: #FBEAEA; --s-info: #1F57D6; --s-info-bg: #E8EFFD;
+  --s-banner-bg: #FDF1D0; --s-banner-ink: #7A5C00; --s-overlay: rgba(17, 17, 17, 0.4);
+  --s-shadow-card: 0 1px 2px rgba(17, 17, 17, 0.04); --s-shadow-pop: 0 12px 32px rgba(17, 17, 17, 0.12);
+  /* shadcn tokens */
+  --background: oklch(0.966 0.003 106); --foreground: oklch(0.178 0 0);
+  --card: oklch(1 0 0); --card-foreground: oklch(0.178 0 0);
+  --popover: oklch(1 0 0); --popover-foreground: oklch(0.178 0 0);
+  --primary: oklch(0.178 0 0); --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.951 0.005 106); --secondary-foreground: oklch(0.178 0 0);
+  --muted: oklch(0.951 0.005 106); --muted-foreground: oklch(0.52 0.008 106);
+  --accent: oklch(0.951 0.005 106); --accent-foreground: oklch(0.178 0 0);
+  --destructive: oklch(0.56 0.17 25); --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.92 0.005 106); --input: oklch(0.92 0.005 106); --ring: oklch(0.178 0 0);
+  --chart-1: oklch(0.178 0 0); --chart-2: oklch(0.45 0.008 106); --chart-3: oklch(0.62 0.008 106); --chart-4: oklch(0.48 0.1 150); --chart-5: oklch(0.56 0.17 25);
+}
+html[data-theme="simple"] body { background: #F5F5F3 !important; color: #111111 !important; font-family: "Inter", system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+html[data-theme="simple"] *, html[data-theme="simple"] *::before, html[data-theme="simple"] *::after { text-shadow: none !important; }
+html[data-theme="simple"] :where(button, input, select, textarea) { font-family: "Inter", system-ui, sans-serif; }
+html[data-theme="simple"] :where(.font-mono, code, pre, kbd) { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+html[data-theme="simple"] ::selection { background: #111111; color: #FFFFFF; }
+html[data-theme="simple"] :focus-visible { outline: 2px solid #111111 !important; outline-offset: 2px; }
+html[data-theme="simple"] ::placeholder { color: #8F8F89 !important; opacity: 1; }
+html[data-theme="simple"] * { scrollbar-color: #D5D5CF transparent; }
+html[data-theme="simple"] :where(input[type="checkbox"], input[type="radio"], input[type="range"], progress) { accent-color: #111111; }
+html[data-theme="simple"] :where(img, video) { filter: none; }
+html[data-theme="simple"] [data-sonner-toast] { background: #111111 !important; color: #FFFFFF !important; border: 0 !important; border-radius: 999px !important; }
+html[data-theme="simple"] [data-sonner-toast] [data-description] { color: #E7E7E3 !important; }
+html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after { transition: background-color 250ms ease, color 250ms ease, border-color 250ms ease, fill 250ms ease, stroke 250ms ease !important; }
+@media (prefers-reduced-motion: reduce) { html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after { transition: none !important; } }
+/* Simple: Leaderboard neon grid/scan decoration has no light equivalent */
+html[data-theme="simple"] .lb::before, html[data-theme="simple"] .lb::after { display: none !important; }

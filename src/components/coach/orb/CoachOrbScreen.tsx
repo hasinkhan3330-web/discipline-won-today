@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useTheme } from "@/lib/theme/theme";
 import { useServerFn } from "@tanstack/react-start";
 import { Keyboard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,8 +28,8 @@ export function CoachOrbScreen({ voice, chatBusy, onChip, onKeyboard, sheet, pla
   const busyRef = useRef(chatBusy); busyRef.current = chatBusy;
   const voiceRef = useRef(voice); voiceRef.current = voice;
 
-  useEffect(() => { try { const t = localStorage.getItem("axen-theme") as ThemeKey | null; if (t && t in ORB_THEMES) setTheme(t); } catch { /* storage blocked */ } }, []);
-  const pick = (k: ThemeKey) => { setTheme(k); try { localStorage.setItem("axen-theme", k); } catch { /* storage blocked */ } };
+  useEffect(() => { try { const t = (localStorage.getItem("axen-orb-theme") ?? localStorage.getItem("axen-theme")) as ThemeKey | null; if (t && t in ORB_THEMES) setTheme(t); } catch { /* storage blocked */ } }, []);
+  const pick = (k: ThemeKey) => { setTheme(k); try { localStorage.setItem("axen-orb-theme", k); } catch { /* storage blocked */ } };
 
   const refresh = useCallback(() => load({ data: { timezone: tz() } }).then((r) => setPct(Math.round((r as { confidence: number }).confidence))).catch(() => {}), [load]);
   useEffect(() => { void refresh(); const h = () => void refresh(); window.addEventListener("axen:coach-plan-changed", h); return () => window.removeEventListener("axen:coach-plan-changed", h); }, [refresh]);
@@ -45,6 +46,7 @@ export function CoachOrbScreen({ voice, chatBusy, onChip, onKeyboard, sheet, pla
   }, []);
 
   const [a, b] = ORB_THEMES[theme];
+  const { theme: appTheme } = useTheme();
   // Coach-only: hide the global strip and tint the nav while this screen is mounted.
   useEffect(() => {
     const body = document.body; body.dataset.coachOrb = "1"; body.style.setProperty("--coach-a", a);
@@ -67,7 +69,7 @@ export function CoachOrbScreen({ voice, chatBusy, onChip, onKeyboard, sheet, pla
           <div className={s.pill}>{pill}</div>
         </div>
       </div>
-      <OrbCanvas colors={[a, b]} getMode={getMode} getLevel={getLevel} onMode={setMode} />
+      <OrbCanvas colors={appTheme === "simple" ? ["#111111", "#6F6F69"] : [a, b]} getMode={getMode} getLevel={getLevel} onMode={setMode} />
       <button className={s.stat} onClick={onStat}><strong>{pct ?? 0}%</strong><span>Coach knows you</span></button>
       <div className={s.status} style={{ color: mode === "idle" ? "var(--muted)" : "var(--a)" }} aria-live="polite">{status}</div>
       <div className={`${s.scroll} ${s.chips}`}>{CHIPS.map((c) => <button key={c} className={s.chip} disabled={chatBusy} onClick={() => onChip(c)}>{c}</button>)}</div>

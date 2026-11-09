@@ -1,3 +1,4 @@
+import { AppearanceSwitcher } from "@/components/AppearanceSwitcher";
 import { CoinBadge } from "@/components/CoinBadge";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { AX } from "./styles";
@@ -161,7 +162,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
     <main className="home-command">
       <header className="home-header">
         <div><span>AXEN</span><h1>Command Center</h1><p>{greeting()}, {name}</p></div>
-        <CoinBadge amount={coins} variant="balance" />
+        <div className="home-header__actions"><AppearanceSwitcher /><CoinBadge amount={coins} variant="balance" /></div>
       </header>
 
       <section className="home-discipline-panel">
