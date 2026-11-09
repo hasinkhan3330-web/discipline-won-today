@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { cleanupWakeUser } from "./wake-test-cleanup";
 
 // Live check with temporary accounts (deleted afterwards). Setup/backdating uses the service key;
 // every mission/answer call is made as the signed-in temporary user.
@@ -19,7 +20,7 @@ async function account(): Promise<Acc> {
   return { id: r.data.user.id, c };
 }
 beforeAll(() => { if (url && adminKey) admin = createClient(url, adminKey, { auth: { persistSession: false } }); });
-afterAll(async () => { for (const id of ids) await admin.auth.admin.deleteUser(id); }, 120000);
+afterAll(async () => { for (const id of ids) expect(await cleanupWakeUser(admin, id)).toBe(true); }, 180000);
 
 const rpc = async (a: Acc, fn: string, args: object) => { const r = await a.c.rpc(fn, args); if (r.error) throw Error(r.error.message); return r.data; };
 const unthrottle = (id: string) => admin.from("alarm_events").update({ last_answer_at: null }).eq("id", id);
