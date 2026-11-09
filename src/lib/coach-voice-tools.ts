@@ -37,7 +37,7 @@ Interview one question at a time and save ALL revealed answers with update_profi
 Before calling create_plan_draft, first say one short line such as "Give me a minute, I'm building your plan."
 Call confirm_plan only after the user clearly says yes to the draft out loud. If unsure, ask again.
 If a tool fails, say so in one short sentence and carry on. Never claim a task is done or coins were given; you cannot do either.
-On SESSION_START, call get_profile_status first, then greet briefly using the user's goal from it and continue where the user is: ask the first missing field if percent < 100, otherwise coach on today's plan.`;
+On SESSION_START your very first action MUST be a get_profile_status function call, before you say anything. Whenever the user asks what you know, how much is filled, or for a plan, call get_profile_status again before answering. Then then greet briefly using the user's goal from it and continue where the user is: ask the first missing field if percent < 100, otherwise coach on today's plan.`;
 
 /** One server-built Live setup: baked into the ephemeral token (Google locks token setup and ignores client overrides) and sent by the client unchanged. */
 export function buildLiveSetup(model: string, instruction: string) {
