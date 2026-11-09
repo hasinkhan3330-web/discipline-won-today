@@ -68,7 +68,7 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
   onComplete: (tier: FocusTier, lockMode: LockMode, apps: string[]) => Promise<number | null>;
   hasPaidAccess: boolean;
   onLocked: () => void;
-}>(function DeepFocus({ G, G2, onComplete, hasPaidAccess, onLocked }, ref) {
+}>(function DeepFocus({ G, onComplete, hasPaidAccess, onLocked }, ref) {
   const CARD = cardStyle(G);
   const [phase, setPhase] = useState<Phase>("idle");
   const [tier, setTier] = useState<FocusTier | null>(null);
