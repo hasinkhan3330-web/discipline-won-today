@@ -43,7 +43,7 @@ export function CoachPlanPanel({ refreshKey, onAskChange, onSend }: { refreshKey
       </button>
       {open && (
         <div className={s.body}>
-          <CoachQuickSetup initial={state.slots ?? {}} />
+          <CoachQuickSetup initial={state.slots} />
           {pct < PLAN_READY_CONFIDENCE && <p className={s.hint}>Chat a little more so your plan fits you. The coach will ask a few questions first, then build it.</p>}
           {!state.draft && (
             <>
@@ -60,7 +60,7 @@ export function CoachPlanPanel({ refreshKey, onAskChange, onSend }: { refreshKey
               {!full && <ul className={s.tasks}>
                 {(plan.days[0]?.tasks ?? []).map((t, i) => <li key={i}><span>{t.title}</span><small>{t.minutes} min · tiny version: {t.minimum}</small></li>)}
               </ul>}
-              {shown!.days > 1 && <p className={s.more}>Day 1 shown. {shown!.days - 1} more days are ready; each day's tasks are added to your habits that morning.</p>}
+              {shown!.days > 1 && !full && <p className={s.more}>Day 1 shown. {shown!.days - 1} more days are ready; each day's tasks are added to your habits that morning.</p>}
               {plan.days.length > 1 && <button className={s.ghost} onClick={() => setFull((f) => !f)} aria-expanded={full}>{full ? "Hide full plan" : "View full plan"}</button>}
               {full && (
                 <ol className={s.full}>
