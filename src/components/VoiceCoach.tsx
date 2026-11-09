@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getLiveSession, runVoiceToolCall } from "@/utils/voice.functions";
 import { MAX_VOICE_TOOL_CALLS_PER_TURN } from "@/lib/coach-voice-tools";
@@ -112,8 +112,19 @@ const TOOLS = [
   },
 ];
 
+export type VoicePhase = "idle" | "listen" | "think" | "speak";
+export type VoiceApi = { live: boolean; busy: boolean; error: string | null; toggle: () => void; phase: () => VoicePhase; level: () => number; extras: ReactNode };
+const rms = (a: AnalyserNode | null | undefined, buf: { b: Float32Array | null }) => {
+  if (!a) return 0;
+  if (!buf.b || buf.b.length !== a.fftSize) buf.b = new Float32Array(a.fftSize);
+  a.getFloatTimeDomainData(buf.b);
+  let sum = 0;
+  for (let i = 0; i < buf.b.length; i++) sum += buf.b[i]! * buf.b[i]!;
+  return Math.min(1, Math.sqrt(sum / buf.b.length) * 4);
+};
+
 /** Real-time voice coach over the Gemini Live API (WebSocket, native audio). */
-export function VoiceCoach() {
+export function VoiceCoach({ render }: { render?: (api: VoiceApi) => ReactNode } = {}) {
   const getSession = useServerFn(getLiveSession);
   const fetchContext = useServerFn(getCoachContext);
   const fetchToday = useServerFn(getTodayProgress);
@@ -121,6 +132,9 @@ export function VoiceCoach() {
   const saveSummary = useServerFn(saveCoachSessionSummary);
   const runVoiceTools = useServerFn(runVoiceToolCall);
   const turnCallsRef = useRef(0);
+  const micTapRef = useRef<AnalyserNode | null>(null);
+  const thinkingRef = useRef(false);
+  const levelBuf = useRef<{ b: Float32Array | null }>({ b: null });
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
@@ -203,6 +217,8 @@ export function VoiceCoach() {
       /* already disconnected */
     }
     nodeRef.current = null;
+    micTapRef.current = null;
+    thinkingRef.current = false;
     void micCtxRef.current?.close();
     micCtxRef.current = null;
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -311,6 +327,11 @@ export function VoiceCoach() {
           );
         };
         source.connect(processor);
+        // Level tap for the orb: side branch only, never connected to any output.
+        const tap = context.createAnalyser();
+        tap.fftSize = 512;
+        source.connect(tap);
+        micTapRef.current = tap;
         // Silent sink: the processor needs a destination path, but the mic must
         // never be routed back to the speakers.
         const sink = context.createGain();
@@ -346,6 +367,7 @@ export function VoiceCoach() {
           );
         }
         if (message.toolCall?.functionCalls?.length) {
+          thinkingRef.current = true;
           // Same 8 Coach tools as text, run on the server as the signed-in user; max 6 per turn.
           const calls = message.toolCall.functionCalls.map((call) => ({ id: call.id, name: call.name ?? "", args: call.args ?? {} }));
           const allowed = Math.max(0, MAX_VOICE_TOOL_CALLS_PER_TURN - turnCallsRef.current);
@@ -366,6 +388,7 @@ export function VoiceCoach() {
         }
         const input = message.serverContent?.inputTranscription;
         if (input?.text) transcriptRef.current += input.text;
+        if (input?.finished) thinkingRef.current = true;
         if (input?.finished && transcriptRef.current) {
           const text = transcriptRef.current; transcriptRef.current = '';
           await handleAnswer(text);
@@ -388,11 +411,13 @@ export function VoiceCoach() {
         for (const part of parts) {
           const audio = part?.inlineData?.data;
           if (audio) {
+            thinkingRef.current = false;
             playerRef.current?.push(base64ToFloat32(audio));
             setSpeaking(true);
           }
         }
-        if (message.serverContent?.turnComplete) setSpeaking(false);
+        if (message.serverContent?.turnComplete) { setSpeaking(false); thinkingRef.current = false; }
+        if (message.serverContent?.interrupted) thinkingRef.current = false;
       };
 
       const lost = (raw: string) => {
@@ -440,6 +465,22 @@ export function VoiceCoach() {
 
   const live = status === "live";
   const busy = status === "connecting";
+
+  const toggle = () => { if (live) release(); else if (!setupDone) setSetupOpen(true); else void start(); };
+  if (render) {
+    const phase = (): VoicePhase => {
+      if (wsRef.current === null || !micTapRef.current) return "idle";
+      if (playerRef.current?.isPlaying) return "speak";
+      return thinkingRef.current ? "think" : "listen";
+    };
+    const level = () => { const p = phase(); return p === "speak" ? rms(playerRef.current?.levelTap(), levelBuf.current) : p === "listen" ? rms(micTapRef.current, levelBuf.current) : 0; };
+    const extras = (setupOpen || building || (live && yesNo)) ? <>
+      {setupOpen && <CoachQuickSetup onDone={() => { setSetupOpen(false); setSetupDone(true); }} />}
+      {building && <p className={s.hint}>Give me a minute, I'm building your plan.</p>}
+      {live && yesNo && <div className={s.answers}>{['Yes', 'No'].map(answer => <Button key={answer} onClick={() => { setYesNo(false); wsRef.current?.send(JSON.stringify({ clientContent: { turns: [{ role: 'user', parts: [{ text: answer }] }], turnComplete: true } })); }}>{answer}</Button>)}</div>}
+    </> : null;
+    return <>{render({ live, busy, error, toggle, phase, level, extras })}</>;
+  }
 
   return (
     <>
