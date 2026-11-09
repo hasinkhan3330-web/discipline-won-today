@@ -1,29 +1,33 @@
-# AXEN Coach v2 upgrade (additive only)
+# Wake alarm: add Shake, Typing, Find Color Tiles missions
 
-Goal: when a new user opens AXEN, the Coach learns about them (target ~70–90% of key details) through a short, personal chat, then builds and starts their day plan. Everything else in AXEN stays exactly as it is.
+The workspace is in plan mode, so this is the full build plan for one pass. Math and Science stay exactly as they are.
 
-## What stays untouched
-Home, Zen, Rank, Stats, Accountability, You tabs, bottom nav, theme, auth, subscriptions, coins/XP/rank/seal rules, existing tasks and existing Coach chat history. The Coach screen keeps its current look; only its brain and a small "Your plan" card are added.
+## What exists today
+- One alarm per user ("AXEN Wake Protocol"). The mission is stored as `alarms.challenge_type`, and only `math` or `science` is allowed. That rule is enforced in two places: the save function's input check and the `wake_save_settings` server check. Difficulty is `wake_difficulty` 1–3.
+- Ringing: `wake_get_state` turns a due event into "ringing" and issues a private question. `AlarmScreen` loops the sound and vibration and restores itself after a reload. Only `wake_submit_answer` can mark an event solved. Solving runs the shared finalizer: reward window, coins, streak, next occurrence, push cancel.
+- There is no "Off" mission in the data. "Off" will map to the existing alarm on/off switch.
 
-## What the user will experience
-1. **Getting to know you (onboarding):** Coach asks one question at a time, in Hindi / Hinglish / English, never repeating anything already known (it first reads the user's existing profile, habits and history). Vague answers get 2–3 options. A small "Coach knows you: 64%" bar shows progress.
-2. **Summary + length:** at ~70%+ it says "Toh main samjha: …", asks if right, then plan length: Today (1 day), 7 days or 21 days. There is no 90-day option.
-3. **Plan draft:** max 3 tasks/day in week 1, each with a trigger and a 2-minute minimum version, one distraction fix, lighter review days. User can say "change X"; nothing is saved until a clear yes.
-4. **Plan starts today:** on confirm, the full plan is stored. Each day, when the user opens the app, that day's tasks are added to their normal habit list — once only, never duplicated, same coin rules as existing tasks (no new rewards). The weekly review only adjusts the remaining days.
-5. **Daily coaching:** morning top task, evening check-in, no-shame missed-day help, reset after 2 missed days, weekly review every 7 days. Coach can add, edit, reschedule — never marks anything done.
-6. **Memory:** Coach remembers wins, failure patterns and preferences across sessions.
-7. **Safety:** habit coach only, gentle for under-18, care + helpline message on distress.
+## What gets built
+1. **Picker (mission step only):** Math, Science, Shake, Typing, Find Color Tiles and Off rows, in the colors and sizes you specified, with a "New" chip as in your screenshot. Tapping a new mission opens a bottom sheet with a chip, your headline, a CSS/SVG demo, a coral "Next" button and a "Try it" button. If the phone has no motion sensor, the Shake row shows "Not supported on this device" and can't be picked.
+2. **Per-alarm settings for the new missions:** Easy/Normal/Hard (default Normal) and Rounds 1/2/3 (default 1), with "Try it" here too.
+3. **Shake:** a meter that fills as you shake. It uses a low-pass filter and peak detection at thresholds of 11/14/18 m/s², with peaks at least 150 ms apart, at most 7 per second, and targets of 20/40/70. Progress never goes down. iOS asks for motion permission on a tap. If motion access is lost, a "Motion access needed" screen appears and the alarm keeps ringing. Finishing shows a flash, then a check mark and a short vibration.
+4. **Typing:** a sentence card with muted, white and red letters, plus a progress bar and a round counter. Easy and Normal ignore case; Hard is case-sensitive with punctuation. Paste, drop and cut are blocked, as is any single input that adds more than 2 characters. The sentence bank holds 60+ original sentences per difficulty in English and in Hinglish (Hindi in Roman letters), and never repeats the last 5 used.
+5. **Find Color Tiles:** grids of 4x4, 5x5 and 6x6 with 3–4, 5–6 and 8–10 targets. Each round picks a random colour-blind-safe color pair, and Hard uses closer shades. Tapping a target pops it. A wrong tap shakes and flashes red, and 3 wrong taps make a new layout. Each round ends with "All clear!" and the last one with a green check mark.
+6. **Same ringing and completion path:** the new missions render inside the existing `AlarmScreen`, with the same sound loop, vibration, reload restore and no close button. Wake lock, visibilitychange and portrait lock work the same way. A finished mission calls one new server function, which runs the same finalizer as solving a question.
+7. **Preview mode ("Try it"):** runs on the device only, with no sound and no server calls. It records nothing and gives no coins, and you can close it.
 
 ## Technical details
-- New tables (additive, owner-only RLS, no anon): `coach_profile` (slots JSON with per-slot confidence, onboarding_done, coach_style, age_range), `coach_plans` (draft/confirmed JSON, days, start date). Reuse existing `coach_notes` for memory (types win / failure_pattern / preference / weekly_review).
-- `src/utils/coach.functions.ts`: replace the system prompt with the v2 prompt from your pack and add tool calling via the AI gateway: `get_user_context` (profile, last 10 memories, weekly summary, real progress from existing reads in `coach-context.functions.ts`), `update_profile`, `create_plan_draft` (second model call with the v2 plan prompt + self-check, validated with a schema: ≤3 tasks wk1, minutes ≤ available time), `confirm_plan`, `update_task`, `reschedule_tasks`, `save_coach_memory`, `get_progress`. All run server-side as the signed-in user; no tool can complete a task or award coins.
-- Plan-generation model and provider live in one config constant (e.g. `COACH_PLAN_MODEL = { provider, model }` in a small server-only config module); the function logic reads only that constant, so it can be switched later without touching code paths. No provider is hardcoded inside `create_plan_draft`.
-- `create_plan_draft` generates the full plan for the chosen length (1, 7 or 21 days, max 21) in ONE model call, schema-validated, saved in `coach_plans` (days stored as JSON array, `days` limited to 1/7/21 by a check constraint).
-- Daily materialization: on app open, a server function inserts only today's plan tasks into the existing `tasks` table via the current insert path (economy guards stay in charge). Idempotent through a unique key (plan id + day index + task index) stored on a small `coach_plan_materialized` table, so reopening never duplicates. Weekly review edits only future days via `update_task` / `reschedule_tasks`.
-- VoiceCoach: Gemini Live function calling with the same tool set. Tools declared at session setup; each `toolCall` is sent to a server function that runs as the signed-in user, and the `toolResponse` is sent back to the session. Session uses short-lived ephemeral tokens minted server-side — no API key in the browser. The prompt makes the coach say a short "give me a minute, building your plan" line before `create_plan_draft`. Live model name kept in one config constant (`COACH_LIVE_MODEL`), alongside `COACH_PLAN_MODEL`. No VoiceCoach UI redesign.
-- UI additions only inside Coach: confidence bar, plan draft card with Accept / Change buttons.
-- Tests: rule tests (≤3 tasks/day week 1, total minutes ≤ available, every task has minimum version, coach cannot mark done, other users can't read profile/plan) plus a scripted run of the 10 personas from your pack with replies saved for review.
+- Additive migration:
+  - Allow `shake`, `typing` and `tiles` in `wake_save_settings`.
+  - Add `alarms.wake_mission_rounds smallint default 1`.
+  - Add `wake_complete_mission(_event_id, _proof jsonb)`. It is SECURITY DEFINER, owner-only, ringing-only and idempotent, and refuses math/science events. It needs a minimum time since the first ring based on difficulty × rounds (for example Easy 1 round ≥ 8 s), plus a 400 ms rate limit.
+  - Move the shared finalizer into a private helper. The existing `wake_submit_answer` body stays byte-for-byte unchanged; only the new function uses the helper. Existing rows are never edited.
+- `wake_get_state` / `wake_event_payload` gain `mission` and `rounds`, and skip issuing a question for the new missions.
+- New files: `src/lib/wake-missions/{shake,typing,tiles,sentences}.ts` (pure logic) and `src/components/wake/missions/*` with a scoped CSS module.
+- Edited files: the picker in the wake settings UI, `AlarmScreen.tsx` (a branch that picks which mission to show only), `wake.functions.ts`, `wake-types.ts`.
+- Tests: shake streams (walking noise, hard shakes, rate limit, exactly 100%); typing (paste/dictation blocked, case rules, completion); tiles (exactly N unique targets, reset after 3 wrong taps); a live server test (completes exactly once, a second call pays nothing, too-early completion refused, cannot complete math via the new function); the ringing screen has no dismiss while unfinished; the picker shows 5 missions and disables Shake; all existing wake tests rerun unchanged.
 
-## Not possible / honest limits
-- The Coach can only "know" what the user tells it or what AXEN already stores; it cannot read the phone or other apps.
-- Plan quality depends on the AI; the persona test is how we check it, and I'll show you the replies.
+## Assumptions and risks
+- Shake, typing and tile results are measured on the phone, so the server can only check timing and ownership. A modified phone could fake a finish. Rewards follow the existing wake rules unchanged.
+- Closed-app ringing still has the existing browser limits, and backup alerts remain inactive. I will report only what I actually test.
+- No Household Hunt or AI mission, and no changes outside the alarm.
