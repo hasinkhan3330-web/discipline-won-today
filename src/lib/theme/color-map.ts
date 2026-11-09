@@ -197,7 +197,7 @@ export function mapBackground(value: string): string {
     const stops = splitTop(g[3]);
     const pos = stops.map((s) => { const p = s.match(/([\d.]+)(%|deg)\s*$/); return p ? parseFloat(p[1]) : null; });
     const hard = pos.some((p, i) => i > 0 && p != null && pos[i - 1] != null && Math.abs(p - (pos[i - 1] as number)) <= 3);
-    if (g[2] === "conic" || hard || /var\(--/.test(g[3])) return `${g[1] ?? ""}${g[2]}-gradient(${stops.map((s) => mapValueColors(s, g[2] === "conic" ? "graphic" : "bg")).join(", ")})`;
+    if (g[2] === "conic" || hard) return `${g[1] ?? ""}${g[2]}-gradient(${stops.map((s) => mapValueColors(s, g[2] === "conic" ? "graphic" : "bg")).join(", ")})`;
     return "none";
   });
   const keep = mapped.filter((m) => m !== "none");
