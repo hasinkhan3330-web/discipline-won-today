@@ -1,30 +1,51 @@
-# Coach tab: new orb design, visuals only
+# Add "Simple" light theme + Dark/Simple switcher
 
-## What changes (Coach tab only)
-- Remove the coach photo and its overlay, the old "Coach knows you" bar, the old voice card and the "Open text coach" bar.
-- Hide the gold "SUBSCRIPTION ENDS" strip on the Coach tab only. Its date moves into the status pill. Other tabs keep the strip.
-- Build the new screen from top to bottom, matching your reference: theme chips (Lime / Ice blue / Violet, saved as `axen-theme`), header with AXEN logo, keyboard button and status pill, particle orb with glow, the real "% Coach knows you" (tap opens Quick setup), status label, the three prompt chips, the "Talk to your coach" card with the mic button, and the existing bottom tab bar recoloured to the accent.
-- The text coach opens as a dark bottom sheet from the keyboard button. Chat logic stays the same.
+Dark stays the default and stays exactly as it is now. The only change you'll see in Dark is a new small arrow button on the right side of the Command Center header on Home. Simple is a separate light look, styled like your screenshots: off-white background, white cards, black pills and rings, color only for status.
 
-## What stays exactly the same
-- Gemini Live session, its tools and setup, the text coach logic, the profile percentage calculation, Quick setup, the plan panel's data, subscription and auth logic, routing, the database and every other tab.
+## What gets built
 
-## Voice stays identical
-- The model stays `models/gemini-2.5-flash-native-audio-latest`. No voiceName or speechConfig is set today, so Google's default voice plays. Both stay exactly as they are, along with the system prompt, language, sample rates, worklets, playback code, session setup and tools.
-- The AnalyserNodes are side branches only: each one is connected from an existing source and never to the speakers. The orb only reads levels.
+1. **Switcher (Home, Command Center header, right side)**
+   - A 36px round arrow button (chevron-down) next to the coin badge. Nothing in the header moves or resizes.
+   - Tapping it opens an "Appearance" bottom sheet (a centered dialog on wide screens) with two cards: **Dark – Neon focus** and **Simple – Clean & light**, each with a small phone preview.
+   - Tapping a card applies the look instantly, saves it on this device and closes the sheet after 250ms. The arrow flips while the sheet is open. Both looks are free for everyone.
 
-## Safety switches
-- One constant, `USE_ORB_COACH = true`. Setting it to false brings back the old Coach screen. The old components are kept, not deleted.
-- The strip is hidden and the nav turns accent-coloured only while the Coach tab is active.
+2. **Saved choice, no flash**
+   - The choice is saved on the device ("axen-theme"), with no database changes. A tiny early script applies it before the app draws, so you never see the wrong look flash on load.
+   - Simple also turns the phone's browser bar, scrollbars and pickers light. Dark keeps all of its current settings.
+
+3. **Simple look across every screen, in this order**
+   - A. Shell: subscription strip, header, coin pill, bottom nav
+   - B. Home
+   - C. Rank (Leaderboard, verified list, seals stay as they are)
+   - D. Zen
+   - E. Coach: orb screen, text sheet, quick setup, plan panel. Only colors change; voice and audio code are not touched.
+   - F. Stats
+   - G. You
+   - H. Alarm and its ringing/mission screens
+   - I. Everything else: Accountability, Contract card/sheet, Goals, Habits, Paywall/Pricing, Onboarding, sign-in/sign-up/reset pages, legal pages, Deep Focus, every dialog, sheet, toast and popup, plus empty, loading and error pages
+   - Colors, sizes, radii, type and component rules follow your spec exactly (Canvas #F5F5F3, Ink #111, Inter only inside Simple, and so on).
+
+4. **Final sweep**: search for every leftover dark-only color, glow and gradient, and give each one a Simple version.
+
+## How Dark stays frozen
+
+- Every Simple rule only applies when the page is set to Simple. Existing Dark classes, CSS and literal colors are never edited or swapped. Simple overrides are added next to them, so Dark's output does not change.
+- The arrow button is the only new thing in Dark.
+
+## Verification
+
+- Before and after screenshots of each main tab in Dark at 390px, compared pixel by pixel. They should be identical apart from the arrow.
+- Screenshots of every reachable screen in Simple at 360x800 and 390x844, checking for horizontal scroll, clipped text, dark boxes and unreadable text.
+- Choice survives a page reload, with no flash. Switching back to Dark restores everything. No console errors.
+- A small test for the saved setting: default is Dark, the choice persists, and unknown values fall back to Dark.
 
 ## Technical details
-- New Coach-only files: `src/components/coach/orb/CoachOrbScreen.tsx`, `OrbCanvas.tsx` (a 1:1 port of the reference canvas math: 450 Fibonacci points, dpr capped at 2, smoothing `1-0.0015^dt`, f clamped to 1.1, paused when the tab is hidden, reduced motion respected), and `coach-orb.module.css` (the reference CSS values, scoped with CSS variables `--a/--b/--bg/--card/--pill/--muted/--line`). Manrope is loaded with a `<link>` tag.
-- `VoiceCoach.tsx`: logic stays as it is. Add a small optional `onVoiceState(state, getLevel)` callback and two AnalyserNodes:
-  - one on the existing mic source (no second `getUserMedia`)
-  - one on the playback output
-  
-  Map the states from real Live events: mic on → listening, mic stop or turn start → thinking, first audio chunk → speaking, turn complete with the queue drained → idle. Expose `start`/`stop` and the percentage through the same component, using a headless render mode so the old card is not drawn.
-- `AiCoach.tsx`: render `CoachOrbScreen` instead of the photo stage. Chips call the same `send(text)` and set the orb to thinking. The text chat moves into the sheet unchanged.
-- Pill date comes from the same entitlement source as `AccountStatusStrip`, formatted DD Mon YYYY; it shows Expired · date or Free when there is no active subscription. The bottom nav receives an accent class only while the Coach tab is active.
-- `CoachPlanPanel` stays reachable from the stat row through Quick setup and the existing plan flow, with no data changes.
-- Verification: Playwright at 390x844 and 360x645 (no page scroll or overflow), theme switching and persistence, chip sends, sheet opens, stat opens Quick setup. Existing Coach tests rerun. Real mic and speaker levels on a physical phone will be reported as untested.
+
+- `src/lib/theme.tsx`: ThemeProvider and `useTheme()` set `<html data-theme>`. No attribute means Dark. An inline script runs first in `__root.tsx` head; the app has no `class="dark"` to handle.
+- `src/styles.css`: `@custom-variant simple (&:where([data-theme=simple], [data-theme=simple] *))`, plus a `[data-theme="simple"]` token block (--background, --card, --primary, etc. in oklch, plus the new tokens surface-2/3, ink-2..4, success, warning, danger, info, banner, overlay and shadows). Inter loads with a `<link>` and is applied only under Simple.
+- Per-screen overrides: `[data-theme="simple"] .class {}` rules in `styles.css`, and `:global([data-theme="simple"]) .x` inside the existing CSS modules (coach-orb, acct, contract-visuals, zen, missions, coin-badge). `simple:` classes for hardcoded Tailwind colors in TSX. Existing Dark values are left as they are.
+- Canvas/SVG color users (OrbCanvas, NeuralWaveCanvas, SpaceWallpaper, ZenMandalaScene, charts, EclipseHero) read `useTheme()` and pick Simple colors only when Simple is on. SpaceWallpaper and other dark backgrounds are hidden or swapped for flat Canvas in Simple.
+- `theme-color` meta is #F5F5F3 in Simple; the Dark value is unchanged.
+- Cross-fade: a `theme-switching` class is added for 250ms on user action only, and is turned off under reduced motion.
+- Not touched: auth, database, server functions, payments, Coach/Gemini Live logic, alarms, planner, rewards, routes, copy.
+- Each Simple screen needs many overrides (about 155 color literals in styles.css, plus about 50 files with hardcoded colors). I'll work in the phase order above and list anything left unfinished at the end.
