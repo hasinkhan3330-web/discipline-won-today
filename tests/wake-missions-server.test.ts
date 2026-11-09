@@ -1,9 +1,21 @@
 import { expect, test } from "bun:test";
 import postgres from "postgres";
+import { afterAll, beforeAll } from "bun:test";
+import { createClient } from "@supabase/supabase-js";
 
 // Runs entirely inside one transaction that is always rolled back: temporary users, no residue.
 const url = process.env.WAKE_MISSION_DATABASE_URL;
-const serverTest = url ? test : test.skip;
+const serverTest = url && process.env.SUPABASE_SERVICE_ROLE_KEY ? test : test.skip;
+const admin = url ? createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } }) : null;
+const users: string[] = [];
+beforeAll(async () => {
+  if (!url || !admin) return;
+  for (let i = 0; i < 10; i++) {
+    const r = await admin.auth.admin.createUser({ email: `wake-mission-${crypto.randomUUID()}@example.com`, password: crypto.randomUUID() + "Aa9!", email_confirm: true });
+    if (r.error || !r.data.user) throw Error(r.error?.message); users.push(r.data.user.id);
+  }
+});
+afterAll(async () => { for (const id of users) await admin?.auth.admin.deleteUser(id); });
 
 class Rollback extends Error {}
 async function inTx(fn: (q: (s: string, uid?: string) => Promise<postgres.RowList<postgres.Row[]>>) => Promise<void>) {
@@ -22,8 +34,7 @@ async function inTx(fn: (q: (s: string, uid?: string) => Promise<postgres.RowLis
 type Q = Parameters<Parameters<typeof inTx>[0]>[0];
 
 async function ringingUser(q: Q, mode: string, n: number) {
-  const uid = `20000000-0000-4000-8000-00000000000${n}`;
-  await q(`INSERT INTO auth.users(id,email,aud,role,instance_id,raw_user_meta_data) VALUES('${uid}','wake-mission-${n}@test.invalid','authenticated','authenticated','00000000-0000-0000-0000-000000000000','{}') ON CONFLICT DO NOTHING`);
+  const uid = users[n]!;
   await q(`UPDATE public.profiles SET reward_timezone='Asia/Kolkata', streak=0, last_activity_date=NULL WHERE id='${uid}'`);
   await q(`SELECT public.wake_save_settings('04:00','21:00','classic','${mode}',true,true,2::smallint)`, uid);
   await q(`UPDATE public.alarm_events SET scheduled_for=now()-interval '1 minute', saved_at=now()-interval '3 hours' WHERE user_id='${uid}' AND status='scheduled'`);
@@ -104,7 +115,7 @@ serverTest("math alarms cannot be finished via the mission function; anon and fo
   });
   await inTx(async q => {
     const s = await ringingUser(q, "shake", 5);
-    await expect(q(`SELECT public.wake_complete_mission('${s.ev.id}',${s.ev.question.version},'{"elapsed_ms":9000,"shakes":99}'::jsonb)`, "20000000-0000-4000-8000-000000000004")).rejects.toThrow();
+    await expect(q(`SELECT public.wake_complete_mission('${s.ev.id}',${s.ev.question.version},'{"elapsed_ms":9000,"shakes":99}'::jsonb)`, users[4]!)).rejects.toThrow();
   });
   await inTx(async q => {
     await q("SET LOCAL ROLE anon");
