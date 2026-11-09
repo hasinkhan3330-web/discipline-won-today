@@ -206,7 +206,8 @@ export function mapBackground(value: string): string {
   for (const layer of layers) {
     for (const m of layer.match(COLOR_RE) ?? []) { const c = parseColor(m); if (c && c.a > 0.85) return mapRGBA(c, "bg"); }
   }
-  return "none";
+  const v = value.match(/var\(--[\w-]+\)/);
+  return v ? v[0] : "none";
 }
 
 /** Map a single CSS declaration. Returns null to leave it untouched. */
