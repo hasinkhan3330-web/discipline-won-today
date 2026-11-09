@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { cleanupWakeUser } from "./wake-test-cleanup";
+import { SENTENCES } from "../src/lib/wake-missions/sentences";
 
 // Live check with temporary accounts (deleted afterwards). Setup/backdating uses the service key;
 // every mission/answer call is made as the signed-in temporary user.
@@ -110,4 +111,49 @@ serverTest("math cannot be finished by the mission function; foreign, anon and p
   expect(priv.error !== null || (priv.data ?? []).length === 0).toBe(true);
   const { data } = await admin.from("alarm_events").select("status").eq("id", s.ev.id).single();
   expect(data?.status).toBe("ringing");
+}, 120000);
+
+serverTest("server sentence table is exactly the shared SENTENCES source", async () => {
+  const { data } = await admin.from("wake_typing_sentences").select("lang,difficulty,body").limit(5000);
+  const server = new Set((data ?? []).map(r => `${r.lang}|${r.difficulty}|${r.body}`));
+  const local = new Set(Object.entries(SENTENCES).flatMap(([l, byD]) => Object.entries(byD).flatMap(([d, list]) => list.map(b => `${l}|${d}|${b}`))));
+  expect(server.size).toBe(local.size);
+  for (const k of local) expect(server.has(k)).toBe(true);
+}, 60000);
+
+// Honest slow players: server time since the mission was issued is long, phone timer is long.
+async function slow(mode: string, minutesAgo: number) {
+  const u = await ringing(mode);
+  await admin.from("alarm_events").update({ mission_issued_at: new Date(Date.now() - minutesAgo * 60e3).toISOString() }).eq("id", u.ev.id);
+  return u;
+}
+const finish = (u: Awaited<ReturnType<typeof ringing>>, proof: object) => rpc(u.a, "wake_complete_mission", { _event_id: u.ev.id, _version: u.ev.question.version, _proof: proof });
+async function rejections(id: string) { const { data } = await admin.from("alarm_events").select("mission_rejections,status").eq("id", id).single(); return data; }
+
+serverTest("no false rejects: slow shaker (3x minimum), messy typist, tiles with new layouts, older user taking minutes", async () => {
+  const sh = await slow("shake", 2);
+  const r1 = await finish(sh, { elapsed_ms: Math.round(40 / 7 * 3 * 1000), shakes: 40 });
+  expect(r1.solved).toBe(true);
+  const ty = await slow("typing", 4);
+  const sent = JSON.parse(ty.ev.question.text).sentences as string[];
+  const r2 = await finish(ty, { elapsed_ms: 200000, typed: sent }); // fixed many mistakes; only final text is sent
+  expect(r2.solved).toBe(true);
+  const ti = await slow("tiles", 3);
+  const r3 = await finish(ti, { elapsed_ms: 150000, taps: 6, targets: 6 }); // wrong taps / new layouts are local only
+  expect(r3.solved).toBe(true);
+  const old = await slow("typing", 9);
+  const s2 = JSON.parse(old.ev.question.text).sentences as string[];
+  const r4 = await finish(old, { elapsed_ms: 8 * 60e3, typed: s2.map(x => x.toLowerCase()) });
+  expect(r4.solved).toBe(true);
+  for (const u of [sh, ty, ti, old]) expect(await rejections(u.ev.id)).toEqual({ mission_rejections: 0, status: "solved" });
+}, 180000);
+
+serverTest("lockout counts only rejected proofs, alarm keeps ringing, recovers after the minute", async () => {
+  const u = await ringing("shake");
+  for (let i = 0; i < 5; i++) { await unthrottle(u.ev.id); expect((await finish(u, { elapsed_ms: 100, shakes: 1 })).solved).toBe(false); }
+  await unthrottle(u.ev.id);
+  await expect(finish(u, { elapsed_ms: 9000, shakes: 40 })).rejects.toThrow(/Too many attempts/);
+  expect(await rejections(u.ev.id)).toEqual({ mission_rejections: 5, status: "ringing" });
+  await admin.from("alarm_events").update({ mission_last_reject_at: new Date(Date.now() - 61e3).toISOString(), last_answer_at: null }).eq("id", u.ev.id);
+  expect((await finish(u, { elapsed_ms: 9000, shakes: 40 })).solved).toBe(true);
 }, 120000);
