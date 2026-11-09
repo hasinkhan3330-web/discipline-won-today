@@ -1,9 +1,10 @@
+import { RankEmblem, RankGlyph } from "@/components/RankEmblem";
 import { CoinBadge } from "@/components/CoinBadge";
 import { StreakBadge } from "@/components/StreakBadge";
 import { topMilestone } from "@/lib/economy";
 import { useState } from "react";
 import {
-  Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins, Crown,
+  Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins,
   Circle, Flame, HeartHandshake, LogOut, Orbit, Settings, Sparkles, Target, Trophy,
 } from "lucide-react";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
@@ -69,13 +70,13 @@ export function ProfileTab(props: Props) {
   return <section className="you-screen animate-fade-in">
     <header className="you-profile-hero">
       <label className="you-avatar" aria-label="Change profile photo"><img src={props.myAvatar || props.fallbackAvatar(props.myName)} onError={event => { event.currentTarget.src = props.fallbackAvatar(props.myName); }} alt={props.myName} /><span><Camera size={14} /></span><input type="file" accept="image/*" disabled={props.uploading} onChange={event => { const file = event.target.files?.[0]; if (file) props.openCropper(file); event.currentTarget.value = ""; }} /></label>
-      <div className="you-profile-copy"><h1>{props.myName}{(() => { const b = topMilestone(Math.max(props.streak, props.life?.bestStreak ?? 0)); return b ? <span className="ax-name-badge"><StreakBadge tone={b.tone} size={18} label={`${b.days}-day streak badge`} /></span> : null; })()}</h1><div><Crown size={15} /><strong>{rank.name}</strong><span className="you-verified">✓</span></div><p>Better Habits <b>·</b> Stronger Mind <b>·</b> Greater You</p></div>
+      <div className="you-profile-copy"><h1>{props.myName}{(() => { const b = topMilestone(Math.max(props.streak, props.life?.bestStreak ?? 0)); return b ? <span className="ax-name-badge"><StreakBadge tone={b.tone} size={18} label={`${b.days}-day streak badge`} /></span> : null; })()}</h1><div><RankGlyph name={rank.name} size={15} /><strong>{rank.name}</strong><span className="you-verified">✓</span></div><p>Better Habits <b>·</b> Stronger Mind <b>·</b> Greater You</p></div>
       <button className="you-account-button" onClick={() => setView("account")} aria-label="Open account settings"><Settings size={18} /></button>
       <CoinBadge amount={props.coins} variant="balance" />
     </header>
 
     <article className="you-rank-card">
-      <div className="you-rank-emblem"><Crown size={36} /><i /></div>
+      <div className="you-rank-emblem you-rank-emblem--v2"><RankEmblem name={rank.name} size="lg" state="current" /></div>
       <div className="you-rank-copy"><span>Your Rank</span><h2>{rank.name}</h2><p>{nextRank ? `${nextRank.min - props.coins} coins to ${nextRank.name}` : "You reached the highest rank."}</p></div>
       <div className="you-rank-level"><strong>Level {level}</strong><ProgressBar value={levelProgress / 160 * 100} /><span>{levelProgress} / 160 XP</span></div>
     </article>
@@ -84,7 +85,7 @@ export function ProfileTab(props: Props) {
       <Metric icon={<Flame />} title="Current Streak" value={`${streakShown}`} unit="day" tone="pink" />
       <Metric icon={<Coins />} title="Total Coins" value={`${props.coins}`} unit="earned" tone="gold" />
       <Metric icon={<Target />} title="Completion Rate" value={`${completion}%`} unit={`${done}/${total} today`} tone="cyan" />
-      <Metric icon={<Crown />} title="Best Rank" value={rank.name} unit={`Top ${Math.max(1, 100 - Math.min(99, props.life?.bestStreak ?? 0))}%`} tone="violet" />
+      <Metric icon={<RankGlyph name={rank.name} size={20} />} title="Best Rank" value={rank.name} unit={`Top ${Math.max(1, 100 - Math.min(99, props.life?.bestStreak ?? 0))}%`} tone="violet" />
     </div>
 
     <button className="you-motivation" onClick={() => setView("journey")}><Sparkles size={23} /><blockquote>“Discipline is the bridge between your goals and your dreams.”<span>— Keep going, Champion!</span></blockquote><b>Daily Motivation</b><ChevronRight size={18} /></button>

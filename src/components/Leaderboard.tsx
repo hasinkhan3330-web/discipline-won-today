@@ -37,7 +37,7 @@ function flag(cc: string) {
 }
 
 const fallbackAvatar = (n: string) =>
-  `https://ui-avatars.com/api/?name=${encodeURIComponent(n || "A")}&background=091221&color=20E7F2&size=160&bold=true`;
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(n || "A")}&background=10162D&color=B6F500&size=160&bold=true`;
 
 function EliteCrest({ size = 16 }: { size?: number }) {
   return (
@@ -127,12 +127,12 @@ export function Leaderboard({ myId, onMyBadge }: {
 
 
   return (
-    <section className="lb">
+    <section className="lb" data-rank-v2="" data-simple-keep="">
       <header className="lb-head">
         <div className="lb-head__mark"><Trophy size={18} /></div>
         <div className="lb-head__copy">
           <span>AXEN // RANKING NETWORK</span>
-          <h2>LEADERBOARD</h2>
+          <h2>Leaderboard</h2>
           <p>Discipline Points · earned, never bought</p>
         </div>
         <button className="lb-refresh" onClick={() => void load()} aria-label="Refresh leaderboard">
