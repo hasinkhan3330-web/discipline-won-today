@@ -1,0 +1,1 @@
+REVOKE ALL ON public.wake_typing_sentences FROM PUBLIC, anon, authenticated;
