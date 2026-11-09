@@ -104,8 +104,8 @@ serverTest("math cannot be finished by the mission function; foreign, anon and p
   await expect(rpc(m.a, "wake_complete_mission", { _event_id: s.ev.id, _version: s.ev.question.version, _proof: { elapsed_ms: 9000, shakes: 99 } })).rejects.toThrow();
   const anon = createClient(url!, publicKey!, { auth: { persistSession: false } });
   expect((await anon.rpc("wake_complete_mission", { _event_id: s.ev.id, _version: 1, _proof: {} })).error).not.toBeNull();
-  expect((await m.c.rpc("wake_finalize_solve", { _event_id: s.ev.id })).error).not.toBeNull();
-  expect((await m.c.from("wake_typing_sentences").select("body").limit(1)).error).not.toBeNull();
+  expect((await m.a.c.rpc("wake_finalize_solve", { _event_id: s.ev.id })).error).not.toBeNull();
+  expect((await m.a.c.from("wake_typing_sentences").select("body").limit(1)).error).not.toBeNull();
   const { data } = await admin.from("alarm_events").select("status").eq("id", s.ev.id).single();
   expect(data?.status).toBe("ringing");
 }, 120000);
