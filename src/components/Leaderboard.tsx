@@ -127,7 +127,7 @@ export function Leaderboard({ myId, onMyBadge }: {
 
 
   return (
-    <section className="lb">
+    <section className="lb" data-rank-v2="" data-simple-keep="">
       <header className="lb-head">
         <div className="lb-head__mark"><Trophy size={18} /></div>
         <div className="lb-head__copy">

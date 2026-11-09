@@ -105,7 +105,7 @@ export function RankTab({
   ];
 
   return (
-    <section data-rank-v2="" className={`rank-screen rank-theme-${cur.tone} animate-fade-in${sectionsOnly ? " rank-screen--sections-only" : ""}`}>
+    <section data-rank-v2="" data-simple-keep="" className={`rank-screen rank-theme-${cur.tone} animate-fade-in${sectionsOnly ? " rank-screen--sections-only" : ""}`}>
       {!sectionsOnly && <>
       <header className="rank-profile-strip">
         <RankCoinAvatar name={name} src={avatar} milestone={badgeMilestone} />
