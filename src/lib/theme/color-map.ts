@@ -142,7 +142,11 @@ export function mapRGBA(c: RGBA, role: Role): string {
   if (semantic && L > 0.35) return a < 0.5 ? sem(kind, "tint") : sem(kind, "graphic");
   if (kind === "neutral" || L <= 0.35) {
     if (L < 0.5) {
-      if (a < 0.999) return a >= 0.3 ? "rgba(17, 17, 17, 0.4)" : rgba(S.ink, Math.min(0.06, a * 0.5));
+      if (a < 0.999) {
+        if (a < 0.3) return rgba(S.ink, Math.min(0.06, a * 0.5));
+        // pure black veils are scrims; tinted translucent panels are cards
+        return L < 0.05 && a < 0.92 ? "rgba(17, 17, 17, 0.4)" : S.surface;
+      }
       if (L < 0.16) return S.canvas;
       if (L < 0.36) return S.surface;
       return S.surface2;
