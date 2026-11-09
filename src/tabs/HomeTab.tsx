@@ -93,7 +93,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
   const pending = useRef<Set<number>>(new Set());
   const focusRef = useRef<DeepFocusHandle>(null);
   useEffect(() => {
-    const open = () => focusRef.current?.openMusic();
+    const open = () => focusRef.current?.start();
     window.addEventListener("axen:open-focus", open);
     return () => window.removeEventListener("axen:open-focus", open);
   }, []);
