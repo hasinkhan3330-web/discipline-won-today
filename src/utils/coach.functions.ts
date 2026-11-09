@@ -72,7 +72,7 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
     const known = Object.entries(status.filled).map(([k, v]) => `${k} ${k === 'daily time available' ? v + ' min' : v}`).join(', ');
     const gap = status.missing[0];
     const nextQ = gap ? ` To refine it: what is your ${gap}?` : '';
-    const reply = `Built from your profile (${status.percent}%): ${known || 'no saved details yet'}. Your "${result.plan?.title ?? 'plan'}" draft for today is ready — see the plan card. ${result.assumptions?.length ? 'Assumptions for missing details: ' + result.assumptions.join('; ') + '.' : ''} Accept it when you are ready.${nextQ}`;
+    const reply = `Built from your profile (${status.percent}%): ${known || 'no saved details yet'}. Your "${result.plan?.title ?? 'plan'}" draft (${requestedLength(latest?.content ?? '') === 1 ? 'Today' : requestedLength(latest?.content ?? '') + ' days'}) is ready — see the plan card. ${result.assumptions?.length ? 'Assumptions for missing details: ' + result.assumptions.join('; ') + '.' : ''} Accept it when you are ready.${nextQ}`;
     const { error } = await context.supabase.from('coach_messages').insert([{ conversation_id: conversationId, user_id: context.userId, role: 'user', content: latest?.content ?? '' }, { conversation_id: conversationId, user_id: context.userId, role: 'assistant', content: reply }]);
     if (error) throw new Error(error.message);
     return { conversationId, reply, suggestedAction: null };
