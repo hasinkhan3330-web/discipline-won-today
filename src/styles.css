@@ -3201,3 +3201,4 @@ html[data-theme="simple"] .lb::before, html[data-theme="simple"] .lb::after { di
 [data-rank-v2] .rank-earn strong { white-space: normal; overflow: visible; text-overflow: clip; line-height: 1.2; }
 .lb[data-rank-v2] :is(.lb-tabs,.lb-filters) button * { font-family: inherit; }
 [data-theme="simple"] .rank-emblem:not(.is-reached):not(.is-current) { --em-icon: #6B6B6B; }
+.you-rank-emblem.you-rank-emblem--v2 .rank-emblem__glyph { stroke-width: 1.75; width: 42px; height: 42px; }
