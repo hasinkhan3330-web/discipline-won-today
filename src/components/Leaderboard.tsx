@@ -37,7 +37,7 @@ function flag(cc: string) {
 }
 
 const fallbackAvatar = (n: string) =>
-  `https://ui-avatars.com/api/?name=${encodeURIComponent(n || "A")}&background=091221&color=20E7F2&size=160&bold=true`;
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(n || "A")}&background=10162D&color=B6F500&size=160&bold=true`;
 
 function EliteCrest({ size = 16 }: { size?: number }) {
   return (
