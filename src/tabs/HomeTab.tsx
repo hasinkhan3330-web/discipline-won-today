@@ -72,14 +72,13 @@ function greeting() {
   return "Good evening";
 }
 
-export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan, onFocusComplete, onMusicReward, onBuyShield, reminderTasks = [], wakeSet = true, hasPaidFocus, onUnlockFocus }: {
+export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan, onFocusComplete, onBuyShield, reminderTasks = [], wakeSet = true, hasPaidFocus, onUnlockFocus }: {
   name: string;
   coins: number; streak: number; shields?: number;
   tasks: Task[];
   tick: (id: number) => void;
   onScan?: (id: number) => void;
   onFocusComplete: (tier: FocusTier, lockMode: "strict" | "flex", apps: string[]) => Promise<number | null>;
-  onMusicReward?: (coins: number, minutes: number) => void;
   onBuyShield?: () => Promise<void>;
   reminderTasks?: ReminderTask[];
   /** false when no wake tier/tone is saved for today — the row shows "Not set" */
@@ -220,7 +219,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
 
       {reminderTasks.length > 0 && <div className="home-command-block"><RemindersCard tasks={reminderTasks} /></div>}
 
-      <DeepFocus ref={focusRef} G={AX.cyan} G2={AX.accent} onComplete={onFocusComplete} onMusicReward={onMusicReward} hasPaidAccess={hasPaidFocus} onLocked={onUnlockFocus} />
+      <DeepFocus ref={focusRef} G={AX.cyan} G2={AX.accent} onComplete={onFocusComplete} hasPaidAccess={hasPaidFocus} onLocked={onUnlockFocus} />
 
       {contractSession && (
         <ContractFocusSession
@@ -230,9 +229,6 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
         />
       )}
 
-      <button className="home-music-strip" onClick={() => focusRef.current?.openMusic()}>
-        <span><Music2 size={18} /></span><div><strong>Focus Music</strong><small>25 min · 14Hz Beta · Study Melody</small></div><ChevronRight size={17} />
-      </button>
     </main>
   );
 }

@@ -3,7 +3,6 @@ import { forwardRef, useState, useEffect, useRef, useCallback, useImperativeHand
 import { ChevronRight, Clock3, LockKeyhole, Music2, Plus, Repeat2, Search, Shield, Volume2, X, Zap } from "lucide-react";
 import { siFacebook, siInstagram, siX, siYoutube } from "simple-icons/icons";
 import { cardStyle } from "@/tabs/styles";
-import { FocusMusicPanel } from "@/components/FocusMusicPanel";
 
 export type FocusTier = { id: "f49" | "f120" | "f229"; label: string; sub: string; minutes: number; reward: number };
 
@@ -62,16 +61,14 @@ const fmt = (s: number) => `${two(Math.floor(s / 3600))}:${two(Math.floor((s % 3
 
 export type DeepFocusHandle = {
   start: () => void;
-  openMusic: () => void;
 };
 
 export const DeepFocus = forwardRef<DeepFocusHandle, {
   G: string; G2: string;
   onComplete: (tier: FocusTier, lockMode: LockMode, apps: string[]) => Promise<number | null>;
-  onMusicReward?: (coins: number, minutes: number) => void;
   hasPaidAccess: boolean;
   onLocked: () => void;
-}>(function DeepFocus({ G, G2, onComplete, onMusicReward, hasPaidAccess, onLocked }, ref) {
+}>(function DeepFocus({ G, G2, onComplete, hasPaidAccess, onLocked }, ref) {
   const CARD = cardStyle(G);
   const [phase, setPhase] = useState<Phase>("idle");
   const [tier, setTier] = useState<FocusTier | null>(null);
@@ -85,7 +82,6 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
   const [result, setResult] = useState<{ awarded: number; coins: number | null; minutes: number } | null>(null);
   const [penalty, setPenalty] = useState(0);
   const [showAudio, setShowAudio] = useState(true);
-  const [showMusic, setShowMusic] = useState(false);
   const [trackIdx, setTrackIdx] = useState(0);
   const [loop, setLoop] = useState(true);
   const [vol, setVol] = useState(0.7);
@@ -171,7 +167,6 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
       setTier(defaultTier);
       setPhase("setup");
     },
-    openMusic: () => setShowMusic(true),
   }), [hasPaidAccess, onLocked]);
 
   /* ---------------- IDLE: tier picker ---------------- */
@@ -182,7 +177,6 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
           <span><LockKeyhole size={18} strokeWidth={1.8} /></span>
           <div><h2>Deep Focus System</h2><p>Lock distractions. Enter the work.</p></div>
         </div>
-        {showMusic && <FocusMusicPanel onClose={() => setShowMusic(false)} onReward={onMusicReward} />}
         <div className="home-focus-tiers">
           {FOCUS_TIERS.map(t => (
             <button key={t.id} onClick={() => { if (!hasPaidAccess) { onLocked(); return; } setTier(t); setPhase("setup"); }}>
@@ -203,9 +197,6 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
           setPhase("setup");
         }}>
           <LockKeyhole size={17} strokeWidth={2} /> Configure Lock <ChevronRight size={16} />
-        </button>
-        <button className="home-focus-music-link" onClick={() => setShowMusic(true)}>
-          <Music2 size={16} /> Focus music <ChevronRight size={16} />
         </button>
       </section>
     );
