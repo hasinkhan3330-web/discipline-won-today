@@ -190,7 +190,8 @@ let sheetTimer = 0;
 
 function writeSheet() {
   let tag = document.getElementById(SHEET_ID) as HTMLStyleElement | null;
-  if (!tag) { tag = document.createElement("style"); tag.id = SHEET_ID; document.head.appendChild(tag); }
+  if (!tag) { tag = document.createElement("style"); tag.id = SHEET_ID; }
+  if (document.head.lastElementChild !== tag) document.head.appendChild(tag); // stay after lazily added sheets
   const css = buildOverrideCss();
   if (tag.textContent !== css) tag.textContent = css;
 }
