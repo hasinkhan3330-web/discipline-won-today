@@ -214,7 +214,8 @@ export function startSimple() {
   });
   observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ["style", ...SVG_ATTRS] });
   headObserver = new MutationObserver((muts) => {
-    if (muts.every((m) => Array.from(m.addedNodes).concat(Array.from(m.removedNodes)).every((n) => (n as Element).id === SHEET_ID))) return;
+    const ours = (n: Node | null) => !!n && (((n as Element).id === SHEET_ID) || n.parentNode === document.getElementById(SHEET_ID));
+    if (muts.every((m) => ours(m.target) || (m.target === document.head && Array.from(m.addedNodes).concat(Array.from(m.removedNodes)).every(ours)))) return;
     clearTimeout(sheetTimer); sheetTimer = window.setTimeout(writeSheet, 120);
   });
   headObserver.observe(document.head, { childList: true, subtree: true, characterData: true });
