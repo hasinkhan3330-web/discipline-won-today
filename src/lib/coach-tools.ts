@@ -7,7 +7,13 @@ import {
   dayIndex, taskName, type Slot, type Slots, type CoachPlan,
 } from "@/lib/coach-plan-rules";
 
-export const COACH_SYSTEM_V2 = `You are AXEN Coach, a personal discipline coach inside the AXEN app. You are not a chatbot; you behave like a skilled human coach who knows this user well.
+export const COACH_SYSTEM_V2 = `You are the Axon Habit coach. Stay strictly on the goal and habit plan in <user_profile>. No nutrition, gym or meditation advice unless it is the user's goal. Never say you have no details if percent > 0. Ask only missing fields, one at a time.
+
+PROFILE TOOLS (mandatory)
+- You MUST call get_profile_status before answering "what do you know about me", "how much is filled", "how much of my details do you have" or "make my plan". Answer with its exact percent, list every filled value and every missing field.
+- Save each new answer with update_profile (field, value), then say the new percent it returns.
+
+You are a personal discipline coach inside the AXEN app. You are not a chatbot; you behave like a skilled human coach who knows this user well.
 
 STYLE
 - Mirror the user's language (Hindi / Hinglish / English). 1-3 short sentences. ONE question at a time.
@@ -67,8 +73,9 @@ Check your output against every rule and fix violations. Return only JSON:
 {"title":string,"summary":string,"days":[{"day":number,"tasks":[{"title":string,"minimum":string,"trigger":string,"time":"HH:MM","minutes":number,"difficulty":"easy"|"medium"|"hard"}]}]}`;
 
 export const COACH_TOOL_DEFS = [
+  { name: "get_profile_status", description: "Exact saved profile status: {percent, filled, missing, plan}. Call before answering what you know, how much is filled, or making a plan.", parameters: { type: "object", properties: {} } },
   { name: "get_user_context", description: "Get the user's coach profile, confidence, memories, weekly summary, active plan and real progress.", parameters: { type: "object", properties: {} } },
-  { name: "update_profile", description: "Save profile slots revealed by the user's answer, each with confidence 0-1. Keys: goal, wake_time, sleep_time, daily_time_available (minutes), distraction_trigger (main distraction), intensity (gentle|balanced|hardcore), age_range (under_18|18_24|25_34|35_plus), energy_peak, weakest_habit, daily_schedule, coach_style (strict|friendly|calm). Use confidence 1 for direct answers; guesses below 0.6 do not count toward the percent.", parameters: { type: "object", properties: { slots: { type: "object", additionalProperties: { type: "object", properties: { value: {}, confidence: { type: "number" } }, required: ["value", "confidence"] } } }, required: ["slots"] } },
+  { name: "update_profile", description: "Save one answer as field + value (or several as slots). Fields: goal, wake_time, sleep_time, daily_time_available (minutes), distraction_trigger (main distraction), intensity (gentle|balanced|hardcore), age_range (under_18|18_24|25_34|35_plus, or a number of years), energy_peak, weakest_habit, daily_schedule, coach_style (strict|friendly|calm). Returns the new percent.", parameters: { type: "object", properties: { field: { type: "string" }, value: { type: "string" }, slots: { type: "object", additionalProperties: { type: "object", properties: { value: {}, confidence: { type: "number" } }, required: ["value", "confidence"] } } } } },
   { name: "create_plan_draft", description: "Generate the full plan draft for 1, 7 or 21 days.", parameters: { type: "object", properties: { days: { type: "integer", enum: [1, 7, 21] }, goal: { type: "string" }, adjustments: { type: "string" } }, required: ["days"] } },
   { name: "confirm_plan", description: "Confirm the latest draft after the user clearly says yes. Starts today in the user's timezone.", parameters: { type: "object", properties: {} } },
   { name: "update_task", description: "Edit one task on a future (or today's not-yet-added) day of the confirmed plan.", parameters: { type: "object", properties: { day: { type: "integer" }, task_index: { type: "integer" }, title: { type: "string" }, minimum: { type: "string" }, trigger: { type: "string" }, time: { type: "string" }, minutes: { type: "integer" }, difficulty: { type: "string", enum: ["easy", "medium", "hard"] }, remove: { type: "boolean" } }, required: ["day", "task_index"] } },
@@ -101,18 +108,28 @@ export async function getCoachProfile({ supabase, userId }: Ctx) {
   return data ?? { slots: {}, onboarding_done: false, coach_style: null, age_range: null, timezone: "UTC" };
 }
 
-/** Server-built profile block injected into every Coach session prompt. Never trusts a client percent. */
-export async function profileContextBlock(ctx: Ctx, source: string) {
+/** Single shared profile status for every Coach path (text, voice, plan generation, get_profile_status tool). */
+export async function profileStatus(ctx: Ctx) {
   const profile = await getCoachProfile(ctx);
   const slots = (profile.slots ?? {}) as Slots;
   const c = getProfileCompleteness(slots);
   const plans = await activePlan(ctx);
-  const known = Object.fromEntries(c.filled.map((k) => [PROFILE_LABELS[k] ?? k, slots[k]?.value]));
-  const plan = plans.confirmed ?? plans.draft;
-  const planText = plan ? `${plan.status} ${plan.days === 1 ? "Today" : plan.days + " days"} plan${plan.start_date ? " starting " + plan.start_date : ""}` : "none";
-  const block = `<user_profile percent="${c.percent}"> filled: ${JSON.stringify(known)} | missing: [${c.missing.map((k) => PROFILE_LABELS[k] ?? k).join(", ")}] | active_plan: ${planText} </user_profile>`;
-  console.info(`[coach] profile block injected (${source})`, { user: ctx.userId.slice(-4), percent: c.percent, missing: c.missing });
-  return block;
+  const filled = Object.fromEntries(c.filled.map((k) => [PROFILE_LABELS[k] ?? k, slots[k]?.value]));
+  const p = plans.confirmed ?? plans.draft;
+  const plan = p ? { status: p.status, days: p.days, start_date: p.start_date ?? null, title: (p.plan as CoachPlan)?.title ?? null } : null;
+  return { percent: c.percent, filled, missing: c.missing.map((k) => PROFILE_LABELS[k] ?? k), plan };
+}
+
+/** Server-built profile block injected into every Coach session prompt. Never trusts a client percent. */
+export async function profileContextBlock(ctx: Ctx, _source?: string) {
+  const st = await profileStatus(ctx);
+  return `<user_profile percent="${st.percent}">\n${JSON.stringify(st)}\n</user_profile>`;
+}
+
+function normalizeAge(v: unknown): unknown {
+  const n = Number(String(v).match(/\d+/)?.[0]);
+  if (!/^(under_18|18_24|25_34|35_plus)$/.test(String(v)) && Number.isFinite(n) && n > 0) return n < 18 ? "under_18" : n <= 24 ? "18_24" : n <= 34 ? "25_34" : "35_plus";
+  return v;
 }
 
 export async function setTimezone({ supabase, userId }: Ctx, timezone: string) {
@@ -158,8 +175,12 @@ export async function runCoachTool(ctx: Ctx, name: string, args: any): Promise<u
         progress: prog,
       };
     }
+    case "get_profile_status":
+      return profileStatus(ctx);
     case "update_profile": {
-      const incoming = (args?.slots ?? {}) as Slots;
+      const incoming = { ...((args?.slots ?? {}) as Slots) };
+      if (typeof args?.field === "string" && args.field && args?.value !== undefined && args?.value !== "") incoming[args.field] = { value: args.value, confidence: 1 };
+      if (incoming.age_range) incoming.age_range = { ...incoming.age_range, value: normalizeAge(incoming.age_range.value) };
       const slots: Slots = { ...(profile.slots as Slots) };
       for (const [k, v] of Object.entries(incoming).slice(0, 20)) {
         if (!v || typeof v !== "object") continue;
@@ -178,7 +199,7 @@ export async function runCoachTool(ctx: Ctx, name: string, args: any): Promise<u
       const { error } = await supabase.from("coach_profile").upsert(row, { onConflict: "user_id" });
       if (error) return { ok: false, error: error.message };
       const done = getProfileCompleteness(slots);
-      return { ok: true, confidence, percent: done.percent, missing: done.missing.map((k) => PROFILE_LABELS[k] ?? k), next_slot_to_ask: lowestSlot(slots) };
+      return { ok: true, confidence, percent: done.percent, filled: Object.fromEntries(done.filled.map((k) => [PROFILE_LABELS[k] ?? k, slots[k]?.value])), missing: done.missing.map((k) => PROFILE_LABELS[k] ?? k), next_slot_to_ask: lowestSlot(slots) };
     }
     case "create_plan_draft": {
       const length = Number(args?.days);
@@ -189,7 +210,7 @@ export async function runCoachTool(ctx: Ctx, name: string, args: any): Promise<u
       const json = await callModel(COACH_PLAN_MODEL, {
         response_format: { type: "json_object" },
         messages: [
-          { role: "system", content: PLAN_PROMPT },
+          { role: "system", content: `${PLAN_PROMPT}\n\nThe plan must serve the goal in this server-loaded profile:\n${await profileContextBlock(ctx)}` },
           { role: "user", content: JSON.stringify({ profile: prepared.slots, assumptions: prepared.assumptions, age_range: profile.age_range ?? 'unknown: gentle guidance', requested_days: length, goal: args?.goal ?? prepared.slots.goal?.value, adjustments: args?.adjustments ?? null, last_week_progress: prog }) },
         ],
       });

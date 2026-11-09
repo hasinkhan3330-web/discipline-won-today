@@ -40,3 +40,10 @@ test('quick setup fields give exactly 75%, age adds 10, guesses do not count', (
   expect(r.missing).toEqual(['age_range', 'energy_peak', 'weakest_habit']);
   expect(getProfileCompleteness({ ...quick, age_range: { value: '18_24', confidence: 1 } }).percent).toBe(85);
 });
+
+import { savedChoices } from "../src/components/coach/CoachQuickSetup";
+test("quick setup highlights come only from saved values", () => {
+  expect(savedChoices({})).toEqual({});
+  expect(savedChoices({ goal: { value: "Study", confidence: 1 }, daily_time_available: { value: 30, confidence: 1 }, intensity: { value: "Hardcore", confidence: 1 } }))
+    .toEqual({ goal: "Study", daily_time_available: "30 min", intensity: "Hardcore" });
+});

@@ -24,10 +24,11 @@ afterAll(async () => {
   await admin.auth.admin.deleteUser(U.id);
 }, 60000);
 
-test("voice declares exactly the same 8 tools as text, none for mark-done or coins", () => {
+test("voice declares exactly the same 9 tools as text, none for mark-done or coins", () => {
   const names = VOICE_TOOL_DECLARATIONS[0].functionDeclarations.map((d) => d.name);
   expect(names).toEqual([...COACH_TOOL_NAMES]);
-  expect(names).toHaveLength(8);
+  expect(names).toHaveLength(9);
+  expect(names).toContain("get_profile_status");
   expect(names.some((n) => /done|complete|coin|reward/i.test(n))).toBe(false);
   expect(JSON.stringify(VOICE_TOOL_DECLARATIONS)).not.toContain("additionalProperties");
 });

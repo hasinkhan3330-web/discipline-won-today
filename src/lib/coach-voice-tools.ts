@@ -24,7 +24,7 @@ export const VOICE_TOOL_DECLARATIONS = [{
     name: t.name,
     description: t.description,
     parameters: t.name === "update_profile"
-      ? { type: "OBJECT", properties: { slots: { type: "OBJECT", properties: Object.fromEntries(SLOT_KEYS.map((k) => [k, slot])) } }, required: ["slots"] }
+      ? { type: "OBJECT", properties: { field: { type: "STRING", enum: SLOT_KEYS.filter((k) => k !== "other") }, value: { type: "STRING" }, slots: { type: "OBJECT", properties: Object.fromEntries(SLOT_KEYS.map((k) => [k, slot])) } } }
       : toGemini(t.parameters),
   })),
 }];
@@ -37,7 +37,20 @@ Interview one question at a time and save ALL revealed answers with update_profi
 Before calling create_plan_draft, first say one short line such as "Give me a minute, I'm building your plan."
 Call confirm_plan only after the user clearly says yes to the draft out loud. If unsure, ask again.
 If a tool fails, say so in one short sentence and carry on. Never claim a task is done or coins were given; you cannot do either.
-On SESSION_START, greet briefly and continue where the user is: interview if the profile is thin, otherwise coach on today's plan. Call get_user_context first.`;
+On SESSION_START your very first action MUST be a get_profile_status function call, before you say anything. Whenever the user asks what you know, how much is filled, or for a plan, call get_profile_status again before answering. Then greet briefly using the user's goal from it and continue where the user is: ask the first missing field if percent < 100, otherwise coach on today's plan.`;
+
+/** One server-built Live setup: baked into the ephemeral token (Google locks token setup and ignores client overrides) and sent by the client unchanged. */
+export function buildLiveSetup(model: string, instruction: string) {
+  return {
+    model,
+    generationConfig: { responseModalities: ["AUDIO"] },
+    systemInstruction: { parts: [{ text: instruction }] },
+    tools: VOICE_TOOL_DECLARATIONS,
+    inputAudioTranscription: {},
+    outputAudioTranscription: {},
+    contextWindowCompression: { slidingWindow: {} },
+  };
+}
 
 type Call = { id?: string; name: string; args?: Record<string, unknown> };
 type Ctx = { supabase: any; userId: string };

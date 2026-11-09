@@ -26,8 +26,13 @@ serverTest("server profile block reports saved quick setup as 75%, age raises it
     await runCoachTool(A, "update_profile", { slots: { [k]: one(v) } });
   const block = await profileContextBlock(A, "test");
   expect(block).toContain('percent="75"');
-  expect(block).toContain("missing: [age, energy peak, weakest habit]");
-  const r = await runCoachTool(A, "update_profile", { slots: { age_range: one("18_24") } }) as any;
+  expect(block).toContain('"missing":["age","energy peak","weakest habit"]');
+  expect(block).toContain('"goal":"Study"');
+  const status = await runCoachTool(A, "get_profile_status", {}) as any;
+  expect(status.percent).toBe(75);
+  expect(status.filled).toMatchObject({ goal: "Study", "wake time": "04:00", "main distraction": "Phone", intensity: "Hardcore" });
+  // update_profile(field, value): a spoken age "22" is saved as the 18_24 bucket
+  const r = await runCoachTool(A, "update_profile", { field: "age_range", value: "22" }) as any;
   expect(r.percent).toBe(85);
   expect(await profileContextBlock(A, "test")).toContain('percent="85"');
   expect(await profileContextBlock(B, "test")).toContain('percent="0"');

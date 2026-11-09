@@ -30,7 +30,7 @@ function rateLimit(userId: string) {
  * audio session on LIVE_MODEL. Returns null when the key/project does not serve
  * ephemeral tokens, so the working session path stays available.
  */
-async function mintEphemeralToken(apiKey: string): Promise<string | null> {
+async function mintEphemeralToken(apiKey: string, setup: Record<string, unknown> = { model: LIVE_MODEL, generationConfig: { responseModalities: ["AUDIO"] } }): Promise<string | null> {
   try {
     const now = Date.now();
     const response = await fetch("https://generativelanguage.googleapis.com/v1alpha/auth_tokens", {
@@ -40,10 +40,7 @@ async function mintEphemeralToken(apiKey: string): Promise<string | null> {
         uses: 1,
         expireTime: new Date(now + 30 * 60_000).toISOString(),
         newSessionExpireTime: new Date(now + 60_000).toISOString(),
-        bidiGenerateContentSetup: {
-          model: LIVE_MODEL,
-          generationConfig: { responseModalities: ["AUDIO"] },
-        },
+        bidiGenerateContentSetup: setup,
       }),
     });
     if (!response.ok) {
@@ -131,17 +128,15 @@ export const getLiveSession = createServerFn({ method: "POST" })
 
     rateLimit(context.userId);
 
-    const [minted, coachContext] = await Promise.all([
-      ephemeralSupported === false && Date.now() - probedAt < 30 * 60_000
-        ? Promise.resolve(null)
-        : mintEphemeralToken(apiKey),
-      buildCoachContext(context.supabase, context.userId).catch(
-        () => null as CoachContext | null,
-      ),
+    const [coachContext, profileBlock] = await Promise.all([
+      buildCoachContext(context.supabase, context.userId).catch(() => null as CoachContext | null),
+      (await import("@/lib/coach-tools")).profileContextBlock({ supabase: context.supabase, userId: context.userId }),
     ]);
-
-    const { profileContextBlock } = await import("@/lib/coach-tools");
-    const profileBlock = await profileContextBlock({ supabase: context.supabase, userId: context.userId }, "voice");
+    const { VOICE_SYSTEM_V2, buildLiveSetup } = await import("@/lib/coach-voice-tools");
+    const { buildCoachKnowledge } = await import("@/lib/coach-knowledge");
+    const instruction = `${VOICE_SYSTEM_V2}\n\n${buildCoachKnowledge()}\n\n${profileBlock}\n\n${coachContext ? `AXEN_COACH_CONTEXT (private, never read aloud):\n${JSON.stringify(coachContext)}` : "AXEN_COACH_CONTEXT is unavailable for this session. Do not state any statistic; call get_user_context before referencing data."}`;
+    const setup = buildLiveSetup(LIVE_MODEL, instruction);
+    const minted = ephemeralSupported === false && Date.now() - probedAt < 30 * 60_000 ? null : await mintEphemeralToken(apiKey, setup);
 
     let ephemeral: string | null = null;
     if (minted) {
@@ -149,7 +144,7 @@ export const getLiveSession = createServerFn({ method: "POST" })
         ephemeralSupported = await ephemeralTokenAccepted(minted);
         probedAt = Date.now();
         // The probe consumes the single-use token; mint a fresh one for the client.
-        ephemeral = ephemeralSupported ? await mintEphemeralToken(apiKey) : null;
+        ephemeral = ephemeralSupported ? await mintEphemeralToken(apiKey, setup) : null;
       } else if (ephemeralSupported) {
         ephemeral = minted;
       }
@@ -164,6 +159,7 @@ export const getLiveSession = createServerFn({ method: "POST" })
       model: LIVE_MODEL,
       context: coachContext,
       profileBlock,
+      setup,
     };
   });
 

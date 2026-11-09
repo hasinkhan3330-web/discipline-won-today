@@ -20,6 +20,7 @@ export const getCoachV2State = createServerFn({ method: "POST" })
       confidence: profileConfidence(profile.slots as Slots),
       nextSlot: lowestSlot(profile.slots as Slots),
       onboardingDone: profile.onboarding_done,
+      slots: (profile.slots ?? {}) as Record<string, { value: any; confidence: number }>,
       timezone: profile.timezone,
       draft: rows.find((r) => r.status === "draft") ?? null,
       confirmed: rows.find((r) => r.status === "confirmed") ?? null,
