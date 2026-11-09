@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { cancelLocalReminder, nextReminderAt, scheduleLocalReminder, stableNotificationId } from "@/lib/local-notifications";
 import { FeatureHelpDot, type HelpContent } from "@/components/FeatureHelpDot";
+import { GoalPlanDot } from "@/components/GoalPlanDot";
 import { GoalHabitPicker, type GoalHabit } from "@/components/GoalHabitPicker";
 
 type GoalRow = {
@@ -247,22 +248,12 @@ export function GoalsView({ userId, habits, onBack, onChanged }: { userId: strin
 
   return <div className="you-detail animate-fade-in">
     <DetailHeader title="Goals" subtitle="Aim clearly. Advance deliberately." onBack={onBack} />
-    <div className="axh-dot-row"><FeatureHelpDot label="Goals" content={GOALS_HELP} /></div>
+    <div className="axh-dot-row"><GoalPlanDot plan={plan} locked={!!editing} onSelect={setPlan} helpLines={GOALS_HELP.lines} /></div>
     {error && <div className="you-empty you-error-row">{error} <button type="button" onClick={load}>Retry</button></div>}
     <section className="you-form-panel you-goal-form">
       <label>What do you want to achieve?<input value={title} maxLength={120} onChange={event => setTitle(event.target.value)} placeholder="Clear my exam" /></label>
       <label>Category (optional)<input value={category} maxLength={40} onChange={event => setCategory(event.target.value)} placeholder="Exam · Fitness · Business · Meditation" /></label>
       <label>Target date<input type="date" value={date} onChange={event => setDate(event.target.value)} /></label>
-      <div className="gh-label-row"><label>Goal plan</label></div>
-      <div className="you-scan-options" role="radiogroup" aria-label="Goal plan">
-        {GOAL_PLANS.map(p => (
-          <button type="button" key={p.key} role="radio" aria-checked={plan === p.key}
-            className={plan === p.key ? "is-on" : ""} disabled={!!editing && plan !== p.key}
-            onClick={() => { if (!editing) setPlan(p.key); }}>
-            {p.short} · {p.target.toLocaleString()} coins · 90% Success Guarantee
-          </button>
-        ))}
-      </div>
       {(() => { const sel = GOAL_PLANS.find(p => p.key === plan)!; return <div className="you-goal-controls"><span>Earn {sel.target.toLocaleString()} coins in {sel.duration} → AXEN guarantees 90% success in any field</span></div>; })()}
       <div className="gh-label-row">
         <label>Linked habits</label>
