@@ -18,7 +18,7 @@
 .seg button[aria-pressed="true"] { background: var(--m-accent); color: var(--m-fg); }
 .ghost { min-height: 48px; border-radius: 18px; background: transparent; color: var(--m-fg); border: 1px solid #2c2c30; font-size: 15px; font-weight: 600; width: 100%; }
 .next { min-height: 56px; border-radius: 18px; background: var(--m-accent); color: var(--m-fg); border: 0; font-size: 17px; font-weight: 600; width: 100%; }
-.backdrop { position: fixed; inset: 0; z-index: 1600; background: rgb(0 0 0 / .6); display: flex; align-items: flex-end; justify-content: center; }
+.backdrop { position: fixed; inset: 0; z-index: 3100; background: rgb(0 0 0 / .6); display: flex; align-items: flex-end; justify-content: center; }
 .sheet { width: min(100%, 520px); background: var(--m-sheet); border-radius: 28px 28px 0 0; padding: 10px 20px max(20px, env(safe-area-inset-bottom)); display: grid; gap: 16px; max-height: 92dvh; overflow-y: auto; }
 .handle { width: 40px; height: 5px; border-radius: 3px; background: #3a3a3e; justify-self: center; }
 .chip { justify-self: start; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--m-row); color: var(--m-muted); }
@@ -66,6 +66,6 @@
 @keyframes shakeX { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 .msg { font-size: 14px; color: var(--m-muted); min-height: 20px; }
 .err { font-size: 14px; color: var(--m-accent); }
-.preview { position: fixed; inset: 0; z-index: 1700; background: var(--m-page); overflow-y: auto; padding: max(20px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); display: grid; align-content: start; gap: 12px; }
+.preview { position: fixed; inset: 0; z-index: 3200; background: var(--m-page); overflow-y: auto; padding: max(20px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom)); display: grid; align-content: start; gap: 12px; }
 .previewTop { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--m-muted); }
 @media (prefers-reduced-motion: reduce) { .root *, .root *::after { animation: none !important; transition: none !important; } }
