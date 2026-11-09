@@ -47,7 +47,8 @@ export function AccountStatusStrip() {
   }) as const;
 
   return (
-    <>
+    <div className="ax-status-strip">
+      <style>{`body[data-coach-orb="1"] .ax-status-strip{display:none}`}</style>
       {pastDue && (
         <div style={{
           width: "100%", background: "#3a0f0f", color: "#ffb3b3",
@@ -69,6 +70,6 @@ export function AccountStatusStrip() {
           ◌ SUBSCRIPTION ENDS {cancelInfo.endDate.toUpperCase()}
         </div>
       )}
-    </>
+    </div>
   );
 }

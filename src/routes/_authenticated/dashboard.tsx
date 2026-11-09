@@ -20,6 +20,7 @@ import { NudgeListener } from "@/components/verified/NudgeListener";
 import { TrialBanner, TrialWelcome } from "@/components/TrialBanner";
 import { GateSkeleton } from "@/components/GateSkeleton";
 import { AiCoach } from "@/components/AiCoach";
+import { USE_ORB_COACH } from "@/lib/coach-config";
 
 
 
@@ -714,6 +715,7 @@ function App() {
   const CARD = cardStyle(G);
   const TITLE = titleStyle;
 
+  const orbNav = tab === "coach" && USE_ORB_COACH;
   const TABS = [
     { id: "home", Icon: Swords, label: "Home" },
     { id: "rank", Icon: Crown, label: "Rank" },
@@ -956,7 +958,7 @@ function App() {
         {/* BOTTOM NAV */}
         <div className="ax-safe-bottom" style={{
           position: "fixed", bottom: 0, left: 0, right: 0, width: "100%", maxWidth: 430, margin: "0 auto",
-           background: tab === "coach" ? "rgba(3, 8, 22, 0.9)" : AX.bg, backdropFilter: tab === "coach" ? "blur(18px)" : undefined, borderTop: `1px solid ${tab === "coach" ? "rgba(60, 171, 255, 0.28)" : AX.border}`, display: "flex", zIndex: 99,
+           background: orbNav ? "#05080A" : tab === "coach" ? "rgba(3, 8, 22, 0.9)" : AX.bg, backdropFilter: tab === "coach" && !orbNav ? "blur(18px)" : undefined, borderTop: `1px solid ${orbNav ? "rgba(255,255,255,.06)" : tab === "coach" ? "rgba(60, 171, 255, 0.28)" : AX.border}`, display: "flex", zIndex: 99,
         }}>
           {TABS.map(n => {
             const active = tab === n.id;
@@ -966,9 +968,10 @@ function App() {
               <button key={n.id} className="ax-nav" onClick={() => setTab(n.id)} style={{
                 flex: "1 1 0", minWidth: 0, padding: "10px 2px 12px", background: "transparent", border: "none", cursor: "pointer",
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
-                color: active ? AX.accent : AX.muted, fontFamily: AX.font,
-                transition: "color .15s ease",
+                color: active ? (orbNav ? "var(--coach-a, #C6F432)" : AX.accent) : (orbNav ? "#8FA3B3" : AX.muted), fontFamily: AX.font,
+                transition: "color .15s ease", position: "relative",
               }}>
+                {orbNav && active && <i aria-hidden="true" style={{ position: "absolute", bottom: 2, width: 26, height: 3, borderRadius: 3, background: "var(--coach-a, #C6F432)" }} />}
                 <Ico size={20} strokeWidth={active ? 2.2 : 1.8} />
                 <span className="ax-ellipsis" style={{ fontSize: 11, fontWeight: active ? 600 : 500, maxWidth: "100%" }}>{n.label}</span>
               </button>
