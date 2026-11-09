@@ -15,7 +15,7 @@ export type WakePlan = {
   /** ringtone id */
   tone: string;
   /** verification mode used to dismiss the alarm */
-  mode: "math" | "science";
+  mode: "math" | "science" | "shake" | "typing" | "tiles";
 };
 
 const KEY = "axen_wake_plan";
