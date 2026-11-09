@@ -11,10 +11,10 @@ import {
 } from "@/lib/play-billing";
 import { syncPlayEntitlement } from "@/utils/play-billing.functions";
 import { usePlatform } from "@/hooks/usePlatform";
+import { ArrowRight, Info } from "lucide-react";
+import s from "@/components/account/account.module.css";
 
 export function ManageSubscriptionCard() {
-  const G = "#00d4ff";
-  const R = "#ff4d4d";
   const [restoring, setRestoring] = useState(false);
   const [native, setNative] = useState(false);
   const { platform: billingPlatform } = usePlatform();
@@ -71,52 +71,36 @@ export function ManageSubscriptionCard() {
 
   const planLabel = planLabelFor(sub?.price_id);
 
-  const statusLine = isPastDue
-    ? { color: R, text: `⚠ PAYMENT FAILED — ${storeName} is retrying your payment.` }
+  // Same words as before; split into a chip + muted detail line.
+  const statusLine: { tone: string; chip: string; detail: string | null } = isPastDue
+    ? { tone: "red", chip: "⚠ PAYMENT FAILED", detail: `${storeName} is retrying your payment.` }
     : isCanceled && endStr
-      ? { color: "#ffb84d", text: `◌ CANCELED — access ends ${endStr}` }
+      ? { tone: "gold", chip: "◌ CANCELED", detail: `access ends ${endStr}` }
       : endStr
-          ? { color: G, text: `◉ ACTIVE — renews on ${endStr}` }
-          : { color: G, text: "◉ ACTIVE" };
+          ? { tone: sub?.status === "trialing" ? "violet" : "lime", chip: "◉ ACTIVE", detail: `renews on ${endStr}` }
+          : { tone: sub ? (sub.status === "trialing" ? "violet" : "lime") : "slate", chip: "◉ ACTIVE", detail: null };
 
   return (
-    <div style={{
-      marginTop: 14, padding: 16, background: "rgba(10,10,25,0.7)",
-      border: `1px solid ${isPastDue ? R : G}44`, borderLeft: `3px solid ${isPastDue ? R : G}`, borderRadius: 4,
-    }}>
-      <div style={{ fontSize: 10, color: isPastDue ? R : G, letterSpacing: 3, marginBottom: 6, fontFamily: "monospace" }}>◈ SUBSCRIPTION</div>
-      <div style={{ fontSize: 14, color: "#fff", letterSpacing: 2, fontWeight: 900, fontFamily: "monospace" }}>{planLabel}</div>
-      <div style={{ marginTop: 6, fontSize: 11, color: statusLine.color, letterSpacing: 1.5, fontFamily: "monospace", lineHeight: 1.5 }}>
-        {statusLine.text}
-      </div>
-      <div style={{ marginTop: 10, fontSize: 10, color: "#888", letterSpacing: 1, fontFamily: "monospace", lineHeight: 1.5 }}>
-        {`Billed by ${storeName} (₹99/month · ₹499/year). Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`}
-      </div>
+    <section className={s.card}>
+      <div className={s.micro}><span className={s.diamond} aria-hidden />Subscription</div>
+      <h2 className={s.plan}>{planLabel}</h2>
+      <span className={`${s.chip} ${s[`tone-${statusLine.tone}`]}`}>{statusLine.chip}</span>
+      {statusLine.detail && <p className={s.chipSub}>{statusLine.detail}</p>}
+      <p className={s.billing}>
+        <Info size={14} aria-hidden />
+        <span>{`Billed by ${storeName} (₹99/month · ₹499/year). Upgrade, downgrade or cancel anytime in your ${storeName} subscriptions.`}</span>
+      </p>
 
-      <a
-        href={manageUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          display: "block", marginTop: 12, padding: "12px 16px", textAlign: "center",
-          background: `linear-gradient(135deg, ${isPastDue ? R : G}33, transparent)`,
-          border: `1px solid ${isPastDue ? R : G}`, color: isPastDue ? R : G,
-          fontFamily: "monospace", fontSize: 11, fontWeight: 900, letterSpacing: 3,
-          textDecoration: "none", borderRadius: 2, boxShadow: `0 0 12px ${isPastDue ? R : G}44`,
-        }}
-      >{isPastDue ? `⚠ FIX PAYMENT IN ${storeName.toUpperCase()} →` : `⚙ MANAGE IN ${storeName.toUpperCase()} →`}</a>
+      <a href={manageUrl} target="_blank" rel="noopener noreferrer" className={`${s.primary} ${s.primaryBlock}`}>
+        {isPastDue ? `Fix payment in ${storeName}` : `Manage in ${storeName}`} <ArrowRight size={18} aria-hidden />
+      </a>
 
       <button
+        className={`${s.secondary} ${s.secondaryBlock}`}
         onClick={doRestore}
         disabled={restoring || !uid}
-        style={{
-          marginTop: 8, width: "100%", padding: "10px 16px",
-          background: "transparent",
-          border: `1px dashed ${G}77`, color: G,
-          fontFamily: "monospace", fontSize: 10, fontWeight: 900, letterSpacing: 2.5,
-          cursor: restoring ? "wait" : "pointer", borderRadius: 2,
-        }}
-      >{restoring ? "◌ RESTORING…" : "RESTORE PURCHASES"}</button>
-    </div>
+        style={{ cursor: restoring ? "wait" : undefined }}
+      >{restoring ? "Restoring…" : "Restore purchases"}</button>
+    </section>
   );
 }

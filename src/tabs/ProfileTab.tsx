@@ -3,8 +3,9 @@ import { CoinBadge } from "@/components/CoinBadge";
 import { StreakBadge } from "@/components/StreakBadge";
 import { topMilestone } from "@/lib/economy";
 import { useState } from "react";
+import acct from "@/components/account/account.module.css";
 import {
-  Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins,
+  ArrowLeft, Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins,
   Circle, Flame, HeartHandshake, LogOut, Orbit, Settings, Sparkles, Target, Trophy,
 } from "lucide-react";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
@@ -54,7 +55,7 @@ export function ProfileTab(props: Props) {
   if (view === "achievements") return <AchievementsView bestStreak={props.life?.bestStreak ?? props.streak} onBack={back} />;
   if (view === "goals") return <GoalsView userId={props.userId} habits={props.habits} onBack={back} onChanged={props.onRefresh} />;
   if (view === "reminders") return <RemindersView habits={props.habits} userId={props.userId} onBack={back} />;
-  if (view === "account") return <div className="you-detail animate-fade-in"><header className="you-detail-header"><button className="you-icon-button" onClick={back} aria-label="Back to profile">←</button><div><h1>Account</h1><p>Identity, membership and invitations.</p></div></header><ReferralCard referredBy={props.referredBy ?? null} onCoins={props.onCoins} /><ManageSubscriptionCard /><SubscriptionTimeline />{props.onSignOut && <button className="you-signout" onClick={props.onSignOut}><LogOut size={17} /> Sign out</button>}</div>;
+  if (view === "account") return <div className={acct.page} data-simple-keep=""><header className={acct.header}><button className={acct.back} onClick={back} aria-label="Back to profile"><ArrowLeft size={20} /></button><div><h1 className={acct.title}>Account</h1><p className={acct.subtitle}>Identity, membership and invitations.</p></div></header><ReferralCard referredBy={props.referredBy ?? null} onCoins={props.onCoins} /><ManageSubscriptionCard /><SubscriptionTimeline />{props.onSignOut && <button className={acct.signout} onClick={props.onSignOut}><LogOut size={18} /> Sign out</button>}</div>;
   if (view === "accountability") return <div className="you-detail animate-fade-in"><header className="you-detail-header"><button className="you-icon-button" onClick={back} aria-label="Back to profile">←</button></header><AccountabilitySection /></div>;
 
   const features = [

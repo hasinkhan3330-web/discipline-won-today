@@ -10,15 +10,20 @@ type EventRow = {
   created_at: string;
 };
 
-const G = "#00d4ff";
-const R = "#ff4d4d";
-const Y = "#ffb84d";
+import { History, Receipt } from "lucide-react";
+import s from "@/components/account/account.module.css";
+
+// Tone names map to dot classes: checkout/renewal = lime, plan change = violet, cancellation = gold.
+const G = "lime";
+const V = "violet";
+const R = "red";
+const Y = "gold";
 
 const META: Record<string, { label: string; color: string; icon: string }> = {
   "subscription.authenticated": { label: "MANDATE APPROVED",       color: G, icon: "◉" },
   "subscription.activated":     { label: "SUBSCRIPTION ACTIVE",    color: G, icon: "◉" },
   "subscription.charged":       { label: "PAYMENT SUCCEEDED",      color: G, icon: "✓" },
-  "subscription.updated":       { label: "SUBSCRIPTION UPDATED",   color: G, icon: "⟳" },
+  "subscription.updated":       { label: "SUBSCRIPTION UPDATED",   color: V, icon: "⟳" },
   "subscription.pending":       { label: "PAYMENT RETRYING",       color: Y, icon: "⚠" },
   "subscription.halted":        { label: "PAYMENT FAILED",         color: R, icon: "⚠" },
   "subscription.cancelled":     { label: "SUBSCRIPTION CANCELED",  color: Y, icon: "◌" },
@@ -73,43 +78,38 @@ export function SubscriptionTimeline() {
   if (!uid) return null;
 
   return (
-    <div style={{
-      marginTop: 14, padding: 16, background: "rgba(10,10,25,0.7)",
-      border: `1px solid ${G}33`, borderLeft: `3px solid ${G}`, borderRadius: 4,
-    }}>
-      <div style={{ fontSize: 10, color: G, letterSpacing: 3, marginBottom: 12, fontFamily: "monospace" }}>◈ ACTIVITY TIMELINE</div>
+    <section className={s.card}>
+      <div className={s.cardHead}>
+        <span className={s.well}><History size={18} strokeWidth={1.8} /></span>
+        <h2 className={s.cardTitle}>Activity timeline</h2>
+      </div>
 
       {rows === null ? (
-        <div style={{ fontSize: 10, color: "#888", fontFamily: "monospace", letterSpacing: 1.5 }}>◌ LOADING…</div>
+        <div aria-label="Loading…"><div className={s.skeleton} style={{ width: "70%" }} /><div className={s.skeleton} style={{ width: "45%" }} /></div>
       ) : rows.length === 0 ? (
-        <div style={{ fontSize: 10, color: "#888", fontFamily: "monospace", letterSpacing: 1.5, lineHeight: 1.6 }}>
-          No billing activity yet. Events appear here after checkout, renewals, plan changes, and cancellations.
+        <div className={s.empty}>
+          <span className={`${s.well} ${s.wellSlate}`}><Receipt size={18} strokeWidth={1.5} /></span>
+          <p className={s.body}>No billing activity yet. Events appear here after checkout, renewals, plan changes, and cancellations.</p>
         </div>
       ) : (
-        <div style={{ position: "relative", paddingLeft: 18 }}>
-          <div style={{ position: "absolute", left: 5, top: 4, bottom: 4, width: 1, background: `${G}22` }} />
+        <ul className={s.timeline}>
           {rows.map((r) => {
-            const m = META[r.event_type] ?? { label: r.event_type.toUpperCase(), color: "#888", icon: "•" };
+            const m = META[r.event_type] ?? { label: r.event_type.toUpperCase(), color: "slate", icon: "•" };
             const amt = money(r.amount, r.currency);
             return (
-              <div key={r.id} style={{ position: "relative", paddingBottom: 14 }}>
-                <div style={{
-                  position: "absolute", left: -18, top: 2, width: 11, height: 11, borderRadius: "50%",
-                  background: "#0a0a19", border: `2px solid ${m.color}`, boxShadow: `0 0 8px ${m.color}66`,
-                }} />
-                <div style={{ fontSize: 10, color: m.color, letterSpacing: 2, fontFamily: "monospace", fontWeight: 900 }}>
-                  {m.icon} {m.label}
-                </div>
-                <div style={{ marginTop: 3, fontSize: 9, color: "#aaa", letterSpacing: 1, fontFamily: "monospace" }}>
+              <li key={r.id} className={s.event}>
+                <span className={`${s.dot} ${s[`dot-${m.color}`]}`} aria-hidden />
+                <p className={s.eventTitle}>{m.icon} {m.label}</p>
+                <p className={s.eventMeta}>
                   {fmt(r.created_at)}
                   {r.status ? ` · ${r.status.toUpperCase()}` : ""}
                   {amt ? ` · ${amt}` : ""}
-                </div>
-              </div>
+                </p>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
-    </div>
+    </section>
   );
 }
