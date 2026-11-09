@@ -3,8 +3,9 @@ import { CoinBadge } from "@/components/CoinBadge";
 import { StreakBadge } from "@/components/StreakBadge";
 import { topMilestone } from "@/lib/economy";
 import { useState } from "react";
+import acct from "@/components/account/account.module.css";
 import {
-  Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins,
+  ArrowLeft, Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins,
   Circle, Flame, HeartHandshake, LogOut, Orbit, Settings, Sparkles, Target, Trophy,
 } from "lucide-react";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
