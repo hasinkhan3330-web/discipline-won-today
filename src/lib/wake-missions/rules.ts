@@ -18,7 +18,7 @@ export type ShakeSample = { x: number; y: number; z: number; t: number };
 export function createShakeCounter(level: Level) {
   const threshold = SHAKE_THRESHOLD[level];
   let gravity: [number, number, number] | null = null;
-  let last = -Infinity, count = 0, armed = true;
+  let last = -Infinity, count = 0, armed = true, warm = 0;
   const recent: number[] = [];
   return {
     push(s: ShakeSample): number {
@@ -27,6 +27,7 @@ export function createShakeCounter(level: Level) {
       gravity = [alpha * gravity[0] + (1 - alpha) * s.x, alpha * gravity[1] + (1 - alpha) * s.y, alpha * gravity[2] + (1 - alpha) * s.z];
       const lx = s.x - gravity[0], ly = s.y - gravity[1], lz = s.z - gravity[2];
       const mag = Math.sqrt(lx * lx + ly * ly + lz * lz);
+      if (++warm < 15) return count; // let the gravity filter settle before counting
       if (mag < threshold * 0.5) armed = true;
       while (recent.length && s.t - recent[0]! >= 1000) recent.shift();
       if (mag >= threshold && armed && s.t - last >= SHAKE_MIN_GAP_MS && recent.length < SHAKE_MAX_PER_SECOND) {
