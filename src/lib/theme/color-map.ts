@@ -206,15 +206,16 @@ export function mapBackground(value: string): string {
   const keep = mapped.filter((m) => m !== "none");
   if (keep.length) return keep.join(", ");
   // flat fallback: first opaque stop
+  let decorative = false;
   for (const layer of layers) {
     // glows/washes (radial or fading to transparent) are decoration: drop them
-    if (/radial-gradient/.test(layer) || /transparent/.test(layer)) continue;
+    if (/radial-gradient/.test(layer) || /transparent/.test(layer)) { decorative = true; continue; }
     const cols = (layer.match(COLOR_RE) ?? []).map(parseColor);
-    if (cols.some((c) => c && c.a < 0.5)) continue;
+    if (cols.some((c) => c && c.a < 0.5)) { decorative = true; continue; }
     for (const m of layer.match(COLOR_RE) ?? []) { const c = parseColor(m); if (c && c.a > 0.85) return mapRGBA(c, "bg"); }
   }
   const v = value.match(/var\(--[\w-]+\)/);
-  return v ? v[0] : "none";
+  return v && !decorative ? v[0] : "none";
 }
 
 /** Map a single CSS declaration. Returns null to leave it untouched. */
