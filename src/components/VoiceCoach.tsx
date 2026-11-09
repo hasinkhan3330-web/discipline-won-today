@@ -114,7 +114,7 @@ const TOOLS = [
 
 export type VoicePhase = "idle" | "listen" | "think" | "speak";
 export type VoiceApi = { live: boolean; busy: boolean; error: string | null; toggle: () => void; phase: () => VoicePhase; level: () => number; extras: ReactNode };
-const rms = (a: AnalyserNode | null | undefined, buf: { b: Float32Array | null }) => {
+const rms = (a: AnalyserNode | null | undefined, buf: { b: Float32Array<ArrayBuffer> | null }) => {
   if (!a) return 0;
   if (!buf.b || buf.b.length !== a.fftSize) buf.b = new Float32Array(a.fftSize);
   a.getFloatTimeDomainData(buf.b);
@@ -134,7 +134,7 @@ export function VoiceCoach({ render }: { render?: (api: VoiceApi) => ReactNode }
   const turnCallsRef = useRef(0);
   const micTapRef = useRef<AnalyserNode | null>(null);
   const thinkingRef = useRef(false);
-  const levelBuf = useRef<{ b: Float32Array | null }>({ b: null });
+  const levelBuf = useRef<{ b: Float32Array<ArrayBuffer> | null }>({ b: null });
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);

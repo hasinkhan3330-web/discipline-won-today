@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 import { readFileSync } from "node:fs";
-import { formatPillDate, pillText } from "@/components/coach/orb/CoachOrbScreen";
+import { formatPillDate, pillText } from "../src/components/coach/orb/pill";
 
 describe("coach orb pill", () => {
   it("formats DD Mon YYYY", () => expect(formatPillDate("2027-08-09T12:00:00")).toBe("09 Aug 2027"));

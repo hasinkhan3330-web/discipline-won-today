@@ -6,6 +6,7 @@ import { getCoachV2State } from "@/utils/coach-v2.functions";
 import type { VoiceApi, VoicePhase } from "@/components/VoiceCoach";
 import { OrbCanvas } from "./OrbCanvas";
 import s from "./coach-orb.module.css";
+import { pillText } from "./pill";
 
 export const ORB_THEMES = { lime: ["#C6F432", "#2FB8C9"], ice: ["#4DA3FF", "#7FD6FF"], violet: ["#D17BFF", "#8A7CFF"] } as const;
 type ThemeKey = keyof typeof ORB_THEMES;
@@ -14,19 +15,6 @@ const THEME_LABEL: Record<ThemeKey, string> = { lime: "1. Lime", ice: "2. Ice bl
 const LABEL: Record<VoicePhase, string> = { idle: "Tap the mic to talk", listen: "Listening...", think: "Thinking...", speak: "Coach is speaking..." };
 const CHIPS = ["Plan my next 7 days", "Fix my weakest habit", "I feel like quitting"];
 const tz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } };
-
-/** "DD Mon YYYY", e.g. 09 Aug 2027. */
-export function formatPillDate(iso: string): string {
-  const d = new Date(iso);
-  const m = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][d.getMonth()];
-  return `${String(d.getDate()).padStart(2, "0")} ${m} ${d.getFullYear()}`;
-}
-export function pillText(row: { status?: string | null; current_period_end?: string | null } | null, now = new Date()): string {
-  if (!row?.current_period_end) return "Free";
-  const end = new Date(row.current_period_end);
-  const active = end > now && row.status !== "expired" && row.status !== "halted";
-  return `${active ? "Active" : "Expired"} · ${formatPillDate(row.current_period_end)}`;
-}
 
 export function CoachOrbScreen({ voice, chatBusy, onChip, onKeyboard, sheet, planSheet, onStat }: {
   voice: VoiceApi; chatBusy: boolean; onChip: (text: string) => void; onKeyboard: () => void; sheet: ReactNode; planSheet: ReactNode; onStat: () => void;
