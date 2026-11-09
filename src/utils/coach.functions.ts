@@ -60,18 +60,19 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
   if(data.timezone){const{setTimezone}=await import("@/lib/coach-tools");await setTimezone({supabase:context.supabase,userId:context.userId},data.timezone);}
   const tools=COACH_TOOL_DEFS.map(t=>({type:"function",function:t}));
   const ctx = { supabase: context.supabase, userId: context.userId };
-  const { data: pastQuestions } = await context.supabase.from('coach_messages').select('content').eq('conversation_id', conversationId).eq('user_id', context.userId).eq('role', 'assistant');
-  const questions = (pastQuestions ?? []).filter(m => /\?|kya/i.test(m.content)).length;
+  // Only the current interview window counts; old conversation history must not force a plan on every message.
+  const questions = data.messages.filter(m => m.role === 'assistant' && /\?\s*$/.test(m.content.trim())).length;
   const forceDraft = shouldDraft(latest?.content ?? '', questions);
   if (forceDraft) {
     const slots = spokenSlots(latest?.content ?? '');
     if (Object.keys(slots).length) await runCoachTool(ctx, 'update_profile', { slots });
     const result = await runCoachTool(ctx, 'create_plan_draft', { days: requestedLength(latest?.content ?? '') }) as { ok?: boolean; error?: string; assumptions?: string[]; plan?: { title: string } };
     if (!result.ok) throw new Error(result.error ?? 'Could not build your plan.');
-    const { getCoachProfile } = await import('@/lib/coach-tools'); const { getProfileCompleteness, PROFILE_LABELS } = await import('@/lib/coach-plan-rules');
-    const gap = getProfileCompleteness(((await getCoachProfile(ctx)).slots ?? {}) as any).missing[0];
-    const nextQ = gap ? ` To refine it: what is your ${PROFILE_LABELS[gap] ?? gap}?` : '';
-    const reply = `Your ${result.plan?.title ?? 'plan'} draft is ready. ${result.assumptions?.length ? 'Assumptions: ' + result.assumptions.join('; ') + '.' : ''} Accept it when you are ready.${nextQ}`;
+    const status = await runCoachTool(ctx, 'get_profile_status', {}) as { percent: number; filled: Record<string, unknown>; missing: string[] };
+    const known = Object.entries(status.filled).map(([k, v]) => `${k} ${k === 'daily time available' ? v + ' min' : v}`).join(', ');
+    const gap = status.missing[0];
+    const nextQ = gap ? ` To refine it: what is your ${gap}?` : '';
+    const reply = `Built from your profile (${status.percent}%): ${known || 'no saved details yet'}. Your "${result.plan?.title ?? 'plan'}" draft for today is ready — see the plan card. ${result.assumptions?.length ? 'Assumptions for missing details: ' + result.assumptions.join('; ') + '.' : ''} Accept it when you are ready.${nextQ}`;
     const { error } = await context.supabase.from('coach_messages').insert([{ conversation_id: conversationId, user_id: context.userId, role: 'user', content: latest?.content ?? '' }, { conversation_id: conversationId, user_id: context.userId, role: 'assistant', content: reply }]);
     if (error) throw new Error(error.message);
     return { conversationId, reply, suggestedAction: null };
