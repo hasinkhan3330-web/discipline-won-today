@@ -16,12 +16,15 @@ Dark stays the default and stays exactly as it is now. The only change you'll se
 3. **Simple look across every screen, in this order**
    - A. Shell: subscription strip, header, coin pill, bottom nav
    - B. Home
-   - C. Rank (Leaderboard, verified list, seals stay as they are)
+   - C. Rank: Leaderboard, verified list and seal cards all get Simple white cards with hairline borders. Only the seal artwork itself keeps its colors.
    - D. Zen
    - E. Coach: orb screen, text sheet, quick setup, plan panel. Only colors change; voice and audio code are not touched.
    - F. Stats
    - G. You
    - H. Alarm and its ringing/mission screens
+   - Shared pieces come first, before any screen: buttons, cards, chips, rings, nav, inputs, sheets, charts and all shared ui controls.
+   - Accountability matches your screenshot 1:1.
+   - Images, illustrations and emblem tiles with dark backgrounds get a light version, for example the rank emblem box in the Daily Motivation card. No dark boxes on light.
    - I. Everything else: Accountability, Contract card/sheet, Goals, Habits, Paywall/Pricing, Onboarding, sign-in/sign-up/reset pages, legal pages, Deep Focus, every dialog, sheet, toast and popup, plus empty, loading and error pages
    - Colors, sizes, radii, type and component rules follow your spec exactly (Canvas #F5F5F3, Ink #111, Inter only inside Simple, and so on).
 
@@ -45,6 +48,8 @@ Dark stays the default and stays exactly as it is now. The only change you'll se
 - `src/styles.css`: `@custom-variant simple (&:where([data-theme=simple], [data-theme=simple] *))`, plus a `[data-theme="simple"]` token block (--background, --card, --primary, etc. in oklch, plus the new tokens surface-2/3, ink-2..4, success, warning, danger, info, banner, overlay and shadows). Inter loads with a `<link>` and is applied only under Simple.
 - Per-screen overrides: `[data-theme="simple"] .class {}` rules in `styles.css`, and `:global([data-theme="simple"]) .x` inside the existing CSS modules (coach-orb, acct, contract-visuals, zen, missions, coin-badge). `simple:` classes for hardcoded Tailwind colors in TSX. Existing Dark values are left as they are.
 - Canvas/SVG color users (OrbCanvas, NeuralWaveCanvas, SpaceWallpaper, ZenMandalaScene, charts, EclipseHero) read `useTheme()` and pick Simple colors only when Simple is on. SpaceWallpaper and other dark backgrounds are hidden or swapped for flat Canvas in Simple.
+- Inline `style={{color/background}}` values and SVG `fill`/`stroke` literals can't be overridden by CSS. Each one is switched with `simple:` classes or a `useTheme()` choice, and the Dark literal stays as the default branch.
+- Any new test uses the existing bun:test and Playwright setup, with no new dependencies.
 - `theme-color` meta is #F5F5F3 in Simple; the Dark value is unchanged.
 - Cross-fade: a `theme-switching` class is added for 250ms on user action only, and is turned off under reduced motion.
 - Not touched: auth, database, server functions, payments, Coach/Gemini Live logic, alarms, planner, rewards, routes, copy.
