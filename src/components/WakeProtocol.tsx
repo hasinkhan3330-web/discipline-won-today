@@ -2,14 +2,13 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
   Bell, BellOff, BedDouble, Check, ChevronDown, Clock3, MoonStar,
-  Play, ShieldCheck, Sparkles, Volume2, X,
+  Play, ShieldCheck, Volume2, X,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate } from "@tanstack/react-router";
 import { readWakeState, saveWakeSettings, saveWakeMissionOptions } from "@/lib/wake.functions";
 import { webAlarmScheduler } from "@/lib/web-alarm-scheduler";
-import { WakeReadiness } from "@/components/wake/WakeReadiness";
 import { CoinBadge } from "@/components/CoinBadge";
 import { wakeReward } from "@/lib/wake-rules";
 import { MissionPicker } from "@/components/wake/missions/MissionPicker";
@@ -24,7 +23,6 @@ export type WakeTone = { id: string; name: string; url: string };
 type Status = "idle" | "saving" | "success" | "already" | "error";
 type Section = "sleep" | "reminder" | "evening";
 
-const MILESTONES = [21, 60, 90, 250, 365];
 
 function timeForTier(tier: string) {
   return `${String(Number.parseInt(tier, 10) || 4).padStart(2, "0")}:00`;
@@ -75,7 +73,7 @@ export function WakeProtocol({
   const [difficulty, setDifficulty] = useState(2);
   const [nextFire, setNextFire] = useState<string | null>(null);
   const [timezone, setTimezone] = useState("Asia/Kolkata");
-  const [ready, setReady] = useState(webAlarmScheduler.ready);
+  const [ready] = useState(webAlarmScheduler.ready);
   const [saved, setSaved] = useState(false);
   const [rounds, setRounds] = useState(1);
   const saveMission = useServerFn(saveWakeMissionOptions);
@@ -228,13 +226,6 @@ export function WakeProtocol({
         </div>
 
         {mode === "math" && <label className="wakep__field"><span>Math difficulty</span><select value={difficulty} onChange={e => { setDifficulty(Number(e.target.value)); setSaved(false); }}><option value={1}>Easy</option><option value={2}>Medium</option><option value={3}>Hard</option></select></label>}
-        <WakeReadiness onReady={setReady} />
-
-        <section className="wakep__journey">
-          <header><Sparkles size={16} /><span>MILESTONE JOURNEY</span></header>
-          <div>{MILESTONES.map((milestone, index) => <span key={milestone} className={streak >= milestone ? "is-reached" : ""}><i>{streak >= milestone ? <Check size={12} /> : index + 1}</i><b>{milestone}</b><small>days</small></span>)}</div>
-          <p>Milestones mark consistency—not guaranteed habit-formation dates.</p>
-        </section>
 
         <button type="button" className={`wakep__primary ${status === "success" ? "is-secured" : ""}`} disabled={status === "saving" || status === "success"} onClick={checkIn}>
           {status === "saving" ? "SECURING DAY…" : status === "success" ? <><ShieldCheck size={19} /> DAY SECURED</> : status === "already" || checkedToday ? <><Check size={19} /> ALREADY SECURED</> : "I’M AWAKE"}
