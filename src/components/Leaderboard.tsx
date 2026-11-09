@@ -132,7 +132,7 @@ export function Leaderboard({ myId, onMyBadge }: {
         <div className="lb-head__mark"><Trophy size={18} /></div>
         <div className="lb-head__copy">
           <span>AXEN // RANKING NETWORK</span>
-          <h2>LEADERBOARD</h2>
+          <h2>Leaderboard</h2>
           <p>Discipline Points · earned, never bought</p>
         </div>
         <button className="lb-refresh" onClick={() => void load()} aria-label="Refresh leaderboard">

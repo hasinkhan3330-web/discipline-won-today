@@ -2,22 +2,23 @@ import { CoinBadge } from "@/components/CoinBadge";
 import { FeatureHelpDot } from "@/components/FeatureHelpDot";
 import { RankCoinAvatar } from "@/components/RankCoinBadge";
 import { XP_RULES } from "@/lib/economy";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { RankEmblem } from "@/components/RankEmblem";
 import {
-  Brain, CalendarCheck2, Check, ChevronRight, CircleCheck, Coins, Crown,
-  Flame, Flower2, Focus, Gift, Hexagon, Leaf, LockKeyhole, Medal, Mountain,
-  Palette, Play, ShieldCheck, Sparkles, Target, Trophy, X,
+  CalendarCheck2, Check, ChevronRight, CircleCheck, Coins, Crown,
+  Flame, Flower2, Focus, Gift, Hexagon, LockKeyhole, Medal, Mountain,
+  Palette, Play, Sparkles, Target, Trophy, X,
 } from "lucide-react";
 import type { ThemeKey } from "@/constants/themes";
 
 export const TIERS = [
-  { min: 0, max: 500, name: "Beginner", tone: "silver", icon: Leaf },
-  { min: 501, max: 1500, name: "Aspirant", tone: "blue", icon: ChevronRight },
-  { min: 1501, max: 3000, name: "Disciplined", tone: "purple", icon: Sparkles },
-  { min: 3001, max: 5000, name: "Discipline Rising", tone: "lime", icon: Mountain },
-  { min: 5001, max: 9000, name: "Mind Master", tone: "purple", icon: Brain },
-  { min: 9001, max: 12000, name: "Legend", tone: "orange", icon: Crown },
-  { min: 12001, max: null, name: "The Unshakable", tone: "ice", icon: ShieldCheck },
+  { min: 0, max: 500, name: "Beginner", tone: "silver" },
+  { min: 501, max: 1500, name: "Aspirant", tone: "blue" },
+  { min: 1501, max: 3000, name: "Disciplined", tone: "purple" },
+  { min: 3001, max: 5000, name: "Discipline Rising", tone: "lime" },
+  { min: 5001, max: 9000, name: "Mind Master", tone: "purple" },
+  { min: 9001, max: 12000, name: "Legend", tone: "orange" },
+  { min: 12001, max: null, name: "The Unshakable", tone: "ice" },
 ] as const;
 
 export function tierFor(coins: number) {
@@ -89,6 +90,12 @@ export function RankTab({
   const level = Math.max(1, Math.floor(coins / 160) + 1);
   const levelXp = coins % 160;
   const [quote, quoteLine] = useMemo(dailyMotivation, []);
+  const tierRowRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const row = tierRowRef.current;
+    const el = row?.querySelector<HTMLElement>(".rank-tier.is-current");
+    if (row && el) row.scrollLeft = Math.max(0, el.offsetLeft - (row.clientWidth - el.clientWidth) / 2);
+  }, [idx]);
 
   const metricCards = [
     { title: "Current Streak", value: `${streak} day${streak === 1 ? "" : "s"}`, note: "+1 today", Icon: Flame, tone: "lime", copy: `Your current streak is ${streak} days. Your personal best is ${bestStreak} days.`, progress: Math.min(100, streak / Math.max(7, bestStreak) * 100) },
@@ -98,7 +105,7 @@ export function RankTab({
   ];
 
   return (
-    <section className={`rank-screen rank-theme-${cur.tone} animate-fade-in${sectionsOnly ? " rank-screen--sections-only" : ""}`}>
+    <section data-rank-v2="" className={`rank-screen rank-theme-${cur.tone} animate-fade-in${sectionsOnly ? " rank-screen--sections-only" : ""}`}>
       {!sectionsOnly && <>
       <header className="rank-profile-strip">
         <RankCoinAvatar name={name} src={avatar} milestone={badgeMilestone} />
@@ -108,28 +115,28 @@ export function RankTab({
 
       <button className="rank-main-card" onClick={() => setPanel({ type: "ranks" })}>
         <div className="rank-main-copy"><span>YOUR RANK</span><h2>{cur.name} <ChevronRight /></h2><p>You’re not just trying.<br />You’re becoming.</p></div>
-        <div className="rank-mountain"><i /><Mountain size={48} /></div>
+        <div className="rank-mountain"><RankEmblem name={cur.name} size="lg" state="current" /></div>
         <div className="rank-level-row"><strong>Level {level}</strong><span>{levelXp} / 160 XP</span></div>
         <div className="rank-progress"><i style={{ width: `${levelXp / 160 * 100}%` }} /></div>
       </button>
 
-      <div className="rank-metrics">{metricCards.map(card => <button key={card.title} className="rank-metric" onClick={() => setPanel({ type: "metric", title: card.title, value: card.value, copy: card.copy, progress: card.progress })}><span><card.Icon size={22} /></span><div><small>{card.title}</small><strong>{card.title === "Total Coins" ? <CoinBadge amount={coins} variant="amount" /> : card.value}</strong><em>{card.note} <ChevronRight size={12} /></em></div></button>)}</div>
+      <div className="rank-metrics">{metricCards.map(card => <button key={card.title} className="rank-metric" onClick={() => setPanel({ type: "metric", title: card.title, value: card.value, copy: card.copy, progress: card.progress })}><span>{card.title === "Best Rank" ? <RankEmblem name={cur.name} size="sm" state="current" /> : <card.Icon size={22} />}</span><div><small>{card.title}</small><strong>{card.title === "Total Coins" ? <CoinBadge amount={coins} variant="amount" /> : card.value}</strong><em>{card.note} <ChevronRight size={12} /></em></div></button>)}</div>
       </>}
 
       <button className="rank-motivation" onClick={() => setPanel({ type: "motivation" })}><div className="rank-motivation-mark"><Mountain /><i /></div><blockquote>“{quote}”<span>— {quoteLine}</span></blockquote><b><Play size={12} fill="currentColor" /> Daily Motivation <ChevronRight size={14} /></b></button>
 
       <article className="rank-section rank-progression">
-        <header><div><Crown size={20} /><span><strong>Rank Progress</strong><small>Climb higher. Unlock greater rewards.</small></span></div><button onClick={() => setPanel({ type: "ranks" })}>View All Ranks <ChevronRight size={13} /></button></header>
-        <div className="rank-tier-row">{TIERS.map((tier, index) => { const Icon = tier.icon; const unlocked = coins >= tier.min; return <button key={tier.name} className={`rank-tier rank-tone-${tier.tone} ${index === idx ? "is-current" : ""} ${unlocked ? "is-unlocked" : "is-locked"}`} onClick={() => setPanel({ type: "ranks" })}><span><Icon size={22} /></span><strong>{tier.name}</strong><small>{tier.min} – {tier.max ?? "∞"} XP</small>{index === idx && <em>Current</em>}</button>; })}</div>
+        <header><div><i className="rank-well"><Crown size={20} /></i><span><strong>Rank Progress</strong><small>Climb higher. Unlock greater rewards.</small></span></div><button onClick={() => setPanel({ type: "ranks" })}>View All Ranks <ChevronRight size={13} /></button></header>
+        <div className="rank-tier-row" ref={tierRowRef}><div className="rank-tier-track" style={{ ["--rank-fill" as string]: `${idx / (TIERS.length - 1) * 100}%` }}><i className="rank-tier-line" aria-hidden />{TIERS.map((tier, index) => { const unlocked = coins >= tier.min; const state = index === idx ? "current" : unlocked ? "reached" : "locked"; return <button key={tier.name} className={`rank-tier ${index === idx ? "is-current" : ""} ${unlocked ? "is-unlocked" : "is-locked"}`} onClick={() => setPanel({ type: "ranks" })}><RankEmblem name={tier.name} size="md" state={state} /><strong>{tier.name}</strong><small>{tier.min} – {tier.max ?? "∞"} XP</small>{index === idx && <em>Current</em>}</button>; })}</div></div>
       </article>
 
       <article className="rank-section rank-rewards">
-        <header><div><Medal size={20} /><span><strong>Current Rank Rewards</strong><small>{cur.name} Rewards</small></span></div></header>
-        <div className="rank-reward-row">{REWARDS.map(reward => { const unlocked = coins >= reward.requirement; const applied = reward.theme === activeTheme; return <button key={reward.name} className={`${unlocked ? "is-unlocked" : "is-locked"} ${applied ? "is-applied" : ""}`} onClick={() => setPanel({ type: "reward", reward })}><span>{unlocked ? <reward.Icon size={21} /> : <LockKeyhole size={18} />}</span><strong>{reward.name}</strong><small>{applied ? "Applied" : unlocked ? "Unlocked" : "Locked"}</small></button>; })}</div>
+        <header><div><i className="rank-well"><Medal size={20} /></i><span><strong>Current Rank Rewards</strong><small>{cur.name} Rewards</small></span></div></header>
+        <div className="rank-reward-row">{REWARDS.map(reward => { const unlocked = coins >= reward.requirement; const applied = reward.theme === activeTheme; return <button key={reward.name} className={`${unlocked ? "is-unlocked" : "is-locked"} ${applied ? "is-applied" : ""}`} onClick={() => setPanel({ type: "reward", reward })}><span>{unlocked ? <Check size={18} /> : <LockKeyhole size={18} />}</span><strong>{reward.name}</strong><small>{applied ? "Applied" : unlocked ? "Unlocked" : "Locked"}</small></button>; })}</div>
       </article>
 
       <article className="rank-section rank-earn">
-        <header><div><Hexagon size={20} /><span><strong>How to Earn XP & Climb Ranks</strong></span></div><FeatureHelpDot label="XP" content={{ title: "What is XP?", lines: ["XP is your discipline score. It decides your rank and leaderboard place.", ...XP_RULES.map(rule => `${rule.title} ${rule.xp}`), "Verified actions count most. XP can never be bought."], question: "Explain XP and how I climb ranks fastest." }} /></header>
+        <header><div><i className="rank-well"><Hexagon size={20} /></i><span><strong>How to Earn XP & Climb Ranks</strong></span></div><FeatureHelpDot label="XP" content={{ title: "What is XP?", lines: ["XP is your discipline score. It decides your rank and leaderboard place.", ...XP_RULES.map(rule => `${rule.title} ${rule.xp}`), "Verified actions count most. XP can never be bought."], question: "Explain XP and how I climb ranks fastest." }} /></header>
         <div>{[
           { title: "Complete Habits", xp: "+10 XP", Icon: CircleCheck, tab: "home", copy: "Complete your active habits from Home." },
           { title: "Use Focus Mode", xp: "+15 XP", Icon: Focus, tab: "home", copy: "Finish a Deep Focus session from Home." },
