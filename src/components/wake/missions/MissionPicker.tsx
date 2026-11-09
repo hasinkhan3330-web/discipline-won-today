@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { Check, FlaskConical, Grid2x2, Keyboard, Smartphone, X } from "lucide-react";
 import { MISSION_META, isNewMission, LEVEL_LABEL, type Level, type MissionMode, type NewMission } from "@/lib/wake-missions/rules";
@@ -21,7 +21,7 @@ export function useMotionSupport(): boolean | null {
 }
 
 const MathGlyph = () => <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M3 13h9M7.5 8.5v9M15 9l7 7M22 9l-7 7" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" fill="none" /></svg>;
-const ROWS: { id: MissionMode; name: string; icon: JSX.Element; purple?: boolean }[] = [
+const ROWS: { id: MissionMode; name: string; icon: ReactElement; purple?: boolean }[] = [
   { id: "math", name: "Math", icon: <MathGlyph /> },
   { id: "science", name: "Science", icon: <FlaskConical size={24} /> },
   { id: "shake", name: "Shake", icon: <Smartphone size={24} />, purple: true },
