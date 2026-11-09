@@ -12,7 +12,9 @@ const SHEET_ID = "axen-simple-overrides";
 const ROOT = 'html[data-theme="simple"]';
 const WROOT = ':where(html[data-theme="simple"])';
 const KEEP = "[data-simple-keep]";
-const SKIP_VARS = /^--(tw-|color-|background$|foreground$|card|popover|primary|secondary|muted|accent|destructive|border$|input$|ring$|chart-|sidebar|radius|s-)/;
+const SKIP_VARS = /^--(tw-|color-|s-|radius)/;
+const SHADCN_VARS = /^--(background|foreground|card|card-foreground|popover|popover-foreground|primary|primary-foreground|secondary|secondary-foreground|muted|muted-foreground|accent|accent-foreground|destructive|destructive-foreground|border|input|ring|chart-\d|sidebar[\w-]*)$/;
+const GLOBAL_SEL = /^(:root|html|\.dark|:host)/;
 const SVG_ATTRS = ["fill", "stroke", "stop-color", "flood-color"] as const;
 
 function splitTop(v: string, sep: string): string[] {
@@ -58,12 +60,12 @@ function resolveVars(value: string, vars: Map<string, string>): string {
   return value.replace(/var\(\s*(--color-[\w-]+)\s*(?:,[^()]*)?\)/g, (m, n) => vars.get(n) ?? m);
 }
 
-function mapBlock(block: string, ctx: Ctx, forKeyframe = false): string {
+function mapBlock(block: string, ctx: Ctx, forKeyframe = false, selector = ""): string {
   const out: string[] = [];
   for (const { prop, value, important } of parseDecls(block)) {
     const imp = important ? " !important" : "";
     if (prop.startsWith("--")) {
-      if (SKIP_VARS.test(prop)) continue;
+      if (SKIP_VARS.test(prop) || (SHADCN_VARS.test(prop) && GLOBAL_SEL.test(selector))) continue;
       const m = mapCustomProperty(prop, value);
       if (m) out.push(`${prop}: ${m}${imp}`);
       continue;
@@ -90,7 +92,7 @@ function collect(rules: CSSRuleList, ctx: Ctx, sink: string[], pass: 0 | 1) {
         if (/^(:root|html|:host)/.test(r.selectorText)) for (const d of parseDecls(bodyOf(r.cssText))) if (d.prop.startsWith("--color-") || d.prop === "--color-white") ctx.vars.set(d.prop, d.value);
         continue;
       }
-      const block = mapBlock(bodyOf(r.cssText), ctx);
+      const block = mapBlock(bodyOf(r.cssText), ctx, false, r.selectorText);
       if (block) { const sel = scopeSelector(r.selectorText); if (sel) sink.push(`${sel} { ${block} }`); }
       // nested rules (native nesting)
       const nested = (r as unknown as { cssRules?: CSSRuleList }).cssRules;
