@@ -2,10 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getCoachV2State, runCoachToolFn } from "@/utils/coach-v2.functions";
 import { PLAN_READY_CONFIDENCE, type CoachPlan } from "@/lib/coach-plan-rules";
+import { CoachQuickSetup } from "./CoachQuickSetup";
 import s from "./coach-plan.module.css";
 
 type PlanRow = { id: string; status: string; days: number; plan: CoachPlan; start_date: string | null } | null;
-type State = { confidence: number; nextSlot: string | null; draft: PlanRow; confirmed: PlanRow };
+type State = { confidence: number; nextSlot: string | null; draft: PlanRow; confirmed: PlanRow; slots?: Record<string, { value: any; confidence: number }> };
 const LENGTHS = [{ days: 1, label: "Today" }, { days: 7, label: "7 days" }, { days: 21, label: "21 days" }] as const;
 const tz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } };
 
@@ -42,6 +43,7 @@ export function CoachPlanPanel({ refreshKey, onAskChange, onSend }: { refreshKey
       </button>
       {open && (
         <div className={s.body}>
+          <CoachQuickSetup initial={state.slots ?? {}} />
           {pct < PLAN_READY_CONFIDENCE && <p className={s.hint}>Chat a little more so your plan fits you. The coach will ask a few questions first, then build it.</p>}
           {!state.draft && (
             <>
@@ -55,9 +57,9 @@ export function CoachPlanPanel({ refreshKey, onAskChange, onSend }: { refreshKey
             <div className={s.card}>
               <div className={s.cardTop}><b>{plan.title || "Your plan"}</b><span className={s.tag}>{shown!.status === "draft" ? "Draft" : "Active"} · {shown!.days === 1 ? "Today" : `${shown!.days} days`}</span></div>
               {plan.summary && <p className={s.summary}>{plan.summary}</p>}
-              <ul className={s.tasks}>
+              {!full && <ul className={s.tasks}>
                 {(plan.days[0]?.tasks ?? []).map((t, i) => <li key={i}><span>{t.title}</span><small>{t.minutes} min · tiny version: {t.minimum}</small></li>)}
-              </ul>
+              </ul>}
               {shown!.days > 1 && <p className={s.more}>Day 1 shown. {shown!.days - 1} more days are ready; each day's tasks are added to your habits that morning.</p>}
               {plan.days.length > 1 && <button className={s.ghost} onClick={() => setFull((f) => !f)} aria-expanded={full}>{full ? "Hide full plan" : "View full plan"}</button>}
               {full && (
