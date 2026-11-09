@@ -10,13 +10,13 @@ type State = { confidence: number; nextSlot: string | null; draft: PlanRow; conf
 const LENGTHS = [{ days: 1, label: "Today" }, { days: 7, label: "7 days" }, { days: 21, label: "21 days" }] as const;
 const tz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } };
 
-export function CoachPlanPanel({ refreshKey, onAskChange, onSend }: { refreshKey: number; onAskChange: (text: string) => void; onSend: (text: string) => void }) {
+export function CoachPlanPanel({ refreshKey, onAskChange, onSend, defaultOpen = false }: { defaultOpen?: boolean; refreshKey: number; onAskChange: (text: string) => void; onSend: (text: string) => void }) {
   const load = useServerFn(getCoachV2State); const run = useServerFn(runCoachToolFn);
   const [state, setState] = useState<State | null>(null);
   const [length, setLength] = useState<1 | 7 | 21>(7);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [full, setFull] = useState(false);
 
   const refresh = useCallback(() => load({ data: { timezone: tz() } }).then((r) => { setState(r as State); if (r.draft) setOpen(true); }).catch(() => {}), [load]);

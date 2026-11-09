@@ -44,6 +44,7 @@ export class PcmPlayer {
   private gain: GainNode | null = null;
   private sources = new Set<AudioBufferSourceNode>();
   private nextStart = 0;
+  private tapNode: AnalyserNode | null = null;
   /** Jitter buffer: keep a small lead so network hiccups never underrun. */
   private readonly lead = 0.18;
 
@@ -92,6 +93,17 @@ export class PcmPlayer {
     };
   }
 
+  /** Read-only level tap: an analyser branched off the output gain, never connected onward. */
+  levelTap(): AnalyserNode | null {
+    if (!this.ctx || !this.gain || this.ctx.state === "closed") return null;
+    if (!this.tapNode || this.tapNode.context !== this.ctx) {
+      this.tapNode = this.ctx.createAnalyser();
+      this.tapNode.fftSize = 512;
+      this.gain.connect(this.tapNode);
+    }
+    return this.tapNode;
+  }
+
   /** Drop everything scheduled (used on interruption / stop). */
   clear() {
     for (const src of this.sources) {
@@ -117,5 +129,6 @@ export class PcmPlayer {
     }
     this.gain = null;
     this.ctx = null;
+    this.tapNode = null;
   }
 }
