@@ -628,12 +628,6 @@ function App() {
     return newCoins;
   };
 
-  const onMusicReward = (awarded: number, minutes: number) => {
-    if (awarded <= 0) return;
-    setCoins(value => value + awarded);
-    setLife(previous => previous ? { ...previous, lifetimeCoins: previous.lifetimeCoins + awarded, focusMinutes: previous.focusMinutes + minutes } : previous);
-  };
-
   const createCoachHabit = async (name: string) => {
     if (!myId || !name.trim()) return;
     const { error } = await supabase.from("tasks").insert({ user_id: myId, name: name.trim().slice(0,80), icon: "◎", pts: 10, sort_order: tasks.length + 1, frequency: "daily", duration_days: 21 });
@@ -855,7 +849,7 @@ function App() {
             {tab === "home" && (
               <HomeTab
                 name={myName} coins={coins} streak={streak} shields={shields}
-                tasks={tasks} tick={tick} onScan={scanTask} onFocusComplete={onFocusComplete} onMusicReward={onMusicReward}
+                tasks={tasks} tick={tick} onScan={scanTask} onFocusComplete={onFocusComplete}
                 onBuyShield={buyShield}
                 reminderTasks={tasks.map(t => ({ uuid: (t as any)._uuid as string, name: t.name, done: t.done }))}
                 wakeSet={!!wakeState?.settings?.enabled && !!wakeState.settings.next_fire_at && webAlarmScheduler.ready}
