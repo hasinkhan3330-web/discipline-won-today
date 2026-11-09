@@ -253,6 +253,13 @@
       "when": 1794077079739,
       "tag": "0035_coach_v2_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1794199714717,
+      "tag": "0036_wake_new_missions",
+      "breakpoints": true
     }
   ]
 }
