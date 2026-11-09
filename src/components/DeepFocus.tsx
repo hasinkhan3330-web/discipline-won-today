@@ -3,7 +3,6 @@ import { forwardRef, useState, useEffect, useRef, useCallback, useImperativeHand
 import { ChevronRight, Clock3, LockKeyhole, Music2, Plus, Repeat2, Search, Shield, Volume2, X, Zap } from "lucide-react";
 import { siFacebook, siInstagram, siX, siYoutube } from "simple-icons/icons";
 import { cardStyle } from "@/tabs/styles";
-import { FocusMusicPanel } from "@/components/FocusMusicPanel";
 
 export type FocusTier = { id: "f49" | "f120" | "f229"; label: string; sub: string; minutes: number; reward: number };
 
@@ -62,16 +61,14 @@ const fmt = (s: number) => `${two(Math.floor(s / 3600))}:${two(Math.floor((s % 3
 
 export type DeepFocusHandle = {
   start: () => void;
-  openMusic: () => void;
 };
 
 export const DeepFocus = forwardRef<DeepFocusHandle, {
   G: string; G2: string;
   onComplete: (tier: FocusTier, lockMode: LockMode, apps: string[]) => Promise<number | null>;
-  onMusicReward?: (coins: number, minutes: number) => void;
   hasPaidAccess: boolean;
   onLocked: () => void;
-}>(function DeepFocus({ G, G2, onComplete, onMusicReward, hasPaidAccess, onLocked }, ref) {
+}>(function DeepFocus({ G, onComplete, hasPaidAccess, onLocked }, ref) {
   const CARD = cardStyle(G);
   const [phase, setPhase] = useState<Phase>("idle");
   const [tier, setTier] = useState<FocusTier | null>(null);
@@ -85,7 +82,6 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
   const [result, setResult] = useState<{ awarded: number; coins: number | null; minutes: number } | null>(null);
   const [penalty, setPenalty] = useState(0);
   const [showAudio, setShowAudio] = useState(true);
-  const [showMusic, setShowMusic] = useState(false);
   const [trackIdx, setTrackIdx] = useState(0);
   const [loop, setLoop] = useState(true);
   const [vol, setVol] = useState(0.7);
@@ -171,7 +167,6 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
       setTier(defaultTier);
       setPhase("setup");
     },
-    openMusic: () => setShowMusic(true),
   }), [hasPaidAccess, onLocked]);
 
   /* ---------------- IDLE: tier picker ---------------- */
@@ -182,7 +177,6 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
           <span><LockKeyhole size={18} strokeWidth={1.8} /></span>
           <div><h2>Deep Focus System</h2><p>Lock distractions. Enter the work.</p></div>
         </div>
-        {showMusic && <FocusMusicPanel onClose={() => setShowMusic(false)} onReward={onMusicReward} />}
         <div className="home-focus-tiers">
           {FOCUS_TIERS.map(t => (
             <button key={t.id} onClick={() => { if (!hasPaidAccess) { onLocked(); return; } setTier(t); setPhase("setup"); }}>
@@ -204,9 +198,6 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
         }}>
           <LockKeyhole size={17} strokeWidth={2} /> Configure Lock <ChevronRight size={16} />
         </button>
-        <button className="home-focus-music-link" onClick={() => setShowMusic(true)}>
-          <Music2 size={16} /> Focus music <ChevronRight size={16} />
-        </button>
       </section>
     );
   }
@@ -214,13 +205,14 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
   /* ---------------- SETUP: app locking modal ---------------- */
   if (phase === "setup" && tier) {
     return (
-      <div className="df-overlay df-grid">
+      <div className="df-overlay df-grid" data-simple-keep="">
         <section className="df-setup" aria-label="Lock setup">
+          <div className="df-grabber" aria-hidden="true" />
           <header className="df-setup__header">
             <div><span>DEEP FOCUS PROTOCOL</span><h2>LOCK SETUP</h2></div>
             <button className="df-icon-button" aria-label="Close lock setup" onClick={() => { setPhase("idle"); setTier(null); }}><X size={18} /></button>
           </header>
-          <div className="df-reward-rail"><Zap size={13} /><strong>{tier.label}</strong><i />+{tier.reward} COINS<i />+{tier.reward} LEADERBOARD PTS</div>
+          <div className="df-reward-rail"><Zap size={13} /><strong>{tier.label}</strong><i /><span className="df-coin">+{tier.reward} COINS</span><i />+{tier.reward} LEADERBOARD PTS</div>
 
           <div className="df-section-label"><span>01</span> SELECT DURATION</div>
           <div className="df-duration-tabs">
@@ -295,7 +287,7 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
     const R = 74, C = 2 * Math.PI * R;
     const track = TRACKS[trackIdx]!;
     return (
-      <div className="df-overlay df-active df-grid">
+      <div className="df-overlay df-active df-grid" data-simple-keep="">
         <main className="df-active__inner">
           <div className={`df-status-bar ${lockMode === "strict" ? "is-strict" : ""}`}><Shield size={14} /><span>{lockMode === "strict" ? "STRICT APP LOCK ENFORCED" : "FLEXIBLE FOCUS ACTIVE"}</span><b>LIVE</b></div>
           <div className="df-active__meta">{blocked.length} APPS BLOCKED <i /> {tier.sub}</div>
@@ -313,7 +305,7 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
             </div>
 
           <div className="df-reward-grid">
-            <div><span>SESSION REWARD</span><strong>+{tier.reward}</strong><small>COINS PENDING</small></div>
+            <div><span>SESSION REWARD</span><strong className="df-coin">+{tier.reward}</strong><small>COINS PENDING</small></div>
             <div><span>DISCIPLINE SCORE</span><strong>+{tier.reward}</strong><small>LEADERBOARD PTS</small></div>
           </div>
 
@@ -360,41 +352,22 @@ export const DeepFocus = forwardRef<DeepFocusHandle, {
   /* ---------------- DONE: summary ---------------- */
   if (phase === "done" && result) {
     return (
-      <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(3,3,10,0.92)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "monospace", overflowY: "auto", overflowX: "clip" }}>
-        {Array.from({ length: 24 }, (_, i) => (
-          <div key={i} style={{
-            position: "absolute", top: 0, left: `${(i * 41) % 100}%`, width: 4, height: 12,
-            background: i % 3 === 0 ? "#fff" : i % 3 === 1 ? G : G2, boxShadow: `0 0 8px ${G}`,
-            animation: `confetti-fall ${2.2 + ((i * 17) % 18) / 10}s linear ${(i % 10) * 0.2}s infinite`,
-          }} />
-        ))}
-        <div style={{ position: "relative", maxWidth: 340, width: "100%", textAlign: "center", padding: "28px 20px", background: "rgba(10,10,25,0.95)", border: `1px solid ${G}`, boxShadow: `0 0 46px ${G}77`, animation: "celebrate-pop .5s ease-out" }}>
-          <div style={{ fontSize: 46, filter: `drop-shadow(0 0 16px ${G})` }}>🧠</div>
-          <div style={{ fontSize: 15, fontWeight: 900, letterSpacing: 3, color: "#fff", marginTop: 8, textShadow: `0 0 14px ${G}` }}>FOCUS COMPLETE</div>
-          <div style={{ width: 90, height: 2, background: `linear-gradient(90deg,transparent,${G},transparent)`, margin: "12px auto" }} />
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, margin: "14px 0" }}>
-            <div style={{ border: `1px solid ${G}33`, padding: 10 }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: G }}>+{result.awarded}</div>
-              <div style={{ fontSize: 8, color: "#777", letterSpacing: 2 }}>COINS EARNED</div>
-            </div>
-            <div style={{ border: `1px solid ${G}33`, padding: 10 }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: G }}>{result.minutes}m</div>
-              <div style={{ fontSize: 8, color: "#777", letterSpacing: 2 }}>DEEP WORK</div>
-            </div>
+      <div className="df-overlay df-grid df-done" data-simple-keep="">
+        <div className="df-done__card" role="dialog" aria-modal="true" aria-label="Focus complete">
+          <div className="df-done__emoji">🧠</div>
+          <div className="df-done__title">FOCUS COMPLETE</div>
+          <div className="df-done__rule" />
+          <div className="df-done__stats">
+            <div><b className="df-coin">+{result.awarded}</b><span>COINS EARNED</span></div>
+            <div><b>{result.minutes}m</b><span>DEEP WORK</span></div>
           </div>
           {result.coins !== null && (
-            <div style={{ fontSize: 10, color: G, letterSpacing: 2 }}>WALLET BALANCE: <CoinBadge amount={result.coins} variant="balance" /></div>
+            <div className="df-done__wallet">WALLET BALANCE: <CoinBadge amount={result.coins} variant="balance" /></div>
           )}
-          <div style={{ fontSize: 9, color: "#777", letterSpacing: 2, marginTop: 6 }}>LEADERBOARD SCORE UPDATED (+{result.awarded} PTS)</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 18 }}>
-            <button onClick={() => { setPhase("idle"); setTier(null); setResult(null); }} style={{
-              padding: "11px", background: "rgba(0,0,0,0.5)", border: `1px solid ${G}55`, color: "#ccc",
-              fontSize: 10, letterSpacing: 2, cursor: "pointer", fontFamily: "monospace",
-            }}>← BACK HOME</button>
-            <button onClick={() => { setResult(null); setPhase("setup"); }} style={{
-              padding: "11px", background: `linear-gradient(90deg, ${G}, ${G2})`, border: "none", color: "#03030a",
-              fontSize: 10, fontWeight: 900, letterSpacing: 2, cursor: "pointer", fontFamily: "monospace", boxShadow: `0 0 18px ${G}88`,
-            }}>STACK ANOTHER →</button>
+          <div className="df-done__note">LEADERBOARD SCORE UPDATED (+{result.awarded} PTS)</div>
+          <div className="df-done__actions">
+            <button className="df-done__ghost" onClick={() => { setPhase("idle"); setTier(null); setResult(null); }}>← BACK HOME</button>
+            <button className="df-done__primary" onClick={() => { setResult(null); setPhase("setup"); }}>STACK ANOTHER →</button>
           </div>
         </div>
       </div>
