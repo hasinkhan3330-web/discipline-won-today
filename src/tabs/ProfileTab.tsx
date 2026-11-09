@@ -4,7 +4,7 @@ import { StreakBadge } from "@/components/StreakBadge";
 import { topMilestone } from "@/lib/economy";
 import { useState } from "react";
 import {
-  Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins, Crown,
+  Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins,
   Circle, Flame, HeartHandshake, LogOut, Orbit, Settings, Sparkles, Target, Trophy,
 } from "lucide-react";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
