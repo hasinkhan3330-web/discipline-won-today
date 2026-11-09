@@ -3,11 +3,13 @@ import { QueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "@/styles.css?url";
 import { WakeObserver } from "@/components/wake/WakeObserver";
+import { ThemeProvider, THEME_BOOT_SCRIPT } from "@/lib/theme/theme";
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" href={appCss} />
@@ -26,8 +28,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <div style={{ minHeight: "100vh", background: "#000" }}>
-      <WakeObserver />
-      <Outlet />
+      <ThemeProvider>
+        <WakeObserver />
+        <Outlet />
+      </ThemeProvider>
     </div>
   );
 }
@@ -56,7 +60,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@400;500;600;700&family=Sora:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Orbitron:wght@500;700;800;900&family=Rajdhani:wght@400;500;600;700&family=Sora:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap",
       },
     ],
   }),

@@ -12,7 +12,7 @@ export function MilestoneSeal({ tier, label, shine = false, className = "" }: { 
   const id = useId().replace(/:/g, "");
   const ref = (name: string) => `url(#${id}-${name})`;
   return <span className={`milestone-seal milestone-seal--${tier} ${className}`} role="img" aria-label={label}>
-    <svg viewBox="-6 -6 60 60" aria-hidden="true">
+    <svg viewBox="-6 -6 60 60" aria-hidden="true" data-simple-keep="">
       <defs>
         <linearGradient id={`${id}-body`} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="var(--seal-highlight)" /><stop offset="50%" stopColor="var(--seal-tier)" /><stop offset="100%" stopColor="var(--seal-shadow)" />
