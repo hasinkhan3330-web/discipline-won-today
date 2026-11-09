@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
-import { runCoachToolFn } from '@/utils/coach-v2.functions';
+import { getCoachV2State, runCoachToolFn } from '@/utils/coach-v2.functions';
 import { Button } from '@/components/ui/button';
 import s from './coach-plan.module.css';
 
+type SavedSlots = Record<string, { value: any; confidence: number }>;
 const groups = [
   { key: 'goal', label: 'Your goal', options: ['Study', 'Exercise', 'Phone addiction', 'Sleep', 'Other'] },
   { key: 'wake_time', label: 'Wake time', options: ['04:00', '05:00', '06:00', '07:00', '08:00'] },
@@ -12,13 +13,31 @@ const groups = [
   { key: 'distraction_trigger', label: 'Main distraction', options: ['Phone', 'Social media', 'Noise', 'Procrastination', 'Other'] },
   { key: 'intensity', label: 'Intensity', options: ['Gentle', 'Balanced', 'Hardcore'] },
 ] as const;
-export function CoachQuickSetup({ onDone }: { onDone: () => void }) {
-  const run = useServerFn(runCoachToolFn);
-  const [selected, setSelected] = useState<Record<string, string>>({});
+const MINUTES: Record<string, number> = { '30 min': 30, '1 h': 60, '2 h': 120, '3 h+': 180 };
+const tz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; } };
+
+/** Highlights come only from the saved row: a choice is selected only when its value is persisted. */
+export function savedChoices(slots: SavedSlots | null | undefined): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const g of groups) {
+    const v = slots?.[g.key]?.value; if (v === undefined || v === null || v === '') continue;
+    const match = g.key === 'daily_time_available'
+      ? g.options.find(o => MINUTES[o] === Number(v)) ?? g.options.find(o => o === String(v))
+      : g.options.find(o => o.toLowerCase() === String(v).toLowerCase());
+    if (match) out[g.key] = match;
+  }
+  return out;
+}
+
+export function CoachQuickSetup({ onDone, initial }: { onDone?: () => void; initial?: SavedSlots }) {
+  const run = useServerFn(runCoachToolFn); const load = useServerFn(getCoachV2State);
+  const [selected, setSelected] = useState<Record<string, string>>(() => savedChoices(initial));
   const [busy, setBusy] = useState(false); const [error, setError] = useState(false);
+  useEffect(() => { if (initial) setSelected(savedChoices(initial)); }, [initial]);
+  useEffect(() => { if (!initial) load({ data: { timezone: tz() } }).then(r => setSelected(savedChoices((r as { slots?: SavedSlots }).slots))).catch(() => {}); }, [initial, load]);
   const pick = async (key: string, choice: string) => {
     setBusy(true); setError(false);
-    const value = key === 'daily_time_available' ? ({ '30 min': 30, '1 h': 60, '2 h': 120, '3 h+': 180 }[choice] ?? 30) : choice;
+    const value = key === 'daily_time_available' ? (MINUTES[choice] ?? 30) : choice;
     const slots: Record<string, { value: unknown; confidence: number }> = { [key]: { value, confidence: 1 } };
     if (key === 'intensity') slots.coach_style = { value: choice === 'Hardcore' ? 'strict' : choice === 'Gentle' ? 'calm' : 'friendly', confidence: 1 };
     const next = { ...selected, [key]: choice };
@@ -33,6 +52,7 @@ export function CoachQuickSetup({ onDone }: { onDone: () => void }) {
     <strong>Quick setup</strong>
     {groups.map(group => <fieldset key={group.key} className={s.setupGroup}><legend>{group.label}</legend><div className={s.options}>{group.options.map(choice => <Button key={choice} variant="outline" aria-pressed={selected[group.key] === choice} disabled={busy} onClick={() => void pick(group.key, choice)}>{choice}</Button>)}</div></fieldset>)}
     {error && <p className={s.error}>Couldn't save that choice. Tap again.</p>}
-    <Button disabled={busy || groups.some(group => !selected[group.key])} onClick={onDone}>Start voice interview</Button>
+    {!onDone && <p className={s.hint}>The coach asks the rest (age, energy peak, weakest habit).</p>}
+    {onDone && <Button disabled={busy || groups.some(group => !selected[group.key])} onClick={onDone}>Start voice interview</Button>}
   </section>;
 }
