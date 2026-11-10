@@ -5,11 +5,12 @@ import { mapDeclaration, mapColor } from "../src/lib/theme/color-map";
 const store = (v: string | null) => ({ getItem: (k: string) => (k === THEME_KEY ? v : null) });
 
 describe("appearance setting", () => {
-  test("no saved choice means Dark", () => expect(readStoredTheme(store(null))).toBe("dark"));
+  test("no saved choice means Simple", () => expect(readStoredTheme(store(null))).toBe("simple"));
+  test("saved Dark stays Dark", () => expect(readStoredTheme(store("dark"))).toBe("dark"));
   test("saved Simple is restored", () => expect(readStoredTheme(store("simple"))).toBe("simple"));
-  test("old Coach orb values fall back to Dark", () => expect(readStoredTheme(store("lime"))).toBe("dark"));
-  test("blocked storage falls back to Dark", () => expect(readStoredTheme({ getItem: () => { throw new Error("blocked"); } })).toBe("dark"));
-  test("unknown values are Dark", () => expect(normalizeTheme("light")).toBe("dark"));
+  test("old Coach orb values fall back to Simple", () => expect(readStoredTheme(store("lime"))).toBe("simple"));
+  test("blocked storage falls back to Simple", () => expect(readStoredTheme({ getItem: () => { throw new Error("blocked"); } })).toBe("simple"));
+  test("unknown values are Simple", () => expect(normalizeTheme("light")).toBe("simple"));
   test("the key is axen-theme", () => expect(THEME_KEY).toBe("axen-theme"));
 });
 
