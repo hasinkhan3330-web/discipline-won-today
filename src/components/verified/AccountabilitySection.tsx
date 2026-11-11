@@ -13,6 +13,7 @@ import type { ContractRow } from "@/lib/verified/contracts";
 import { endContractSession, findActiveSession, startContractSession, type SessionSnapshot } from "@/lib/verified/contract-session";
 import { ContractProofSheet } from "./ContractProofSheet";
 import { NUDGE_EVENT, NUDGE_SEEN_KEY } from "./NudgeListener";
+import { useTheme } from "@/lib/theme/theme";
 
 export type MyAccountability = {
   connection_id: string; partner_name: string; partner_avatar: string | null;
@@ -144,7 +145,8 @@ export function AccountabilitySection() {
   const [now, setNow] = useState(() => Date.now());
   type View = "home" | "creator" | "review" | "recovery" | "checkin" | "garden" | "report" | "proofs" | "partner";
   const [view, setView] = useState<View>("home");
-  const [theme, setTheme] = useState<"dark" | "light">("light");
+  const { theme: appTheme, setTheme: setAppTheme } = useTheme();
+  const theme: "dark" | "light" = appTheme === "dark" ? "dark" : "light";
   const [coins, setCoins] = useState(0);
   const [weekMap, setWeekMap] = useState<Record<string, "done" | "missed" | "planned">>({});
   const [garden, setGarden] = useState<Garden | null>(null);
@@ -222,7 +224,6 @@ export function AccountabilitySection() {
   useEffect(() => {
     mounted.current = true; void load();
     try {
-      if (localStorage.getItem("axen.acct.theme") === "dark") setTheme("dark");
       const q = new URLSearchParams(window.location.search).get("acct_code") ?? sessionStorage.getItem("axen.acct.code");
       if (q) { setEntry(q.replace(/[^0-9A-Fa-f]/g, "").slice(0, 32)); sessionStorage.removeItem("axen.acct.code"); }
     } catch { /* storage unavailable */ }
@@ -317,7 +318,7 @@ export function AccountabilitySection() {
 
   const rootRef = useRef<HTMLElement | null>(null);
   useEffect(() => { rootRef.current?.scrollIntoView?.({ block: "start" }); }, [view]);
-  const toggleTheme = () => { const t = theme === "dark" ? "light" : "dark"; setTheme(t); try { localStorage.setItem("axen.acct.theme", t); } catch { /* ignore */ } };
+  const toggleTheme = () => setAppTheme(theme === "dark" ? "simple" : "dark");
   const saveShowTree = async (v: boolean) => {
     setShowTree(v);
     const { data: u } = await supabase.auth.getUser();
