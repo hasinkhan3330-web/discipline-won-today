@@ -31,3 +31,29 @@
 ## Technical details
 - Files: migration, `src/lib/coach-tools.ts` (defs + `runCoachTool`), `coach-voice-tools.ts`, the Coach system prompt builders, new `src/utils/plan-tasks.functions.ts`, `src/routes/_authenticated/my-plan.tsx`, the Coach screen link, tests.
 - Nothing to switch on by hand.
+
+## Additions (your 7 points)
+
+**What I found about the old plan tools**
+- `create_plan_draft` builds a plan and stores it as a "draft" in the coach's plan store (`coach_plans`). `confirm_plan` marks it confirmed and copies today's tasks into your Home task list (`tasks`). Nothing goes to a My Plan page, and there is no single list of dated tasks.
+
+**One clear path**
+- `save_plan` becomes the only way to save. `confirm_plan` is removed from the coach's tool list (text and voice). `create_plan_draft` stays only to suggest a preview, limited to 1 or 7 days.
+- So Home keeps working, `save_plan` also records the plan as confirmed in the old store and adds today's tasks to Home, using the same existing code. Prompt lines about confirm_plan are rewritten to say "call save_plan"; no second save method is mentioned anywhere.
+
+**Safe saving**
+- Delete + insert run in one database function in a single transaction, so a failure leaves your old plan untouched.
+
+**Dates**
+- Every text request and the voice token request send the phone's timezone and local date. "Today" and date checks use that timezone (server UTC is never used). Allowed: today up to 7 days ahead.
+
+**Security**
+- The user id comes only from the verified session, never from tool arguments. All plan reads/writes use the user's own signed-in connection so row rules apply. No admin access is used for plans.
+
+**Toasts**
+- Text and voice both show "Plan saved ✅ (N tasks)" with a "View" button to /my-plan, based on the real save result (live update as backup, shown once). Red toast on failure.
+
+**Voice**
+- The voice token request sends date, timezone and the new tools, all baked into the token; each fresh session and reconnect gets a new token with them.
+
+**Final report** will list what wasn't tested (voice on a real phone) and anything you must do by hand.
