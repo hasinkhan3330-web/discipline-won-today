@@ -57,3 +57,10 @@
 - The voice token request sends date, timezone and the new tools, all baked into the token; each fresh session and reconnect gets a new token with them.
 
 **Final report** will list what wasn't tested (voice on a real phone) and anything you must do by hand.
+
+## Final additions
+- `create_plan_draft` is also removed from the text and voice tool lists. The coach describes a preview in chat, then calls `save_plan`. The prompt says nothing is saved until save_plan succeeds.
+- Home sync replaces today's coach tasks and never adds them twice. Success or failure depends only on the plan_tasks write. If the Home or old-store sync fails, that is logged and the true plan_tasks result is still reported.
+- The database function runs with the caller's permissions (security invoker) and takes the user from `auth.uid()` inside, never from an input.
+- In voice, save_plan is a blocking call, so the coach waits for the result before talking about it.
+- If asked for more than 7 days, the coach says it plans 7 days at a time and offers to do the next week afterwards.
