@@ -1905,6 +1905,45 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_tasks: {
+        Row: {
+          completed: boolean
+          created_at: string
+          day_number: number | null
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          plan_title: string | null
+          task_date: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          created_at?: string
+          day_number?: number | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          plan_title?: string | null
+          task_date: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          created_at?: string
+          day_number?: number | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          plan_title?: string | null
+          task_date?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           acquisition_source: string | null
@@ -3232,6 +3271,10 @@ export type Database = {
       save_onboarding_step: {
         Args: { _answers: Json; _step: number }
         Returns: undefined
+      }
+      save_plan_tasks: {
+        Args: { _plan_title: string; _tasks: Json }
+        Returns: number
       }
       save_wake_plan: {
         Args: { _mode: string; _slot: string; _tone: string }

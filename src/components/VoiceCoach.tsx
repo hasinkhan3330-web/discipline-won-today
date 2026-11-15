@@ -13,7 +13,9 @@ import { haptic } from "@/lib/haptics";
 import { Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CoachQuickSetup } from '@/components/coach/CoachQuickSetup';
-import { shouldDraft, requestedLength, spokenSlots } from '@/lib/coach-interview';
+import { shouldDraft, spokenSlots } from '@/lib/coach-interview';
+import { useNavigate } from "@tanstack/react-router";
+import { showPlanSaveToast } from "@/lib/plan-toast";
 import s from '@/components/coach/coach-plan.module.css';
 
 type Status = "idle" | "connecting" | "live" | "error";
@@ -125,6 +127,7 @@ const rms = (a: AnalyserNode | null | undefined, buf: { b: Float32Array<ArrayBuf
 
 /** Real-time voice coach over the Gemini Live API (WebSocket, native audio). */
 export function VoiceCoach({ render }: { render?: (api: VoiceApi) => ReactNode } = {}) {
+  const navigate = useNavigate();
   const getSession = useServerFn(getLiveSession);
   const fetchContext = useServerFn(getCoachContext);
   const fetchToday = useServerFn(getTodayProgress);
@@ -185,11 +188,7 @@ export function VoiceCoach({ render }: { render?: (api: VoiceApi) => ReactNode }
   const handleAnswer = async (text: string) => {
     const slots = spokenSlots(text);
     if (Object.keys(slots).length) await execute([{ id: crypto.randomUUID(), name: 'update_profile', args: { slots } }]);
-    if (shouldDraft(text, questionsRef.current, setupDone) && !draftRef.current) {
-      setBuilding(true);
-      try { await execute([{ id: crypto.randomUUID(), name: 'create_plan_draft', args: { days: requestedLength(text) } }]); }
-      finally { setBuilding(false); }
-    }
+    // Plans are built by the model and saved only through its save_plan tool call.
   };
 
   const release = (nextStatus: Status = "idle") => {
@@ -279,7 +278,7 @@ export function VoiceCoach({ render }: { render?: (api: VoiceApi) => ReactNode }
         model,
         profileBlock,
         setup,
-      } = await getSession({});
+      } = await getSession({ data: { timezone: (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return undefined; } })() } });
       if (controller.signal.aborted || session !== sessionRef.current) return;
       if (typeof apiKey !== "string" || apiKey.length === 0) {
         throw new Error("Couldn’t start a secure coach session. Tap to retry.");
@@ -379,7 +378,8 @@ export function VoiceCoach({ render }: { render?: (api: VoiceApi) => ReactNode }
           } catch (cause) {
             responses = calls.map((c) => ({ id: c.id, name: c.name, response: { ok: false, error: cause instanceof Error ? cause.message : "unavailable" } }));
           }
-          if (calls.some((c) => ["update_profile", "create_plan_draft", "confirm_plan", "update_task", "reschedule_tasks"].includes(c.name))) {
+          for (const r of responses) if (r.name === "save_plan") showPlanSaveToast(((r.response as any)?.result ?? r.response) as any, () => navigate({ to: "/my-plan" }));
+          if (calls.some((c) => ["update_profile", "save_plan", "update_task", "reschedule_tasks"].includes(c.name))) {
             window.dispatchEvent(new Event("axen:coach-plan-changed"));
           }
           if (ws.readyState === WebSocket.OPEN) {

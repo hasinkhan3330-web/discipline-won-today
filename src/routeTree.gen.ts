@@ -21,6 +21,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAlarmRouteImport } from './routes/_authenticated/alarm'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedMyPlanRouteImport } from './routes/_authenticated/my-plan'
 import { Route as AuthForgotRouteImport } from './routes/auth.forgot'
 import { Route as AuthVerifiedRouteImport } from './routes/auth.verified'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -90,6 +91,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMyPlanRoute = AuthenticatedMyPlanRouteImport.update({
+  id: '/my-plan',
+  path: '/my-plan',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthForgotRoute = AuthForgotRouteImport.update({
   id: '/auth/forgot',
   path: '/auth/forgot',
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/alarm': typeof AuthenticatedAlarmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/my-plan': typeof AuthenticatedMyPlanRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/verified': typeof AuthVerifiedRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/alarm': typeof AuthenticatedAlarmRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/my-plan': typeof AuthenticatedMyPlanRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/verified': typeof AuthVerifiedRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/alarm': typeof AuthenticatedAlarmRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/my-plan': typeof AuthenticatedMyPlanRoute
   '/auth/forgot': typeof AuthForgotRoute
   '/auth/verified': typeof AuthVerifiedRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/alarm'
     | '/dashboard'
+    | '/my-plan'
     | '/auth/forgot'
     | '/auth/verified'
     | '/.lovable/oauth/consent'
@@ -225,6 +235,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/alarm'
     | '/dashboard'
+    | '/my-plan'
     | '/auth/forgot'
     | '/auth/verified'
     | '/.lovable/oauth/consent'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/alarm'
     | '/_authenticated/dashboard'
+    | '/_authenticated/my-plan'
     | '/auth/forgot'
     | '/auth/verified'
     | '/.lovable/oauth/consent'
@@ -360,6 +372,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/my-plan': {
+      id: '/_authenticated/my-plan'
+      path: '/my-plan'
+      fullPath: '/my-plan'
+      preLoaderRoute: typeof AuthenticatedMyPlanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/auth/forgot': {
       id: '/auth/forgot'
       path: '/auth/forgot'
@@ -415,12 +434,14 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAlarmRoute: typeof AuthenticatedAlarmRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedMyPlanRoute: typeof AuthenticatedMyPlanRoute
   AuthenticatedCheckoutSuccessRoute: typeof AuthenticatedCheckoutSuccessRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAlarmRoute: AuthenticatedAlarmRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedMyPlanRoute: AuthenticatedMyPlanRoute,
   AuthenticatedCheckoutSuccessRoute: AuthenticatedCheckoutSuccessRoute,
 }
 

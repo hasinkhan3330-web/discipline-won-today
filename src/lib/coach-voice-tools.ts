@@ -1,5 +1,5 @@
 // Gemini Live adapter for the same 8 Coach v2 tools used by the text Coach.
-import { COACH_SYSTEM_V2, COACH_TOOL_DEFS, COACH_TOOL_NAMES, runCoachTool } from "@/lib/coach-tools";
+import { COACH_SYSTEM_V2, COACH_MODEL_TOOL_DEFS as COACH_TOOL_DEFS, COACH_MODEL_TOOL_NAMES as COACH_TOOL_NAMES, runCoachTool } from "@/lib/coach-tools";
 
 export const MAX_VOICE_TOOL_CALLS_PER_TURN = 6;
 
@@ -23,6 +23,8 @@ export const VOICE_TOOL_DECLARATIONS = [{
   functionDeclarations: COACH_TOOL_DEFS.map((t) => ({
     name: t.name,
     description: t.description,
+    // save_plan must finish before the model speaks about it.
+    ...(t.name === "save_plan" ? { behavior: "BLOCKING" } : {}),
     parameters: t.name === "update_profile"
       ? { type: "OBJECT", properties: { field: { type: "STRING", enum: SLOT_KEYS.filter((k) => k !== "other") }, value: { type: "STRING" }, slots: { type: "OBJECT", properties: Object.fromEntries(SLOT_KEYS.map((k) => [k, slot])) } } }
       : toGemini(t.parameters),
@@ -33,9 +35,8 @@ export const VOICE_SYSTEM_V2 = `${COACH_SYSTEM_V2}
 
 VOICE RULES
 You are speaking, not writing: short natural sentences, no markdown or lists, never read tool names or field names aloud. Speak the user's language (Hindi/Hinglish welcome).
-Interview one question at a time and save ALL revealed answers with update_profile. Stop immediately on an explicit plan request or after 6 questions (3 after quick setup); call create_plan_draft, even below 70%, and explain assumptions. Never repeat known quick-setup questions.
-Before calling create_plan_draft, first say one short line such as "Give me a minute, I'm building your plan."
-Call confirm_plan only after the user clearly says yes to the draft out loud. If unsure, ask again.
+Interview one question at a time and save ALL revealed answers with update_profile. Stop immediately on an explicit plan request or after 6 questions (3 after quick setup); build the plan and call save_plan, even below 70%, and explain assumptions. Never repeat known quick-setup questions.
+Before calling save_plan, first say one short line such as "Give me a minute, I'm building your plan." Wait for its result; only say the plan is saved when it returned success:true, then say "open My Plan".
 If a tool fails, say so in one short sentence and carry on. Never claim a task is done or coins were given; you cannot do either.
 On SESSION_START your very first action MUST be a get_profile_status function call, before you say anything. Whenever the user asks what you know, how much is filled, or for a plan, call get_profile_status again before answering. Then greet briefly using the user's goal from it and continue where the user is: ask the first missing field if percent < 100, otherwise coach on today's plan.`;
 

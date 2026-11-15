@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { useTheme } from "@/lib/theme/theme";
 import { useServerFn } from "@tanstack/react-start";
-import { Keyboard } from "lucide-react";
+import { Keyboard, CalendarCheck } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { getCoachV2State } from "@/utils/coach-v2.functions";
 import type { VoiceApi, VoicePhase } from "@/components/VoiceCoach";
@@ -65,6 +66,7 @@ export function CoachOrbScreen({ voice, chatBusy, onChip, onKeyboard, sheet, pla
       <div className={s.head}>
         <div className={s.logo}><b>◆</b>AXEN</div>
         <div className={s.right}>
+          <Link to="/my-plan" className={s.kb} aria-label="My Plan" title="My Plan"><CalendarCheck size={18} strokeWidth={1.6} /></Link>
           <button className={s.kb} onClick={onKeyboard} aria-label="Open text coach"><Keyboard size={18} strokeWidth={1.6} /></button>
           <div className={s.pill}>{pill}</div>
         </div>

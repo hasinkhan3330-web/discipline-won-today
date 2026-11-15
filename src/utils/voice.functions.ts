@@ -117,7 +117,8 @@ async function ephemeralTokenAccepted(token: string): Promise<boolean> {
  */
 export const getLiveSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) => z.object({ timezone: z.string().max(64).optional() }).parse(d ?? {}))
+  .handler(async ({ data, context }) => {
     const apiKey = process.env["GEMINI_API_KEY"]?.trim();
     if (!apiKey) throw new Error("AI Coach is temporarily unavailable. Please try again shortly.");
 
@@ -132,9 +133,12 @@ export const getLiveSession = createServerFn({ method: "POST" })
       buildCoachContext(context.supabase, context.userId).catch(() => null as CoachContext | null),
       (await import("@/lib/coach-tools")).profileContextBlock({ supabase: context.supabase, userId: context.userId }),
     ]);
+    const tools = await import("@/lib/coach-tools");
+    if (data.timezone) await tools.setTimezone({ supabase: context.supabase, userId: context.userId }, data.timezone);
+    const tz = data.timezone || (await tools.getCoachProfile({ supabase: context.supabase, userId: context.userId })).timezone || "UTC";
     const { VOICE_SYSTEM_V2, buildLiveSetup } = await import("@/lib/coach-voice-tools");
     const { buildCoachKnowledge } = await import("@/lib/coach-knowledge");
-    const instruction = `${VOICE_SYSTEM_V2}\n\n${buildCoachKnowledge()}\n\n${profileBlock}\n\n${coachContext ? `AXEN_COACH_CONTEXT (private, never read aloud):\n${JSON.stringify(coachContext)}` : "AXEN_COACH_CONTEXT is unavailable for this session. Do not state any statistic; call get_user_context before referencing data."}`;
+    const instruction = `${VOICE_SYSTEM_V2}\n\n${tools.todayLine(tz)}\n\n${buildCoachKnowledge()}\n\n${profileBlock}\n\n${coachContext ? `AXEN_COACH_CONTEXT (private, never read aloud):\n${JSON.stringify(coachContext)}` : "AXEN_COACH_CONTEXT is unavailable for this session. Do not state any statistic; call get_user_context before referencing data."}`;
     const setup = buildLiveSetup(LIVE_MODEL, instruction);
     const minted = ephemeralSupported === false && Date.now() - probedAt < 30 * 60_000 ? null : await mintEphemeralToken(apiKey, setup);
 
@@ -171,5 +175,6 @@ export const runVoiceToolCall = createServerFn({ method: "POST" })
     const { data: premium } = await context.supabase.rpc("has_premium_access", { _user_id: context.userId });
     if (!premium) throw new Error("Voice Coach is part of AXEN PRO.");
     const out = await runVoiceToolCalls({ supabase: context.supabase, userId: context.userId }, data.calls);
+    console.log("[voice] tool calls", JSON.stringify(data.calls).slice(0, 2000), "->", JSON.stringify(out).slice(0, 1000));
     return JSON.parse(JSON.stringify(out)) as { functionResponses: Array<{ id?: string; name: string; response: Record<string, any> }> };
   });

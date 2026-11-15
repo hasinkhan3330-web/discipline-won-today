@@ -6,6 +6,7 @@ import {
   enforcePlanRules, isPlanLength, canBuildPlan, profileConfidence, getProfileCompleteness, PROFILE_LABELS, lowestSlot, localDay, isValidTimezone,
   dayIndex, taskName, type Slot, type Slots, type CoachPlan,
 } from "@/lib/coach-plan-rules";
+import { validatePlan, addDays, MAX_PLAN_DAYS, type ValidTask } from "@/lib/plan-tasks";
 
 export const COACH_SYSTEM_V2 = `You are the Axon Habit coach. Stay strictly on the goal and habit plan in <user_profile>. No nutrition, gym or meditation advice unless it is the user's goal. Never say you have no details if percent > 0. Ask only missing fields, one at a time.
 
@@ -41,13 +42,14 @@ PHASE 1: ONBOARDING (onboarding_done = false)
 - After EVERY answer call update_profile with all slots it revealed, with confidence 0-1.
 - Next question = the required slot with the lowest confidence, phrased using what you know.
 - Vague answer ("kuch bhi", "pata nahi"): offer 2-3 concrete options.
-- If the user explicitly asks for a plan, STOP interviewing: save all revealed facts with update_profile, then call create_plan_draft immediately. Also stop after 6 interview questions (3 after quick setup). Use Today if no length is given. The 70% threshold applies ONLY to the Build my plan button, never to typed or spoken requests. Explain the returned assumptions honestly. Never ask for known quick-setup answers.
+- If the user explicitly asks for a plan, STOP interviewing: save all revealed facts with update_profile, then build the plan and call save_plan immediately. Also stop after 6 interview questions (3 after quick setup). Use Today if no length is given. The 70% threshold applies ONLY to the Build my plan button, never to typed or spoken requests. Explain the returned assumptions honestly. Never ask for known quick-setup answers.
 
-PHASE 2: PLANNING
-- Before calling create_plan_draft say a short line like "Ek minute, tera plan bana raha hoon."
-- Explain the first habit, what the first days look like, and the minimum version. Not the whole table.
-- Ask "Isme kuch badalna hai?" Apply edits via create_plan_draft with adjustments.
-- Call confirm_plan only after a clear yes.
+PHASE 2: PLANNING (save_plan is the ONLY way to save a plan)
+- To create or change a plan you MUST call save_plan. Anything you only describe in chat is NOT saved. NEVER say a plan is saved unless save_plan returned success:true. If it returns success:false, say honestly that saving failed and why.
+- For "what's my task today / this week?" call get_plan first and answer only from its rows.
+- Ask at most 2 short questions (goal, time per day) if unknown, then build the plan. "Today" = 1 day (today's date). "Week" = 7 days starting today (or tomorrow if asked). Each day: 1-4 specific, measurable tasks, each with duration_minutes. Use real YYYY-MM-DD dates from the "Today is" line; never use other dates.
+- You plan at most 7 days at a time. If asked for more (21 days, a month), say honestly that you plan 7 days at a time, save the first 7, and offer to plan the next week after.
+- After a successful save, give a 2-line summary and say "open My Plan".
 
 PHASE 3: DAILY COACHING
 - Before mentioning tasks, coins, or streak, call get_progress or get_user_context. Never guess numbers.
@@ -73,6 +75,8 @@ Check your output against every rule and fix violations. Return only JSON:
 {"title":string,"summary":string,"days":[{"day":number,"tasks":[{"title":string,"minimum":string,"trigger":string,"time":"HH:MM","minutes":number,"difficulty":"easy"|"medium"|"hard"}]}]}`;
 
 export const COACH_TOOL_DEFS = [
+  { name: "save_plan", description: "Save (create or replace) the user's plan. The ONLY way to save a plan. Replaces not-completed tasks on the given dates. Dates: today up to 7 days ahead, YYYY-MM-DD. 1-4 tasks per day. Returns {success, saved_count} or {success:false, error}.", parameters: { type: "object", properties: { plan_title: { type: "string" }, tasks: { type: "array", items: { type: "object", properties: { task_date: { type: "string" }, day_number: { type: "integer" }, title: { type: "string" }, description: { type: "string" }, duration_minutes: { type: "integer" } }, required: ["task_date", "title", "duration_minutes"] } } }, required: ["plan_title", "tasks"] } },
+  { name: "get_plan", description: "Read the user's saved plan tasks between two dates (YYYY-MM-DD, inclusive). Call before answering what today's or this week's tasks are.", parameters: { type: "object", properties: { from_date: { type: "string" }, to_date: { type: "string" } }, required: ["from_date", "to_date"] } },
   { name: "get_profile_status", description: "Exact saved profile status: {percent, filled, missing, plan}. Call before answering what you know, how much is filled, or making a plan.", parameters: { type: "object", properties: {} } },
   { name: "get_user_context", description: "Get the user's coach profile, confidence, memories, weekly summary, active plan and real progress.", parameters: { type: "object", properties: {} } },
   { name: "update_profile", description: "Save one answer as field + value (or several as slots). Fields: goal, wake_time, sleep_time, daily_time_available (minutes), distraction_trigger (main distraction), intensity (gentle|balanced|hardcore), age_range (under_18|18_24|25_34|35_plus, or a number of years), energy_peak, weakest_habit, daily_schedule, coach_style (strict|friendly|calm). Returns the new percent.", parameters: { type: "object", properties: { field: { type: "string" }, value: { type: "string" }, slots: { type: "object", additionalProperties: { type: "object", properties: { value: {}, confidence: { type: "number" } }, required: ["value", "confidence"] } } } } },
@@ -86,6 +90,50 @@ export const COACH_TOOL_DEFS = [
 
 export type CoachToolName = (typeof COACH_TOOL_DEFS)[number]["name"];
 export const COACH_TOOL_NAMES = COACH_TOOL_DEFS.map((t) => t.name) as readonly string[];
+/** Tools the model may call (text and voice). Drafting/confirming stay only behind the plan-card buttons, so save_plan is the model's single save path. */
+const BUTTON_ONLY_TOOLS = ["create_plan_draft", "confirm_plan"];
+export const COACH_MODEL_TOOL_DEFS = COACH_TOOL_DEFS.filter((t) => !BUTTON_ONLY_TOOLS.includes(t.name));
+export const COACH_MODEL_TOOL_NAMES = COACH_MODEL_TOOL_DEFS.map((t) => t.name) as readonly string[];
+
+/** "Today is ..." line for the system instruction, in the user's timezone. */
+export function todayLine(timezone: string) {
+  const tz = isValidTimezone(timezone) ? timezone : "UTC";
+  const today = localDay(tz);
+  return `Today is ${today}, timezone ${tz}. Allowed plan dates: ${today} to ${addDays(today, MAX_PLAN_DAYS)}.`;
+}
+
+/** Atomic replace in plan_tasks (DB function runs as the caller; user = auth.uid()). */
+async function writePlanTasks({ supabase }: Ctx, title: string, tasks: ValidTask[]) {
+  const { data, error } = await supabase.rpc("save_plan_tasks", { _plan_title: title, _tasks: tasks });
+  if (error) return { success: false as const, error: error.message };
+  return { success: true as const, saved_count: Number(data ?? tasks.length) };
+}
+
+/** Best-effort mirror into the old plan store + today's Home tasks. Never affects save_plan's result. */
+async function syncHome(ctx: Ctx, title: string, tasks: ValidTask[], today: string) {
+  const { supabase, userId } = ctx;
+  try {
+    const byDay = new Map<number, ValidTask[]>();
+    for (const t of tasks) {
+      const day = Math.round((Date.parse(t.task_date + "T00:00:00Z") - Date.parse(today + "T00:00:00Z")) / 86400000) + 1;
+      if (day >= 1 && day <= 7) byDay.set(day, [...(byDay.get(day) ?? []), t]);
+    }
+    const length = Math.max(0, ...byDay.keys()) <= 1 ? 1 : 7;
+    const plan: CoachPlan = { title, summary: "", days: Array.from({ length }, (_, i) => ({ day: i + 1, tasks: (byDay.get(i + 1) ?? []).map((t) => ({ title: t.title, minimum: t.title, trigger: "", minutes: t.duration_minutes ?? 10, difficulty: "medium" as const })) })) };
+    const now = new Date().toISOString();
+    await supabase.from("coach_plans").update({ status: "archived", updated_at: now }).eq("user_id", userId).in("status", ["confirmed", "draft"]);
+    const { data: row, error } = await supabase.from("coach_plans").insert({ user_id: userId, status: "confirmed", days: length, goal: title, plan, start_date: today, confirmed_at: now }).select("id").single();
+    if (error) throw error;
+    // Replace (never append): retire today's Home tasks from earlier coach plans.
+    const { data: prev } = await supabase.from("coach_plan_materialized").select("task_id").eq("user_id", userId).eq("local_day", today).neq("plan_id", row.id).not("task_id", "is", null);
+    const ids = ((prev ?? []) as any[]).map((r) => r.task_id);
+    if (ids.length) await supabase.from("tasks").update({ is_active: false }).in("id", ids).eq("user_id", userId).eq("is_active", true);
+    const added = await materializeToday(ctx);
+    console.log("[coach] save_plan home sync", { added: added.added });
+  } catch (e) {
+    console.error("[coach] save_plan home sync failed (plan_tasks result unaffected)", e instanceof Error ? e.message : e);
+  }
+}
 
 type Ctx = { supabase: any; userId: string };
 
@@ -159,6 +207,26 @@ export async function runCoachTool(ctx: Ctx, name: string, args: any): Promise<u
   const profile = await getCoachProfile(ctx);
   const tz = profile.timezone || "UTC";
   switch (name) {
+    case "save_plan": {
+      console.log("[coach] tool save_plan args", JSON.stringify(args)?.slice(0, 2000));
+      const today = localDay(tz);
+      const v = validatePlan(args, today);
+      if (!v.ok) { console.log("[coach] save_plan rejected", v.error); return { success: false, error: v.error }; }
+      const result = await writePlanTasks(ctx, v.plan_title, v.tasks);
+      console.log("[coach] save_plan db result", result);
+      if (result.success) await syncHome(ctx, v.plan_title, v.tasks, today);
+      return result;
+    }
+    case "get_plan": {
+      console.log("[coach] tool get_plan args", args);
+      const today = localDay(tz);
+      const re = /^\d{4}-\d{2}-\d{2}$/;
+      const from = re.test(String(args?.from_date)) ? String(args.from_date) : today;
+      const to = re.test(String(args?.to_date)) ? String(args.to_date) : addDays(today, 6);
+      const { data, error } = await supabase.from("plan_tasks").select("task_date,day_number,title,description,duration_minutes,completed,plan_title").eq("user_id", userId).gte("task_date", from).lte("task_date", to).order("task_date").order("created_at");
+      console.log("[coach] get_plan db result", error ? error.message : `${data?.length ?? 0} rows`);
+      return error ? { success: false, error: error.message } : { success: true, today, tasks: data ?? [] };
+    }
     case "get_user_context": {
       const [{ data: memories }, { data: base }, plans, prog] = await Promise.all([
         supabase.from("coach_memory").select("type,note,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(10),
@@ -230,7 +298,12 @@ export async function runCoachTool(ctx: Ctx, name: string, args: any): Promise<u
       const { error } = await supabase.from("coach_plans").update({ status: "confirmed", start_date: localDay(tz), confirmed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", draft.id).eq("user_id", userId);
       if (error) return { ok: false, error: error.message };
       const added = await materializeToday(ctx);
-      return { ok: true, start_date: localDay(tz), today_added: added.added };
+      const start = localDay(tz);
+      const rows: ValidTask[] = ((draft.plan as CoachPlan)?.days ?? []).filter((d) => d.day >= 1 && d.day <= MAX_PLAN_DAYS)
+        .flatMap((d) => d.tasks.slice(0, 4).map((t) => ({ task_date: addDays(start, d.day - 1), day_number: d.day, title: t.title, description: [t.trigger, t.minimum && `Minimum: ${t.minimum}`].filter(Boolean).join(" · ") || null, duration_minutes: t.minutes ?? null })));
+      const saved = rows.length ? await writePlanTasks(ctx, (draft.plan as CoachPlan)?.title ?? "My plan", rows) : { success: false as const, error: "Empty plan" };
+      console.log("[coach] confirm_plan -> plan_tasks", saved);
+      return { ok: true, start_date: start, today_added: added.added, success: saved.success, saved_count: saved.success ? saved.saved_count : 0 };
     }
     case "update_task":
     case "reschedule_tasks": {

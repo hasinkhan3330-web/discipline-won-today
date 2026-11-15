@@ -1,0 +1,38 @@
+.page{min-height:100dvh;background:#05070A radial-gradient(#1C2342 1px,transparent 1px) 0 0/22px 22px;color:#F6F7FC;font-family:inherit;padding:16px 16px 96px}
+.head{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.back{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid #232D52;background:#10162D;color:#F6F7FC}
+.title{font-size:22px;font-weight:700;margin:0}
+.tabs{display:flex;gap:6px;padding:4px;border:1px solid #232D52;border-radius:999px;background:#0A0F1F;margin-bottom:16px}
+.tab{flex:1;min-height:40px;border-radius:999px;border:0;background:transparent;color:#A9B0CC;font:600 14px inherit;cursor:pointer}
+.tabOn{background:linear-gradient(#D2FF3D,#B6F500);color:#05070A}
+.card{border:1px solid #232D52;background:linear-gradient(#10162D,#070A14);border-radius:24px;padding:16px;margin-bottom:12px}
+.micro{font:500 10px ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:#A9B0CC}
+.dayHead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.dayTitle{font-weight:700;font-size:16px}
+.bar{height:6px;border-radius:99px;background:#1C2342;overflow:hidden;margin:6px 0 10px}
+.bar i{display:block;height:100%;background:#B6F500}
+.row{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid #1C2342}
+.row:first-of-type{border-top:0}
+.check{width:24px;height:24px;flex:none;margin-top:2px;accent-color:#B6F500}
+.taskTitle{font-weight:600;font-size:15px}
+.done{text-decoration:line-through;color:#A9B0CC}
+.desc{font-size:13px;color:#A9B0CC;margin-top:2px}
+.mins{font-size:12px;color:#B6F500;white-space:nowrap;margin-left:auto}
+.empty{text-align:center;color:#A9B0CC;padding:32px 12px}
+.error{color:#FF6B6B}
+.retry{margin-top:10px;min-height:44px;padding:0 18px;border-radius:16px;border:0;background:linear-gradient(#D2FF3D,#B6F500);color:#05070A;font-weight:700}
+.skel{height:72px;border-radius:24px;background:#10162D;border:1px solid #232D52;margin-bottom:12px;animation:p 1.2s ease-in-out infinite}
+@keyframes p{50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}
+
+:global([data-theme="simple"]) .page{background:#F7F7F5;color:#111}
+:global([data-theme="simple"]) .back,:global([data-theme="simple"]) .card,:global([data-theme="simple"]) .skel{background:#FFF;border-color:#E7E7E3;color:#111}
+:global([data-theme="simple"]) .tabs{background:#FFF;border-color:#E7E7E3}
+:global([data-theme="simple"]) .tab{color:#6F6F69}
+:global([data-theme="simple"]) .tabOn,:global([data-theme="simple"]) .retry{background:#111;color:#FFF}
+:global([data-theme="simple"]) .micro,:global([data-theme="simple"]) .desc,:global([data-theme="simple"]) .done,:global([data-theme="simple"]) .empty{color:#6F6F69}
+:global([data-theme="simple"]) .bar{background:#EFEFEC}
+:global([data-theme="simple"]) .bar i{background:#111}
+:global([data-theme="simple"]) .row{border-color:#EFEFEC}
+:global([data-theme="simple"]) .mins{color:#111}
+:global([data-theme="simple"]) .check{accent-color:#111}

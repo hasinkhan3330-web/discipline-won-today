@@ -3,7 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { COACH_CHAT_MODEL } from "@/lib/coach-config";
-import { COACH_SYSTEM_V2, COACH_TOOL_DEFS, callModel, runCoachTool } from "@/lib/coach-tools";
+import { COACH_SYSTEM_V2, COACH_MODEL_TOOL_DEFS as COACH_TOOL_DEFS, callModel, runCoachTool, todayLine, getCoachProfile } from "@/lib/coach-tools";
 import { shouldDraft, requestedLength, spokenSlots } from '@/lib/coach-interview';
 
 export type CoachMessage = { id?: string; role: "user" | "assistant"; content: string; suggestedAction?: { type: "create_habit" | "open_focus"; label: string; value?: string } | null };
@@ -66,30 +66,27 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
   if (forceDraft) {
     const slots = spokenSlots(latest?.content ?? '');
     if (Object.keys(slots).length) await runCoachTool(ctx, 'update_profile', { slots });
-    const result = await runCoachTool(ctx, 'create_plan_draft', { days: requestedLength(latest?.content ?? '') }) as { ok?: boolean; error?: string; assumptions?: string[]; plan?: { title: string } };
-    if (!result.ok) throw new Error(result.error ?? 'Could not build your plan.');
-    const status = await runCoachTool(ctx, 'get_profile_status', {}) as { percent: number; filled: Record<string, unknown>; missing: string[] };
-    const known = Object.entries(status.filled).map(([k, v]) => `${k} ${k === 'daily time available' ? v + ' min' : v}`).join(', ');
-    const gap = status.missing[0];
-    const nextQ = gap ? ` To refine it: what is your ${gap}?` : '';
-    const reply = `Built from your profile (${status.percent}%): ${known || 'no saved details yet'}. Your "${result.plan?.title ?? 'plan'}" draft (${requestedLength(latest?.content ?? '') === 1 ? 'Today' : requestedLength(latest?.content ?? '') + ' days'}) is ready — see the plan card. ${result.assumptions?.length ? 'Assumptions for missing details: ' + result.assumptions.join('; ') + '.' : ''} Accept it when you are ready.${nextQ}`;
-    const { error } = await context.supabase.from('coach_messages').insert([{ conversation_id: conversationId, user_id: context.userId, role: 'user', content: latest?.content ?? '' }, { conversation_id: conversationId, user_id: context.userId, role: 'assistant', content: reply }]);
-    if (error) throw new Error(error.message);
-    return { conversationId, reply, suggestedAction: null };
   }
-  const convo:any[]=[{role:"system",content:`${COACH_SYSTEM_V2}\n\nOutput rule: ${SYSTEM.split("End with")[1]?"End with"+SYSTEM.split("End with")[1]:""}\n\n${buildCoachKnowledge()}\n\nUSER DATA:\n${snapshot}\n\n${await profileContextBlock(ctx, "text")}`},...data.messages];
-  let raw="";
+  const tzNow = data.timezone || (await getCoachProfile(ctx)).timezone || "UTC";
+  const planHint = forceDraft ? `\n\nThe user explicitly asked for a plan (${requestedLength(latest?.content ?? '') === 1 ? 'today' : '7 days'}): stop interviewing, build it now and call save_plan.` : "";
+  const convo:any[]=[{role:"system",content:`${COACH_SYSTEM_V2}\n\nOutput rule: ${SYSTEM.split("End with")[1]?"End with"+SYSTEM.split("End with")[1]:""}\n\n${buildCoachKnowledge()}\n\nUSER DATA:\n${snapshot}\n\n${await profileContextBlock(ctx, "text")}\n\n${todayLine(tzNow)}${planHint}`},...data.messages];
+  let raw="";let planSave:{success:true;saved_count:number}|{success:false;error:string}|null=null;
   for(let step=0;step<6;step++){
     const json=await callModel(COACH_CHAT_MODEL,{messages:convo,tools});
     const msg=json?.choices?.[0]?.message; const calls=msg?.tool_calls??[];
     if(!calls.length){raw=String(msg?.content??"").trim();break;}
     convo.push({role:"assistant",content:msg.content??"",tool_calls:calls});
     for(const call of calls){let args={};try{args=JSON.parse(call.function?.arguments||"{}");}catch{}
-      let result:unknown;try{result=await runCoachTool({supabase:context.supabase,userId:context.userId},call.function?.name,args);}catch(e:any){result={ok:false,error:e?.message??"tool failed"};}
+      const toolName=String(call.function?.name??"");
+      let result:unknown;
+      if(!COACH_TOOL_DEFS.some(t=>t.name===toolName))result={ok:false,error:`Unknown or forbidden tool: ${toolName}`};
+      else{try{result=await runCoachTool({supabase:context.supabase,userId:context.userId},toolName,args);}catch(e:any){result=toolName==="save_plan"?{success:false,error:e?.message??"tool failed"}:{ok:false,error:e?.message??"tool failed"};}}
+      console.log("[coach] text tool",toolName,JSON.stringify(args).slice(0,1000),"->",JSON.stringify(result).slice(0,500));
+      if(toolName==="save_plan"){const r=result as any;planSave=r?.success?{success:true,saved_count:Number(r.saved_count)||0}:{success:false,error:String(r?.error??"Could not save")};}
       convo.push({role:"tool",tool_call_id:call.id,content:JSON.stringify(result).slice(0,12000)});}
   }
   if(!raw)throw new Error("The coach returned an empty answer."); const parsed=parseReply(raw);
   const {error:writeError}=await context.supabase.from("coach_messages").insert([{conversation_id:conversationId,user_id:context.userId,role:"user",content:latest?.content??""},{conversation_id:conversationId,user_id:context.userId,role:"assistant",content:parsed.content,suggested_action:parsed.suggestedAction}]);
   if(writeError)throw new Error(writeError.message);
-  return{conversationId,reply:parsed.content,suggestedAction:parsed.suggestedAction};
+  return{conversationId,reply:parsed.content,suggestedAction:parsed.suggestedAction,planSave};
 });
