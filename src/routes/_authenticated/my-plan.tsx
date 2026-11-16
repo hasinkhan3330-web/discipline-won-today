@@ -1,11 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { addDays } from "@/lib/plan-tasks";
-import { planToastRecentlyShown } from "@/lib/plan-toast";
 import s from "@/components/plan/my-plan.module.css";
 
 export const Route = createFileRoute("/_authenticated/my-plan")({
@@ -31,37 +29,32 @@ function dayLabel(d: string) {
 
 function MyPlanPage() {
   const [tab, setTab] = useState<"today" | "week">("today");
-  const qc = useQueryClient();
   const today = useMemo(localToday, []);
   const end = addDays(today, 7);
-  const key = ["plan_tasks", today];
-  const q = useQuery({
-    queryKey: key,
-    queryFn: async () => {
-      const { data, error } = await supabase.from("plan_tasks").select("id,task_date,day_number,title,description,duration_minutes,completed,plan_title").gte("task_date", today).lte("task_date", end).order("task_date").order("created_at");
-      if (error) throw new Error(error.message);
-      return (data ?? []) as Row[];
-    },
-  });
+  const [rows, setRows] = useState<Row[]>([]);
+  const [status, setStatus] = useState<"loading" | "error" | "ready">("loading");
+  // Always read from the database; never trust local state as the source.
+  const load = useCallback(async () => {
+    const { data, error } = await supabase.from("plan_tasks").select("id,task_date,day_number,title,description,duration_minutes,completed,plan_title").gte("task_date", today).lte("task_date", end).order("task_date").order("created_at").order("id");
+    if (error) { setStatus("error"); return; }
+    setRows((data ?? []) as Row[]); setStatus("ready");
+  }, [today, end]);
 
   useEffect(() => {
+    void load();
     const ch = supabase.channel(`plan-tasks-${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "plan_tasks" }, (p) => {
-        void qc.invalidateQueries({ queryKey: ["plan_tasks"] });
-        if (p.eventType === "INSERT" && !planToastRecentlyShown(8000)) { /* saved from another device/session */ }
-      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "plan_tasks" }, () => { void load(); })
       .subscribe();
     return () => { void supabase.removeChannel(ch); };
-  }, [qc]);
+  }, [load]);
 
   const toggle = async (row: Row) => {
-    qc.setQueryData<Row[]>(key, (rows) => rows?.map((r) => (r.id === row.id ? { ...r, completed: !r.completed } : r)));
+    setRows((list) => list.map((r) => (r.id === row.id ? { ...r, completed: !r.completed } : r)));
     const { error } = await supabase.from("plan_tasks").update({ completed: !row.completed }).eq("id", row.id);
-    if (error) { toast.error("Couldn't update the task"); }
-    void qc.invalidateQueries({ queryKey: ["plan_tasks"] });
+    if (error) toast.error("Couldn't update the task");
+    void load();
   };
 
-  const rows = q.data ?? [];
   const todayRows = rows.filter((r) => r.task_date === today);
   const days = Array.from(new Set(rows.map((r) => r.task_date)));
 
@@ -75,9 +68,9 @@ function MyPlanPage() {
         <button role="tab" aria-selected={tab === "today"} className={`${s.tab} ${tab === "today" ? s.tabOn : ""}`} onClick={() => setTab("today")}>Today</button>
         <button role="tab" aria-selected={tab === "week"} className={`${s.tab} ${tab === "week" ? s.tabOn : ""}`} onClick={() => setTab("week")}>7 Days</button>
       </div>
-      {q.isLoading ? (<><div className={s.skel} /><div className={s.skel} /></>)
-        : q.isError ? (
-          <div className={`${s.card} ${s.empty}`}><p className={s.error}>Couldn't load your plan.</p><button className={s.retry} onClick={() => q.refetch()}>Try again</button></div>
+      {status === "loading" ? (<><div className={s.skel} /><div className={s.skel} /></>)
+        : status === "error" ? (
+          <div className={`${s.card} ${s.empty}`}><p className={s.error}>Couldn't load your plan.</p><button className={s.retry} onClick={() => { setStatus("loading"); void load(); }}>Try again</button></div>
         ) : (tab === "today" ? todayRows.length === 0 : rows.length === 0) ? (
           <div className={`${s.card} ${s.empty}`}>No plan yet – talk to your coach</div>
         ) : tab === "today" ? (
