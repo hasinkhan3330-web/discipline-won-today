@@ -53,7 +53,14 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
   const {data:premium}=await context.supabase.rpc("has_premium_access",{_user_id:context.userId}); if(!premium)throw new Error("AI Coach is part of AXEN PRO.");
   let conversationId=data.conversationId??null;
   if(conversationId){const{data:owned}=await context.supabase.from("coach_conversations").select("id").eq("id",conversationId).eq("user_id",context.userId).maybeSingle();if(!owned)conversationId=null;}
-  const latest=data.messages[data.messages.length-1];
+  const latestRaw=data.messages[data.messages.length-1];
+  if(latestRaw?.role!=="user")throw new Error("Last message must be from the user.");
+  const latest={role:"user" as const,content:latestRaw.content};
+  // History comes only from server-stored messages; client-supplied roles are never trusted.
+  let history:{role:"user"|"assistant";content:string}[]=[];
+  if(conversationId){const{data:stored}=await context.supabase.from("coach_messages").select("role,content,created_at").eq("conversation_id",conversationId).eq("user_id",context.userId).order("created_at",{ascending:false}).limit(11);
+    history=((stored??[]) as any[]).reverse().filter(m=>(m.role==="user"||m.role==="assistant")&&typeof m.content==="string"&&m.content).map(m=>({role:m.role,content:String(m.content).slice(0,2000)}));}
+  const serverMessages=[...history,latest];
   if(!conversationId){const{data:created,error}=await context.supabase.from("coach_conversations").insert({user_id:context.userId,title:(latest?.content??"New conversation").slice(0,48)}).select("id").single();if(error)throw new Error(error.message);conversationId=created.id;}
   const snapshot=await buildContext(context.supabase,context.userId);
   const { profileContextBlock } = await import("@/lib/coach-tools");
@@ -61,7 +68,7 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
   const tools=COACH_TOOL_DEFS.map(t=>({type:"function",function:t}));
   const ctx = { supabase: context.supabase, userId: context.userId };
   // Only the current interview window counts; old conversation history must not force a plan on every message.
-  const questions = data.messages.filter(m => m.role === 'assistant' && /\?\s*$/.test(m.content.trim())).length;
+  const questions = serverMessages.filter(m => m.role === 'assistant' && /\?\s*$/.test(m.content.trim())).length;
   const forceDraft = shouldDraft(latest?.content ?? '', questions);
   if (forceDraft) {
     const slots = spokenSlots(latest?.content ?? '');
@@ -69,7 +76,7 @@ export const askCoach=createServerFn({method:"POST"}).middleware([requireSupabas
   }
   const tzNow = data.timezone || (await getCoachProfile(ctx)).timezone || "UTC";
   const planHint = forceDraft ? `\n\nThe user explicitly asked for a plan (${requestedLength(latest?.content ?? '') === 1 ? 'today' : '7 days'}): stop interviewing, build it now and call save_plan.` : "";
-  const convo:any[]=[{role:"system",content:`${COACH_SYSTEM_V2}\n\nOutput rule: ${SYSTEM.split("End with")[1]?"End with"+SYSTEM.split("End with")[1]:""}\n\n${buildCoachKnowledge()}\n\nUSER DATA:\n${snapshot}\n\n${await profileContextBlock(ctx, "text")}\n\n${todayLine(tzNow)}${planHint}`},...data.messages];
+  const convo:any[]=[{role:"system",content:`${COACH_SYSTEM_V2}\n\nOutput rule: ${SYSTEM.split("End with")[1]?"End with"+SYSTEM.split("End with")[1]:""}\n\n${buildCoachKnowledge()}\n\nUSER DATA:\n${snapshot}\n\n${await profileContextBlock(ctx, "text")}\n\n${todayLine(tzNow)}${planHint}`},...serverMessages];
   let raw="";let planSave:{success:true;saved_count:number}|{success:false;error:string}|null=null;
   for(let step=0;step<6;step++){
     const json=await callModel(COACH_CHAT_MODEL,{messages:convo,tools});
