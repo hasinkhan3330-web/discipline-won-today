@@ -13,6 +13,7 @@ import { safeName } from "@/lib/display-name";
 import { acceptInvite, createInvite } from "@/lib/verified/accountability.functions";
 import type { ContractRow } from "@/lib/verified/contracts";
 import { endContractSession, findActiveSession, startContractSession, type SessionSnapshot } from "@/lib/verified/contract-session";
+import { PartnerHistory, loadUnreadPartnerEvents } from "./acct/PartnerHistory";
 import { ContractProofSheet } from "./ContractProofSheet";
 import { NUDGE_EVENT, NUDGE_SEEN_KEY } from "./NudgeListener";
 import { useTheme } from "@/lib/theme/theme";
@@ -126,6 +127,7 @@ function Ring({ session, now }: { session: SessionSnapshot; now: number }) {
 export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) {
   const [me, setMe] = useState<MyAccountability | null | undefined>(undefined);
   const [details, setDetails] = useState<Details | null>(null);
+  const [unread, setUnread] = useState(0);
   const [contract, setContract] = useState<ContractRow | null>(null);
   const [session, setSession] = useState<SessionSnapshot | null>(null);
   const [proofs, setProofs] = useState<Proof[]>([]);
@@ -147,6 +149,14 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
   const [now, setNow] = useState(() => Date.now());
   type View = "home" | "creator" | "review" | "recovery" | "checkin" | "garden" | "report" | "proofs" | "partner";
   const [view, setView] = useState<View>("home");
+  useEffect(() => {
+    if (view !== "home") return;
+    let alive = true;
+    const refresh = () => { void loadUnreadPartnerEvents().then(n => { if (alive) setUnread(n); }); };
+    refresh();
+    window.addEventListener("axen:partner-events-seen", refresh);
+    return () => { alive = false; window.removeEventListener("axen:partner-events-seen", refresh); };
+  }, [view]);
   const { theme: appTheme, setTheme: setAppTheme } = useTheme();
   const theme: "dark" | "light" = appTheme === "dark" ? "dark" : "light";
   const [coins, setCoins] = useState(0);
@@ -527,6 +537,7 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
       <div className={s.item}><span className={s.label}>Send a nudge</span><div className={s.stack} style={{ marginTop: 0 }}>
         {NUDGES.map((m, i) => <button key={m} className={ghost} aria-label={m} onClick={() => void send("nudge", m)} disabled={busy}>{NUDGE_TEXT[i]}</button>)}
         <button className={`${ghost} ${s.danger}`} onClick={() => void send("emergency", null)} disabled={busy}>Emergency nudge</button></div></div>
+      <PartnerHistory partnerName={name ?? "Partner"} />
     </div>}
   </section>;
 
@@ -627,7 +638,7 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
         <div className={s.card}>
           <button className={s.cardBtn} style={{ background: "none", border: 0, padding: 0 }} onClick={() => setView("partner")} aria-label={`Open partner ${name}`}>
             <div className={s.pRow}>
-              <div className={`${s.pAvatar} ${partnerCheck?.checked_in ? s.on : ""}`}><div>{me.partner_avatar ? <img src={me.partner_avatar} alt="" /> : (name ?? "P").slice(0, 1)}</div></div>
+              <div className={`${s.pAvatar} ${partnerCheck?.checked_in ? s.on : ""}`}><div>{me.partner_avatar ? <img src={me.partner_avatar} alt="" /> : (name ?? "P").slice(0, 1)}</div>{!me.i_muted && unread > 0 && <span className={s.unreadBadge} aria-label={`${unread} unread nudges and cheers`}>{unread > 9 ? "9+" : unread}</span>}</div>
               <div style={{ minWidth: 0 }}>
                 <div className={s.secTitle} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</div>
                 <div className={s.muted}>{partnerCheck?.checked_in ? (partnerCheck.completed ? "Task done today" : "Working on today's task") : `Partner since ${new Date(me.since).toLocaleDateString([], { month: "short", day: "numeric" })}`}</div>

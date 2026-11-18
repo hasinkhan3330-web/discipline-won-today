@@ -179,3 +179,19 @@ button.statTile { cursor: pointer; }
 .portal { display: contents; font-family: inherit; font-size: 14px; color: var(--a-text); }
 .portal * { box-sizing: border-box; }
 .rows { padding-bottom: 72px; }
+
+/* Partner nudge/cheer history */
+.histSkel { height: 48px; border-radius: 14px; margin: 8px 0 0; }
+.histErr { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; color: var(--a-danger); font-size: 13px; }
+.histList { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.histRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 14px; background: var(--a-chip); border: 1px solid var(--a-border); }
+.histIcon { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: var(--a-violet); background: color-mix(in oklab, var(--a-violet) 14%, transparent); flex-shrink: 0; }
+.histCheer { color: var(--a-ring); background: var(--a-tile); }
+.histBody { min-width: 0; display: grid; gap: 2px; }
+.histText { font-size: 13.5px; color: var(--a-text); overflow-wrap: anywhere; }
+.histMeta { font-family: var(--a-mono); font-size: 10.5px; letter-spacing: .04em; color: var(--a-muted); }
+.histDot { width: 8px; height: 8px; border-radius: 50%; background: var(--a-ring); flex-shrink: 0; }
+.histEmerg { border-color: color-mix(in oklab, var(--a-danger) 45%, transparent); background: color-mix(in oklab, var(--a-danger) 8%, transparent); }
+.histEmerg .histIcon { color: var(--a-danger); background: color-mix(in oklab, var(--a-danger) 14%, transparent); }
+.histEmerg .histText { color: var(--a-danger); }
+.unreadBadge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--a-ring); color: var(--a-card); font: 700 10.5px/18px var(--a-mono); text-align: center; border: 2px solid var(--a-card); }

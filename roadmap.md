@@ -18,5 +18,5 @@
 
 ## Accountability — partner nudge/cheer history
 - [x] Step 1: partner_events table + policies + safe triggers (DB only) — then wait for owner test
-- [ ] Step 2 (after owner says go): Check-ins "Recent" list + partner-card unread badge
+- [x] Step 2 (after owner says go): Check-ins "Recent" list + partner-card unread badge
 - [ ] Batch 2 restyle (Check-in, New pact, Check-ins) — waits for owner go
