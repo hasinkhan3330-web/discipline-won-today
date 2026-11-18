@@ -5,7 +5,9 @@ import { haptic } from "@/lib/haptics";
 import { CATEGORIES, REMINDER_PREFS, deviceTimezone, friendlyError, rescueMax, toLocalInput } from "@/lib/verified/contracts";
 import { scheduleContractReminders } from "@/lib/verified/contract-reminders";
 import type { ContractRow } from "@/lib/verified/contracts";
-import { ARing, STAGE_NAMES, SubHeader, Tree, ymd } from "./AcctUI";
+import { ARing, Counter, Segmented, STAGE_NAMES, StepperBar, StickyAction, SubHeader, TLField, Tree, ymd } from "./AcctUI";
+import { addMinutesLocal, dayOffset, fmtLocal, fmtTime, onDayOf, setTime12, to12 } from "./datetime";
+import { ArrowRight, BookOpen, Briefcase, Check, Clock3, Dumbbell, Flower2, GraduationCap, Minus, Palette, Plus, Sparkles } from "lucide-react";
 import s from "./acct.module.css";
 
 export type Garden = { score: number; stage: number; stage_name: string; points_to_next: number; due: number; overdue: number; checkin_days: number; resting: boolean };
@@ -78,62 +80,149 @@ export function PactCreator({ hasPartner, onBack, onSaved, preset }: { hasPartne
       onSaved();
     } catch (e) { toast.error(friendlyError(e)); } finally { setBusy(false); }
   };
+  const titleWhy = f.title.trim().length < 3 ? "Give your pact a title (3+ characters) to continue." : null;
+  const reviewEv = EVIDENCE.find(e => e.id === f.evidence)?.label ?? "Focus timer";
+  const reviewRem = REMINDER_PREFS.find(r => r.id === f.reminder)?.label ?? f.reminder;
+  const setStart = (v: string) => {
+    const off = dayOffset(toLocalInput(new Date()), v);
+    setF(p => ({ ...p, start: v, day: off === 1 ? "tomorrow" : off === 0 ? "today" : p.day }));
+  };
   return (
     <div>
       <SubHeader title="New pact" onBack={step === 1 ? onBack : () => setStep(step - 1)} right={<span className={s.chip}>Step {step} of 3</span>} />
+      <StepperBar step={step} total={3} />
       {step === 1 && <div className={s.card}>
-        <label className={s.field} style={{ marginTop: 0 }}><span className={s.label}>What will you commit to?</span>
-          <input className={s.input} value={f.title} maxLength={120} onChange={e => set("title", e.target.value)} placeholder="e.g. Study one chapter" /></label>
-        <label className={s.field}><span className={s.label}>Target action (what "done" looks like)</span>
-          <input className={s.input} value={f.target} maxLength={200} onChange={e => set("target", e.target.value)} /></label>
-        <span className={s.label} style={{ marginTop: 10 }}>Category</span>
-        <div className={s.segs}>{CATEGORIES.map(c => <button key={c} className={`${s.seg} ${f.category === c ? s.segOn : ""}`} onClick={() => set("category", c)}>{c}</button>)}</div>
-        <span className={s.label} style={{ marginTop: 10 }}>When (one-time pact)</span>
-        <div className={s.segs}>{(["today", "tomorrow"] as const).map(d => <button key={d} className={`${s.seg} ${f.day === d ? s.segOn : ""}`} onClick={() => pickDay(d)}>{d === "today" ? "Today" : "Tomorrow"}</button>)}</div>
-        <label className={s.field}><span className={s.label}>Start</span><input type="datetime-local" className={s.input} value={f.start} onChange={e => set("start", e.target.value)} /></label>
-        <label className={s.field}><span className={s.label}>Deadline</span><input type="datetime-local" className={s.input} value={f.deadline} onChange={e => set("deadline", e.target.value)} /></label>
-        <label className={s.field}><span className={s.label}>Session length (minutes)</span>
-          <input type="number" min={5} max={240} className={s.input} value={f.minutes} onChange={e => set("minutes", Number(e.target.value))} /></label>
+        <TLField n={1} label="What will you commit to?" hint="Short and specific works best.">
+          <input className={s.fInput} value={f.title} maxLength={120} onChange={e => set("title", e.target.value)} placeholder="e.g. Study one chapter of Physics" aria-label="What will you commit to?" />
+          <Counter n={f.title.length} max={120} />
+        </TLField>
+        <TLField n={2} label={`Target action (what "done" looks like)`} hint={`Example: "Solve 20 questions from Exercise 3.2"`}>
+          <input className={s.fInput} value={f.target} maxLength={200} onChange={e => set("target", e.target.value)} placeholder="e.g. Finish notes for chapter 4" aria-label="Target action" />
+          <Counter n={f.target.length} max={200} />
+        </TLField>
+        <TLField n={3} label="Category">
+          <div className={s.chipRow} role="radiogroup" aria-label="Category">{CATEGORIES.map(c => { const Icon = CAT_ICON[c] ?? Sparkles;
+            return <button type="button" key={c} role="radio" aria-checked={f.category === c} className={`${s.chipBtn} ${f.category === c ? s.chipBtnOn : ""}`} onClick={() => set("category", c)}><Icon size={15} />{cap(c)}</button>; })}</div>
+        </TLField>
+        <TLField n={4} label="When (one-time pact)">
+          <Segmented label="Day" value={f.day} onChange={pickDay} options={[{ id: "today", label: "Today" }, { id: "tomorrow", label: "Tomorrow" }]} />
+          <span className={s.miniLabel}>Start</span>
+          <DateTimePicker label="Start" value={f.start} onChange={setStart} />
+          <span className={s.miniLabel}>Deadline</span>
+          <DateTimePicker label="Deadline" value={f.deadline} onChange={v => set("deadline", v)} dayBase={f.start} />
+          <span className={s.miniLabel}>Session length</span>
+          <MinutesStepper value={f.minutes} onChange={v => set("minutes", v)} />
+        </TLField>
+        <div className={s.contractCard} style={{ marginBottom: 0 }}>
+          <span className={s.monoTag}>Summary</span>
+          <div className={s.sumLine}>{f.minutes}-min {f.category} · {fmtTime(f.start)}–{fmtTime(f.deadline)}</div>
+          <div className={s.muted} style={{ marginTop: 2 }}>{fmtLocal(f.start)}</div>
+          {err && !titleWhy && <div role="alert" className={s.errLine}>{err}</div>}
+        </div>
       </div>}
       {step === 2 && <div className={s.card}>
-        <label className={s.field} style={{ marginTop: 0 }}><span className={s.label}>Minimum version (on a hard day)</span>
-          <input className={s.input} value={f.minimum} maxLength={140} onChange={e => set("minimum", e.target.value)} placeholder="e.g. Read 5 pages" /></label>
-        <label className={s.field}><span className={s.label}>If-Then backup</span>
-          <input className={s.input} value={f.ifThen} maxLength={200} onChange={e => set("ifThen", e.target.value)} placeholder="If I'm late, then I'll do the minimum version" /></label>
-        <label className={s.field}><span className={s.label}>Obstacles (optional)</span>
-          <input className={s.input} value={f.obstacles} maxLength={280} onChange={e => set("obstacles", e.target.value)} /></label>
-        <span className={s.label} style={{ marginTop: 10 }}>Evidence</span>
-        <div className={s.segs}>{EVIDENCE.map(e => <button key={e.id} className={`${s.seg} ${f.evidence === e.id ? s.segOn : ""}`} onClick={() => set("evidence", e.id)}>{e.label}</button>)}</div>
+        <TLField n={1} label="Minimum version (on a hard day)">
+          <input className={s.fInput} value={f.minimum} maxLength={140} onChange={e => set("minimum", e.target.value)} placeholder="e.g. Read 5 pages" aria-label="Minimum version" />
+          <Counter n={f.minimum.length} max={140} />
+        </TLField>
+        <TLField n={2} label="If-Then backup">
+          <input className={s.fInput} value={f.ifThen} maxLength={200} onChange={e => set("ifThen", e.target.value)} placeholder="If I'm late, then I'll do the minimum version" aria-label="If-Then backup" />
+          <Counter n={f.ifThen.length} max={200} />
+        </TLField>
+        <TLField n={3} label="Obstacles (optional)">
+          <input className={s.fInput} value={f.obstacles} maxLength={280} onChange={e => set("obstacles", e.target.value)} placeholder="e.g. Phone notifications, late dinner" aria-label="Obstacles" />
+          <Counter n={f.obstacles.length} max={280} />
+        </TLField>
+        <TLField n={4} label="Evidence">
+          <div className={s.chipRow} role="radiogroup" aria-label="Evidence">{EVIDENCE.map(e => <button type="button" key={e.id} role="radio" aria-checked={f.evidence === e.id} className={`${s.chipBtn} ${f.evidence === e.id ? s.chipBtnOn : ""}`} onClick={() => set("evidence", e.id)}>{e.label}</button>)}</div>
+        </TLField>
       </div>}
-      {step === 3 && <div className={s.card}>
-        <span className={s.label}>Partner</span>
-        {hasPartner ? <div className={s.segs}>
-          <button className={`${s.seg} ${!f.solo ? s.segOn : ""}`} onClick={() => set("solo", false)}>With my partner</button>
-          <button className={`${s.seg} ${f.solo ? s.segOn : ""}`} onClick={() => set("solo", true)}>Solo</button>
-        </div> : <div className={s.muted}>Solo pact — you confirm your own proof.</div>}
-        {hasPartner && !f.solo && <><span className={s.label} style={{ marginTop: 10 }}>Who can see this pact</span>
-          <div className={s.segs}>
-            <button className={`${s.seg} ${f.visibility === "partner" ? s.segOn : ""}`} onClick={() => set("visibility", "partner")}>My partner</button>
-            <button className={`${s.seg} ${f.visibility === "private" ? s.segOn : ""}`} onClick={() => set("visibility", "private")}>Only me</button>
-          </div></>}
-        <span className={s.label} style={{ marginTop: 10 }}>Reminder</span>
-        <div className={s.segs}>{REMINDER_PREFS.map(r => <button key={r.id} className={`${s.seg} ${f.reminder === r.id ? s.segOn : ""}`} onClick={() => set("reminder", r.id)}>{r.label}</button>)}</div>
-        <div className={s.muted} style={{ marginTop: 10 }}>Your partner never sees notes, coins or full history.</div>
+      {step === 3 && <>
+        <div className={s.card}>
+          <TLField n={1} label="Partner">
+            {hasPartner ? <Segmented label="Partner" value={f.solo ? "solo" : "partner"} onChange={v => set("solo", v === "solo")} options={[{ id: "partner", label: "With my partner" }, { id: "solo", label: "Solo" }]} />
+              : <div className={s.muted}>Solo pact — you confirm your own proof.</div>}
+          </TLField>
+          {hasPartner && !f.solo && <TLField n={2} label="Who can see this pact">
+            <Segmented label="Who can see this pact" value={f.visibility} onChange={v => set("visibility", v)} options={[{ id: "partner", label: "My partner" }, { id: "private", label: "Only me" }]} />
+          </TLField>}
+          <TLField n={hasPartner && !f.solo ? 3 : 2} label="Reminder">
+            <div className={s.chipRow} role="radiogroup" aria-label="Reminder">{REMINDER_PREFS.map(r => <button type="button" key={r.id} role="radio" aria-checked={f.reminder === r.id} className={`${s.chipBtn} ${f.reminder === r.id ? s.chipBtnOn : ""}`} onClick={() => set("reminder", r.id)}>{r.label}</button>)}</div>
+          </TLField>
+          <div className={s.muted}>Your partner never sees notes, coins or full history.</div>
+        </div>
+        <div className={s.contractCard}>
+          <span className={s.monoTag}>Review</span>
+          <div className={s.sumLine} style={{ marginBottom: 6 }}>{f.title.trim() || "Untitled pact"}</div>
+          <div className={s.revRow}><span>Time</span><span>{fmtLocal(f.start)} → {fmtTime(f.deadline)}{dayOffset(f.start, f.deadline) > 0 ? " (next day)" : ""}</span></div>
+          <div className={s.revRow}><span>Length</span><span>{f.minutes} min · {cap(f.category)}</span></div>
+          {f.target.trim() && <div className={s.revRow}><span>Done means</span><span>{f.target.trim()}</span></div>}
+          <div className={s.revRow}><span>Evidence</span><span>{reviewEv}</span></div>
+          <div className={s.revRow}><span>Partner</span><span>{f.solo || !hasPartner ? "Solo" : f.visibility === "partner" ? "With partner · partner can see" : "With partner · only me"}</span></div>
+          <div className={s.revRow}><span>Reminder</span><span>{reviewRem}</span></div>
+        </div>
+      </>}
+      <StickyAction reason={step === 1 ? titleWhy : step === 3 ? err : null}>
+        {step < 3
+          ? <button className={s.limeBtn} onClick={() => setStep(step + 1)} disabled={step === 1 && f.title.trim().length < 3}>Next <ArrowRight size={18} /></button>
+          : <button className={s.limeBtn} onClick={() => void save()} disabled={!!err || busy}>{busy ? "Saving…" : "Save pact"}</button>}
+      </StickyAction>
+    </div>
+  );
+}
+
+const cap = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
+const CAT_ICON: Record<string, typeof Sparkles> = { study: GraduationCap, work: Briefcase, workout: Dumbbell, meditation: Flower2, reading: BookOpen, creative: Palette, other: Sparkles };
+const HOURS = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const MINS = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+function DateTimePicker({ label, value, onChange, dayBase }: { label: string; value: string; onChange: (v: string) => void; dayBase?: string }) {
+  const [open, setOpen] = useState(false);
+  const t = to12(value);
+  const off = dayBase ? dayOffset(dayBase, value) : 0;
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      <button type="button" className={`${s.pickBtn} ${open ? s.pickBtnOpen : ""}`} aria-expanded={open} aria-label={`${label}: ${fmtLocal(value)}`} onClick={() => setOpen(o => !o)}>
+        <span>{fmtLocal(value)}</span><Clock3 size={16} color="var(--a-ring)" />
+      </button>
+      <div className={s.chipRow}>{([[30, "+30m"], [60, "+1h"], [180, "+3h"]] as const).map(([m, l]) =>
+        <button type="button" key={l} className={s.chipBtn} aria-label={`${label} ${l}`} onClick={() => onChange(addMinutesLocal(value, m))}>{l}</button>)}</div>
+      {open && <div className={s.pickPanel}>
+        {dayBase && <Segmented label={`${label} day`} value={off >= 1 ? "next" : "same"} onChange={v => onChange(onDayOf(dayBase, value, v === "next" ? 1 : 0))} options={[{ id: "same", label: "Same day" }, { id: "next", label: "Next day" }]} />}
+        <span className={s.miniLabel}>Hour</span>
+        <div className={s.grid6}>{HOURS.map(h => <button type="button" key={h} aria-pressed={t.h === h} className={`${s.gridBtn} ${t.h === h ? s.gridBtnOn : ""}`} onClick={() => onChange(setTime12(value, h, t.m, t.ap))}>{h}</button>)}</div>
+        <span className={s.miniLabel}>Minute</span>
+        <div className={s.grid6}>{MINS.map(m => <button type="button" key={m} aria-pressed={t.m === m} className={`${s.gridBtn} ${t.m === m ? s.gridBtnOn : ""}`} onClick={() => onChange(setTime12(value, t.h, m, t.ap))}>{String(m).padStart(2, "0")}</button>)}</div>
+        <Segmented label="AM or PM" value={t.ap} onChange={ap => onChange(setTime12(value, t.h, t.m, ap))} options={[{ id: "AM", label: "AM" }, { id: "PM", label: "PM" }]} />
+        <button type="button" className={s.chipBtn} style={{ justifySelf: "end" }} onClick={() => setOpen(false)}>Done</button>
       </div>}
-      {err && step === 3 && <div role="alert" className={s.muted} style={{ color: "var(--a-warn)", marginBottom: 8 }}>{err}</div>}
-      {step < 3
-        ? <button className={s.btn} onClick={() => setStep(step + 1)} disabled={step === 1 && f.title.trim().length < 3}>Next</button>
-        : <button className={s.btn} onClick={() => void save()} disabled={!!err || busy}>{busy ? "Saving…" : "Save pact"}</button>}
+    </div>
+  );
+}
+
+function MinutesStepper({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const clamp = (v: number) => Math.max(5, Math.min(240, v));
+  return (
+    <div style={{ display: "grid", gap: 8 }}>
+      <div className={s.minStep}>
+        <button type="button" className={s.round} aria-label="Shorter by 5 minutes" onClick={() => onChange(clamp(value - 5))} disabled={value <= 5}><Minus size={16} /></button>
+        <b aria-live="polite">{value}<small>min</small></b>
+        <button type="button" className={s.round} aria-label="Longer by 5 minutes" onClick={() => onChange(clamp(value + 5))} disabled={value >= 240}><Plus size={16} /></button>
+      </div>
+      <div className={s.chipRow}>{[15, 25, 30, 45, 60].map(m => <button type="button" key={m} aria-pressed={value === m} className={`${s.chipBtn} ${value === m ? s.chipBtnOn : ""}`} onClick={() => onChange(m)}>{m}m</button>)}</div>
     </div>
   );
 }
 
 export function CheckinScreen({ hasPartner, onBack, onDone }: { hasPartner: boolean; onBack: () => void; onDone: () => void }) {
   const day = ymd(new Date());
-  const [f, setF] = useState({ action: "", completed: false, needs_help: false, next_step: "" });
+  const [f, setF] = useState<{ action: string; completed: boolean | null; needs_help: boolean | null; next_step: string }>({ action: "", completed: null, needs_help: null, next_step: "" });
   const [loaded, setLoaded] = useState(false);
   const [partner, setPartner] = useState<{ checked_in: boolean; completed: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  const [sent, setSent] = useState<Record<string, boolean>>({});
+  const [cheerBusy, setCheerBusy] = useState<string | null>(null);
   useEffect(() => {
     void (async () => {
       const { data } = await supabase.from("acct_checkins").select("action,completed,needs_help,next_step").eq("day", day).maybeSingle();
@@ -142,37 +231,64 @@ export function CheckinScreen({ hasPartner, onBack, onDone }: { hasPartner: bool
       setLoaded(true);
     })();
   }, [day, hasPartner]);
+  const ready = f.completed !== null && f.needs_help !== null;
   const save = async () => {
+    if (!ready || busy) return;
     setBusy(true);
     const { data: u } = await supabase.auth.getUser();
-    const { error } = await supabase.from("acct_checkins").upsert({ user_id: u.user?.id, day, action: f.action.trim() || null, completed: f.completed, needs_help: f.needs_help, next_step: f.next_step.trim() || null }, { onConflict: "user_id,day" });
+    const { error } = await supabase.from("acct_checkins").upsert({ user_id: u.user?.id, day, action: f.action.trim() || null, completed: !!f.completed, needs_help: !!f.needs_help, next_step: f.next_step.trim() || null }, { onConflict: "user_id,day" });
     setBusy(false);
-    if (error) toast.error("Couldn't save your check-in. Try again."); else { haptic("success"); toast.success("Checked in"); onDone(); }
+    if (error) toast.error("Couldn't save your check-in. Try again.");
+    else { haptic("success"); toast.success("Checked in"); setDone(true); window.setTimeout(onDone, 1600); }
   };
   const cheer = async (k: "fire" | "clap" | "muscle") => {
+    if (cheerBusy) return;
+    setCheerBusy(k);
     const { data, error } = await supabase.rpc("acct_send_cheer", { _kind: k });
-    if (error) toast.error("Couldn't send"); else { haptic("success"); toast.success(data ? "Cheer sent" : "Already sent that one today"); }
+    setCheerBusy(null);
+    if (error) toast.error("Couldn't send"); else { haptic("success"); setSent(p => ({ ...p, [k]: true })); toast.success(data ? "Cheer sent" : "Already sent that one today"); }
   };
   if (!loaded) return <div><SubHeader title="Daily check-in" onBack={onBack} /><div className={s.skel} /><div className={s.skel} /></div>;
+  if (done) return (
+    <div>
+      <SubHeader title="Daily check-in" onBack={onDone} />
+      <div className={s.celebrateBox} role="status">
+        <div className={s.celebrateIcon}><Check size={32} strokeWidth={3} /></div>
+        <div className={s.secTitle} style={{ fontSize: 20 }}>Checked in</div>
+        {hasPartner && <div className={s.muted} style={{ fontSize: 13, marginTop: 4 }}>Your partner will see this.</div>}
+      </div>
+    </div>
+  );
   return (
     <div>
       <SubHeader title="Daily check-in" onBack={onBack} right={<span className={s.chip}>30 sec</span>} />
       <div className={s.card}>
-        <label className={s.field} style={{ marginTop: 0 }}><span className={s.label}>What is your most important action today?</span>
-          <input className={s.input} maxLength={140} value={f.action} onChange={e => setF({ ...f, action: e.target.value })} /></label>
-        <span className={s.label} style={{ marginTop: 10 }}>Did you complete your commitment?</span>
-        <div className={s.segs}><button className={`${s.seg} ${f.completed ? s.segOn : ""}`} onClick={() => setF({ ...f, completed: true })}>Yes</button><button className={`${s.seg} ${!f.completed ? s.segOn : ""}`} onClick={() => setF({ ...f, completed: false })}>Not yet</button></div>
-        <span className={s.label} style={{ marginTop: 10 }}>Do you need help adjusting your plan?</span>
-        <div className={s.segs}><button className={`${s.seg} ${f.needs_help ? s.segOn : ""}`} onClick={() => setF({ ...f, needs_help: true })}>Yes</button><button className={`${s.seg} ${!f.needs_help ? s.segOn : ""}`} onClick={() => setF({ ...f, needs_help: false })}>I'm fine</button></div>
-        <label className={s.field}><span className={s.label}>What's your next step?</span>
-          <input className={s.input} maxLength={140} value={f.next_step} onChange={e => setF({ ...f, next_step: e.target.value })} /></label>
-        <div className={s.stack}><button className={s.btn} onClick={() => void save()} disabled={busy}>{busy ? "Saving…" : "Save check-in"}</button></div>
+        <TLField n={1} label="What is your most important action today?">
+          <input className={s.fInput} maxLength={140} value={f.action} onChange={e => setF({ ...f, action: e.target.value })} placeholder="e.g. Finish 2 chapters of Chemistry" aria-label="Most important action today" />
+          <Counter n={f.action.length} max={140} />
+        </TLField>
+        <TLField n={2} label="Did you complete your commitment?">
+          <Segmented label="Did you complete your commitment?" value={f.completed === null ? null : f.completed ? "yes" : "no"} onChange={v => setF({ ...f, completed: v === "yes" })} options={[{ id: "yes", label: "Yes" }, { id: "no", label: "Not yet" }]} />
+        </TLField>
+        <TLField n={3} label="Do you need help adjusting your plan?">
+          <Segmented label="Do you need help adjusting your plan?" value={f.needs_help === null ? null : f.needs_help ? "yes" : "no"} onChange={v => setF({ ...f, needs_help: v === "yes" })} options={[{ id: "yes", label: "Yes" }, { id: "no", label: "I'm fine" }]} />
+        </TLField>
+        <TLField n={4} label="What's your next step?">
+          <input className={s.fInput} maxLength={140} value={f.next_step} onChange={e => setF({ ...f, next_step: e.target.value })} placeholder="e.g. Revise formulas before 9 PM" aria-label="Next step" />
+          <Counter n={f.next_step.length} max={140} />
+        </TLField>
+        <button className={s.limeBtn} onClick={() => void save()} disabled={busy || !ready}>{busy ? "Saving…" : "Save check-in"}</button>
+        {!ready && <div className={s.whyLine} role="status">Answer both questions to save.</div>}
       </div>
       {hasPartner && <div className={s.card}>
-        <span className={s.label}>Your partner today</span>
-        <div className={s.big} style={{ fontSize: 15 }}>{partner == null ? "—" : partner.checked_in ? (partner.completed ? "Checked in · commitment done" : "Checked in") : "Not checked in yet"}</div>
-        <span className={s.label}>Send a cheer</span>
-        <div className={s.segs}>{([["fire", "🔥"], ["clap", "👏"], ["muscle", "💪"]] as const).map(([k, e]) => <button key={k} className={s.seg} aria-label={`Cheer ${k}`} onClick={() => void cheer(k)}>{e}</button>)}</div>
+        <span className={s.tlLabel} style={{ paddingTop: 0 }}>Your partner today</span>
+        <div className={s.who} style={{ marginTop: 8 }}>
+          <span className={`${s.whoAv} ${s.whoP}`} aria-hidden="true">P{partner?.checked_in && <Check size={14} strokeWidth={3} />}</span>
+          <span className={s.whoTxt}><b>{partner == null ? "—" : partner.checked_in ? (partner.completed ? "Checked in · commitment done" : "Checked in") : "Not checked in yet"}</b></span>
+        </div>
+        <span className={s.tlLabel} style={{ display: "block", margin: "12px 0 8px" }}>Send a cheer</span>
+        <div className={s.cheerRow}>{([["fire", "🔥", "Fire"], ["clap", "👏", "Clap"], ["muscle", "💪", "Strong"]] as const).map(([k, e, l]) =>
+          <button key={k} className={`${s.cheerBtn} ${sent[k] ? s.cheerSent : ""}`} aria-label={`Cheer ${k}${sent[k] ? " (sent)" : ""}`} onClick={() => void cheer(k)} disabled={cheerBusy !== null}><span aria-hidden="true">{e}</span><small>{sent[k] ? "Sent" : l}</small></button>)}</div>
       </div>}
     </div>
   );

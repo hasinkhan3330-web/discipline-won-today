@@ -109,3 +109,33 @@ export function weekDays(today: Date, byDay: Record<string, "done" | "missed" | 
   });
 }
 export const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+/* ---- Batch 2 form pieces (Accountability only) ---- */
+export function TLField({ n, label, children, hint }: { n: number; label: string; children: ReactNode; hint?: ReactNode }) {
+  return (
+    <div className={s.tl}>
+      <span className={s.tlNum} aria-hidden="true">{String(n).padStart(2, "0")}</span>
+      <div className={s.tlBody}><span className={s.tlLabel}>{label}</span>{children}{hint && <div className={s.tlHint}>{hint}</div>}</div>
+    </div>
+  );
+}
+export function Segmented<T extends string>({ value, options, onChange, label }: { value: T | null; options: { id: T; label: ReactNode }[]; onChange: (v: T) => void; label: string }) {
+  return (
+    <div className={s.segCtl} role="radiogroup" aria-label={label}>
+      {options.map(o => <button type="button" key={o.id} role="radio" aria-checked={value === o.id} className={`${s.segOpt} ${value === o.id ? s.segOptOn : ""}`} onClick={() => onChange(o.id)}>{o.label}</button>)}
+    </div>
+  );
+}
+export function Counter({ n, max }: { n: number; max: number }) {
+  return <span className={s.counter} aria-live="polite">{n}/{max}</span>;
+}
+export function StepperBar({ step, total }: { step: number; total: number }) {
+  return (
+    <div className={s.stepper} role="progressbar" aria-valuemin={1} aria-valuemax={total} aria-valuenow={step} aria-label={`Step ${step} of ${total}`}>
+      {Array.from({ length: total }, (_, i) => <span key={i} className={i < step ? s.stepOn : ""} />)}
+    </div>
+  );
+}
+export function StickyAction({ children, reason }: { children: ReactNode; reason?: string | null }) {
+  return <div className={s.sticky}>{children}{reason && <div className={s.stickyWhy} role="status">{reason}</div>}</div>;
+}

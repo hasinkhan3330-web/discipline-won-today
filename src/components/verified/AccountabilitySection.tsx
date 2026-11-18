@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { MoreHorizontal, Flame, ChevronRight, Plus, Moon, Sun, ArrowLeft, Target, Clock, Hourglass, ShieldCheck, Sprout, MessageCircle, Zap, ClipboardCheck, History, LifeBuoy, BarChart3, UserMinus, Ban } from "lucide-react";
+import { MoreHorizontal, Flame, ChevronRight, Plus, Moon, Sun, ArrowLeft, Target, Clock, Hourglass, ShieldCheck, Sprout, MessageCircle, Zap, ClipboardCheck, History, LifeBuoy, BarChart3, UserMinus, Ban, Eye, Check, AlertTriangle } from "lucide-react";
 import { CoinBadge } from "@/components/CoinBadge";
 import s from "./acct/acct.module.css";
-import { ARing, Tree, WeekStrip, SubHeader, SectionHead, Switch, weekDays, ymd } from "./acct/AcctUI";
+import { ARing, Tree, WeekStrip, SubHeader, SectionHead, Switch, Counter, weekDays, ymd } from "./acct/AcctUI";
 import { CheckinScreen, GardenScreen, MilestoneCelebration, PactCreator, ReportScreen, TrustWhy, type Garden, type PactPreset } from "./acct/AcctScreens";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
@@ -171,6 +171,7 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
   const [preset, setPreset] = useState<PactPreset | null>(null);
   const [daySel, setDaySel] = useState<number | null>(null);
   const [confirmEnd, setConfirmEnd] = useState<null | "remove" | "block">(null);
+  const [confirmEmerg, setConfirmEmerg] = useState(false);
   const [fabOn, setFabOn] = useState(false);
   const ctaRef = useRef<HTMLDivElement | null>(null);
   const lock = useRef(false);
@@ -523,23 +524,68 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
     </div>
   </section>;
 
-  if (view === "partner") return <section {...shellProps}>
+  if (view === "partner") {
+    const toldToday = !!details?.checked_in_today;
+    const canTell = !!details?.can_check_in && !toldToday;
+    const groups = [
+      { id: "Gentle", icon: <Eye size={13} />, idx: [4, 0] },
+      { id: "Push", icon: <Zap size={13} />, idx: [1, 3] },
+      { id: "Hard", icon: <Flame size={13} />, idx: [2] },
+    ];
+    return <section {...shellProps}>
     <SubHeader title="Check-ins" onBack={back} />
-    <button className={btn} onClick={() => setView("checkin")}>Daily check-in</button>
-    {me && <div className={s.card} style={{ marginTop: 10 }}>
-      <button className={ghost} onClick={() => void send("checkin", null)} disabled={busy || !details?.can_check_in || details.checked_in_today}>{details?.checked_in_today ? "Told partner today" : "Aaj ka task kiya"}</button>
-      <div className={s.item} style={{ marginTop: 12 }}><span className={s.label}>{name}'s week</span><div>{details?.partner_streak ?? 0}-day streak · {details?.partner_weekly_tasks ?? 0} tasks</div></div>
-      <div className={s.item}><span className={s.label}>Our contract</span>
-        <textarea className={s.input} aria-label="My commitment" rows={2} maxLength={100} value={commitment} onChange={e => setCommitment(e.target.value)} />
-        <div className={s.muted} style={{ textAlign: "right" }}>{commitment.length}/100</div>
-        <button className={ghost} onClick={() => void send("commitment", commitment)} disabled={busy || commitment === (details?.my_commitment ?? "")}>Save commitment</button>
-        <div className={s.muted} style={{ marginTop: 6 }}>{name}: {details?.partner_commitment || "No commitment yet."}</div></div>
-      <div className={s.item}><span className={s.label}>Send a nudge</span><div className={s.stack} style={{ marginTop: 0 }}>
-        {NUDGES.map((m, i) => <button key={m} className={ghost} aria-label={m} onClick={() => void send("nudge", m)} disabled={busy}>{NUDGE_TEXT[i]}</button>)}
-        <button className={`${ghost} ${s.danger}`} onClick={() => void send("emergency", null)} disabled={busy}>Emergency nudge</button></div></div>
-      <PartnerHistory partnerName={name ?? "Partner"} />
-    </div>}
+    <button className={s.limeBtn} onClick={() => setView("checkin")}><ClipboardCheck size={18} /> Daily check-in</button>
+    {me && <>
+      <div className={s.card} style={{ marginTop: 12 }}>
+        <span className={s.tlLabel} style={{ paddingTop: 0 }}>Today</span>
+        <div className={s.statusPair} style={{ marginTop: 8 }}>
+          <div className={s.who}><span className={`${s.whoAv} ${s.whoMe}`} aria-hidden="true">Me{toldToday && <Check size={14} strokeWidth={3} />}</span>
+            <span className={s.whoTxt}><b>You</b><span>{toldToday ? "Told partner" : "Not yet"}</span></span></div>
+          <div className={s.who}><span className={`${s.whoAv} ${s.whoP}`} aria-hidden="true">{(name ?? "P").slice(0, 1)}{partnerCheck?.checked_in && <Check size={14} strokeWidth={3} />}</span>
+            <span className={s.whoTxt}><b>{name}</b><span>{partnerCheck == null ? "—" : partnerCheck.checked_in ? (partnerCheck.completed ? "Task done" : "Checked in") : "Not yet"}</span></span></div>
+        </div>
+        <button className={`${s.actBtn} ${toldToday ? s.actDone : ""}`} style={{ marginTop: 10 }} onClick={() => void send("checkin", null)} disabled={busy || !canTell} aria-label={toldToday ? "Told partner today" : "Aaj ka task kiya"}>
+          <span className={s.iconTile} aria-hidden="true">{toldToday ? <Check size={16} /> : <ClipboardCheck size={16} />}</span>
+          <span>{toldToday ? "Told partner today" : "Aaj ka task kiya"}</span>
+          {!toldToday && <ChevronRight size={16} color="var(--a-muted)" />}
+        </button>
+        {!toldToday && !details?.can_check_in && <div className={s.whyLine}>Complete a task today to tell your partner.</div>}
+        <div className={s.item} style={{ marginTop: 12, borderTop: "1px solid var(--a-border)", paddingTop: 12 }}>
+          <span className={s.tlLabel} style={{ paddingTop: 0 }}>{name}'s week</span>
+          <div className={s.sumLine} style={{ fontSize: 14 }}><Flame size={14} color="var(--a-violet)" /> {details?.partner_streak ?? 0}-day streak · {details?.partner_weekly_tasks ?? 0} tasks</div>
+        </div>
+      </div>
+      <div className={s.contractCard}>
+        <div className={s.fRow}><span className={s.monoTag}>Our contract</span><Counter n={commitment.length} max={100} /></div>
+        <textarea className={s.fInput} style={{ marginTop: 8, resize: "none" }} aria-label="My commitment" rows={2} maxLength={100} value={commitment} onChange={e => setCommitment(e.target.value)} placeholder="e.g. I'll study 2 hours before 9 PM every day" />
+        {(() => { const dirty = commitment !== (details?.my_commitment ?? ""); const saved = !dirty && !!details?.my_commitment; return <button className={saved ? `${s.chipBtn} ${s.chipBtnOn}` : s.limeBtn} style={{ marginTop: 8, width: "100%", justifyContent: "center" }} onClick={() => void send("commitment", commitment)} disabled={busy || !dirty}>{saved ? <><Check size={15} /> Saved</> : "Save commitment"}</button>; })()}
+        <div className={s.bubble}><b>{name}</b>{details?.partner_commitment || "No commitment yet."}</div>
+      </div>
+      <div className={s.card}>
+        <span className={s.tlLabel} style={{ paddingTop: 0 }}>Send a nudge</span>
+        {groups.map(g => <div key={g.id} className={s.nGroup}>
+          <div className={s.nGroupHead}>{g.icon}{g.id}</div>
+          {g.idx.map(i => <button key={i} className={s.nudgeBtn} aria-label={NUDGES[i]} onClick={() => void send("nudge", NUDGES[i])} disabled={busy}><span className={s.iconTile} aria-hidden="true">{g.icon}</span><span>{NUDGE_TEXT[i]}</span></button>)}
+        </div>)}
+        <button className={`${s.nudgeBtn} ${s.nudgeEmerg}`} onClick={() => setConfirmEmerg(true)} disabled={busy}><span className={`${s.iconTile} ${s.iconTileCoral}`} aria-hidden="true"><AlertTriangle size={16} /></span><span>Emergency nudge</span></button>
+        <PartnerHistory partnerName={name ?? "Partner"} />
+      </div>
+    </>}
+    {confirmEmerg && typeof document !== "undefined" && createPortal(
+      <div className={s.portal} data-theme={theme}>
+        <div className={`${s.scrim} ${s.scrimCenter}`} onClick={() => setConfirmEmerg(false)}>
+          <div className={s.dialog} role="alertdialog" aria-modal="true" aria-labelledby="acct-emerg-t" onClick={e => e.stopPropagation()}>
+            <div className={s.secTitle} id="acct-emerg-t" style={{ fontSize: 18 }}>Send an emergency nudge?</div>
+            <p className={s.muted} style={{ fontSize: 13, margin: "8px 0 0" }}>{name} gets an urgent alert right away.</p>
+            <div className={s.ctaCol}>
+              <button className={btn} style={{ background: "var(--a-danger)", color: "var(--a-on-primary)" }} onClick={() => { setConfirmEmerg(false); void send("emergency", null); }} disabled={busy}>Send emergency nudge</button>
+              <button className={ghost} onClick={() => setConfirmEmerg(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>, document.body)}
   </section>;
+  }
 
   const days = weekDays(new Date(), weekMap);
   const selDay = daySel != null ? days[daySel] : null;
