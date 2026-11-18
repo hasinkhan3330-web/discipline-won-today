@@ -1948,6 +1948,8 @@ select {
 .home-section-heading h2 { margin: 0; font-size: 14px; line-height: 1.15; letter-spacing: 0; }
 .home-section-heading p { margin: 3px 0 0; color: var(--home-muted); font-size: 9px; }
 .home-section-heading--plain > span { color: var(--home-lime); font-size: 11px; }
+.home-plan-link { display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; padding: 6px 10px; border: 1px solid color-mix(in oklab, var(--home-lime) 40%, var(--home-border)); border-radius: 999px; color: var(--home-lime); background: var(--home-deep); font-size: 10px; font-weight: 600; text-decoration: none; }
+.home-plan-link:active { transform: scale(0.96); }
 .home-mission-progress { height: 3px; margin: 11px 0 5px; overflow: hidden; border-radius: 3px; background: oklch(0.22 0.025 225); }
 .home-mission-progress i { display: block; height: 100%; border-radius: inherit; background: var(--home-lime); transition: width 350ms ease; }
 .home-mission { min-height: 55px; display: flex; align-items: center; gap: 10px; cursor: pointer; border-bottom: 1px solid color-mix(in oklab, var(--home-border) 62%, transparent); }

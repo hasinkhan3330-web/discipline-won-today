@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { AppearanceSwitcher } from "@/components/AppearanceSwitcher";
 import { CoinBadge } from "@/components/CoinBadge";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
@@ -19,7 +20,7 @@ import type { ContractRow } from "@/lib/verified/contracts";
 import {
   AlarmClock, Dumbbell, BookOpen, Salad, Droplets, Moon, Brain,
   Flame, Footprints, PenLine, Circle, Check, ScanLine, Coins, Zap,
-  ChevronRight, Target, type LucideIcon,
+  ChevronRight, Target, CalendarCheck, type LucideIcon,
 } from "lucide-react";
 
 type Task = { id: number; icon: string; name: string; pts: number; done: boolean; requireScan?: boolean; scanClasses?: string[] };
@@ -179,7 +180,7 @@ export function HomeTab({ name, coins, streak, shields = 0, tasks, tick, onScan,
       <ContractCard onStart={handleContractStart} onResume={handleContractResume} />
 
       <section className="home-missions">
-        <div className="home-section-heading home-section-heading--plain"><div><h2>Today Missions</h2><p>Execute the plan. No negotiation.</p></div><span>{done}/{tasks.length}</span></div>
+        <div className="home-section-heading home-section-heading--plain"><div><h2>Today Missions</h2><p>Execute the plan. No negotiation.</p></div><Link to="/my-plan" className="home-plan-link" aria-label="Open My Plan"><CalendarCheck size={14} /> My Plan</Link><span>{done}/{tasks.length}</span></div>
         <div className="home-mission-progress"><i style={{ width: `${pct}%` }} /></div>
 
         {tasks.length === 0 && (
