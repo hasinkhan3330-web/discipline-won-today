@@ -322,3 +322,6 @@ button.statTile { cursor: pointer; }
 .recTop { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .recTop b { flex: 1; min-width: 0; }
 .filterChip:focus-visible, .rules summary:focus-visible { outline: 2px solid var(--a-ring); outline-offset: 2px; }
+/* Simple only: AA contrast for small lime text (colour only; tokens unchanged) */
+.root[data-theme="light"] :is(.eyebrow, .dayL, .heroNum small, .pill, .tlNum, .pillMono, .segOptOn, .chipBtnOn, .gridBtnOn, .filterOn, .actDone, .histCheer, .cheerSent small, .whoMe),
+.portal[data-theme="light"] :is(.eyebrow, .dayL, .pill, .pillMono) { color: oklch(0.45 0.14 135); }
