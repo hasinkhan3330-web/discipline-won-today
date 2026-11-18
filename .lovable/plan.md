@@ -1,44 +1,44 @@
-# Accountability Batch 3: Focus garden, Proof history, Recovery + audit
+# Accountability Batch 2: Daily check-in, New pact, Check-ins
 
-Only the Accountability screens inside the You tab. Display only: no change to backend, scoring, garden formula, streak/trust, Recovery logic, coins, data shapes, routes, bottom nav or other tabs. Dark + Simple, existing tokens.
-
-## Where the existing data differs from the brief
-- **Proof history** loads only: proof type, time, partner review status, reviewed time, review note (your last 10 proofs). It has **no photo/thumbnail, no pact name and no category**. Following the real-data rule, the cards will show status chip, proof type and time only; thumbnail, pact name and category icon are hidden.
-- **Partner tree** gives only stage number + stage name, **no score/progress**. The partner card shows the stage and the stage row in violet, with no progress bar.
-- **Garden progress "0 / 20"** is shown as current score / (score + points to next stage), both from existing garden data. Nothing is recalculated.
-- **Reschedule prefill** uses the existing New pact preset (title, minutes, category) from today's pact. If there is no pact, it opens empty as today.
-- **Batch 2 (screens 3–5) is not built yet**, because you asked me to wait. The final audit of "all 8 screens" covers spacing, contrast, focus, labels, scroll and the bottom nav on screens 3–5, without restyling them. See the open question.
+Only the Accountability screens inside the You tab ("Home" = Accountability Home). No change to backend, RLS, auth, routes, scoring/streak/trust, coins, achievements, bottom nav, other tabs or global CSS. No new table, RPC or dependency. Dark + Simple, existing tokens, Hinglish texts word-for-word. Batch 3 waits for your go.
 
 ## Files
-- `src/components/verified/acct/AcctScreens.tsx`: `GardenScreen` only
-- `src/components/verified/acct/AcctUI.tsx`: new `Tree` SVG art for the 5 stages (same props), small `StageRow`
-- `src/components/verified/AccountabilitySection.tsx`: `proofs` and `recovery` view blocks only
-- `src/components/verified/acct/acct.module.css`: new classes
+- `src/components/verified/acct/AcctScreens.tsx`: `CheckinScreen`, `PactCreator` (look only; `validatePact`, insert row, EVIDENCE, REMINDER_PREFS unchanged)
+- `src/components/verified/acct/AcctUI.tsx`: new small pieces: `TimelineField` (01–04), `Segmented`, `StepperBar`, `StickyAction`, `DateTimePicker`, `MinutesStepper`
+- `src/components/verified/AccountabilitySection.tsx`: only the `view === "partner"` (Check-ins) block, plus a confirm before the emergency nudge
+- `src/components/verified/acct/acct.module.css`: new classes only
+- `tests/acct-datetime.test.ts`: tests for the picker's time math (12 AM/PM, midnight crossing, Tomorrow, same output string as before)
 
-## Screen 6: Focus garden
-- Contract-style hero card (violet glow + dot grid), tree with soft lime glow.
-- 5 new inline SVG trees (Seed, Sapling, Young, Lush, Ancient): soil mound, gradients, gentle sway (off with reduced motion). Same `Tree` component, so Home's garden card picks it up too.
-- Neon lime bar + lime mono pill "score / next". One status line: resting message if resting, otherwise the due line (the duplicate sentence is removed).
-- Stage row like Rank: current stage white + lime "Current" pill, earlier stages normal, later stages muted with a lock in a circle.
-- Collapsible "How your score works": 3 small neon bars showing the same text rules (85% pacts on time, Recovered 60%, 15% check-in days, −10 per overdue pact). No math.
-- Partner card in violet; "Show my tree to my partner" becomes the existing lime `Switch` with helper text, calling the same save.
+## Where the existing code differs from the brief (no logic change, reported only)
+- **Check-in:** today it can be saved with both answers on "No" by default. The new screen needs both answered before Save. The saved data (same table, same fields, true/false) is unchanged. This only adds a step on screen.
+- **Check-in streak:** this screen has no check-in streak data, so there is no count-up.
+- **Cheer "Sent":** the server only answers "sent" or "already sent today" after a tap. The Sent state shows after a tap in this visit; it isn't known in advance.
+- **Partner's week:** only "streak · tasks" totals exist, no per-day values, so there is no bar chart.
+- **Emergency nudge:** a confirm dialog is added before the same existing send. Nothing else about sending changes.
 
-## Screen 7: Proof history
-- Empty: large lime outline icon, one line on what counts as proof, lime "Start a session" button. This only goes back to Accountability Home, where the existing Start button is. It does not start anything by itself.
-- Filled: timeline cards (status as lime mono pill, proof type, time, "Reviewed" when reviewed) + filter chips All / Confirmed / Pending, grouped from the existing statuses.
-- Lock-icon privacy note: "Your partner sees only proof you submit."
+## Screen 3: Daily check-in
+- Numbered timeline 01–04, mono uppercase labels, navy rounded inputs, "30 sec" chip. Same 4 fields.
+- Yes/Not yet and Yes/I'm fine start unselected. If today's check-in is already saved, the saved answers show.
+- Placeholders + counters (x/140). Save is a lime gradient pill, disabled with a reason below ("Answer both questions") until both are answered.
+- After save: a short lime celebration + "Your partner will see this", then back as today.
+- Partner today card (existing status call) + 3 cheer buttons with a Sent state and the existing toast.
 
-## Screen 8: Recovery
-- Same supportive copy.
-- "15-minute Comeback" and "Reschedule" as two Rank-style cards, status chips from the existing conditions (Available / Used for this pact / Not needed), and one line on when each unlocks. Pause/Resume stays as is.
-- "Recovered counts 60%" lime mono pill + small static bar.
-- Same `comeback()` and pause handlers; Reschedule opens New pact with the prefill above.
+## Screen 4: New pact (3 steps)
+- 3-segment lime stepper in the header; sticky lime "Next →" bar above the bottom nav; when disabled, the reason sits right below it (step 1: title rule; step 3: `validatePact` message).
+- Step 1: timeline fields with placeholders/examples; category chips with icons and capitals for the 7 existing categories; Today/Tomorrow segmented (same `pickDay` logic); custom Start and Deadline pickers ("Tue 17 Nov · 7:45 PM", 12-hour, +30m/+1h/+3h chips) that write the **same `toLocalInput` string** as the old native input; session length stepper ±5 with presets 15/25/30/45/60 (5–240 limits); live summary card ("30-min study · 7:45–10:45 PM"); inline error from `validatePact`.
+- Step 2: same fields (minimum, If-Then, obstacles, evidence) in the timeline style.
+- Step 3: same partner/visibility/reminder options, then a contract-style "REVIEW" card (title, time, length, evidence, partner/visibility, reminder) above Save.
 
-## Final audit
-Radius, border, icon tiles, pills, fonts and buttons match Stats/Home; AA contrast in both themes; aria-labels on icon buttons; visible focus rings; no layout shift; no console errors; no horizontal scroll at 360/390/414; nothing hidden behind the bottom nav.
+## Screen 5: Check-ins
+- Lime "Daily check-in" button; today's status for me (lime) and partner (violet) from the existing data (`checked_in_today`, partner check-in status).
+- Partner's week: the existing "streak · tasks" line, styled.
+- "Our contract" card: textarea, counter, Save only when changed, "Saved" state after the existing save; partner's text in a violet bubble.
+- Nudges: the same 5 texts grouped Gentle / Push / Hard with icons, same send + toast. Emergency nudge: coral outline + alert icon + confirm dialog.
+- "Aaj ka task kiya": clear action button with done/not-done states, same behaviour.
+- Recent list and unread badge stay exactly as built.
 
-## Verification rules
-Your real account only, read-only: only opening screens and taking screenshots. No session start, comeback, pause, pact save, proof, nudge, cheer or visibility toggle, and no test accounts. The filled Proof-history state and garden stages are checked with sample data shown only in the test browser (nothing stored).
-
-## Ends with
-A short summary confirming no backend, scoring/streak/garden/recovery logic, data shapes or other tabs changed.
+## Verification (no saves on your account)
+- At 360/390/414px, Dark + Simple: no horizontal scroll, no console errors, nothing under the bottom nav.
+- Up to the final button only. In the test browser every save/send request (check-in, pact, cheer, nudge, emergency, contract) is blocked, so nothing reaches your partner. Nothing is created and there are no test accounts.
+- The date/time math is checked with automated tests.
+- Report what could not be tested, then stop.
