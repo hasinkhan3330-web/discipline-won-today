@@ -20,18 +20,39 @@ export function ARing({ size, stroke, value, children, label }: { size: number; 
 
 export type DayState = "done" | "missed" | "today" | "future" | "none";
 const LETTERS = ["M", "T", "W", "T", "F", "S", "S"];
-export function WeekStrip({ days }: { days: { date: Date; state: DayState }[] }) {
+export function WeekStrip({ days, selected, onSelect }: { days: { date: Date; state: DayState }[]; selected?: number | null; onSelect?: (i: number) => void }) {
   return (
-    <div className={s.week} aria-label="This week">
+    <div className={s.week} role="group" aria-label="This week">
       {days.map((d, i) => {
         const cls = d.state === "done" ? s.dDone : d.state === "missed" ? s.dMiss : d.state === "today" ? s.dToday : "";
         return (
-          <div key={i} className={s.day}>
+          <button type="button" key={i} className={`${s.day} ${selected === i ? s.daySel : ""}`} onClick={() => onSelect?.(i)} aria-pressed={selected === i}
+            aria-label={`${d.date.toDateString()}: ${d.state === "none" || d.state === "future" ? "no pacts" : d.state}`}>
             <span className={s.dayL}>{LETTERS[i]}</span>
-            <span className={`${s.dayC} ${cls}`} aria-label={`${d.date.toDateString()}: ${d.state}`}>{d.date.getDate()}</span>
-          </div>
+            <span className={`${s.dayC} ${cls}`}><span className={s.dayDot} /></span>
+            <span className={s.dayN}>{d.date.getDate()}</span>
+          </button>
         );
       })}
+    </div>
+  );
+}
+
+export function SectionHead({ icon, title, sub, right }: { icon: ReactNode; title: string; sub?: string; right?: ReactNode }) {
+  return (
+    <div className={s.secHead}>
+      <span className={s.iconTile} aria-hidden="true">{icon}</span>
+      <div style={{ minWidth: 0, flex: 1 }}><div className={s.secTitle}>{title}</div>{sub && <div className={s.muted}>{sub}</div>}</div>
+      {right}
+    </div>
+  );
+}
+
+export function Switch({ checked, onChange, disabled, label, help }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean; label: string; help: string }) {
+  return (
+    <div className={s.switchRow}>
+      <div style={{ minWidth: 0, flex: 1 }}><div className={s.switchLabel}>{label}</div><div className={s.muted}>{help}</div></div>
+      <button type="button" role="switch" aria-checked={checked} aria-label={label} disabled={disabled} className={`${s.switch} ${checked ? s.switchOn : ""}`} onClick={() => onChange(!checked)}><span /></button>
     </div>
   );
 }

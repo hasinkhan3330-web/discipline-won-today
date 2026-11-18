@@ -10,3 +10,8 @@
 - [ ] Test "plan my tomorrow" + "make my 7-day plan": saved in DB, visible in My Plan and Home, survive reload
 - [ ] Test voice coach save
 - [ ] Final proof report (tested / passed / not testable)
+
+## Accountability redesign
+- [x] Batch 1: Accountability home + ⋯ menu (Dark + Simple)
+- [ ] Partner online dot — blocked: "Show when I'm online" needs one new saved setting (database change not approved)
+- [ ] Batch 2/3: New pact form, Check-in, Garden, Report and other sub-screens (waiting for your next batch)

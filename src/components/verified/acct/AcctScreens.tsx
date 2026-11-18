@@ -34,13 +34,14 @@ export function validatePact(f: { title: string; start: string; minutes: number;
   return null;
 }
 
-export function PactCreator({ hasPartner, onBack, onSaved }: { hasPartner: boolean; onBack: () => void; onSaved: () => void }) {
+export type PactPreset = { title: string; minutes: number; category: string };
+export function PactCreator({ hasPartner, onBack, onSaved, preset }: { hasPartner: boolean; onBack: () => void; onSaved: () => void; preset?: PactPreset | null }) {
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
   const init = () => { const d = new Date(Date.now() + 30 * 60_000); d.setMinutes(Math.ceil(d.getMinutes() / 15) * 15, 0, 0); return d; };
   const [f, setF] = useState(() => {
     const st = init(); const dl = new Date(st.getTime() + 3 * 3600_000);
-    return { title: "", target: "", category: "study", day: "today" as "today" | "tomorrow", start: toLocalInput(st), minutes: 30, deadline: toLocalInput(dl),
+    return { title: preset?.title ?? "", target: "", category: preset?.category ?? "study", day: "today" as "today" | "tomorrow", start: toLocalInput(st), minutes: preset?.minutes ?? 30, deadline: toLocalInput(dl),
       minimum: "", ifThen: "", obstacles: "", evidence: "session", visibility: hasPartner ? "partner" : "private", solo: !hasPartner, reminder: "standard" };
   });
   const set = (k: string, v: unknown) => setF(p => ({ ...p, [k]: v }));
