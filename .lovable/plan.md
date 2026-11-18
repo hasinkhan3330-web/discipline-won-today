@@ -16,6 +16,10 @@ Only the Accountability ("You" tab) changes. Home Command Center, the other tabs
 ## Screen 2 — ⋯ menu (bottom sheet)
 - Groups: REPORTS (Weekly report), APPEARANCE (the same Dark/Simple switch as Home → Command Center, same label), PRIVACY (Show my tree / Share my pact progress / Mute nudges as lime switches with a one-line hint), DANGER ZONE in coral (Remove partner, Block & report, each with a confirm box explaining what happens).
 
+## Additions (approved)
+- Real data only: week-strip dots, partner-finished dot, Pair streak 7 dots and Trust level meter are shown only when the current screen data already provides them; otherwise that piece is hidden. No new queries, functions or tables. No global styles, existing tokens or other tabs touched.
+- Partner online dot: BLOCKED, not shipped. The "Show when I'm online" setting has nowhere to be saved: the existing settings store only holds "show my tree", and Share/Mute live in the partner link. Saving it would need a database change, which you ruled out. So no online dot, no "Online/Offline" label, no presence channel and no new switch in this batch. If you later approve one small new settings field, it can be added then.
+
 ## Colors
 Me/done = lime, partner = violet, coins = gold, missed = coral, pending = dim lime. All blue removed. Both Dark and Simple themes.
 
