@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { MoreHorizontal, Flame, ChevronRight, Plus, Moon, Sun, ArrowLeft, Target, Clock, Hourglass, ShieldCheck, Sprout, MessageCircle, Zap, ClipboardCheck, History, LifeBuoy, BarChart3, UserMinus, Ban, Eye, Check, AlertTriangle } from "lucide-react";
+import { MoreHorizontal, Flame, ChevronRight, Plus, Moon, Sun, ArrowLeft, Target, Clock, Hourglass, ShieldCheck, Sprout, MessageCircle, Zap, ClipboardCheck, History, LifeBuoy, BarChart3, UserMinus, Ban, Eye, Check, AlertTriangle, Camera, Flower2, FileText, Timer, Play, Lock, CalendarClock } from "lucide-react";
 import { CoinBadge } from "@/components/CoinBadge";
 import s from "./acct/acct.module.css";
 import { ARing, Tree, WeekStrip, SubHeader, SectionHead, Switch, Counter, weekDays, ymd } from "./acct/AcctUI";
@@ -145,6 +145,7 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
   const [code, setCode] = useState<string | null>(null);
   const [entry, setEntry] = useState("");
   const [busy, setBusy] = useState(false);
+  const [proofFilter, setProofFilter] = useState<"all" | "confirmed" | "pending">("all");
   const [err, setErr] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   type View = "home" | "creator" | "review" | "recovery" | "checkin" | "garden" | "report" | "proofs" | "partner";
@@ -502,27 +503,54 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
     </section>;
   }
 
-  if (view === "proofs") return <section {...shellProps}>
+  if (view === "proofs") {
+    const st = (p: (typeof proofs)[number]) => p.partner_review_status ?? "self_reported";
+    const shown = proofs.filter(p => proofFilter === "all" ? true : proofFilter === "confirmed" ? st(p) === "confirmed" : ["pending", "asked", "self_reported", "recorded"].includes(st(p)));
+    const typeIcon = (t: string) => /photo|image|selfie/.test(t) ? <Camera size={16} /> : /zen|meditat/.test(t) ? <Flower2 size={16} /> : /note|text/.test(t) ? <FileText size={16} /> : <Timer size={16} />;
+    return <section {...shellProps}>
     <SubHeader title="Proof history" onBack={back} />
-    <div className={`${s.card} ${s.list}`}>
-      {proofs.length === 0 && <div className={s.muted} style={{ padding: "13px 0" }}>No proof yet. Your first session will show up here.</div>}
-      {proofs.map(p => { const l = PROOF_LABEL[p.partner_review_status ?? "self_reported"] ?? PROOF_LABEL.self_reported;
-        return <div key={p.id} className={s.listRow} style={{ cursor: "default" }}><span>{l.label}<div className={s.muted}>{fmtWhen(p.created_at)} · {p.proof_type.replace("_", " ")}</div></span><small>{p.reviewed_at ? "Reviewed" : ""}</small></div>; })}
-    </div>
-    <div className={s.muted}>Your partner sees only proof you submit.</div>
+    {proofs.length === 0 ? <div className={`${s.card} ${s.emptyBig}`}>
+      <span className={s.emptyIcon} aria-hidden="true"><ShieldCheck size={44} strokeWidth={1.4} /></span>
+      <div className={s.muted}>Proof is the session time AXEN records, plus any photo or note you submit for a pact.</div>
+      <button className={s.limeBtn} onClick={back}><Play size={16} /> Start a session</button>
+    </div> : <>
+      <div className={s.filterRow} role="group" aria-label="Filter proof">
+        {(["all", "confirmed", "pending"] as const).map(f => <button key={f} className={`${s.filterChip} ${proofFilter === f ? s.filterOn : ""}`} aria-pressed={proofFilter === f} onClick={() => setProofFilter(f)}>{f === "all" ? "All" : f === "confirmed" ? "Confirmed" : "Pending"}</button>)}
+      </div>
+      <div className={s.timeline}>
+        {shown.length === 0 && <div className={s.card}><div className={s.muted}>Nothing here yet.</div></div>}
+        {shown.map(p => { const l = PROOF_LABEL[st(p)] ?? PROOF_LABEL.self_reported;
+          return <div key={p.id} className={`${s.card} ${s.tlCard}`}>
+            <span className={s.iconTile} aria-hidden="true">{typeIcon(p.proof_type)}</span>
+            <div style={{ minWidth: 0, flex: 1 }}><b className={s.tlTitle}>{p.proof_type.replace(/_/g, " ")}</b><div className={s.muted}>{fmtWhen(p.created_at)}{p.reviewed_at ? " · Reviewed" : ""}</div></div>
+            <span className={`${s.pillMono} ${st(p) === "disputed" ? s.pillMonoCoral : ""}`}>{l.label}</span>
+          </div>; })}
+      </div>
+    </>}
+    <div className={s.privacyNote}><Lock size={14} aria-hidden="true" /> Your partner sees only proof you submit.</div>
   </section>;
+  }
 
-  if (view === "recovery") return <section {...shellProps}>
+  if (view === "recovery") {
+    const canComeback = contract?.status === "missed" && !hasRecovery;
+    return <section {...shellProps}>
     <SubHeader title="Recovery" onBack={back} />
-    <div className={s.card}><div className={s.big}>Progress isn't perfection. Let's make your next step easier.</div><div className={s.muted}>Recovered pacts are labelled Recovered and counted separately. Your achievements are safe.</div></div>
-    <div className={`${s.card} ${s.list}`}>
-      {contract?.status === "missed" && !hasRecovery
-        ? <button className={s.listRow} onClick={() => void comeback()} disabled={busy}><span>15-minute Comeback</span><small>Start <ChevronRight size={14} /></small></button>
-        : <div className={s.listRow} style={{ cursor: "default" }}><span>15-minute Comeback</span><small>{hasRecovery ? "Used for this pact" : "Not needed"}</small></div>}
-      <button className={s.listRow} onClick={() => setView("creator")}><span>Reschedule</span><small>New pact <ChevronRight size={14} /></small></button>
-      {contract && ["draft", "scheduled"].includes(contract.status) && <button className={s.listRow} onClick={() => void setPaused(!contract.paused_at)} disabled={busy}><span>{contract.paused_at ? "Resume the pact" : "Pause the pact"}</span><small><ChevronRight size={14} /></small></button>}
+    <div className={s.card}><div className={s.big}>Progress isn't perfection. Let's make your next step easier.</div><div className={s.muted}>Recovered pacts are labelled Recovered and counted separately. Your achievements are safe.</div>
+      <div className={s.gardenBarRow} style={{ marginTop: 10 }}><span className={s.muted} style={{ flex: "none" }}>Recovered counts</span><div className={s.neonBar} aria-hidden="true"><i style={{ width: "60%" }} /></div><span className={s.pillMono}>60%</span></div>
     </div>
+    <div className={`${s.card} ${s.recCard}`}>
+      <div className={s.recTop}><span className={s.iconTile} aria-hidden="true"><Zap size={16} /></span><b>15-minute Comeback</b><span className={`${s.pillMono} ${canComeback ? "" : s.pillMonoMuted}`}>{canComeback ? "Available" : hasRecovery ? "Used" : "Not needed"}</span></div>
+      <div className={s.muted}>Unlocks when today's pact is missed. One per pact.</div>
+      {canComeback && <button className={s.limeBtn} style={{ marginTop: 10 }} onClick={() => void comeback()} disabled={busy}>Start comeback <ChevronRight size={16} /></button>}
+    </div>
+    <div className={`${s.card} ${s.recCard}`}>
+      <div className={s.recTop}><span className={s.iconTile} aria-hidden="true"><CalendarClock size={16} /></span><b>Reschedule</b><span className={s.pillMono}>Available</span></div>
+      <div className={s.muted}>Always open. Starts a new pact with today's details filled in.</div>
+      <button className={ghost} style={{ marginTop: 10 }} onClick={() => { setPreset(contract && !contract.is_recovery ? { title: contract.title, category: contract.category, minutes: Math.max(5, Math.min(240, Math.round((contract.planned_seconds ?? 1800) / 60))) } : null); setView("creator"); }}>New pact <ChevronRight size={16} /></button>
+    </div>
+    {contract && ["draft", "scheduled"].includes(contract.status) && <div className={`${s.card} ${s.list}`}><button className={s.listRow} onClick={() => void setPaused(!contract.paused_at)} disabled={busy}><span>{contract.paused_at ? "Resume the pact" : "Pause the pact"}</span><small><ChevronRight size={14} /></small></button></div>}
   </section>;
+  }
 
   if (view === "partner") {
     const toldToday = !!details?.checked_in_today;

@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { ChevronDown, Lock } from "lucide-react";
 import s from "./acct.module.css";
 
 /** SVG progress ring: track = border colour, progress = ring colour, starts at 12 o'clock, animates on load. */
@@ -58,25 +59,63 @@ export function Switch({ checked, onChange, disabled, label, help }: { checked: 
 }
 
 export const STAGE_NAMES = ["Seed", "Sapling", "Young", "Lush", "Ancient"] as const;
-/** One reusable tree, stages 1–5. Deeper green and fuller canopy at higher stages. */
+/** One reusable tree, stages 1–5: soil mound, gradients, gentle sway (off with reduced motion). */
 export function Tree({ stage, width, height }: { stage: number; width: number; height?: number }) {
   const st = Math.max(1, Math.min(5, Math.round(stage)));
   const h = height ?? Math.round(width * 1.1);
-  const trunk = "#7c5a3a";
+  const id = `t${st}-${width}`;
+  const leaf = (cx: number, cy: number, r: number, k = 0) => <circle key={`${cx}-${cy}-${k}`} cx={cx} cy={cy} r={r} fill={`url(#${id}c)`} />;
   return (
-    <svg width={width} height={h} viewBox="0 0 100 110" role="img" aria-label={`${STAGE_NAMES[st - 1]} tree`} style={{ flex: "none" }}>
-      {st === 1 && <><rect x="47" y="64" width="6" height="42" rx="3" fill={trunk} /><ellipse cx="58" cy="62" rx="9" ry="5" fill="#a7f3d0" transform="rotate(-30 58 62)" /></>}
-      {st === 2 && <><rect x="46" y="54" width="8" height="52" rx="4" fill={trunk} />
-        <ellipse cx="60" cy="52" rx="12" ry="6" fill="#86efac" transform="rotate(-30 60 52)" /><ellipse cx="40" cy="58" rx="12" ry="6" fill="#86efac" transform="rotate(30 40 58)" /></>}
-      {st === 3 && <><rect x="45" y="60" width="10" height="46" rx="5" fill={trunk} /><circle cx="50" cy="48" r="28" fill="#22c55e" stroke="#86efac" strokeWidth="2" /></>}
-      {st === 4 && <><rect x="44" y="62" width="12" height="44" rx="6" fill={trunk} />
-        <circle cx="32" cy="60" r="18" fill="#16a34a" stroke="#4ade80" strokeWidth="2" /><circle cx="68" cy="60" r="18" fill="#16a34a" stroke="#4ade80" strokeWidth="2" />
-        <circle cx="50" cy="44" r="26" fill="#15803d" stroke="#4ade80" strokeWidth="2" /></>}
-      {st === 5 && <><rect x="43" y="64" width="14" height="42" rx="7" fill={trunk} />
-        <circle cx="28" cy="58" r="20" fill="#166534" stroke="#4ade80" strokeWidth="2" /><circle cx="72" cy="58" r="20" fill="#166534" stroke="#4ade80" strokeWidth="2" />
-        <circle cx="50" cy="40" r="30" fill="#14532d" stroke="#4ade80" strokeWidth="2" /><circle cx="50" cy="62" r="18" fill="#15803d" stroke="#4ade80" strokeWidth="2" />
-        <circle cx="40" cy="30" r="6" fill="#22c55e" /><circle cx="62" cy="44" r="5" fill="#22c55e" /><circle cx="30" cy="56" r="4" fill="#22c55e" /></>}
+    <svg width={width} height={h} viewBox="0 0 100 110" role="img" aria-label={`${STAGE_NAMES[st - 1]} tree`} style={{ flex: "none", overflow: "visible" }}>
+      <defs>
+        <linearGradient id={`${id}t`} x1="0" x2="1"><stop offset="0" stopColor="#5b3d24" /><stop offset=".5" stopColor="#8a6340" /><stop offset="1" stopColor="#5b3d24" /></linearGradient>
+        <radialGradient id={`${id}c`} cx=".35" cy=".3" r=".8"><stop offset="0" stopColor="#bef264" /><stop offset=".55" stopColor="#4ade80" /><stop offset="1" stopColor="#15803d" /></radialGradient>
+        <radialGradient id={`${id}s`} cx=".5" cy=".2" r=".9"><stop offset="0" stopColor="#7a5636" /><stop offset="1" stopColor="#3b2716" /></radialGradient>
+      </defs>
+      <ellipse cx="50" cy="104" rx={18 + st * 4} ry="6" fill={`url(#${id}s)`} />
+      <g className={s.sway} style={{ transformOrigin: "50px 102px" }}>
+        {st === 1 && <><path d="M50 102 C50 94 50 90 51 86" stroke="#6b8f3a" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+          <path d="M51 88 C58 82 64 84 64 84 C60 91 54 91 51 88Z" fill={`url(#${id}c)`} /><path d="M50 91 C44 86 38 88 38 88 C42 94 47 94 50 91Z" fill={`url(#${id}c)`} />
+          <ellipse cx="50" cy="101" rx="5" ry="3" fill="#8a6340" /></>}
+        {st === 2 && <><path d="M50 102 C49 88 51 78 50 66" stroke={`url(#${id}t)`} strokeWidth="4" fill="none" strokeLinecap="round" />
+          <path d="M50 76 C60 66 70 68 70 68 C66 78 57 80 50 76Z" fill={`url(#${id}c)`} /><path d="M50 84 C40 76 30 78 30 78 C34 88 43 88 50 84Z" fill={`url(#${id}c)`} />
+          <path d="M50 68 C46 58 50 50 50 50 C56 58 54 64 50 68Z" fill={`url(#${id}c)`} /></>}
+        {st === 3 && <><path d="M46 102 L47.5 66 L52.5 66 L54 102Z" fill={`url(#${id}t)`} />
+          {[leaf(50, 52, 22), leaf(34, 62, 13), leaf(66, 62, 13)]}</>}
+        {st === 4 && <><path d="M45 102 L47 64 L53 64 L55 102Z" fill={`url(#${id}t)`} /><path d="M50 78 L36 66" stroke={`url(#${id}t)`} strokeWidth="3" strokeLinecap="round" />
+          {[leaf(30, 62, 16), leaf(70, 62, 16), leaf(50, 44, 24), leaf(40, 32, 12), leaf(62, 34, 12)]}</>}
+        {st === 5 && <><path d="M43 102 Q46 82 46.5 62 L53.5 62 Q54 82 57 102Z" fill={`url(#${id}t)`} />
+          <path d="M50 80 L32 64 M50 74 L70 60" stroke={`url(#${id}t)`} strokeWidth="3.5" strokeLinecap="round" />
+          {[leaf(24, 60, 17), leaf(76, 58, 17), leaf(50, 40, 27), leaf(34, 30, 14), leaf(66, 30, 14), leaf(50, 18, 12), leaf(50, 62, 14)]}
+          {[[38, 34], [62, 46], [28, 58], [70, 28]].map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r="2.2" fill="#ecfccb" opacity=".85" />)}</>}
+      </g>
     </svg>
+  );
+}
+
+/** Rank-style stage scroller: reached, current (lime pill) and locked stages. */
+export function StageRow({ stage, violet }: { stage: number; violet?: boolean }) {
+  return (
+    <div className={`${s.stageRow} ${violet ? s.stageViolet : ""}`} role="list" aria-label="Garden stages">
+      {STAGE_NAMES.map((n, i) => { const k = i + 1, cur = k === stage, locked = k > stage;
+        return <div key={n} role="listitem" className={`${s.stageItem} ${cur ? s.stageCur : ""} ${locked ? s.stageLocked : ""}`} aria-current={cur ? "step" : undefined}>
+          <span className={s.stageArt}><Tree stage={k} width={34} />{locked && <span className={s.stageLock} aria-label="Locked"><Lock size={10} /></span>}</span>
+          <b>{n}</b>{cur && <span className={s.stagePill}>Current</span>}
+        </div>; })}
+    </div>
+  );
+}
+
+/** Same score rules as the server; display only. */
+export function ScoreRules() {
+  const rows: [string, number, string][] = [["Pacts done on time", 85, "85%"], ["Recovered pact counts", 60, "60%"], ["Check-in days", 15, "15%"]];
+  return (
+    <details className={s.rules}>
+      <summary><span>How your score works</span><ChevronDown size={16} aria-hidden="true" /></summary>
+      {rows.map(([l, w, v]) => <div key={l} className={s.ruleRow}><span>{l}</span><span className={s.ruleBar}><i style={{ width: `${w}%` }} /></span><b className={s.pillMono}>{v}</b></div>)}
+      <div className={s.ruleRow}><span>Each overdue pact</span><span /><b className={`${s.pillMono} ${s.pillMonoCoral}`}>−10</b></div>
+      <div className={s.muted} style={{ marginTop: 6 }}>Uses the last 7 days. Recovered pacts count 60% of an on-time pact. Coins and achievements are never touched.</div>
+    </details>
   );
 }
 

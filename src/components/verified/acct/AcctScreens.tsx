@@ -5,7 +5,7 @@ import { haptic } from "@/lib/haptics";
 import { CATEGORIES, REMINDER_PREFS, deviceTimezone, friendlyError, rescueMax, toLocalInput } from "@/lib/verified/contracts";
 import { scheduleContractReminders } from "@/lib/verified/contract-reminders";
 import type { ContractRow } from "@/lib/verified/contracts";
-import { ARing, Counter, Segmented, STAGE_NAMES, StepperBar, StickyAction, SubHeader, TLField, Tree, ymd } from "./AcctUI";
+import { ARing, Counter, ScoreRules, Segmented, StageRow, Switch, StepperBar, StickyAction, SubHeader, TLField, Tree, ymd } from "./AcctUI";
 import { addMinutesLocal, dayOffset, fmtLocal, fmtTime, onDayOf, setTime12, to12 } from "./datetime";
 import { ArrowRight, BookOpen, Briefcase, Check, Clock3, Dumbbell, Flower2, GraduationCap, Minus, Palette, Plus, Sparkles } from "lucide-react";
 import s from "./acct.module.css";
@@ -295,24 +295,32 @@ export function CheckinScreen({ hasPartner, onBack, onDone }: { hasPartner: bool
 }
 
 export function GardenScreen({ garden, partnerStage, showTree, onToggleShow, onBack }: { garden: Garden | null; partnerStage: { stage: number; stage_name: string } | null; showTree: boolean; onToggleShow: (v: boolean) => void; onBack: () => void }) {
+  const top = garden ? garden.points_to_next <= 0 : false;
+  const goal = garden ? (top ? 100 : garden.score + garden.points_to_next) : 0;
+  const status = !garden ? "" : garden.resting ? "Your tree is resting. Finish one pact to help it grow."
+    : garden.due > 0 ? `${garden.due} pact${garden.due === 1 ? "" : "s"} due this week.` : top ? "Top stage reached. Keep it thriving." : "Finish one pact to help it grow.";
   return (
     <div>
       <SubHeader title="Focus garden" onBack={onBack} />
-      {!garden ? <div className={s.skel} style={{ height: 220 }} /> : <div className={s.card} style={{ textAlign: "center" }}>
-        <div style={{ display: "grid", placeItems: "center" }}><Tree stage={garden.stage} width={150} height={165} /></div>
-        <div className={s.big}>{garden.stage_name}</div>
-        <div className={s.muted}>Score {garden.score}.{garden.due > 0 ? ` ${garden.due} pact${garden.due === 1 ? "" : "s"} due this week.` : " Finish one pact to help it grow."}</div>
-        <div className={s.bar}><div className={s.barFill} style={{ width: `${garden.score}%` }} /></div>
-        {garden.resting && <div className={s.muted} style={{ marginTop: 8 }}>Your tree is resting. Finish one pact to help it grow.</div>}
-        <div className={s.legend}>{STAGE_NAMES.map((n, i) => <div key={n} style={{ fontWeight: garden.stage === i + 1 ? 600 : 400, color: garden.stage === i + 1 ? "var(--a-text)" : undefined }}><Tree stage={i + 1} width={28} />{n}</div>)}</div>
-        <div className={s.muted} style={{ marginTop: 10, textAlign: "left" }}>Score uses the last 7 days: 85% pacts done on time (Recovered counts 60%), 15% check-in days, minus 10 for each overdue pact. Coins and achievements are never touched.</div>
+      {!garden ? <div className={s.skel} style={{ height: 300 }} /> : <div className={`${s.card} ${s.gardenHero}`}>
+        <span className={s.heroLabel}>Your tree</span>
+        <div className={s.gardenTree}><Tree stage={garden.stage} width={170} height={187} /></div>
+        <div className={s.gardenName}>{garden.stage_name}</div>
+        <div className={s.gardenBarRow}>
+          <div className={s.neonBar} role="progressbar" aria-label="Garden score" aria-valuemin={0} aria-valuemax={goal} aria-valuenow={garden.score}><i style={{ width: `${goal ? Math.min(100, garden.score / goal * 100) : 0}%` }} /></div>
+          <span className={s.pillMono}>{garden.score} / {goal}</span>
+        </div>
+        <div className={s.muted} style={{ marginTop: 8 }}>{status}</div>
       </div>}
-      <div className={s.card}>
+      {garden && <div className={s.card}><span className={s.label}>Stages</span><StageRow stage={garden.stage} /></div>}
+      {garden && <div className={s.card}><ScoreRules /></div>}
+      <div className={`${s.card} ${s.partnerTree}`}>
         <span className={s.label}>Partner's tree</span>
-        {partnerStage ? <div className={s.garden}><Tree stage={partnerStage.stage} width={48} /><div className={s.big} style={{ fontSize: 15 }}>{partnerStage.stage_name}</div></div>
-          : <div className={s.muted}>Not shared or no partner yet.</div>}
-        <label className={s.listRow} style={{ borderBottom: 0, marginTop: 6 }}><span>Show my tree to my partner</span>
-          <input type="checkbox" checked={showTree} onChange={e => onToggleShow(e.target.checked)} /></label>
+        {partnerStage ? <>
+          <div className={s.garden}><Tree stage={partnerStage.stage} width={56} /><div><div className={s.big} style={{ fontSize: 16 }}>{partnerStage.stage_name}</div><span className={s.pillViolet}>Stage {partnerStage.stage} of 5</span></div></div>
+          <StageRow stage={partnerStage.stage} violet />
+        </> : <div className={s.muted}>Not shared or no partner yet.</div>}
+        <div style={{ marginTop: 10 }}><Switch checked={showTree} onChange={onToggleShow} label="Show my tree to my partner" help="Your partner sees only your stage, never your score details." /></div>
       </div>
     </div>
   );
