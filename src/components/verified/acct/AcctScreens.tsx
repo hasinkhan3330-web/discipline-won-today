@@ -239,7 +239,7 @@ export function CheckinScreen({ hasPartner, onBack, onDone }: { hasPartner: bool
     const { error } = await supabase.from("acct_checkins").upsert({ user_id: u.user?.id, day, action: f.action.trim() || null, completed: !!f.completed, needs_help: !!f.needs_help, next_step: f.next_step.trim() || null }, { onConflict: "user_id,day" });
     setBusy(false);
     if (error) toast.error("Couldn't save your check-in. Try again.");
-    else { haptic("success"); toast.success("Checked in"); setDone(true); window.setTimeout(onDone, 1600); }
+    else { haptic("success"); toast.success("Checked in"); setDone(true); if (!hasPartner) window.setTimeout(onDone, 1600); }
   };
   const cheer = async (k: "fire" | "clap" | "muscle") => {
     if (cheerBusy) return;
@@ -257,6 +257,10 @@ export function CheckinScreen({ hasPartner, onBack, onDone }: { hasPartner: bool
         <div className={s.secTitle} style={{ fontSize: 20 }}>Checked in</div>
         {hasPartner && <div className={s.muted} style={{ fontSize: 13, marginTop: 4 }}>Your partner will see this.</div>}
       </div>
+      {hasPartner && <div className={s.ctaCol}>
+        <button className={s.limeBtn} onClick={() => void cheer("fire")} disabled={cheerBusy !== null || !!sent["fire"]} aria-label={sent["fire"] ? "Cheer sent to partner" : "Cheer your partner"}><span aria-hidden="true">🔥</span> {sent["fire"] ? "Cheer sent" : "Cheer your partner"}</button>
+        <button className={`${s.btn} ${s.ghost}`} onClick={onDone}>Done</button>
+      </div>}
     </div>
   );
   return (

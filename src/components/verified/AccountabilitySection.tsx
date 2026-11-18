@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { MoreHorizontal, Flame, ChevronRight, Plus, Moon, Sun, ArrowLeft, Target, Clock, Hourglass, ShieldCheck, Sprout, MessageCircle, Zap, ClipboardCheck, History, LifeBuoy, BarChart3, UserMinus, Ban, Eye, Check, AlertTriangle, Camera, Flower2, FileText, Timer, Play, Lock, CalendarClock } from "lucide-react";
+import { MoreHorizontal, Flame, ChevronRight, Plus, Moon, Sun, ArrowLeft, Target, Clock, Hourglass, ShieldCheck, Sprout, MessageCircle, Zap, ClipboardCheck, History, LifeBuoy, BarChart3, UserMinus, Ban, Eye, Check, AlertTriangle, Camera, Flower2, FileText, Timer, Play, Lock, CalendarClock, Share2, UserPlus, Heart, RotateCcw } from "lucide-react";
 import { CoinBadge } from "@/components/CoinBadge";
 import s from "./acct/acct.module.css";
 import { ARing, Tree, WeekStrip, SubHeader, SectionHead, Switch, Counter, weekDays, ymd } from "./acct/AcctUI";
-import { CheckinScreen, GardenScreen, MilestoneCelebration, PactCreator, ReportScreen, TrustWhy, type Garden, type PactPreset } from "./acct/AcctScreens";
+import { CheckinScreen, GardenScreen, PactCreator, ReportScreen, TrustWhy, type Garden, type PactPreset } from "./acct/AcctScreens";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,9 @@ import { PartnerHistory, loadUnreadPartnerEvents } from "./acct/PartnerHistory";
 import { ContractProofSheet } from "./ContractProofSheet";
 import { NUDGE_EVENT, NUDGE_SEEN_KEY } from "./NudgeListener";
 import { useTheme } from "@/lib/theme/theme";
+import { InviteActions, MilestoneSheet, ShareSheet } from "./acct/Batch4UI";
+import { firstName, isStageUp, pickHomePriority, shouldShowMilestone } from "./acct/home-priority";
+import { deviceGet, deviceSet, type CardData } from "./acct/share-card";
 
 export type MyAccountability = {
   connection_id: string; partner_name: string; partner_avatar: string | null;
@@ -169,6 +172,8 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
   const [partnerCheck, setPartnerCheck] = useState<{ checked_in: boolean; completed: boolean } | null>(null);
   const [todayList, setTodayList] = useState<ContractRow[]>([]);
   const [celebrate, setCelebrate] = useState<number | null>(null);
+  const [stageUp, setStageUp] = useState<{ stage: number; name: string } | null>(null);
+  const [shareData, setShareData] = useState<CardData | null>(null);
   const [preset, setPreset] = useState<PactPreset | null>(null);
   const [daySel, setDaySel] = useState<number | null>(null);
   const [confirmEnd, setConfirmEnd] = useState<null | "remove" | "block">(null);
@@ -218,7 +223,13 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
         setWeekMap(m);
         setGarden((g.data as any) ?? null); setPartnerStage((pg.data as any) ?? null);
         const p = (ps.data as any) ?? null; setPair(p);
-        if (p?.milestone) setCelebrate(p.milestone);
+        if (shouldShowMilestone(p?.milestone, k => deviceGet(`axen.acct.ms.${k}`) === "1")) setCelebrate(p.milestone);
+        const gd = (g.data as any) as Garden | null;
+        if (gd?.stage) { // garden stage-up: once per stage, remembered on this device
+          const prevRaw = deviceGet("axen.acct.gstage"); const prev = prevRaw ? Number(prevRaw) : null;
+          if (isStageUp(prev, gd.stage) && deviceGet(`axen.acct.ms.stage.${gd.stage}`) !== "1") setStageUp({ stage: gd.stage, name: gd.stage_name });
+          if (prev == null || gd.stage > prev) deviceSet("axen.acct.gstage", String(gd.stage));
+        }
         setShowTree(st.data ? !!st.data.show_tree : true); setPartnerCheck((pc.data as any) ?? null);
       }).catch(() => {});
       const c = list.find(x => x.is_recovery && x.status !== "missed") ?? list[0] ?? null;
@@ -353,20 +364,13 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
   };
   const closeMilestone = async () => {
     const m = celebrate; setCelebrate(null);
+    if (m) deviceSet(`axen.acct.ms.pair.${m}`, "1");
     if (m) await supabase.from("acct_milestones_seen").insert({ kind: "pair_streak", milestone: m });
   };
   const revokeInvite = () => run(async () => {
     const { error } = await supabase.rpc("acct_revoke_my_invites");
     if (error) toast.error("Could not revoke"); else { setCode(null); setInvitePending(null); toast.success("Invite revoked"); }
   });
-  const shareInvite = async () => {
-    if (!code) return;
-    const link = `${window.location.origin}/dashboard?acct_code=${code}`;
-    const text = `Be my AXEN accountability partner. Open You → Accountability and enter code ${code} (valid 24 hours): ${link}`;
-    const nav = navigator as any;
-    if (nav.share) { try { await nav.share({ text }); } catch { /* cancelled */ } }
-    else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
-  };
   const setPaused = (paused: boolean) => run(async () => {
     if (!contract) return;
     const { data, error } = await supabase.from("daily_contracts").update({ paused_at: paused ? new Date().toISOString() : null }).eq("id", contract.id).select("id").maybeSingle();
@@ -627,6 +631,29 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
   const confirmedCount = proofs.filter(p => p.partner_review_status === "confirmed").length;
   const TEMPLATES: PactPreset[] = [{ title: "Study 30 min", minutes: 30, category: "study" }, { title: "Workout 20 min", minutes: 20, category: "workout" }, { title: "Read 15 min", minutes: 15, category: "reading" }];
   const openCreator = (p: PactPreset | null = null) => { setPreset(p); setView("creator"); };
+  const openWeekShare = async () => {
+    const { data, error } = await supabase.rpc("acct_weekly_report");
+    if (error || !data) { toast.error("Couldn't load your week. Try again."); return; }
+    const r = data as any; const stats = [{ label: "Pacts done", value: `${r.completed ?? 0}/${r.total ?? 0}` }];
+    if (me) stats.push({ label: "Pair streak", value: `${pairStreak} days` });
+    stats.push({ label: "Your streak", value: `${streak} days` });
+    if (garden) stats.push({ label: "Garden", value: garden.stage_name });
+    setShareData({ kind: "weekly", headline: `${r.completed ?? 0} pacts done`, stats, partnerFirst: null });
+  };
+  const missed = !!contract && contract.status === "missed" && !hasRecovery && !contract.is_recovery;
+  const dueToday = !!contract && !missed && ["draft", "scheduled", "active", "proof_pending"].includes(contract.status as string);
+  const prio = pickHomePriority({ missed, dueToday, checkinDue: !!me && !!details && !details.checked_in_today, partnerCheer: !!me && !me.i_muted && unread > 0, hasGarden: !!garden });
+  const prioRow = (icon: React.ReactNode, title: string, sub: string, action: React.ReactNode, coral = false) => <div className={`${s.card} ${coral ? s.prioCoral : s.prio}`} aria-label="Next up">
+    <div className={s.prioHead}><span className={`${s.iconTile} ${coral ? s.iconTileCoral : ""}`} aria-hidden="true">{icon}</span><div><div className={s.secTitle}>{title}</div><div className={s.muted}>{sub}</div></div></div>
+    <div className={s.ctaCol}>{action}</div></div>;
+  const prioCard = prio === "missed" && contract ? prioRow(<LifeBuoy size={16} />, "Missed pact — no stress", contract.title,
+      <div className={s.row2} style={{ marginTop: 0 }}><button className={s.limeBtn} onClick={() => void comeback()} disabled={busy}><RotateCcw size={16} /> Comeback</button>
+        <button className={ghost} onClick={() => openCreator({ title: contract.title, minutes: Math.max(5, Math.round((contract.planned_seconds || 1800) / 60)), category: contract.category })}><CalendarClock size={16} /> Reschedule</button></div>, true)
+    : prio === "due" && contract ? prioRow(<Target size={16} />, "Due today", `${contract.title}${deadlineIso ? ` · ${fmtTime(deadlineIso)}` : ""}`, <button className={s.limeBtn} onClick={() => ctaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })}>Open pact</button>)
+    : prio === "checkin" ? prioRow(<ClipboardCheck size={16} />, "Check-in due", "30 seconds. Your partner will see it.", <button className={s.limeBtn} onClick={() => setView("checkin")}>Daily check-in</button>)
+    : prio === "cheer" ? prioRow(<Heart size={16} />, `${name ?? "Partner"} sent you something`, `${unread > 9 ? "9+" : unread} new`, <button className={s.limeBtn} onClick={() => setView("partner")}>See it</button>)
+    : prio === "garden" ? null
+    : prioRow(<Plus size={16} />, "Start with one pact", "Small and doable today.", <button className={s.limeBtn} onClick={() => openCreator()}>Create a pact</button>);
 
   return (
     <section {...shellProps}>
@@ -634,6 +661,7 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
       {err && <div role="alert" className={s.card} style={{ borderColor: "var(--a-danger)" }}>{err} <button className={s.pill} style={{ marginLeft: 6, cursor: "pointer" }} onClick={() => void load()}>Try again</button></div>}
       <WeekStrip days={days} selected={daySel} onSelect={i => setDaySel(daySel === i ? null : i)} />
       <div className={s.dayInfo} aria-live="polite">{selText ?? "This week"}</div>
+      {prioCard}
 
       <div className={`${s.card} ${s.hero}`}>
         <div className={s.heroTop}>
@@ -728,7 +756,7 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
         </div>
       ) : (
         <div className={s.card}>
-          <div className={s.big}>Pick your partner</div>
+          <div className={s.prioHead}><span className={s.iconTile} aria-hidden="true"><UserPlus size={16} /></span><div className={s.big} style={{ margin: 0 }}>Invite a partner</div></div>
           <div className={s.muted}>Private by default. A partner reviews only proof you submit — never notes, coins or full history.</div>
           <div className={`${s.list}`} style={{ padding: 0, marginTop: 6 }}>
             <div className={`${s.listRow} ${s.selected}`} style={{ border: 0, cursor: "default" }}><span>Invite a friend</span><small>{code || invitePending ? "Invitation pending" : "No partner"}</small></div>
@@ -736,7 +764,7 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
           {code ? <>
             <div className={s.evidence} aria-label="Invite code" style={{ wordBreak: "break-all", fontSize: 14 }}>{code}</div>
             <div className={s.muted} style={{ marginTop: 6 }}>One-time code, valid 24 hours.</div>
-            <div className={s.row2}><button className={ghost} onClick={() => { void navigator.clipboard?.writeText(code).then(() => toast.success("Copied")); }}>Copy</button><button className={btn} onClick={() => void shareInvite()}>Share</button></div>
+            <InviteActions code={code} />
             <button className={`${ghost} ${s.danger}`} style={{ marginTop: 8 }} onClick={() => void revokeInvite()} disabled={busy}>Revoke invite</button>
           </> : invitePending ? <>
             <div className={s.muted} style={{ marginTop: 6 }}>Invitation pending · expires {fmtWhen(invitePending)}. Codes are shown once; revoke to make a new one.</div>
@@ -751,6 +779,7 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
       <div className={s.rows}>
         <button className={s.navRow} onClick={() => setView("partner")}><span className={`${s.iconTile} ${me && !details?.checked_in_today ? s.navDot : ""}`}><ClipboardCheck size={16} /></span><b>Check-ins</b><span className={`${s.pill} ${me ? "" : s.pillMuted}`}>{details?.checked_in_today ? "Done today" : me ? "Open" : "No partner"}</span><ChevronRight size={16} color="var(--a-muted)" /></button>
         <button className={s.navRow} onClick={() => setView("proofs")}><span className={s.iconTile}><History size={16} /></span><b>Proof history</b><span className={s.pill}>{confirmedCount} confirmed</span><ChevronRight size={16} color="var(--a-muted)" /></button>
+        <button className={s.navRow} onClick={() => void openWeekShare()}><span className={s.iconTile}><Share2 size={16} /></span><b>Share my week</b><span className={s.pill}>Card</span><ChevronRight size={16} color="var(--a-muted)" /></button>
         <button className={s.navRow} onClick={() => setView("recovery")}><span className={s.iconTile}><LifeBuoy size={16} /></span><b>Recovery</b><span className={`${s.pill} ${contract?.status === "missed" && !hasRecovery ? s.pillCoral : hasRecovery ? "" : s.pillMuted}`}>{contract?.status === "missed" && !hasRecovery ? "Available" : hasRecovery ? "Recovered" : "Not needed"}</span><ChevronRight size={16} color="var(--a-muted)" /></button>
       </div>
 
@@ -761,7 +790,12 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
           {confirmDialog}
         </div>, document.body)}
       {proofSheet}
-      {celebrate && <MilestoneCelebration milestone={celebrate} onClose={() => void closeMilestone()} />}
+      {celebrate && <MilestoneSheet theme={theme} badge={String(celebrate)} title={`${celebrate}-day pair streak`} sub={`You and your partner both showed up ${celebrate} days in a row.`}
+        onShare={() => { const n = celebrate; void closeMilestone(); setShareData({ kind: "streak", headline: `${n}-day streak`, stats: [{ label: "Pair streak", value: `${n} days` }, { label: "Your streak", value: `${streak} days` }], partnerFirst: null }); }}
+        onClose={() => void closeMilestone()} />}
+      {!celebrate && stageUp && <MilestoneSheet theme={theme} badge={String(stageUp.stage)} title={`Your tree grew: ${stageUp.name}`} sub="Your focus garden reached a new stage."
+        onClose={() => { deviceSet(`axen.acct.ms.stage.${stageUp.stage}`, "1"); setStageUp(null); }} />}
+      {shareData && <ShareSheet theme={theme} data={shareData} partnerName={me ? firstName(me.partner_name) : null} onClose={() => setShareData(null)} />}
     </section>
   );
 }

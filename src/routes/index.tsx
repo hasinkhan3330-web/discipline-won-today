@@ -116,7 +116,10 @@ function Landing() {
       setSessionUserId(session.user.id);
       setQuizDone(true);
       void flushQuizToProfile(session.user.id);
-      void navigate({ to: "/dashboard", replace: true });
+      let pending: string | null = null; // invite opened via /join before signing in: return there to confirm
+      try { const j = JSON.parse(localStorage.getItem("axen.acct.join") ?? "null"); if (j && typeof j.code === "string" && j.code && Date.now() - Number(j.at) < 86_400_000) pending = j.code; else localStorage.removeItem("axen.acct.join"); } catch { /* storage off */ }
+      if (pending) void navigate({ to: "/join/$code", params: { code: pending }, replace: true });
+      else void navigate({ to: "/dashboard", replace: true });
     };
     void supabase.auth.getSession().then(({ data }) => apply(data.session)).catch(error => {
       console.error("AXEN session initialization failed", error instanceof Error ? error.message : "Unknown session error");

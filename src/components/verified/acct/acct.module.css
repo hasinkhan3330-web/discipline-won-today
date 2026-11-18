@@ -325,3 +325,13 @@ button.statTile { cursor: pointer; }
 /* Simple only: AA contrast for small lime text (colour only; tokens unchanged) */
 .root[data-theme="light"] :is(.eyebrow, .dayL, .heroNum small, .pill, .tlNum, .pillMono, .segOptOn, .chipBtnOn, .gridBtnOn, .filterOn, .actDone, .histCheer, .cheerSent small, .whoMe),
 .portal[data-theme="light"] :is(.eyebrow, .dayL, .pill, .pillMono) { color: oklch(0.45 0.14 135); }
+
+/* Batch 4: priority card, share card preview, join page */
+.prio { border-color: color-mix(in oklab, var(--a-ring) 45%, var(--a-border)); }
+.prioCoral { border-color: color-mix(in oklab, var(--a-danger) 55%, var(--a-border)); }
+.prioHead { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; }
+.prioHead > div { min-width: 0; }
+.shareFrame { margin: 12px 0; display: grid; place-items: center; min-height: 200px; background: var(--a-chip); border-radius: 16px; padding: 10px; }
+.shareImg { max-width: 100%; max-height: 46vh; border-radius: 12px; display: block; }
+.joinPage { min-height: 100dvh; display: grid; place-items: center; padding: 24px; }
+.joinPage .card { width: 100%; max-width: 400px; text-align: center; }
