@@ -281,6 +281,13 @@
       "when": 1794977871444,
       "tag": "0039_partner_events_history",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1794978091359,
+      "tag": "0040_partner_events_tighten_grants",
+      "breakpoints": true
     }
   ]
 }
