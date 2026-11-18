@@ -1825,6 +1825,39 @@ export type Database = {
           },
         ]
       }
+      partner_events: {
+        Row: {
+          connection_id: string
+          created_at: string
+          from_user: string
+          id: string
+          kind: string
+          seen_at: string | null
+          text: string
+          to_user: string
+        }
+        Insert: {
+          connection_id: string
+          created_at?: string
+          from_user: string
+          id?: string
+          kind: string
+          seen_at?: string | null
+          text: string
+          to_user: string
+        }
+        Update: {
+          connection_id?: string
+          created_at?: string
+          from_user?: string
+          id?: string
+          kind?: string
+          seen_at?: string | null
+          text?: string
+          to_user?: string
+        }
+        Relationships: []
+      }
       partner_messages: {
         Row: {
           body: string
@@ -2830,6 +2863,10 @@ export type Database = {
           connection_id: string
           partner_id: string
         }[]
+      }
+      acct_connection_active_for: {
+        Args: { _connection_id: string; _uid: string }
+        Returns: boolean
       }
       acct_garden_for: { Args: { _uid: string }; Returns: Json }
       acct_garden_score: { Args: never; Returns: Json }
