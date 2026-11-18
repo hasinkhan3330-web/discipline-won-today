@@ -62,11 +62,11 @@ Sirf Accountability ke 3 sub-screens ka look badlega. Backend, rules, streak/tru
 | seen_at | timestamptz null | |
 Index: (to_user, created_at desc), (from_user, created_at desc).
 
-Grants: `authenticated` ko SELECT, INSERT, aur sirf `UPDATE (seen_at)` column-level; DELETE kisi ko nahi; `service_role` ALL; anon kuch nahi.
+Grants: `authenticated` ko sirf SELECT aur `UPDATE (seen_at)` column-level — **INSERT nahi**; DELETE kisi ko nahi; `service_role` ALL; anon kuch nahi.
 
 ## RLS policies
 1. **Select** — `auth.uid() in (from_user, to_user)` AND `connection_id` abhi bhi `status='active'` connection hai jisme dono parties hain. Remove/Block ke baad dono taraf history gayab (data delete nahi hota).
-2. **Insert** — `from_user = auth.uid()`, `to_user` = `acct_active_partner(auth.uid())` ka partner, `connection_id` wahi active connection, aur `text` allowlist mein (5 nudge texts, "🚨 Emergency Nudge", 3 cheer emojis) kind ke hisaab se. Free text nahi.
+2. **Insert** — koi grant nahi, koi policy nahi. Rows sirf SECURITY DEFINER triggers banate hain, isliye limits aur mute rules bypass nahi ho sakte.
 3. **Update** — sirf `to_user = auth.uid()` aur active connection; column grant ki wajah se sirf `seen_at` badal sakta hai.
 4. **Delete** — koi policy nahi → users delete nahi kar sakte.
 
@@ -74,7 +74,7 @@ Grants: `authenticated` ko SELECT, INSERT, aur sirf `UPDATE (seen_at)` column-le
 Existing functions **nahi** badlenge (parameters, return value, behaviour, limits, mute sab same). Iske bajay do naye AFTER INSERT triggers (SECURITY DEFINER):
 - `accountability_events` par: jab `kind in ('nudge','emergency')` → `partner_events` row (text = stored message). `checkin`/`commitment` save nahi honge.
 - `acct_cheers` par: har nayi cheer → `partner_events` row (kind 'cheer', text = 🔥 / 👏 / 💪). Duplicate cheer (ON CONFLICT DO NOTHING) par row nahi banti, to double entry nahi.
-Isliye mute, limits aur "partner nahi" wale rules automatically lagu rehte hain, aur Remove/Block ke baad naye sends existing functions hi rok dete hain. Trigger fail ho to send bhi fail hoga (same transaction) — partial save nahi.
+Isliye mute, limits aur "partner nahi" wale rules automatically lagu rehte hain, aur Remove/Block ke baad naye sends existing functions hi rok dete hain. Trigger ka history insert `BEGIN … EXCEPTION WHEN others THEN RAISE WARNING … END` mein wrapped: history save fail ho to warning log hoti hai aur original nudge/cheer phir bhi successful rehta hai.
 
 ## UI
 - **Check-ins → "Recent"**: last 30 din, newest first; kind icon, text, time ("2h ago"), unread dot; emergency coral. Empty: "Abhi tak koi nudge ya cheer nahi". Loading skeleton, error + "Try again".
@@ -84,9 +84,13 @@ Isliye mute, limits aur "partner nahi" wale rules automatically lagu rehte hain,
 - Remove/Block ke baad list khaali, send buttons pehle jaise band.
 
 ## Testing
-- Do temporary test accounts banakar connect karke nudge/cheer/emergency, seen, mute, remove — phir test accounts delete. **Aapke account se koi real nudge nahi bheja jayega.**
-- Policy tests: stranger read nahi kar sakta, recipient sirf seen_at badal sakta hai, delete blocked, free text insert rejected.
-- 360/390/414px, Dark + Simple.
+- Koi test account nahi banega. Policies SQL se ek transaction ke andar test hongi jo end mein ROLLBACK hota hai (stranger read nahi kar sakta, recipient sirf seen_at badal sakta hai, insert/delete blocked, trigger failure send ko nahi rokta). Kuch bhi permanent nahi banega.
+- Aapke account se koi real nudge ya cheer nahi bheja jayega.
+- UI: 360/390/414px, Dark + Simple; Recent list ka empty/loading/error state aapke account par (bina bheje).
+
+## Live par asar
+- Database change (naya table, policies, triggers) apply hote hi **live app par turant** lagu ho jayega — preview aur live ek hi database use karte hain. Live users ke liye iska matlab sirf itna: unke nudges/cheers ab history mein bhi save honge; unhe kuch naya dikhega nahi.
+- Recent list aur badge (screen changes) live users ko **Publish ke baad** hi dikhenge.
 
 ## Order
-Pehle ye backend batch + Recent list/badge, phir Batch 2 (Check-in, New pact, Check-ins restyle) — dono Check-ins screen chhoote hain, to Recent list naye style mein hi banegi.
+Sirf ye backend batch + Recent list/badge. Batch 2 (Check-in, New pact, Check-ins restyle) aapke kehne tak shuru nahi hoga.
