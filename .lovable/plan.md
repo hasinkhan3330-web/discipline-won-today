@@ -1,55 +1,27 @@
-# Phase A: apply_daily_penalty row lock
+# Accountability foundation: Step 0 (Phase A) + Phase 1 only
 
-Apply one migration: the current function, unchanged except `FOR UPDATE` on the first SELECT. Permissions are not touched.
+## Step 0: pending Phase A (already approved by you)
+Apply one migration: the current `apply_daily_penalty()` unchanged, plus `FOR UPDATE` on the first SELECT. No grants or revokes. Afterwards, show `pg_get_functiondef` and the owner/proacl/prosecdef/proconfig output. No other Discipline change.
 
-```sql
-CREATE OR REPLACE FUNCTION public.apply_daily_penalty()
- RETURNS TABLE(coins integer, penalized boolean)
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
-DECLARE
-  _uid uuid := auth.uid();
-  _yesterday date := ((now() AT TIME ZONE 'utc')::date) - 1;
-  _last_pen date;
-  _total int;
-  _done int;
-  _new_coins int;
-BEGIN
-  IF _uid IS NULL THEN RAISE EXCEPTION 'not authenticated'; END IF;
-  PERFORM set_config('app.economy_write', 'on', true);
+## Phase 1: what I checked (LIVE)
+- RLS is on for every accountability table. `accountability_connections`, `accountability_invites`, `partner_messages`, `partner_events` and `acct_cheers` have SELECT-only policies. `acct_checkins` and `acct_settings` allow own-row writes.
+- Invites: the browser sends a 64-hex token hash. `accept_accountability_invite` locks the invite row, is single-use, blocks self-redeem and checks expiry, and its errors are generic. Limit: 3 invites a day.
+- Privacy toggles exist: `accountability_connections.share_by_user/share_by_partner` ("Share my pact progress") and `acct_settings.show_tree` ("Show my tree").
+- Proofs: `proof_submissions.private_storage_path` exists, but there is **no proof storage bucket** (only `avatars` + exports).
 
-  SELECT p.last_penalty_date, p.coins INTO _last_pen, _new_coins FROM public.profiles p WHERE p.id = _uid FOR UPDATE;
-  IF _last_pen IS NOT NULL AND _last_pen >= _yesterday THEN
-    coins := _new_coins; penalized := false; RETURN NEXT; RETURN;
-  END IF;
+## Phase 1: gaps to fix (additive only)
+1. **Helpers** `is_active_partner(uuid)` and `my_active_partner()`: SECURITY DEFINER, `search_path=public`, EXECUTE for authenticated only (revoked from PUBLIC/anon).
+2. **Leftover anon grants**: revoke on `acct_cheers`, `acct_checkins`, `acct_settings`, `acct_milestones_seen`. Policies already block anon, so nothing changes for users.
+3. **`partner_messages_party_read`**: add the active-partner check.
+4. **Partner-safe reads**: check that partner data reaches the browser only through the existing SECURITY DEFINER RPCs (`get_partner_today`, `acct_partner_garden_stage`, `get_partner_contract_summary`). Add `share_by_*` and `show_tree` checks inside them where missing, and return stage only, never score. Signatures and return shape stay the same.
+5. **Invite failed tries**: add a small `accountability_invite_attempts` table (user_id, created_at; no user grants). Block after 5 failures per hour, with a generic error. Confirm the 24h expiry in `create_accountability_invite` (shorten it only if it is longer).
+6. **Proof bucket** `proofs`: private, images only, 5MB, path `{user_id}/...`, storage rules for owner read/write plus active-partner read; signed URLs of 60s in code only where proofs are already shown.
+7. **Remove/Block**: already enforced through `acct_connection_active_for`. I will re-check each partner read path.
+No revokes on lifecycle tables in this phase. No UI change.
 
-  SELECT count(*) INTO _total FROM public.tasks t WHERE t.user_id = _uid AND t.is_active;
-  IF _total = 0 THEN
-    UPDATE public.profiles p SET last_penalty_date = _yesterday WHERE p.id = _uid;
-    coins := _new_coins; penalized := false; RETURN NEXT; RETURN;
-  END IF;
+## Evidence after Phase 1 (then STOP)
+`pg_policies` for the touched tables, table grants, ACL and definitions of the new or changed functions, and storage bucket and policies. Max 8-line report. Then I wait for "continue".
 
-  SELECT count(*) INTO _done FROM public.task_completions tc WHERE tc.user_id = _uid AND tc.completed_on = _yesterday;
-
-  IF _done < _total THEN
-    _new_coins := GREATEST(0, _new_coins - 3);
-    UPDATE public.profiles p SET coins = _new_coins, last_penalty_date = _yesterday WHERE p.id = _uid;
-    INSERT INTO public.coin_transactions(user_id, amount, reason) VALUES (_uid, -3, 'penalty');
-    coins := _new_coins; penalized := true; RETURN NEXT; RETURN;
-  END IF;
-
-  UPDATE public.profiles p SET last_penalty_date = _yesterday WHERE p.id = _uid;
-  coins := _new_coins; penalized := false; RETURN NEXT;
-END; $function$
-```
-
-After applying, run and show:
-```sql
-select pg_get_functiondef('public.apply_daily_penalty'::regproc);
-select pg_get_userbyid(proowner), proacl, prosecdef, proconfig from pg_proc where oid='public.apply_daily_penalty'::regproc;
-```
-Expected: `postgres`, `{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}`, `true`, `{search_path=public}`. Then stop.
-
-No sandbox test. Nothing else changes: no other function, table, UI, route or Accountability feature.
+## Blockers / NOT VERIFIED
+- Item 4 may show an RPC that leaks the garden score. If fixing it needs a UI change, I stop and report.
+- Item 6: proof upload code may not exist yet. In that case I create only the bucket and its rules.
