@@ -1,19 +1,19 @@
-# Phase 2 (Option A: coin amounts unchanged)
+# Phase 3 — Nudges saved and private (reuse, no duplicate tables)
 
-## Answers (LIVE evidence)
-- **Direct proof insert:** a signed-in user CANNOT set status or verification fields. `guard_proof_submission` (BEFORE INSERT) forces `status='submitted'`, clears confidence/reason/verifier/verified_at/retry_count and checks that the session belongs to the same user and pact. Later updates by users are refused ("proof status is server-only"). So there is no priority fix.
-- **(a) Coins today:** a normal pact pays 10 coins once per day (`axen_completion_reward_config` contract=10, contract_limit=1) plus 20 XP. A recovered pact pays `LEAST(2, axen_daily_coin_room)` coins plus 8 XP.
-- **(b) Without partner review:** yes. `award_contract` pays when the pact is `verified`, a proof has `status='verified'` (set by the automatic verifier via `verify_contract_proof`: photo detector, timer recall or Zen session) and a session is `completed`. Partner review is not required.
-- **(c) 50/day room:** no. Normal pact coins carry `reward_source='contract'`, which `axen_daily_coin_room` excludes, and they are capped at 1 per day. Recovered pacts use the room for at most 2 coins.
-- `acct_is_party` and `acct_connection_active_for`: anon EXECUTE = false.
+## What already exists (LIVE evidence)
+- `partner_events` (17 rows) already stores every nudge/emergency/cheer: from_user, to_user, connection_id, kind, text snapshot, created_at, seen_at. Filled only by fail-safe triggers on `accountability_events` and `acct_cheers`. Clients: SELECT + UPDATE(seen_at) only; no insert, no delete. → this is the nudge store; `seen_at` = read_at.
+- `send_accountability_nudge` already: auth.uid(), active connection only (blocked/removed rejected), mute check server-side, fixed 5-text allowlist, 3 per pact, 10 per 24h. Gaps: no template ID, no category, no 30-min/hourly/hard/emergency limits, pact chosen by server not optional.
+- `partner_messages` (0 rows, unused) and `acct_cheers` stay untouched. Recent list (`PartnerHistory.tsx`) + unread badge already read `partner_events`.
+- Not in realtime publication: `partner_events` (only `accountability_events`, which `NudgeListener` uses with party-only RLS).
+- Nudges give no coins/trust/streak today (no award call in the path) — kept.
 
-## Build in this run
-1. **Check-in guard:** a trigger `BEFORE INSERT OR UPDATE OF day ON acct_checkins` refuses a `day` outside `acct_user_today(user_id) ± 1`. Garden formula untouched.
-2. **`save_pact(_id uuid, _payload jsonb)`:** SECURITY DEFINER, `search_path=public`, EXECUTE for authenticated only (revoked from PUBLIC/anon). Whitelist = exactly the columns `toPayload()` in `ContractCard.tsx` sends today (read from code before writing), plus `status` limited to `draft|scheduled` as today. Unknown keys → error. Owner = `auth.uid()`. Edit locks the row `FOR UPDATE` and requires ownership. The existing triggers still run.
-3. **`set_pact_pause(_id, _paused boolean)` and reschedule:** only if the Recovery view writes `daily_contracts` directly today; same rules, writes only `paused_at` / the schedule columns used today.
-4. **Proof insert:** no new RPC needed, because the guard already enforces everything; the server function stays as it is.
-5. **Switch frontend calls:** `ContractCard.tsx` insert/update, plus the Recovery view pause/resume/reschedule if direct. Screens unchanged. Browser check with writes intercepted.
-6. **No revoke this run.** The report includes the revoke SQL (for later), its rollback SQL and the list of switched calls.
+## Build
+1. Additive columns: `partner_events.template_id text`, `partner_events.category text` (gentle|push|hard|emergency, nullable for old rows), `accountability_events.template_id text`.
+2. Minimal server table `nudge_templates` (id, category, text, active) — the same table Phase 3B will extend; seeded ONLY with today's 5 Hinglish texts + the emergency text, mapped to categories. SELECT for authenticated (active rows), no client writes.
+3. `send_nudge(_template_id text, _pact_id uuid default null)`: SECURITY DEFINER, search_path=public, authenticated execute only. Partner from auth.uid() via active connection (blocked/removed → no send), mute respected, pact (if given) must belong to the receiver, text copied from template at send time. Limits from `partner_events` per sender→receiver: same template 1/30 min, 3/hour, 10/day, hard 2/day, emergency 1/day. Inserts into `accountability_events` (same path, so the trigger saves history and the live popup keeps working); trigger copies template_id + category.
+4. Old `send_accountability_nudge` stays for check-in/details/commitment; frontend nudge/emergency buttons switch to `send_nudge`. Same UI and copy.
+5. History visibility after removal: see open question; policy change only if chosen.
+6. Rolled-back SQL tests for each limit, mute, removed partner, stranger read, direct insert denied. No real sends, no test accounts. Rollback SQL included.
 
-## Evidence then STOP
-Function definitions and ACLs, trigger definition, `pg_policies` of `acct_checkins` and `daily_contracts`; report max 8 lines.
+## Report then STOP
+Max 8 lines + raw definitions/ACLs/policies.
