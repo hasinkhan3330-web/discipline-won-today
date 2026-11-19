@@ -12,7 +12,7 @@
 2. Minimal server table `nudge_templates` (id, category, text, active) — the same table Phase 3B will extend; seeded ONLY with today's 5 Hinglish texts + the emergency text, mapped to categories. SELECT for authenticated (active rows), no client writes.
 3. `send_nudge(_template_id text, _pact_id uuid default null)`: SECURITY DEFINER, search_path=public, authenticated execute only. Partner from auth.uid() via active connection (blocked/removed → no send), mute respected, pact (if given) must belong to the receiver, text copied from template at send time. Limits from `partner_events` per sender→receiver: same template 1/30 min, 3/hour, 10/day, hard 2/day, emergency 1/day. Inserts into `accountability_events` (same path, so the trigger saves history and the live popup keeps working); trigger copies template_id + category.
 4. Old `send_accountability_nudge` stays for check-in/details/commitment; frontend nudge/emergency buttons switch to `send_nudge`. Same UI and copy.
-5. History visibility after removal: see open question; policy change only if chosen.
+5. History after removal (user chose keep): `partner_events` SELECT policy drops the active-connection condition, so sender/receiver keep their own rows; the seen_at UPDATE stays party-only (no active-connection requirement). The Recent list and badge stay hidden on screens without an active partner. Sends are still blocked by `send_nudge`.
 6. Rolled-back SQL tests for each limit, mute, removed partner, stranger read, direct insert denied. No real sends, no test accounts. Rollback SQL included.
 
 ## Report then STOP
