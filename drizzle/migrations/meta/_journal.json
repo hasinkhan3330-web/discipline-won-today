@@ -344,6 +344,13 @@
       "when": 1795103851025,
       "tag": "0048_save_pact_static_insert",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1795109060771,
+      "tag": "0049_daily_coin_decay",
+      "breakpoints": true
     }
   ]
 }

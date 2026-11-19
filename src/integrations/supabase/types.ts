@@ -1144,6 +1144,30 @@ export type Database = {
           },
         ]
       }
+      daily_coin_decay: {
+        Row: {
+          created_at: string
+          earned: number
+          local_day: string
+          penalized: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          earned: number
+          local_day: string
+          penalized: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          earned?: number
+          local_day?: string
+          penalized?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_contracts: {
         Row: {
           accountability_enabled: boolean
@@ -2966,6 +2990,7 @@ export type Database = {
           xp: number
         }[]
       }
+      axen_apply_coin_decay: { Args: { _uid: string }; Returns: number }
       axen_award_completion_coins: {
         Args: { _id: string; _slot?: number; _source: string; _uid: string }
         Returns: number
@@ -2984,6 +3009,7 @@ export type Database = {
       }
       axen_real_best_streak: { Args: { _uid: string }; Returns: number }
       axen_reward_local_day: { Args: { _uid: string }; Returns: string }
+      axen_run_coin_decay_all: { Args: never; Returns: number }
       axen_user_local_day: { Args: { _uid: string }; Returns: string }
       buy_streak_shield: {
         Args: never
