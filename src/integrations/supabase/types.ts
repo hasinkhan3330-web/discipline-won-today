@@ -79,6 +79,7 @@ export type Database = {
       accountability_events: {
         Row: {
           actor_id: string
+          category: string | null
           connection_id: string
           contract_id: string | null
           created_at: string
@@ -86,9 +87,11 @@ export type Database = {
           kind: string
           message: string | null
           recipient_id: string
+          template_id: string | null
         }
         Insert: {
           actor_id: string
+          category?: string | null
           connection_id: string
           contract_id?: string | null
           created_at?: string
@@ -96,9 +99,11 @@ export type Database = {
           kind: string
           message?: string | null
           recipient_id: string
+          template_id?: string | null
         }
         Update: {
           actor_id?: string
+          category?: string | null
           connection_id?: string
           contract_id?: string | null
           created_at?: string
@@ -106,6 +111,7 @@ export type Database = {
           kind?: string
           message?: string | null
           recipient_id?: string
+          template_id?: string | null
         }
         Relationships: [
           {
@@ -1660,6 +1666,30 @@ export type Database = {
           },
         ]
       }
+      nudge_templates: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          id: string
+          text: string
+        }
+        Insert: {
+          active?: boolean
+          category: string
+          created_at?: string
+          id: string
+          text: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          text?: string
+        }
+        Relationships: []
+      }
       pact_disputes: {
         Row: {
           closes_at: string
@@ -1827,32 +1857,38 @@ export type Database = {
       }
       partner_events: {
         Row: {
+          category: string | null
           connection_id: string
           created_at: string
           from_user: string
           id: string
           kind: string
           seen_at: string | null
+          template_id: string | null
           text: string
           to_user: string
         }
         Insert: {
+          category?: string | null
           connection_id: string
           created_at?: string
           from_user: string
           id?: string
           kind: string
           seen_at?: string | null
+          template_id?: string | null
           text: string
           to_user: string
         }
         Update: {
+          category?: string | null
           connection_id?: string
           created_at?: string
           from_user?: string
           id?: string
           kind?: string
           seen_at?: string | null
+          template_id?: string | null
           text?: string
           to_user?: string
         }
@@ -3380,6 +3416,10 @@ export type Database = {
           ok: boolean
           reason: string
         }[]
+      }
+      send_nudge: {
+        Args: { _pact_id?: string; _template_id: string }
+        Returns: Json
       }
       set_accountability_prefs: {
         Args: { _mute?: boolean; _share?: boolean }

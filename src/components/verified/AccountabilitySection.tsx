@@ -64,6 +64,10 @@ export async function loadMyAccountability(): Promise<MyAccountability | null> {
 function friendlyError(m: string) {
   if (m.includes("muted")) return "Your partner has muted nudges.";
   if (m.includes("contract") && m.includes("limit")) return "Nudge limit reached for this pact.";
+  if (m.includes("same nudge")) return "You sent this nudge recently. Try another one.";
+  if (m.includes("hourly")) return "Hourly nudge limit reached.";
+  if (m.includes("hard nudge")) return "Hard nudge limit reached for today.";
+  if (m.includes("emergency limit")) return "Emergency nudge already sent today.";
   if (m.includes("daily")) return "Daily nudge limit reached.";
   if (m.includes("connection")) return "No active partner.";
   if (m.includes("complete a task")) return "Complete one task before checking in.";
@@ -334,7 +338,10 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
   });
   const send = (kind: "nudge" | "emergency" | "checkin" | "commitment", message: string | null) => run(async () => {
     if (!me) return;
-    const { error } = await (supabase.rpc as any)("send_accountability_nudge", { _connection_id: me.connection_id, _kind: kind, _message: message });
+    const tpl = kind === "emergency" ? "emergency" : kind === "nudge" ? `n${(NUDGES as readonly string[]).indexOf(message ?? "") + 1}` : null;
+    const { error } = tpl
+      ? await (supabase.rpc as any)("send_nudge", { _template_id: tpl, _pact_id: null })
+      : await (supabase.rpc as any)("send_accountability_nudge", { _connection_id: me.connection_id, _kind: kind, _message: message });
     if (error) toast.error(friendlyError(error.message ?? ""));
     else { toast.success(kind === "commitment" ? "Commitment saved" : kind === "checkin" ? "Check-in sent" : "Nudge sent"); haptic("success"); await load(); window.dispatchEvent(new Event(NUDGE_EVENT)); }
   });
