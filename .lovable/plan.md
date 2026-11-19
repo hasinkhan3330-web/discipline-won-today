@@ -32,3 +32,7 @@ No revokes on lifecycle tables in this phase. No UI change.
 - **Item 5:** First measure the invite code the user types (`mkInvite` in code). If it is a random token of 128 bits or more, item 5 is skipped. If it is short, failed attempts are saved by returning an error code instead of raising, but only if the current UI handles that unchanged; otherwise I report a blocker.
 - **Item 6:** Partner read on a proof file requires a `proof_submissions` row with that `private_storage_path`, status `submitted` and an owner who is the active partner. A folder match alone is not enough.
 - **Report adds:** confirm that no client-writable column in `acct_checkins`, `acct_settings` or `acct_milestones_seen` feeds coins, garden score or trust (checked against the function bodies that compute them).
+
+## Final tweak (overrides the Item 6 status rule above)
+- Partner read on a proof file works for every status of a submitted proof. The real statuses (`proof_status`) are `submitted`, `verified`, `needs_review`, `retry_requested`, `rejected` and `unavailable`, and a row only exists once the owner has submitted. So the rule is: a `proof_submissions` row exists with that `private_storage_path`, owned by the active partner. There is no draft status in this table, so unsubmitted files (no row) stay hidden.
+- Extra evidence: the ACL of `apply_daily_penalty` (no anon, no bare `=X`), plus full definitions after the changes of `get_partner_today`, `acct_partner_garden_stage` and `get_partner_contract_summary`. Then STOP and wait for "continue".
