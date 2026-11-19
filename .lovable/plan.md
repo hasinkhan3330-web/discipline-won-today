@@ -1,39 +1,43 @@
-# Partner chat + notification inbox — audit (read-only) and plan
+# AXEN audit — Part 1 of 3 (database security)
 
-## 1. Backend and sign-in (checked)
-- Backend: Lovable Cloud. Sign-in: Cloud auth; user id comes from the verified session (`auth.uid()` in database rules).
-- Partnerships: `accountability_connections` (user_id, partner_id, status active/revoked/blocked). Invites: `accountability_invites` with the existing pairing code.
+I only read things. Nothing was changed. "LIVE" means I checked it in the real database today. "CODE" means I read it in the files.
 
-## 2. What already exists (checked)
-| Table | Rows | Used by the app? | Rules |
-|---|---|---|---|
-| partner_messages (id, connection_id, sender_id, recipient_id, body, created_at) | 0 | No | Sender/recipient can read; nobody can write; does not check the partnership is still active |
-| partner_events (nudge/cheer/emergency history, seen_at) | 17 | Yes, Recent list + badge | Read only while partnership active; recipient updates seen_at only; written only by triggers |
-| accountability_events, acct_cheers | — | Yes, existing sends | Unchanged |
+## What I checked (LIVE)
+- 62 tables in `public`. **Every table has row security switched on.**
+- Storage: `avatars` (private, rules let you read/insert/update/delete only your own files) and 4 `database_export_*` buckets (private, no user rules, so users can't reach them).
+- Routes (CODE): `/`, `/dashboard`, `/alarm`, `/my-plan`, `/checkout/success`, `/join/$code`, `/pro`, `/privacy`, `/terms`, `/refund`, `/reset-password`, `/auth/forgot`, `/auth/verified`, `/mcp`, `src/routes/api/public/*`. There are no `supabase/functions` (server code lives in TanStack server functions).
 
-## 3. Why things "disappear" (checked)
-- Partner chat was never built: there is no send function, no screen, and `partner_messages` is empty. Nothing to lose.
-- Toasts are temporary on purpose; nudges/cheers already persist in partner_events since the last batch.
+## Risks found
+| Rank | Finding | Evidence |
+|---|---|---|
+| Medium | Users can delete their own coach messages, although a "never delete" rule exists. Two allow-type rules are added together, so the delete rule wins over the block rule. | `coach_messages_delete_own` and `coach_messages_no_delete` (both PERMISSIVE) |
+| Medium | `partner_messages` can be read by the sender and recipient even after a partnership is removed or blocked. It is empty today and the app doesn't use it. | `partner_messages_party_read` |
+| Low | Some tables give signed-out visitors read access at the grant level, but every rule is for signed-in users only, so nothing is exposed. Leftover grants. | anon SELECT on `acct_cheers`, `acct_checkins`, `acct_settings`, `acct_milestones_seen`, `coach_memory`, `coach_plans`, `coach_plan_materialized`, `coach_profile` |
+| Low | Server-only wake tables have write grants but no rules, so they are locked to users (this is intended). | `wake_push_outbox`, `wake_delivery_log`, `wake_push_subscriptions` |
 
-## 4. Proposed design (reuse, no duplicate tables)
-- Extend `partner_messages` additively: `client_key uuid NOT NULL` (unique per sender, idempotency), `kind text default 'text'` (validated by trigger: text only), `read_at timestamptz`. Length limit 1–500 chars via trigger.
-- No new conversations table: the partnership row is the conversation (one per pair, self-pairing already impossible).
-- No new notifications table: messages also add a `partner_events` row with kind `message` (extend the kind check), so the existing Recent list/badge become the inbox. Dedup key = the message id.
-- One SECURITY DEFINER function `send_partner_message(p_body, p_client_key)` with `SET search_path = public`: sender from auth.uid(), partner from the active connection, rejects blocked/revoked/muted, rate-limit, inserts message + event in one transaction, returns the existing row on repeat client_key.
-- `mark_partner_messages_read(p_connection)` function for read status.
+## Checked and OK (LIVE)
+- Coins: users can only read `coin_transactions`, `score_events`, `entitlements`, `trust_events`. Profile coin and streak fields are protected by the trigger `guard_profile_economy_trg`.
+- Payments: `subscriptions` and `payment_events` can be written only by the server (`service_role`).
+- Pacts: `daily_contracts` insert/update allow only drafts/editable rows, plus the triggers `trg_guard_contract_fields` and `trg_guard_comeback_fields`. Rewards go through `finalize_contract_and_award`.
+- Top tasks `protect_daily_top_task_rewards`, goals `guard_goal_coins`, unlocks `guard_streak_unlocks`, proofs `trg_guard_proof_submission`, Zen `guard_zen_reward_evidence`.
+- Premium gates on `focus_sessions`, `friendships`, `streak_shield_uses` are RESTRICTIVE, so they correctly sit on top of the own-row rules.
+- `partner_events`: readable only while the partnership is active; the recipient can update only `seen_at`.
 
-## 5. Rules
-- SELECT: sender/recipient AND `acct_connection_active_for(connection_id, auth.uid())` (replaces the current looser read rule).
-- INSERT/UPDATE/DELETE: none for users; only through the two functions.
-- Live updates: existing realtime private channel per connection with the same participant check.
-- Third account: sees 0 rows (tested in a rolled-back transaction, no real accounts).
+## NOT VERIFIED yet (Parts 2–3)
+- The bodies of SECURITY DEFINER functions (race conditions, row locks, unique keys) — Part 2.
+- The client code that writes `acct_checkins`, `tasks`, `alarms` directly — Part 2.
+- Screens/features that must stay unchanged, and a phased fix plan with rollback — Part 3.
 
-## 6. Risks / unknowns
-- Free-text needs block/report and abuse handling; Block already hides everything.
-- Adding `message` to partner_events kind touches a table from the last batch (additive only).
-- Push to a closed phone is not in scope.
+## SELECT-only SQL you can run yourself
+```sql
+select relname, relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where nspname='public' and relkind='r' order by 2;
+select tablename, policyname, permissive, roles, cmd, qual, with_check from pg_policies where schemaname='public' order by 1;
+select table_name, grantee, privilege_type from information_schema.role_table_grants where table_schema='public' and grantee in ('anon','authenticated') order by 1;
+select id, public from storage.buckets;
+select c.relname, t.tgname from pg_trigger t join pg_class c on c.oid=t.tgrelid where not t.tgisinternal and c.relnamespace='public'::regnamespace order by 1;
+```
 
-## 7. Batches
-- Batch 1: one migration (columns, triggers, 2 functions, tighter read rule), SQL tests in rolled-back transactions, revert SQL. Stop.
-- Batch 2: small Chat view inside Accountability Check-ins (existing design tokens), files `acct/PartnerChat.tsx`, `acct.module.css`, `AccountabilitySection.tsx`. No other screens.
-- Batch 3: messages in Recent list/badge, realtime, final A/B/C checks with mocked writes; no real sends.
+## Proposed fixes (only after you approve)
+1. Make `coach_messages_no_delete` RESTRICTIVE, or drop `coach_messages_delete_own`. Rollback: restore the old rule.
+2. Add an active-partnership check to `partner_messages_party_read`. Rollback: restore the old rule.
+3. Optional: revoke the unused anon grants. Rollback: grant them again.
