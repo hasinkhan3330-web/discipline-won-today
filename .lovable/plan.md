@@ -41,3 +41,35 @@ select c.relname, t.tgname from pg_trigger t join pg_class c on c.oid=t.tgrelid 
 1. Make `coach_messages_no_delete` RESTRICTIVE, or drop `coach_messages_delete_own`. Rollback: restore the old rule.
 2. Add an active-partnership check to `partner_messages_party_read`. Rollback: restore the old rule.
 3. Optional: revoke the unused anon grants. Rollback: grant them again.
+
+---
+
+# AXEN audit — Part 2 of 3 (server functions and app writes)
+
+I only read things here. LIVE = checked in the real database today. CODE = read in the files.
+
+## SECURITY DEFINER functions (LIVE)
+- There are 105. Every one sets a fixed search_path (`public` or empty).
+- Signed-out visitors can run only one of them, `wake_timezone_reschedule`. It is a trigger function, so nobody can call it directly. No exposure.
+- 38 of them touch coins. These ones lock the rows they change and use unique keys, so a reward is paid once: `award_contract`, `axen_award_completion_coins`, `complete_top_task`, `wake_submit_answer`, `wake_finalize_solve`, `axen_finalize_comeback`, `buy_streak_shield`, `redeem_referral_code`, `send_accountability_nudge`, `complete_zen_session`.
+- Each of these pays only once per item and day through a unique-key insert (`ON CONFLICT DO NOTHING`), with no row lock: `complete_task`, `complete_alarm`, `claim_streak_milestones`, `complete_focus_music_session`.
+
+## Risks
+| Rank | Confidence | Finding | Evidence |
+|---|---|---|---|
+| Medium | High | **Daily −3 penalty can be taken twice.** It reads `last_penalty_date` with no row lock, so two app opens at the same moment can both pass the check and both deduct. It also uses UTC "yesterday", not the user's own day. | `apply_daily_penalty()` lines 18–34 (LIVE) |
+| Medium | Medium | **Daily coin cap can be slightly exceeded.** Two task completions at the same moment both read the remaining daily room before either writes. Each task still pays only once. | `complete_task` → `axen_daily_coin_room(_uid)` with no lock on `profiles` (LIVE) |
+| Low | High | The app changes a task's points from the browser just before completing it, then resets it to 10. The server clamps points to 1–5 (`validate_task_builder_fields`, `complete_task`), so there is no coin gain. If the reset fails, the stored value just stays wrong. | `src/routes/_authenticated/dashboard.tsx` lines 501–508 (CODE) |
+| Low | High | The browser writes check-ins (`upsert`) and can pick any `day`. Pair streak and rewards read `daily_contracts`, not check-ins, so this only changes what the user sees. | `src/components/verified/acct/AcctScreens.tsx:239` (CODE), `acct_pair_streak` (LIVE) |
+| Low | High | The browser writes tasks directly (insert/update/deactivate). The rules allow own rows only, and triggers `enforce_task_limit_trg` and `validate_task_builder_fields_trg` limit the values. | `dashboard.tsx:633`, `GoalHabitPicker.tsx:62,75`, `ProfileDetailScreens.tsx:115`, `src/lib/coach-tools.ts:130,363,373` (CODE) |
+| Low | High | Alarms: the browser only reads them. Reward fields are server-owned (`wake_alarm_server_fields` trigger). `complete_alarm` refuses the Wake Protocol alarm and is capped by the daily room. | `WakeProtocol.tsx:108` (CODE), triggers on `alarms` (LIVE) |
+
+## NOT VERIFIED
+- The full bodies of the other ~60 functions. I only checked them by pattern: lock, unique key, auth check.
+- Whether the two Medium cases actually happened in real data.
+- Server functions in `src/utils/*.functions.ts`, apart from the ones above.
+
+SELECT-only SQL to look for double penalties:
+```sql
+select user_id, created_at::date d, count(*) from coin_transactions where reason='penalty' group by 1,2 having count(*)>1;
+```
