@@ -54,6 +54,7 @@ export function ContractCard({ onStart, onResume }: {
   const [partner, setPartner] = useState<MyAccountability | null>(null);
   const lock = useRef(false);
   const mounted = useRef(false);
+  const newPactId = useRef<string>(crypto.randomUUID());
 
   const load = useCallback(async (): Promise<ContractRow | null> => {
     const today = localToday(tz);
@@ -101,14 +102,13 @@ export function ContractCard({ onStart, onResume }: {
     try {
       const payload = { ...toPayload(f, tz), status: (asDraft ? "draft" : "scheduled") as ContractRow["status"] };
       if (sheet === "edit" && row) {
-        const { data, error } = await supabase.from("daily_contracts").update(payload).eq("id", row.id).select().maybeSingle();
+        const { data, error } = await (supabase.rpc as any)("save_pact", { _id: row.id, _payload: payload });
         if (error) throw error;
         if (!data) throw { code: "42501", message: "not owner" };
       } else {
-        const { data: u } = await supabase.auth.getUser();
-        if (!u.user) throw { code: "42501", message: "JWT" };
-        const { error } = await supabase.from("daily_contracts").insert({ ...payload, user_id: u.user.id, local_day: f.local.slice(0, 10) /* server recomputes */ });
+        const { error } = await (supabase.rpc as any)("save_pact", { _id: newPactId.current, _payload: payload });
         if (error) throw error;
+        newPactId.current = crypto.randomUUID();
       }
       haptic("success");
       toast.success(asDraft ? "Draft saved" : "Contract set");
@@ -132,7 +132,7 @@ export function ContractCard({ onStart, onResume }: {
     if (!window.confirm("Cancel this contract? This can't be undone.")) return;
     lock.current = true; setBusy(true);
     try {
-      const { data, error } = await supabase.from("daily_contracts").update({ status: "cancelled" }).eq("id", row.id).select("id").maybeSingle();
+      const { data, error } = await (supabase.rpc as any)("cancel_pact", { _id: row.id });
       if (error) throw error;
       if (!data) throw { code: "42501", message: "not owner" };
       await cancelContractReminders(row.id);

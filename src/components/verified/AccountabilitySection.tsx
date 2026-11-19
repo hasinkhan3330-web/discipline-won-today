@@ -373,12 +373,12 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
   });
   const setPaused = (paused: boolean) => run(async () => {
     if (!contract) return;
-    const { data, error } = await supabase.from("daily_contracts").update({ paused_at: paused ? new Date().toISOString() : null }).eq("id", contract.id).select("id").maybeSingle();
+    const { data, error } = await (supabase.rpc as any)("set_pact_pause", { _id: contract.id, _paused: paused });
     if (error || !data) toast.error("This pact can't be paused now."); else { toast.success(paused ? "Pact paused" : "Pact resumed"); await changed(); }
   });
   const endPact = () => run(async () => {
     if (!contract || !window.confirm("End this pact? This can't be undone.")) return;
-    const { data, error } = await supabase.from("daily_contracts").update({ status: "cancelled" }).eq("id", contract.id).select("id").maybeSingle();
+    const { data, error } = await (supabase.rpc as any)("cancel_pact", { _id: contract.id });
     if (error || !data) toast.error("This pact can't be ended now."); else { toast.success("Pact ended"); await changed(); }
   });
 

@@ -2923,6 +2923,7 @@ export type Database = {
           shields: number
         }[]
       }
+      cancel_pact: { Args: { _id: string }; Returns: string }
       check_my_comebacks: { Args: never; Returns: number }
       claim_streak_milestones: {
         Args: never
@@ -3311,6 +3312,56 @@ export type Database = {
         Args: { _answers: Json; _step: number }
         Returns: undefined
       }
+      save_pact: {
+        Args: { _id: string; _payload: Json }
+        Returns: {
+          accountability_enabled: boolean
+          category: string
+          coins_awarded: number
+          comeback_ends_at: string | null
+          comeback_started_at: string | null
+          completed_at: string | null
+          created_at: string
+          deadline_at: string | null
+          difficulty: number
+          done_criteria: string | null
+          evidence_required: string
+          expires_at: string | null
+          fallback_action: string | null
+          goal_id: string | null
+          id: string
+          is_recovery: boolean
+          is_solo: boolean
+          local_day: string
+          minimum_version: string | null
+          obstacles: string | null
+          partner_visibility: string
+          paused_at: string | null
+          planned_seconds: number
+          private_note: string | null
+          proof_method: string
+          recovery_of_id: string | null
+          reminder_pref: string
+          rescue_seconds: number
+          rewarded_at: string | null
+          scheduled_at: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["contract_status"]
+          timezone: string
+          title: string
+          trigger_text: string | null
+          updated_at: string
+          user_id: string
+          version: number
+          xp_awarded: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "daily_contracts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       save_plan_tasks: {
         Args: { _plan_title: string; _tasks: Json }
         Returns: number
@@ -3333,6 +3384,10 @@ export type Database = {
       set_accountability_prefs: {
         Args: { _mute?: boolean; _share?: boolean }
         Returns: undefined
+      }
+      set_pact_pause: {
+        Args: { _id: string; _paused: boolean }
+        Returns: string
       }
       start_contract_session: {
         Args: { _client_instance?: string; _contract_id: string }

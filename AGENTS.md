@@ -45,3 +45,4 @@
 - Accountability Batch 4 device-only state (milestones seen, garden stage, invite message, share-name toggle, pending /join code) lives in localStorage `axen.acct.*`; share cards are drawn on a canvas in the browser. Why: no schema change and no private data leaves the device.
 - `/join/$code` never validates a code for signed-out visitors and never auto-accepts; the existing `acceptInvite` runs only when the signed-in user taps Join. Why: no data exposure and explicit consent.
 - Partner proof files live in private bucket `proofs` at `{user_id}/...`; partner read requires a matching proof_submissions row and `is_active_partner()`. Why: folder match alone could leak unsubmitted files.
+- Pact create/edit/pause/cancel go through `save_pact` (column whitelist, client uuid for idempotency), `set_pact_pause`, `cancel_pact`; existing daily_contracts triggers still enforce rules. Why: prepare revoking direct client writes without duplicating lifecycle logic.

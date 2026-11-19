@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { haptic } from "@/lib/haptics";
@@ -40,6 +40,7 @@ export type PactPreset = { title: string; minutes: number; category: string };
 export function PactCreator({ hasPartner, onBack, onSaved, preset }: { hasPartner: boolean; onBack: () => void; onSaved: () => void; preset?: PactPreset | null }) {
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
+  const pactId = useRef<string>(crypto.randomUUID());
   const init = () => { const d = new Date(Date.now() + 30 * 60_000); d.setMinutes(Math.ceil(d.getMinutes() / 15) * 15, 0, 0); return d; };
   const [f, setF] = useState(() => {
     const st = init(); const dl = new Date(st.getTime() + 3 * 3600_000);
@@ -63,8 +64,8 @@ export function PactCreator({ hasPartner, onBack, onSaved, preset }: { hasPartne
       const ev = EVIDENCE.find(e => e.id === f.evidence) ?? EVIDENCE[0];
       const tz = deviceTimezone();
       const row = {
-        user_id: u.user.id, goal_id: null, title: f.title.trim(), category: f.category,
-        scheduled_at: new Date(f.start).toISOString(), timezone: tz, local_day: f.start.slice(0, 10),
+        goal_id: null, title: f.title.trim(), category: f.category,
+        scheduled_at: new Date(f.start).toISOString(), timezone: tz,
         planned_seconds: f.minutes * 60, rescue_seconds: Math.min(10, rescueMax(f.minutes)) * 60,
         trigger_text: null, proof_method: ev.proof, difficulty: 2, reminder_pref: f.reminder, private_note: null,
         accountability_enabled: !f.solo && hasPartner, status: "scheduled" as const,
@@ -72,7 +73,7 @@ export function PactCreator({ hasPartner, onBack, onSaved, preset }: { hasPartne
         fallback_action: f.ifThen.trim() || null, minimum_version: f.minimum.trim() || null, obstacles: f.obstacles.trim() || null,
         evidence_required: f.evidence, is_solo: f.solo || !hasPartner, partner_visibility: f.solo || !hasPartner ? "private" : f.visibility,
       };
-      const { data, error } = await supabase.from("daily_contracts").insert(row).select().single();
+      const { data, error } = await (supabase.rpc as any)("save_pact", { _id: pactId.current, _payload: row });
       if (error) throw error;
       haptic("success"); toast.success("Pact saved");
       if (f.reminder !== "none") void scheduleContractReminders(data as ContractRow).catch(() => {});

@@ -302,6 +302,20 @@
       "when": 1795088106535,
       "tag": "0042_accountability_phase1_privacy",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1795089195113,
+      "tag": "0043_accountability_phase2_pact_rpcs_checkin_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1795089239081,
+      "tag": "0044_save_pact_insert_only_sent_fields",
+      "breakpoints": true
     }
   ]
 }
