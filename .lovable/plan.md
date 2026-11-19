@@ -73,3 +73,42 @@ SELECT-only SQL to look for double penalties:
 ```sql
 select user_id, created_at::date d, count(*) from coin_transactions where reason='penalty' group by 1,2 having count(*)>1;
 ```
+
+---
+
+# AXEN audit — Part 3 of 3 (screens, what stays unchanged, phased plan)
+
+## Public endpoints (CODE)
+- `src/routes/api/public/payments/revenuecat-webhook.ts`: checks the Bearer secret `REVENUECAT_WEBHOOK_SECRET` and re-reads the subscriber from RevenueCat. Low: the check is a plain `!==` comparison, not a constant-time one.
+- `src/routes/api/public/wake/process.ts`: compares the Bearer `WAKE_JOB_SECRET` via SHA-256 hashes. OK.
+- Whether these secrets are actually set: NOT VERIFIED (values are never read).
+
+## Screens and features that must stay unchanged (CODE)
+- Routes: `/`, `/dashboard`, `/alarm`, `/my-plan`, `/checkout/success`, `/join/$code`, `/pro`, `/privacy`, `/terms`, `/refund`, `/reset-password`, `/auth/forgot`, `/auth/verified`, `/mcp`.
+- Tabs: Home (`HomeTab.tsx`, Command Center, Today Missions, My Plan shortcut), Stats (`StatsTab.tsx`, milestone seals), Rank (`RankTab.tsx`, Leaderboard, RankEmblem, Verified Rank List), Zen (`ZenTab.tsx`, eclipse design, Frequency Hub), You/Profile (`ProfileTab.tsx`, `ProfileDetailScreens.tsx`, Account page, Referral, Subscription).
+- Features: Contracts (`ContractCard/Sheet/ProofSheet/FocusSession.tsx`), Deep Focus, Accountability batches 1–4 (`AccountabilitySection.tsx`, `acct/*`, `NudgeListener.tsx`), Goals plan dot, 4AM Wake Protocol and missions, Coach text/voice orb, Dark/Simple theme (Simple is the default), trial and entitlement gates, RevenueCat payments.
+- The rules in AGENTS.md and project memory stay in force.
+
+## All risks (Parts 1–3)
+| # | Rank | Conf. | Finding | Source |
+|---|---|---|---|---|
+| 1 | Medium | High | `apply_daily_penalty` can deduct twice under concurrent calls and uses a UTC day | LIVE |
+| 2 | Medium | Medium | `complete_task` daily coin cap can be exceeded under concurrent calls | LIVE |
+| 3 | Medium | High | `coach_messages_delete_own` overrides `coach_messages_no_delete` | LIVE |
+| 4 | Medium | High | `partner_messages_party_read` has no active-partnership check (table is empty and unused) | LIVE |
+| 5 | Low | High | RevenueCat secret compared with a plain `!==`, not constant-time | CODE |
+| 6 | Low | High | Points override set from the browser in `dashboard.tsx:501–508` (clamped by the server) | CODE |
+| 7 | Low | High | Check-in `day` is picked by the browser (display only) | CODE |
+| 8 | Low | High | Leftover anon read grants on 8 tables (blocked by policies) | LIVE |
+No Critical or High issues were found in what I inspected.
+
+## Phased plan (each phase separate, after your approval)
+**Phase A: penalty lock (#1).** One migration with `CREATE OR REPLACE apply_daily_penalty`: add `SELECT … FOR UPDATE` on the user's `profiles` row and keep everything else. The UTC→local-day change stays a separate decision because it changes behaviour. Test: two parallel calls in a rolled-back transaction → one deduction. Rollback: re-apply the current function body (saved before the change).
+**Phase B: daily cap lock (#2).** Same pattern in `complete_task`: lock `profiles` before `axen_daily_coin_room`. Test: parallel completions stay under the cap. Rollback: previous body.
+**Phase C: policies (#3, #4).** Make `coach_messages_no_delete` RESTRICTIVE, or drop `coach_messages_delete_own`. Add `acct_connection_active_for(connection_id, auth.uid())` to `partner_messages_party_read`. Check first whether the app uses delete on coach messages (NOT VERIFIED). Test: a third account sees nothing and delete is blocked, all in a rolled-back transaction. Rollback: recreate the old policies.
+**Phase D: webhook (#5).** `revenuecat-webhook.ts`: compare SHA-256 hashes the same way as `wake/process.ts`. Test: wrong secret → 401. Rollback: revert the file.
+**Phase E: cleanup (#6, #8), optional.** Remove the points override in `dashboard.tsx` and revoke the unused anon grants. Rollback: revert, re-grant.
+Every phase: no UI change, no new dependency, no test accounts, typecheck and build, report.
+
+## NOT VERIFIED overall
+Full bodies of about 60 functions, `src/utils/*.functions.ts` server functions beyond those cited, real-data impact of #1 and #2, secret presence, and real-device behaviour.
