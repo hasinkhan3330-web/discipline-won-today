@@ -330,6 +330,13 @@
       "when": 1795099257255,
       "tag": "0046_send_nudge_emergency_skip_hourly",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1795099863930,
+      "tag": "0047_phase3b_nudge_suggestions",
+      "breakpoints": true
     }
   ]
 }

@@ -134,6 +134,7 @@ function Ring({ session, now }: { session: SessionSnapshot; now: number }) {
 export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) {
   const [me, setMe] = useState<MyAccountability | null | undefined>(undefined);
   const [details, setDetails] = useState<Details | null>(null);
+  const [sugg, setSugg] = useState<{ template_id: string; category: string; text: string }[]>([]);
   const [unread, setUnread] = useState(0);
   const [contract, setContract] = useState<ContractRow | null>(null);
   const [session, setSession] = useState<SessionSnapshot | null>(null);
@@ -336,9 +337,9 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
     const { error } = await (supabase.rpc as any)("set_accountability_prefs", p);
     if (error) toast.error("Could not save"); else await changed();
   });
-  const send = (kind: "nudge" | "emergency" | "checkin" | "commitment", message: string | null) => run(async () => {
+  const send = (kind: "nudge" | "emergency" | "checkin" | "commitment", message: string | null, templateId?: string) => run(async () => {
     if (!me) return;
-    const tpl = kind === "emergency" ? "emergency" : kind === "nudge" ? `n${(NUDGES as readonly string[]).indexOf(message ?? "") + 1}` : null;
+    const tpl = kind === "emergency" ? "emergency" : kind === "nudge" ? (templateId ?? `n${(NUDGES as readonly string[]).indexOf(message ?? "") + 1}`) : null;
     const { error } = tpl
       ? await (supabase.rpc as any)("send_nudge", { _template_id: tpl, _pact_id: null })
       : await (supabase.rpc as any)("send_accountability_nudge", { _connection_id: me.connection_id, _kind: kind, _message: message });
@@ -362,6 +363,14 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
 
   const rootRef = useRef<HTMLElement | null>(null);
   useEffect(() => { rootRef.current?.scrollIntoView?.({ block: "start" }); }, [view]);
+  useEffect(() => { // daily nudge suggestions; empty list or error falls back to the fixed five
+    if (view !== "partner" || !me?.connection_id) return;
+    let alive = true;
+    void (supabase.rpc as any)("get_nudge_suggestions").then(({ data, error }: { data: unknown; error: unknown }) => {
+      if (alive) setSugg(!error && Array.isArray(data) ? data as { template_id: string; category: string; text: string }[] : []);
+    });
+    return () => { alive = false; };
+  }, [view, me?.connection_id]);
   const toggleTheme = () => setAppTheme(theme === "dark" ? "simple" : "dark");
   const saveShowTree = async (v: boolean) => {
     setShowTree(v);
@@ -602,9 +611,11 @@ export function AccountabilitySection({ onBack }: { onBack?: () => void } = {}) 
       </div>
       <div className={s.card}>
         <span className={s.tlLabel} style={{ paddingTop: 0 }}>Send a nudge</span>
-        {groups.map(g => <div key={g.id} className={s.nGroup}>
+        {groups.filter(g => sugg.length === 0 || sugg.some(t => t.category === g.id.toLowerCase())).map(g => <div key={g.id} className={s.nGroup}>
           <div className={s.nGroupHead}>{g.icon}{g.id}</div>
-          {g.idx.map(i => <button key={i} className={s.nudgeBtn} aria-label={NUDGES[i]} onClick={() => void send("nudge", NUDGES[i])} disabled={busy}><span className={s.iconTile} aria-hidden="true">{g.icon}</span><span>{NUDGE_TEXT[i]}</span></button>)}
+          {sugg.length > 0
+            ? sugg.filter(t => t.category === g.id.toLowerCase()).map(t => <button key={t.template_id} className={s.nudgeBtn} aria-label={t.text} onClick={() => void send("nudge", t.text, t.template_id)} disabled={busy}><span className={s.iconTile} aria-hidden="true">{g.icon}</span><span>{t.text}</span></button>)
+            : g.idx.map(i => <button key={i} className={s.nudgeBtn} aria-label={NUDGES[i]} onClick={() => void send("nudge", NUDGES[i])} disabled={busy}><span className={s.iconTile} aria-hidden="true">{g.icon}</span><span>{NUDGE_TEXT[i]}</span></button>)}
         </div>)}
         <button className={`${s.nudgeBtn} ${s.nudgeEmerg}`} onClick={() => setConfirmEmerg(true)} disabled={busy}><span className={`${s.iconTile} ${s.iconTileCoral}`} aria-hidden="true"><AlertTriangle size={16} /></span><span>Emergency nudge</span></button>
         <PartnerHistory partnerName={name ?? "Partner"} />

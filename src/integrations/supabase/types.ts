@@ -1666,12 +1666,41 @@ export type Database = {
           },
         ]
       }
+      nudge_suggestion_log: {
+        Row: {
+          created_at: string
+          id: number
+          local_day: string
+          receiver: string
+          sender: string
+          template_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          local_day: string
+          receiver: string
+          sender: string
+          template_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          local_day?: string
+          receiver?: string
+          sender?: string
+          template_id?: string
+        }
+        Relationships: []
+      }
       nudge_templates: {
         Row: {
           active: boolean
           category: string
           created_at: string
           id: string
+          language: string
+          state_tag: string
           text: string
         }
         Insert: {
@@ -1679,6 +1708,8 @@ export type Database = {
           category: string
           created_at?: string
           id: string
+          language?: string
+          state_tag?: string
           text: string
         }
         Update: {
@@ -1686,6 +1717,8 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          language?: string
+          state_tag?: string
           text?: string
         }
         Relationships: []
@@ -3132,6 +3165,14 @@ export type Database = {
           unlocked_at: string
         }[]
       }
+      get_nudge_suggestions: {
+        Args: never
+        Returns: {
+          category: string
+          template_id: string
+          text: string
+        }[]
+      }
       get_or_create_referral_code: { Args: never; Returns: string }
       get_pact_status: {
         Args: never
@@ -3282,6 +3323,10 @@ export type Database = {
           rank: number
           total: number
         }[]
+      }
+      nudge_receiver_state: {
+        Args: { _day: string; _receiver: string }
+        Returns: string
       }
       partner_proof_action: {
         Args: { _action: string; _note?: string; _proof_id: string }
