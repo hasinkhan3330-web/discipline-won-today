@@ -25,3 +25,10 @@ No revokes on lifecycle tables in this phase. No UI change.
 ## Blockers / NOT VERIFIED
 - Item 4 may show an RPC that leaks the garden score. If fixing it needs a UI change, I stop and report.
 - Item 6: proof upload code may not exist yet. In that case I create only the bucket and its rules.
+
+## Approved additions (override the items above)
+- **Item 3:** No change. Today's `partner_messages_party_read` already lets a user read their own sent and received rows, also after removal, which is what you asked for. Skipped, so no history gets hidden.
+- **Item 4:** Every partner-data RPC must derive the partner from `auth.uid()`. Any RPC taking a client-supplied user id must check for an active partnership. No anon EXECUTE, fixed search_path. Each one is listed in the evidence.
+- **Item 5:** First measure the invite code the user types (`mkInvite` in code). If it is a random token of 128 bits or more, item 5 is skipped. If it is short, failed attempts are saved by returning an error code instead of raising, but only if the current UI handles that unchanged; otherwise I report a blocker.
+- **Item 6:** Partner read on a proof file requires a `proof_submissions` row with that `private_storage_path`, status `submitted` and an owner who is the active partner. A folder match alone is not enough.
+- **Report adds:** confirm that no client-writable column in `acct_checkins`, `acct_settings` or `acct_milestones_seen` feeds coins, garden score or trust (checked against the function bodies that compute them).
