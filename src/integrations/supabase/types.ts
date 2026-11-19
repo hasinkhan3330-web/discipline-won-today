@@ -3174,6 +3174,7 @@ export type Database = {
           trial_started_at: string
         }[]
       }
+      is_active_partner: { Args: { _other: string }; Returns: boolean }
       leaderboard_scores: {
         Args: { _period: string }
         Returns: {
@@ -3229,6 +3230,7 @@ export type Database = {
         Returns: undefined
       }
       mark_goal_celebrated: { Args: { _goal_id: string }; Returns: undefined }
+      my_active_partner: { Args: never; Returns: string }
       my_leaderboard_position: {
         Args: { _period?: string; _scope?: string }
         Returns: {

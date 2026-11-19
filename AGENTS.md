@@ -44,3 +44,4 @@
 - New pact time pickers write the same `toLocalInput` strings via pure helpers in `acct/datetime.ts` (tested); `validatePact` and the insert row stay the single source of rules. Why: no change to saved data or timezone behaviour.
 - Accountability Batch 4 device-only state (milestones seen, garden stage, invite message, share-name toggle, pending /join code) lives in localStorage `axen.acct.*`; share cards are drawn on a canvas in the browser. Why: no schema change and no private data leaves the device.
 - `/join/$code` never validates a code for signed-out visitors and never auto-accepts; the existing `acceptInvite` runs only when the signed-in user taps Join. Why: no data exposure and explicit consent.
+- Partner proof files live in private bucket `proofs` at `{user_id}/...`; partner read requires a matching proof_submissions row and `is_active_partner()`. Why: folder match alone could leak unsubmitted files.

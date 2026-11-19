@@ -288,6 +288,20 @@
       "when": 1794978091359,
       "tag": "0040_partner_events_tighten_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1795088056884,
+      "tag": "0041_apply_daily_penalty_row_lock",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1795088106535,
+      "tag": "0042_accountability_phase1_privacy",
+      "breakpoints": true
     }
   ]
 }
