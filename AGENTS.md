@@ -13,7 +13,7 @@
 - Wake alarms use a server-owned occurrence and private question state behind an AlarmScheduler adapter; only verified server solves finalize the existing wake session and coin ledger, preventing client timing/answer bypasses.
 - Wake science uses the existing private quiz rows with wake-only category/source metadata; the server-only bank is never imported by browser modules, so answer keys stay private.
 - Wake push delivery remains explicitly inactive until the new authenticated-secret callback is published and its scheduler is activated; subscription alone never implies closed-app readiness.
-- Wake private tables grant nothing to anon/authenticated and are reached only via SECURITY DEFINER functions; push bodies come from the `wakePushMessage` allowlist; offline answers queue in memory only and never count as solved. Why: defense in depth, so no answer data reaches the device.
+- Wake private tables grant nothing to anon/authenticated and are reached only via SECURITY DEFINER functions; push bodies come from the `wakePushMessage` allowlist; offline server answers queue in memory only. Why: defense in depth, so no answer data reaches the device.
 - Rank coin badges use the signed-in, leaderboard-scoped `rank_verification_badges` lookup and profile coin balance, not leaderboard DP or client-calculated rewards, so badge thresholds match the displayed coin count without changing ranking.
 - Accountability commitments, aggregate partner stats, fixed nudges, emergency alerts, and verified check-ins use the existing authenticated `send_accountability_nudge` RPC, keeping one server-authoritative partner boundary without exposing raw partner rows.
 
@@ -29,7 +29,6 @@
 - Completion coin rewards reuse the existing ledger and balance through private serialized award logic; stored reward timezone and scoped unique keys prevent daily replay without changing XP/recovery.
 - Coin amounts use the scoped CoinBadge and animate only server-confirmed award identities; no global theme or shared controls are restyled.
 
-- Accountability visuals live only in `src/components/verified/acct/` (CSS module tokens on the screen root); pacts stay rows in `daily_contracts` so Home and Accountability share one source of truth. Why: no leakage to shared styles and no parallel pact system.
 
 - Text and voice Coach share one 9-tool set (`COACH_TOOL_DEFS` / `runCoachTool`); voice adapts it in `coach-voice-tools.ts` and runs tool calls server-side. Why: one server-authoritative action path, no mark-done or coin tools.
 - Voice sessions hand the browser only ephemeral Gemini tokens, and the full Live setup (system instruction with <user_profile>, tools, transcription) is built on the server and baked into the token. Why: keys must not reach the client, and Google ignores client setup fields not in the token.
@@ -38,11 +37,8 @@
 - Wake missions Shake/Typing/Tiles reuse `alarms.challenge_type`, the existing AlarmScreen ringing path and a private `wake_finalize_solve` copied from `wake_submit_answer`; only `wake_complete_mission` (proof plausibility checks) can finish them. Why: one alarm engine and identical rewards, Math/Science untouched.
 - Coach tab UI is switched by `USE_ORB_COACH` (coach-config); the orb screen reads VoiceCoach state/levels through its render prop and analyser side-branches only. Why: the old UI can be restored and voice/audio stay untouched.
 - Coach plans are saved only through the model tool `save_plan` into `plan_tasks` (atomic `save_plan_tasks` SECURITY INVOKER function, user from auth.uid()); `create_plan_draft`/`confirm_plan` stay button-only, and confirm also writes plan_tasks. Why: one persistence path that My Plan reads, so the coach can never claim an unsaved plan.
-- Accountability overlays (menu sheet, confirm dialog, floating New pact) render through a portal with the `.portal` token class from acct.module.css. Why: the You tab wrapper is transformed, so fixed overlays inside it sat under the bottom nav.
 - Accountability home shows only data its existing queries already return; elements without real data are hidden, and partner online presence stays off until a persisted opt-out setting exists. Why: no faked signals and no presence without a saved privacy choice.
 - Partner nudge/cheer history lives in `partner_events`, written only by fail-safe AFTER INSERT triggers on `accountability_events`/`acct_cheers`; clients get SELECT + UPDATE(seen_at) only. Why: existing send functions, limits and mute stay untouched and history can never block a send.
-- Pact time pickers use tested helpers in `acct/datetime.ts`; `validatePact` stays the single rule source. Why: saved data unchanged.
-- Accountability device-only state lives in localStorage `axen.acct.*`; share cards render on a browser canvas. Why: no schema change, no private data leaves the device.
 - `/join/$code` never validates a code for signed-out visitors and never auto-accepts; the existing `acceptInvite` runs only when the signed-in user taps Join. Why: no data exposure and explicit consent.
 - Partner proof files live in private bucket `proofs` at `{user_id}/...`; partner read requires a matching proof_submissions row and `is_active_partner()`. Why: folder match alone could leak unsubmitted files.
 - Pact create/edit/pause/cancel go through `save_pact` (column whitelist, client uuid for idempotency), `set_pact_pause`, `cancel_pact`; existing daily_contracts triggers still enforce rules. Why: prepare revoking direct client writes without duplicating lifecycle logic.

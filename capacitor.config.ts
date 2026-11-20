@@ -20,6 +20,8 @@ const config: CapacitorConfig = {
     url: serverUrl,
     cleartext: false,
     androidScheme: "https",
+    // Offline fallback: lets a ringing wake alarm be stopped with no connection (android-shell/offline.html).
+    errorPath: "offline.html",
   },
   android: {
     allowMixedContent: false,

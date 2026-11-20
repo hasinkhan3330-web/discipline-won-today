@@ -11,6 +11,11 @@ import { WAKE_REASONS } from "@/lib/wake-rules";
 import { retryDelayMs, trySendAnswer, WAKE_SERVER_RETRIES, type PendingAnswer } from "@/lib/wake-answer-queue";
 import type { AlarmEvent, AlarmSubmission } from "@/lib/wake-types";
 import styles from "./alarm.module.css";
+import { OfflineStop } from "./OfflineStop";
+import { cachedFirings, isAndroidNative, markFiringSolved, solvedFirings, startAlarmHaptics, stopAlarmHaptics, tappedFiring } from "@/lib/native-alarms";
+import { activeOfflineFiring } from "@/lib/native-alarms-core";
+import { buildClaim } from "@/lib/wake-offline-core";
+import { queueClaim } from "@/lib/offline-wake-claims";
 import superloud from "@/assets/ringtones/the_cutie_pie-super-loud-ahh-alarm-165805_1.mp3.asset.json";
 import scariest from "@/assets/ringtones/The_Scariest_Alarm_256k.mp3.asset.json";
 import techno from "@/assets/ringtones/techno_beat.mp3.asset.json";
@@ -31,18 +36,30 @@ export function AlarmScreen() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  // Android offline stop: the firing that rang while the server is unreachable (null when online or not ringing).
+  const [offline, setOffline] = useState<{ alarmId: string; firingAt: number } | null>(null);
+  const [offlineDone, setOfflineDone] = useState(false);
+  /** Server-confirmed solve: stop haptics and cancel ONLY this firing's follow-ups; the observer then resyncs. */
+  const verified = (ev: AlarmEvent) => { stopAlarmHaptics(); if (!ev.is_test) void markFiringSolved(Date.parse(ev.scheduled_for)); };
   const refresh = useCallback(async () => {
     try {
-      const state = await read(); webAlarmScheduler.synchronize(state); setLoaded(true);
+      const state = await read(); webAlarmScheduler.synchronize(state); setLoaded(true); setOffline(null);
       if (state.event) {
         setEvent(state.event);
         if (state.event.status === "ringing") await webAlarmScheduler.ring(tones[state.event.tone] ?? superloud.url);
         else if (state.event.status === "solved" && !result?.solved) {
-          webAlarmScheduler.stopVerified();
+          webAlarmScheduler.stopVerified(); verified(state.event);
           setResult({ solved: true, correct: true, awarded: 0, result: state.event.result ?? "daily_claimed", event: state.event });
         }
       } else setEvent(null);
-    } catch { setError("Connection needed to verify the alarm. Reconnect and try again."); }
+    } catch {
+      setError("Connection needed to verify the alarm. Reconnect and try again.");
+      if (await isAndroidNative()) {
+        const cache = await cachedFirings();
+        const firing = cache ? activeOfflineFiring(cache.firings, await tappedFiring(), Date.now(), await solvedFirings()) : null;
+        if (cache && firing !== null) { setOffline({ alarmId: cache.alarmId, firingAt: firing }); setError(""); setLoaded(true); void webAlarmScheduler.ring(superloud.url); }
+      }
+    }
   }, [read, result?.solved]);
   useEffect(() => { void refresh(); const id = window.setInterval(refresh, 5000); return () => clearInterval(id); }, [refresh]);
   useEffect(() => {
@@ -72,7 +89,7 @@ export function AlarmScreen() {
       if (outcome.kind === "rejected") { setError(outcome.message); await refresh(); return; }
       const response = outcome.response;
       setEvent(response.event); setAnswer(""); setError("");
-      if (response.solved) { webAlarmScheduler.stopVerified(); setResult(response); window.dispatchEvent(new Event("axen:wake-updated")); window.dispatchEvent(new Event("axen:wake-solved")); }
+      if (response.solved) { webAlarmScheduler.stopVerified(); verified(response.event); setResult(response); window.dispatchEvent(new Event("axen:wake-updated")); window.dispatchEvent(new Event("axen:wake-solved")); }
       else setError(response.correct ? "One correct. Solve the next question." : "Incorrect. The alarm keeps ringing. Solve the new question.");
     } finally { inFlight.current = false; setBusy(false); }
   }, [submit, refresh]);
@@ -89,6 +106,15 @@ export function AlarmScreen() {
     await deliver({ eventId: event.id, version: event.question.version, answer: value });
   };
   const locked = busy || pending !== null;
+  const ringingNow = !result?.solved && !offlineDone && (event?.status === "ringing" || offline !== null);
+  useEffect(() => { if (ringingNow) void startAlarmHaptics(); else stopAlarmHaptics(); }, [ringingNow]);
+  useEffect(() => () => stopAlarmHaptics(), []);
+  const solvedOffline = async () => {
+    if (!offline) return;
+    webAlarmScheduler.stopVerified(); stopAlarmHaptics(); setOfflineDone(true);
+    await markFiringSolved(offline.firingAt);
+    await queueClaim(buildClaim(offline.alarmId, offline.firingAt, Date.now()));
+  };
   // New missions (Shake/Typing/Tiles) reuse this ringing screen and the same server-verified stop.
   const complete = useServerFn(completeWakeMission);
   const challenge = event?.status === "ringing" ? parseChallenge(event.question?.text) : null;
@@ -108,7 +134,7 @@ export function AlarmScreen() {
     try {
       const response = await complete({ data: { eventId: event.id, version: event.question.version, proof } });
       setEvent(response.event);
-      if (response.solved) { webAlarmScheduler.stopVerified(); setResult(response); window.dispatchEvent(new Event("axen:wake-updated")); window.dispatchEvent(new Event("axen:wake-solved")); }
+      if (response.solved) { webAlarmScheduler.stopVerified(); verified(response.event); setResult(response); window.dispatchEvent(new Event("axen:wake-updated")); window.dispatchEvent(new Event("axen:wake-solved")); }
       else { setError("That didn't verify. The alarm keeps ringing — do the mission again."); setAttempt(a => a + 1); }
     } catch (reason) {
       setError(reason instanceof Error && /Too many attempts/.test(reason.message) ? reason.message : "Connection needed to verify. The alarm keeps ringing — try again.");
@@ -117,8 +143,13 @@ export function AlarmScreen() {
   };
   return <div className={styles.surface} role="dialog" aria-modal="true" aria-label="Wake verification"><div className={styles.inner}>
     <p className={styles.muted}>AXEN · {event?.is_test ? "TEST ALARM" : "WAKE PROTOCOL"}</p>
-    <h1 className={styles.title}>{result?.solved ? "AWAKE CONFIRMED" : "WAKE UP"}</h1>
-    {result?.solved ? <>
+    <h1 className={styles.title}>{result?.solved ? "AWAKE CONFIRMED" : offlineDone ? "ALARM STOPPED" : "WAKE UP"}</h1>
+    {offlineDone && !result?.solved ? <>
+      <p className={styles.muted} data-coins-pending="true">COINS PENDING</p>
+      <p className={styles.muted}>Alarm stopped offline. Coins pending — the server confirms them when you're back online.</p>
+      <Button className={styles.command} onClick={() => navigate({ to: "/dashboard" })}>Continue</Button>
+    </> : offline && !result?.solved && event?.status !== "ringing" ? <OfflineStop onSolved={() => void solvedOffline()} />
+    : result?.solved ? <>
       {(result.awarded ?? 0) > 0 && <CoinBadge amount={result.awarded ?? 0} state="earned" awardId={result.event.id} />}
       <p className={styles.muted}>{WAKE_REASONS[result.result ?? ""] ?? "Alarm solved."}</p>
       <p className={styles.muted}>{result.explanation}</p>

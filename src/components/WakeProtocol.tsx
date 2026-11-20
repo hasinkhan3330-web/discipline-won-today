@@ -13,6 +13,9 @@ import { CoinBadge } from "@/components/CoinBadge";
 import { wakeReward } from "@/lib/wake-rules";
 import { MissionPicker } from "@/components/wake/missions/MissionPicker";
 import { isNewMission } from "@/lib/wake-missions/rules";
+import { toast } from "sonner";
+import { ensureAlarmPermissions } from "@/lib/native-alarms";
+import { readClaims, CLAIMS_EVENT } from "@/lib/offline-wake-claims";
 
 type Mode = "math" | "science" | "shake" | "typing" | "tiles";
 const MODE_NAME: Record<Mode, string> = { math: "Math", science: "Science", shake: "Shake", typing: "Typing", tiles: "Find Color Tiles" };
@@ -75,6 +78,12 @@ export function WakeProtocol({
   const [timezone, setTimezone] = useState("Asia/Kolkata");
   const [ready] = useState(webAlarmScheduler.ready);
   const [saved, setSaved] = useState(false);
+  const [pendingClaims, setPendingClaims] = useState(0);
+  useEffect(() => {
+    const load = () => { void readClaims().then(c => setPendingClaims(c.length)); };
+    load(); window.addEventListener(CLAIMS_EVENT, load);
+    return () => window.removeEventListener(CLAIMS_EVENT, load);
+  }, []);
   const [rounds, setRounds] = useState(1);
   const saveMission = useServerFn(saveWakeMissionOptions);
 
@@ -135,6 +144,7 @@ export function WakeProtocol({
       setTimezone(state.timezone);
       setSaved(true);
       window.dispatchEvent(new Event("axen:wake-updated"));
+      if (reminderEnabled) void ensureAlarmPermissions(open => toast("Allow exact alarms so AXEN rings on time, even when the app is closed.", { action: { label: "Open settings", onClick: open }, duration: 15000 }));
       setStatus("idle");
     } catch (reason) {
       setStatus("error");
@@ -208,7 +218,7 @@ export function WakeProtocol({
         <section className="wakep__countdown">
           <span><Clock3 size={15} /> NEXT CHECK-IN WINDOW</span>
           <strong>{nextFire ? formatCountdown(countdown) : "—:—:—"}</strong>
-          <small>{nextFire ? `${wakeTime} · ${timezone}` : "No saved alarm"} · {saved ? reminderEnabled ? ready ? "Overnight ready" : "Saved · start Overnight Mode" : "Off" : "Unsaved changes"}</small>
+          <small>{nextFire ? `${wakeTime} · ${timezone}` : "No saved alarm"} · {saved ? reminderEnabled ? ready ? "Overnight ready" : "Saved · start Overnight Mode" : "Off" : "Unsaved changes"}</small>{pendingClaims > 0 && <small data-wake-claims-pending="true">Offline wake · coins pending sync</small>}
           <CoinBadge amount={wakeReward(wakeTime)} variant="amount" state={wakeReward(wakeTime) ? "available" : "disabled"} />
         </section>
 

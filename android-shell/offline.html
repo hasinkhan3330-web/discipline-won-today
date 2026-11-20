@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>AXEN · Offline</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; min-height: 100%; background: #05060f; color: #e6ebff; font-family: ui-sans-serif, system-ui, sans-serif; }
+  .wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px; text-align: center; box-sizing: border-box; }
+  .mark { font-size: 32px; font-weight: 800; letter-spacing: .28em; color: #c6f432; }
+  h1 { margin: 0; font-size: 30px; letter-spacing: .12em; }
+  .muted { opacity: .7; font-size: 13px; letter-spacing: .08em; }
+  .q { font-size: 28px; font-weight: 700; padding: 18px; border: 1px solid #2a3150; border-radius: 12px; width: 100%; max-width: 360px; box-sizing: border-box; }
+  input, button { font: inherit; font-size: 18px; width: 100%; max-width: 360px; padding: 14px; border-radius: 10px; box-sizing: border-box; }
+  input { background: #0d1022; color: #fff; border: 1px solid #2a3150; }
+  button { background: #c6f432; color: #05060f; border: 0; font-weight: 700; }
+  .err { color: #ff9a9a; font-size: 14px; min-height: 18px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mark">AXEN</div>
+  <section id="idle">
+    <p class="muted">You're offline.</p>
+    <button id="retry" type="button">Try again</button>
+  </section>
+  <section id="ring" hidden>
+    <h1>WAKE UP</h1>
+    <p class="muted" id="streak"></p>
+    <div class="q" id="q"></div>
+    <form id="f"><input id="a" inputmode="numeric" autocomplete="off" aria-label="Answer" /><p></p><button type="submit">Submit answer</button></form>
+    <p class="err" id="err" role="status"></p>
+    <p class="muted">No connection. Coins are confirmed by the server when you're back online.</p>
+  </section>
+  <section id="done" hidden>
+    <h1>ALARM STOPPED</h1>
+    <p class="muted">COINS PENDING — confirmed by the server when you're back online.</p>
+    <button id="back" type="button">Back to AXEN</button>
+  </section>
+</div>
+<audio id="snd" src="axen_alarm.wav" loop></audio>
+<script type="module">
+import { OFFLINE_STREAK, makeOfflineQuestion, checkOfflineAnswer, nextStreak, firingIds, activeOfflineFiring, buildClaim, addClaim } from "./offline-core.js";
+const P = (window.Capacitor && window.Capacitor.Plugins) || {};
+const get = async (key, fb) => { try { const { value } = await P.Preferences.get({ key }); return value ? JSON.parse(value) : fb; } catch { return fb; } };
+const set = async (key, v) => { try { await P.Preferences.set({ key, value: JSON.stringify(v) }); } catch {} };
+const $ = id => document.getElementById(id);
+const appUrl = async () => (await get("axen.app.url", null)) || "https://axonhabit.app";
+const go = async () => { location.href = await appUrl(); };
+$("retry").onclick = go; $("back").onclick = go;
+window.addEventListener("online", () => { if ($("ring").hidden) go(); });
+
+const cache = await get("axen.alarm.firings", null);
+const solved = new Set(await get("axen.alarm.solved", []));
+const firing = cache ? activeOfflineFiring(cache.firings || [], await get("axen.alarm.tapped", null), Date.now(), solved) : null;
+if (cache && firing !== null) {
+  $("idle").hidden = true; $("ring").hidden = false;
+  const snd = $("snd"); snd.play().catch(() => {});
+  const buzz = setInterval(() => { try { P.Haptics.vibrate({ duration: 900 }); } catch {} }, 1300);
+  let q = makeOfflineQuestion(), streak = 0;
+  const show = () => { $("q").textContent = q.text + " = ?"; $("streak").textContent = `OFFLINE STOP · ${streak}/${OFFLINE_STREAK} correct in a row`; };
+  show();
+  $("f").onsubmit = async e => {
+    e.preventDefault(); snd.play().catch(() => {});
+    const ok = checkOfflineAnswer(q, $("a").value); $("a").value = "";
+    streak = nextStreak(streak, ok);
+    if (ok && streak >= OFFLINE_STREAK) {
+      clearInterval(buzz); snd.pause();
+      solved.add(firing); await set("axen.alarm.solved", [...solved]);
+      try { await P.LocalNotifications.cancel({ notifications: firingIds(firing).map(id => ({ id })) }); } catch {}
+      await set("axen.wake.claims", addClaim(await get("axen.wake.claims", []), buildClaim(cache.alarmId, firing, Date.now())));
+      $("ring").hidden = true; $("done").hidden = false; return;
+    }
+    $("err").textContent = ok ? "Correct. Next question." : "Incorrect. The alarm keeps ringing — new question, streak reset.";
+    q = makeOfflineQuestion(); show();
+  };
+}
+</script>
+</body>
+</html>

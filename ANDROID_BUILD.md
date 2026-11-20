@@ -254,3 +254,6 @@ and `npm run android:aab`) fails the build unless the package ID is exactly
 
 It also warns if the WebView shell loses `androidScheme: 'https'`,
 `allowMixedContent: false`, or the `INTERNET` permission.
+
+## Native wake alarms
+After pulling these changes run `npx cap sync android` and rebuild. The alarm sound is `android/app/src/main/res/raw/axen_alarm.wav` (channel "alarms"); the offline stop page is `android-shell/offline.html`. In the Play Console, declare exact alarms (SCHEDULE_EXACT_ALARM) as a core alarm-clock feature.

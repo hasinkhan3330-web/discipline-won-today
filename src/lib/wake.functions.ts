@@ -66,3 +66,12 @@ export const saveWakeMissionOptions = createServerFn({ method: "POST" }).middlew
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+// Offline wake claim: the server checks the firing, timing windows and clock drift, and computes coins itself.
+export const claimOfflineWake = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
+  .inputValidator((x) => z.object({ alarmId: z.string().uuid(), scheduledFor: z.string().datetime(), solvedAt: z.string().datetime(), elapsedMs: z.number().int().min(0).max(36e5), clientNow: z.string().datetime() }).parse(x))
+  .handler(async ({ data, context }) => {
+    const { verifyWakeOrigin } = await import("./wake-origin.server"); verifyWakeOrigin();
+    const { data: response, error } = await context.supabase.rpc("wake_claim_offline", { _alarm_id: data.alarmId, _scheduled_for: data.scheduledFor, _solved_at: data.solvedAt, _client_now: data.clientNow, _elapsed_ms: data.elapsedMs });
+    if (error) throw new Error(error.message);
+    return response as unknown as { accepted: boolean; result: string; awarded: number; duplicate?: boolean };
+  });

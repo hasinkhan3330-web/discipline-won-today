@@ -2775,6 +2775,51 @@ export type Database = {
         }
         Relationships: []
       }
+      wake_offline_claims: {
+        Row: {
+          accepted: boolean
+          alarm_id: string
+          awarded: number
+          client_now: string
+          elapsed_ms: number
+          event_id: string | null
+          id: string
+          received_at: string
+          result: string
+          scheduled_for: string
+          solved_at: string
+          user_id: string
+        }
+        Insert: {
+          accepted?: boolean
+          alarm_id: string
+          awarded?: number
+          client_now: string
+          elapsed_ms: number
+          event_id?: string | null
+          id?: string
+          received_at?: string
+          result: string
+          scheduled_for: string
+          solved_at: string
+          user_id: string
+        }
+        Update: {
+          accepted?: boolean
+          alarm_id?: string
+          awarded?: number
+          client_now?: string
+          elapsed_ms?: number
+          event_id?: string | null
+          id?: string
+          received_at?: string
+          result?: string
+          scheduled_for?: string
+          solved_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wake_push_outbox: {
         Row: {
           accepted_at: string | null
@@ -3622,6 +3667,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      wake_claim_offline: {
+        Args: {
+          _alarm_id: string
+          _client_now: string
+          _elapsed_ms: number
+          _scheduled_for: string
+          _solved_at: string
+        }
+        Returns: Json
+      }
       wake_claim_push: { Args: { _limit?: number }; Returns: Json }
       wake_complete_mission: {
         Args: { _event_id: string; _proof: Json; _version: number }
@@ -3629,6 +3684,10 @@ export type Database = {
       }
       wake_create_occurrence: { Args: { aid: string }; Returns: string }
       wake_event_payload: { Args: { eid: string }; Returns: Json }
+      wake_finalize_offline: {
+        Args: { _event_id: string; _solved_at: string }
+        Returns: Json
+      }
       wake_finalize_solve: { Args: { _event_id: string }; Returns: Json }
       wake_finish_push: {
         Args: { _http: number; _id: string; _lease: string }

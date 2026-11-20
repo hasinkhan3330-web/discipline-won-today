@@ -351,6 +351,13 @@
       "when": 1795109060771,
       "tag": "0049_daily_coin_decay",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1795172414048,
+      "tag": "0050_wake_offline_claims_and_rls_fixes",
+      "breakpoints": true
     }
   ]
 }
