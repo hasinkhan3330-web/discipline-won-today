@@ -1,4 +1,36 @@
-# Access-rule (RLS) audit and proposed fixes
+# Plan: native Android alarms (Part A) + access-rule fixes (Part B)
+
+# Part A: Native alarm notifications
+
+## What you get
+On the installed Android app, every active alarm (4AM Protocol / Wake alarm) is scheduled on the phone itself. It rings with a long alarm sound, vibrates and shows on the lock screen even when the app is closed or the phone is locked. Tapping it opens the existing alarm screen, where the Math/Science/mission challenge works exactly as it does today, and coins are still awarded only by the server. The website and the preview behave exactly as before.
+
+## How it works
+1. **Permissions**: the first time you save or enable an alarm on Android, the app asks for notification permission. It then checks exact-alarm permission with checkExactNotificationSetting. If that's off, the app shows a short explanation and opens the system setting with changeExactNotificationSetting.
+2. **Channel "alarms"**: importance max, vibration on, lock-screen visibility public, and a custom sound `axen_alarm` (an original 35-second alarm tone added to the app's sound files).
+3. **Scheduling**: each alarm uses fixed notification IDs made from its alarm ID. For repeating alarms, there's one weekly-repeating notification per selected weekday (on: weekday, hour, minute, allowWhileIdle). A single (non-repeat) alarm uses one notification at its next fire time.
+4. **Resync**: on every app open/resume and after every save, edit, enable or disable, the app cancels all "alarms" notifications it owns and schedules them again from the server's alarm list. This also covers time-zone changes and reboots (the plugin reschedules after boot).
+5. **Cancel**: if an alarm is disabled or deleted, its notifications are removed on the next sync, which runs right after the change.
+6. Existing reminders (habit reminders) keep their current behaviour and ID range. Alarm IDs use a separate range so they never collide.
+
+## Files to change
+- package.json: pin `@capacitor/local-notifications` to ^7. It's currently ^8, which doesn't match Capacitor core 7 and would crash the native build.
+- New: src/lib/native-alarms.ts holds permissions, the channel, building the schedule from alarm rows (pure helper), and sync/cancel.
+- New: tests/native-alarms.test.ts covers the repeat-day → weekday mapping, non-repeat next time, stable IDs, and disabled alarms producing no notifications.
+- src/components/WakeProtocol.tsx: call sync after save/enable/disable (one line each, no UI change).
+- src/routes/_authenticated/dashboard.tsx (or the existing app root observer src/components/wake/WakeObserver.tsx): sync on app open/resume, native only.
+- android/app/src/main/AndroidManifest.xml: add POST_NOTIFICATIONS, SCHEDULE_EXACT_ALARM, USE_FULL_SCREEN_INTENT, RECEIVE_BOOT_COMPLETED, VIBRATE, WAKE_LOCK.
+- New: android/app/src/main/res/raw/axen_alarm.wav (generated, original sound).
+- ANDROID_BUILD.md: a note to run `npx cap sync android` and rebuild.
+
+## Limits to know
+- This needs a new Android build uploaded to the Play Store. The live website can't do it.
+- Android notification sounds play once per notification. A 35-second tone gives a long ring, but it won't loop endlessly like the built-in clock app. Ringing forever would need a custom native alarm service, which is out of scope.
+- Some phone makers (Xiaomi, Oppo, Vivo) may still delay alarms unless battery optimisation is off for AXEN.
+- I can't test on a real phone from here.
+- Play Store: apps using SCHEDULE_EXACT_ALARM must declare that alarm is a core feature in the Play Console.
+
+# Part B: Access-rule (RLS) audit and proposed fixes
 
 ## Results (read-only, live database)
 
