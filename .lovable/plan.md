@@ -1,23 +1,29 @@
-# Native Google sign-in for the Android app
+# Public /privacy-policy page
 
-## Why it's stuck and why "Lovable" shows
-- The Android app loads axonhabit.app in a webview. Tapping Google opens Chrome, Google sends you back to oauth.lovable.app inside Chrome, and Chrome has no way to hand the session back to the app.
-- "Choose an account to continue to Lovable" appears because the app uses Lovable's shared Google login. The only way to show "AXEN" there instead is to use your own Google login keys.
+## Goal
+axonhabit.app/privacy-policy opens for everyone (no sign-in) and shows a full privacy policy. Nothing else in the app changes; the existing /privacy and /terms pages stay as they are.
 
-## Fix (Android app only; website login stays exactly as it is)
-1. On Android, the Google button opens the phone's own Google account picker (no Chrome). The picker returns a Google token, which signs you in to AXEN directly. You never leave the app.
-2. The website and the preview keep using the current Google sign-in unchanged. Email login and everything else stay untouched.
-3. The account picker shows your app name "AXEN", not Lovable.
+## Page content (AXEN by NEXT AI, contact support@next-ai.app, dated today)
+1. Who we are
+2. Account & login data — email, display name, profile photo; Google Sign-In shares name, email and photo only; passwords stored hashed by our sign-in provider.
+3. Alarms & Wake Protocol — alarm times, repeat days, timezone, solve results; alarms are scheduled on your phone; offline solves are saved on the phone and sent when you're back online; no answer keys stored on the device.
+4. Notifications — alarm and reminder notifications, exact-alarm and notification permissions, can be turned off in phone settings.
+5. Coins, streaks & rewards — calculated on our servers; daily coin decay; leaderboard shows display name only, never email.
+6. Payments — Google Play Billing and RevenueCat; we never see card details.
+7. Other data — partner/accountability sharing, proof photos (private, visible to an active partner only), AI coach messages and voice (processed by Google Gemini), camera photos checked by Roboflow.
+8. Data storage & security — encrypted connections, access rules per user.
+9. Your rights
+10. Account deletion — how to request (email support@next-ai.app from your account email, subject "Delete my account"); deleted within 90 days, payment records kept as law requires.
+11. Children — not for under 13.
+12. Changes & contact
 
-## What you need to do (I'll give step-by-step help)
-1. In Google Cloud console, create two OAuth client IDs: one "Web application" and one "Android" (package `com.hasin.axen` + your signing key's SHA-1 fingerprint, plus Play Console's App signing SHA-1).
-2. Set the OAuth consent screen app name to "AXEN" and add your logo.
-3. Paste the Web client ID + secret into Cloud → Users → Auth settings → Google, so the website also shows "AXEN" instead of Lovable.
-4. Rebuild the Android app (`npx cap sync android`, new build).
+## After building
+I'll check the page loads in the preview without signing in, then you click Publish so it goes live on axonhabit.app.
 
 ## Technical details
-- Add `@capgo/capacitor-social-login` (Capacitor 7 compatible). In `src/routes/index.tsx`, branch on `Capacitor.getPlatform() === "android"`: call `SocialLogin.login({ provider: "google", options: { scopes: ["email","profile"] } })`, then `supabase.auth.signInWithIdToken({ provider: "google", token: idToken })`. Use a nonce (raw to Supabase, SHA-256 to Google).
-- Web client ID stored as public `VITE_GOOGLE_WEB_CLIENT_ID` (not a secret); initialize plugin once in a small `src/lib/native-google-auth.ts`.
-- Web path keeps `lovable.auth.signInWithOAuth`; `src/integrations/lovable` untouched.
-- Update `ANDROID_BUILD.md` with SHA-1 and rebuild steps; AGENTS.md rule.
-- Not testable here: real phone login needs your client IDs and a rebuilt APK.
+- New route `src/routes/privacy-policy.tsx` (public, outside `_authenticated`), reusing the same legal page layout/styling as `privacy.tsx` (copy the shell locally; don't edit privacy.tsx).
+- head(): title "Privacy Policy — AXEN Habit & Discipline", description, canonical https://axonhabit.app/privacy-policy.
+- No database, auth or other route changes.
+
+## Note
+The Android Google sign-in fix from earlier is paused and can follow as a separate step.
