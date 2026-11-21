@@ -113,8 +113,12 @@ async function writePlanTasks({ supabase }: Ctx, title: string, tasks: ValidTask
 async function syncHome(ctx: Ctx, title: string, tasks: ValidTask[], today: string) {
   const { supabase, userId } = ctx;
   try {
-    const byDay = new Map<number, ValidTask[]>();
-    for (const t of tasks) {
+    // Mirror the full saved week (today..today+6) from plan_tasks, not just the days in this save,
+    // so editing one day never wipes the others from Home. Falls back to the submitted tasks.
+    const { data: saved, error: readErr } = await supabase.from("plan_tasks").select("task_date,title,duration_minutes").eq("user_id", userId).gte("task_date", today).lte("task_date", addDays(today, 6)).order("task_date").order("created_at");
+    const source: Pick<ValidTask, "task_date" | "title" | "duration_minutes">[] = !readErr && saved?.length ? saved : tasks;
+    const byDay = new Map<number, Pick<ValidTask, "task_date" | "title" | "duration_minutes">[]>();
+    for (const t of source) {
       const day = Math.round((Date.parse(t.task_date + "T00:00:00Z") - Date.parse(today + "T00:00:00Z")) / 86400000) + 1;
       if (day >= 1 && day <= 7) byDay.set(day, [...(byDay.get(day) ?? []), t]);
     }
