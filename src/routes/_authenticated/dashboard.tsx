@@ -940,7 +940,7 @@ function App() {
 
           {/* LEGAL LINKS */}
           <div style={{ display: tab === "home" || tab === "coach" || tab === "stats" || tab === "profile" || tab === "rank" ? "none" : "block", marginTop: 28, padding: "16px 12px", textAlign: "center", borderTop: `1px solid ${AX.border}` }}>
-            <div style={{ fontSize: 12, color: AX.muted, marginBottom: 10 }}>AXEN Habit &amp; Discipline · a product of Next AI</div>
+            <div style={{ fontSize: 12, color: AX.muted, marginBottom: 10 }}>AXEN Habit &amp; Discipline · a product of Aevonix</div>
             <div style={{ display: "flex", justifyContent: "center", gap: 18, flexWrap: "wrap" }}>
               <Link to="/privacy" style={{ color: AX.muted, textDecoration: "none", fontSize: 12 }}>Privacy</Link>
               <Link to="/terms" style={{ color: AX.muted, textDecoration: "none", fontSize: 12 }}>Terms</Link>

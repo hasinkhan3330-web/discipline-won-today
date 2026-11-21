@@ -17,7 +17,7 @@ export const Route = createFileRoute("/refund")({
 function Refund() {
   return <LegalShell title="REFUND POLICY">
     <p><b>Last updated:</b> July 25, 2026</p>
-    <p>NEXT AI ("we", "us"), operator of the AXEN Habit & Discipline ("AXEN") application, offers a fair refund policy for all subscribers.</p>
+    <p>Aevonix ("we", "us"), operator of the AXEN Habit & Discipline ("AXEN") application, offers a fair refund policy for all subscribers.</p>
 
     <h2>1. 30-Day Money-Back Guarantee</h2>
     <p>We offer a <b>30-day money-back guarantee</b>. If you are not satisfied with your AXEN subscription, you may request a full refund within 30 days of your order date.</p>
@@ -26,7 +26,7 @@ function Refund() {
     <p>Refunds are processed through <b>Google Play</b>, back to the payment method used on your Google account, typically within 5–10 business days. To request a refund:</p>
     <ul>
       <li>Open the billing portal from your profile and review your invoices, or</li>
-      <li>Email us at <b>support@next-ai.app</b> — we'll process your request directly.</li>
+      <li>Email us at <b>team@aevonix.pro</b> — we'll process your request directly.</li>
     </ul>
     <p>Refunds are returned to the original payment method within 5–10 business days.</p>
 
@@ -34,7 +34,7 @@ function Refund() {
     <p>You can cancel your subscription at any time from your account portal. Cancellation stops future renewals but does not automatically issue a refund for the current billing period — request a refund separately if within the 30-day window.</p>
 
     <h2>4. Questions</h2>
-    <p>Contact <b>support@next-ai.app</b> for anything refund-related.</p>
+    <p>Contact <b>team@aevonix.pro</b> for anything refund-related.</p>
   </LegalShell>;
 }
 
@@ -54,7 +54,7 @@ function LegalShell({ title, children }: { title: string; children: React.ReactN
         <h1 style={{ color: "#fff", letterSpacing: 4, fontSize: 32, textShadow: `0 0 20px ${G}` }}>{title}</h1>
         <div style={{ marginTop: 24, fontSize: 14, lineHeight: 1.8 }} className="legal">{children}</div>
         <footer style={{ marginTop: 60, textAlign: "center", fontSize: 11, color: "#555" }}>
-          AXEN is a product of NEXT AI · support@next-ai.app
+          AXEN is a product of Aevonix · team@aevonix.pro
         </footer>
         <style>{`.legal h2{color:${G};letter-spacing:2px;font-size:14px;margin-top:32px}.legal ul{padding-left:20px}.legal li{margin:6px 0}.legal b{color:#fff}`}</style>
       </div>

@@ -6,7 +6,7 @@ export const Route = createFileRoute("/privacy-policy")({
   head: () => ({
     meta: [
       { title: "Privacy Policy — AXEN Habit & Discipline" },
-      { name: "description", content: "How AXEN by NEXT AI handles account, alarm, notification, coin and payment data, and how to delete your account." },
+      { name: "description", content: "How AXEN by Aevonix handles account, alarm, notification, coin and payment data, and how to delete your account." },
       { property: "og:title", content: "Privacy Policy — AXEN Habit & Discipline" },
       { property: "og:description", content: "AXEN's privacy policy: data we collect, how we use it, and account deletion." },
       { property: "og:type", content: "article" },
@@ -33,10 +33,10 @@ function PrivacyPolicy() {
         <h1 style={{ color: "#fff", letterSpacing: 4, fontSize: 32, textShadow: `0 0 20px ${G}` }}>PRIVACY POLICY</h1>
         <div style={{ marginTop: 24, fontSize: 14, lineHeight: 1.8 }} className="legal">
           <p><b>Last updated:</b> November 20, 2026</p>
-          <p>This Privacy Policy explains how <b>NEXT AI</b> ("we", "us"), the operator of AXEN Habit &amp; Discipline ("AXEN"), collects, uses and protects your information when you use the AXEN website and Android app.</p>
+          <p>This Privacy Policy explains how <b>Aevonix</b> ("we", "us"), the operator of AXEN Habit &amp; Discipline ("AXEN"), collects, uses and protects your information when you use the AXEN website and Android app.</p>
 
           <h2>1. Who We Are</h2>
-          <p>AXEN is a discipline and habit-tracking app made by NEXT AI. Contact: <b>support@next-ai.app</b>.</p>
+          <p>AXEN is a discipline and habit-tracking app made by Aevonix. Contact: <b>team@aevonix.pro</b>.</p>
 
           <h2>2. Account &amp; Login Data</h2>
           <ul>
@@ -87,11 +87,11 @@ function PrivacyPolicy() {
           <p>Data is stored with our cloud hosting provider. All connections use encryption (HTTPS/TLS), and access rules ensure each user can only reach their own data, or data a partner has chosen to share.</p>
 
           <h2>10. Your Rights</h2>
-          <p>Depending on where you live, you may access, correct, export or delete your data, or object to its use. Email <b>support@next-ai.app</b>; we reply within one month.</p>
+          <p>Depending on where you live, you may access, correct, export or delete your data, or object to its use. Email <b>team@aevonix.pro</b>; we reply within one month.</p>
 
           <h2>11. Account Deletion</h2>
           <ul>
-            <li>To delete your account, email <b>support@next-ai.app</b> from the email address on your account with the subject <b>"Delete my account"</b>.</li>
+            <li>To delete your account, email <b>team@aevonix.pro</b> from the email address on your account with the subject <b>"Delete my account"</b>.</li>
             <li>We delete or anonymise your account, alarms, coins, partner data, photos and coach history within 90 days.</li>
             <li>Payment records may be kept longer where the law requires. Cancel any active subscription in Google Play first.</li>
           </ul>
@@ -100,10 +100,10 @@ function PrivacyPolicy() {
           <p>AXEN is not intended for children under 13, and we do not knowingly collect their data.</p>
 
           <h2>13. Changes &amp; Contact</h2>
-          <p>We will update this policy when our practices change and show the new date above. Questions: <b>support@next-ai.app</b>.</p>
+          <p>We will update this policy when our practices change and show the new date above. Questions: <b>team@aevonix.pro</b>.</p>
         </div>
         <footer style={{ marginTop: 60, textAlign: "center", fontSize: 11, color: "#555" }}>
-          AXEN is a product of NEXT AI · support@next-ai.app
+          AXEN is a product of Aevonix · team@aevonix.pro
         </footer>
         <style>{`.legal h2{color:${G};letter-spacing:2px;font-size:14px;margin-top:32px}.legal ul{padding-left:20px}.legal li{margin:6px 0}.legal b{color:#fff}`}</style>
       </div>
