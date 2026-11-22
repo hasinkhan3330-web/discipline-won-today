@@ -10,16 +10,13 @@ describe("coach plan rules", () => {
     expect(isPlanLength(90)).toBe(false);
     expect(isPlanLength(30)).toBe(false);
   });
-  test("week 1 has at most 3 tasks per day, later days at most 4", () => {
-    const plan = enforcePlanRules({ days: Array.from({ length: 21 }, (_, i) => ({ day: i + 1, tasks: many(6, 5) })) }, 21, 120);
-    expect(plan.days).toHaveLength(21);
-    expect(plan.days[0]!.tasks).toHaveLength(3);
-    expect(plan.days[6]!.tasks).toHaveLength(3);
-    expect(plan.days[7]!.tasks).toHaveLength(4);
+  test("at most 12 tasks per day", () => {
+    const plan = enforcePlanRules({ days: [{ day: 1, tasks: many(15, 5) }] }, 1, 30);
+    expect(plan.days[0]!.tasks).toHaveLength(12);
   });
-  test("daily minutes never exceed the user's available time", () => {
-    const plan = enforcePlanRules({ days: [{ day: 1, tasks: many(3, 25) }] }, 1, 30);
-    expect(plan.days[0]!.tasks.reduce((s, t) => s + t.minutes, 0)).toBeLessThanOrEqual(30);
+  test("user's hours are kept exactly, never cut to available time", () => {
+    const plan = enforcePlanRules({ days: [{ day: 1, tasks: many(3, 360) }] }, 1, 60);
+    expect(plan.days[0]!.tasks.map((t) => t.minutes)).toEqual([360, 360, 360]);
   });
   test("every task has a minimum version", () => {
     const plan = enforcePlanRules({ days: [{ day: 1, tasks: [{ title: "Study", minutes: 10 }] }] }, 1, 60);

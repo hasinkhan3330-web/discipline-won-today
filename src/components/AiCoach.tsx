@@ -14,7 +14,7 @@ import coachOffice from "@/assets/ai-coach-office.jpg";
 import { USE_ORB_COACH } from "@/lib/coach-config";
 import { CoachOrbScreen, OrbSheet } from "@/components/coach/orb/CoachOrbScreen";
 
-const STARTERS=["Plan my next 7 days","Fix my weakest habit","I feel like quitting"];
+const STARTERS=["Plan my tomorrow","Fix my weakest habit","I feel like quitting"];
 export function AiCoach({onOpenFocus,onCreateHabit}:{onOpenFocus?:()=>void;onCreateHabit?:(name:string)=>void}){
   const navigate=useNavigate();const ask=useServerFn(askCoach); const load=useServerFn(getLatestCoachConversation);
   const[messages,setMessages]=useState<CoachMessage[]>([]);const[conversationId,setConversationId]=useState<string|null>(null);const[input,setInput]=useState("");const[busy,setBusy]=useState(false);const[error,setError]=useState<string|null>(null);const[chatOpen,setChatOpen]=useState(false);const[loaded,setLoaded]=useState(false);const[planKey,setPlanKey]=useState(0);const[sheetOpen,setSheetOpen]=useState(false);const[planOpen,setPlanOpen]=useState(false);const[chipPending,setChipPending]=useState(false);

@@ -21,8 +21,12 @@ describe("save_plan validation", () => {
     expect(validatePlan({ tasks: [t("2026-02-30")] }, "2026-02-01").ok).toBe(false);
     expect(validatePlan({ tasks: [t(today, "  ")] }, today).ok).toBe(false);
   });
-  it("rejects a 5th task on one day", () => {
-    expect(validatePlan({ tasks: [1, 2, 3, 4, 5].map(() => t(today)) }, today).ok).toBe(false);
+  it("rejects a 13th task on one day", () => {
+    expect(validatePlan({ tasks: Array.from({ length: 13 }, () => t(today)) }, today).ok).toBe(false);
+  });
+  it("keeps the user's exact hours (6h x 3 subjects, no cap)", () => {
+    const r = validatePlan({ tasks: ["Physics", "Biology", "Chemistry"].map((s) => ({ task_date: addDays(today, 1), title: s + " numericals", duration_minutes: 360 })) }, today);
+    expect(r.ok && r.tasks.map((x) => x.duration_minutes)).toEqual([360, 360, 360]);
   });
   it("rejects empty plans", () => {
     expect(validatePlan({ tasks: [] }, today).ok).toBe(false);

@@ -15,7 +15,7 @@ type ThemeKey = keyof typeof ORB_THEMES;
 const SWATCH: Record<ThemeKey, string> = { lime: "linear-gradient(135deg,#C6F432,#2FB8C9)", ice: "#4DA3FF", violet: "linear-gradient(135deg,#ff8bd0,#b57cff)" };
 const THEME_LABEL: Record<ThemeKey, string> = { lime: "1. Lime", ice: "2. Ice blue", violet: "3. Violet" };
 const LABEL: Record<VoicePhase, string> = { idle: "Tap the mic to talk", listen: "Listening...", think: "Thinking...", speak: "Coach is speaking..." };
-const CHIPS = ["Plan my next 7 days", "Fix my weakest habit", "I feel like quitting"];
+const CHIPS = ["Plan my tomorrow", "Fix my weakest habit", "I feel like quitting"];
 const tz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } };
 
 export function CoachOrbScreen({ voice, chatBusy, onChip, onKeyboard, sheet, planSheet, onStat }: {

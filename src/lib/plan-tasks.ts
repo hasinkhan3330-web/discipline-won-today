@@ -2,7 +2,7 @@
 export type PlanTaskInput = { task_date: string; day_number?: number; title: string; description?: string; duration_minutes?: number };
 export type ValidTask = { task_date: string; day_number: number | null; title: string; description: string | null; duration_minutes: number | null };
 export const MAX_PLAN_DAYS = 7;
-export const MAX_TASKS_PER_DAY = 4;
+export const MAX_TASKS_PER_DAY = 12;
 
 export function addDays(day: string, n: number): string {
   const d = new Date(day + "T00:00:00Z");
@@ -30,7 +30,7 @@ export function validatePlan(args: any, today: string):
     if (count > MAX_TASKS_PER_DAY) return { ok: false, error: `At most ${MAX_TASKS_PER_DAY} tasks per day.` };
     perDay.set(date, count);
     const mins = t?.duration_minutes == null || t.duration_minutes === "" ? null : Math.round(Number(t.duration_minutes));
-    if (mins !== null && (!Number.isFinite(mins) || mins < 1 || mins > 480)) return { ok: false, error: "Duration must be 1-480 minutes." };
+    if (mins !== null && (!Number.isFinite(mins) || mins < 1)) return { ok: false, error: "Duration must be at least 1 minute." };
     const dn = t?.day_number == null ? null : Math.round(Number(t.day_number));
     tasks.push({ task_date: date, day_number: Number.isFinite(dn as number) ? dn : null, title: name.slice(0, 160), description: t?.description ? String(t.description).slice(0, 500) : null, duration_minutes: mins });
   }

@@ -44,27 +44,24 @@ export type CoachPlan = { title: string; summary: string; days: PlanDay[] };
 
 export function isPlanLength(n: unknown): n is PlanLength { return PLAN_LENGTHS.includes(n as PlanLength); }
 
-export function maxTasksForDay(day: number): number { return day <= 7 ? 3 : 4; }
+export function maxTasksForDay(day: number): number { void day; return 12; }
 
 /** Deterministically enforce plan rules on whatever the model returned. */
 export function enforcePlanRules(raw: any, length: PlanLength, dailyMinutes: number): CoachPlan {
-  const budget = Math.max(5, Math.min(600, Math.round(Number(dailyMinutes) || 30)));
+  void dailyMinutes; // hint only, never a cap
   const inDays: any[] = Array.isArray(raw?.days) ? raw.days : [];
   const days: PlanDay[] = [];
   for (let d = 1; d <= length; d++) {
     const src = inDays.find((x) => Number(x?.day) === d) ?? inDays[d - 1] ?? { tasks: [] };
     const tasks: PlanTask[] = [];
-    let used = 0;
     for (const t of Array.isArray(src.tasks) ? src.tasks : []) {
       if (tasks.length >= maxTasksForDay(d)) break;
       const title = String(t?.title ?? "").trim().slice(0, 70);
       if (!title) continue;
-      const minutes = Math.max(1, Math.min(240, Math.round(Number(t?.minutes) || 10)));
-      if (used + minutes > budget) continue;
+      const minutes = Math.max(1, Math.round(Number(t?.minutes) || 10));
       const difficulty = ["easy", "medium", "hard"].includes(t?.difficulty) ? t.difficulty : "easy";
       const minimum = String(t?.minimum ?? "").trim().slice(0, 80) || "2-minute version";
       tasks.push({ title, minimum, trigger: String(t?.trigger ?? "").trim().slice(0, 80) || "After waking up", time: t?.time ? String(t.time).slice(0, 10) : undefined, minutes, difficulty });
-      used += minutes;
     }
     days.push({ day: d, review: d % 7 === 0, tasks });
   }
