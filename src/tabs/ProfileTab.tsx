@@ -6,7 +6,7 @@ import { useState } from "react";
 import acct from "@/components/account/account.module.css";
 import {
   ArrowLeft, Award, BarChart3, Bell, Camera, CheckCircle2, ChevronRight, Coins,
-  Circle, Flame, HeartHandshake, LogOut, Orbit, Settings, Sparkles, Target, Trophy,
+  Circle, Flame, HeartHandshake, LogOut, Orbit, Settings, SlidersHorizontal, Sparkles, Target, Trophy,
 } from "lucide-react";
 import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
 import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
@@ -26,6 +26,7 @@ type Props = {
   onCompleteHabit: (uuid: string) => Promise<void>; onRefresh: () => Promise<void>;
   onOpenStats: () => void; onSignOut?: () => void; referredBy?: string | null;
   onCoins?: (coins: number) => void;
+  onOpenSetup?: () => void;
 };
 
 const RANKS = [
@@ -66,6 +67,7 @@ export function ProfileTab(props: Props) {
     { id: "habits", title: "Habits", copy: "Build better habits", icon: CheckCircle2, tone: "green" },
     { id: "reminders", title: "Reminders", copy: "Stay on track", icon: Bell, tone: "violet" },
     { id: "accountability", title: "Accountability", copy: "Partner & privacy", icon: HeartHandshake, tone: "violet" },
+    { id: "setup", title: "Setup", copy: "Your AXEN profile answers", icon: SlidersHorizontal, tone: "cyan" },
   ] as const;
 
   return <section className="you-screen animate-fade-in">
@@ -93,7 +95,7 @@ export function ProfileTab(props: Props) {
 
     <div className="you-feature-grid">{features.map(item => {
       const Icon = item.icon;
-      return <button key={item.id} className={`you-feature-card you-tone-${item.tone}`} onClick={() => item.id === "stats" ? props.onOpenStats() : setView(item.id)}><span><Icon size={25} /></span><div><strong>{item.title}</strong><small>{item.copy}</small></div><ChevronRight size={18} /></button>;
+      return <button key={item.id} className={`you-feature-card you-tone-${item.tone}`} onClick={() => item.id === "stats" ? props.onOpenStats() : item.id === "setup" ? props.onOpenSetup?.() : setView(item.id)}><span><Icon size={25} /></span><div><strong>{item.title}</strong><small>{item.copy}</small></div><ChevronRight size={18} /></button>;
     })}</div>
 
     <article className="you-week-card">

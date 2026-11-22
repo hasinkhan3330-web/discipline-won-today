@@ -9,24 +9,30 @@ import { PreSignupQuiz, type QuizAnswers } from "@/components/PreSignupQuiz";
 import { saveQuizLocal, skipQuizLocal, quizSeen, flushQuizToProfile } from "@/lib/quiz";
 import { type Cycle } from "@/lib/pricing";
 import axenLogo from "@/assets/axen-logo.png";
+import { LandingPage } from "@/components/landing/LandingPage";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AXEN Habit & Discipline — Sign In" },
-      { name: "description", content: "Enter AXEN Habit & Discipline. Sign in with Google or email, then unlock PRO for ₹99/month or ₹499/year." },
-      { property: "og:title", content: "AXEN Habit & Discipline — Sign In" },
-      { property: "og:description", content: "Sign in to AXEN and unlock PRO for ₹99/month or ₹499/year." },
+      { title: "AXEN — Habit & Discipline App with 4AM Wake Alarms & AI Coach" },
+      { name: "description", content: "AXEN builds discipline: 4AM wake alarms you must solve, an AI coach that plans your day, Deep Focus app lock and accountability partners. 3-day free PRO trial." },
+      { property: "og:title", content: "AXEN — Habit & Discipline App with 4AM Wake Alarms & AI Coach" },
+      { property: "og:description", content: "AXEN builds discipline: 4AM wake alarms you must solve, an AI coach that plans your day, Deep Focus app lock and accountability partners. 3-day free PRO trial." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://axonhabit.app/" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "AXEN Habit & Discipline — Sign In" },
-      { name: "twitter:description", content: "Sign in to AXEN and unlock PRO for ₹99/month or ₹499/year." },
+      { name: "twitter:title", content: "AXEN — Habit & Discipline App with 4AM Wake Alarms & AI Coach" },
+      { name: "twitter:description", content: "AXEN builds discipline: 4AM wake alarms you must solve, an AI coach that plans your day, Deep Focus app lock and accountability partners. 3-day free PRO trial." },
     ],
+    links: [{ rel: "canonical", href: "https://axonhabit.app/" }],
+    scripts: [{ type: "application/ld+json", children: JSON.stringify({"@context":"https://schema.org","@type":"SoftwareApplication","name":"AXEN Habit & Discipline","applicationCategory":"LifestyleApplication","operatingSystem":"Android, Web","url":"https://axonhabit.app/","publisher":{"@type":"Organization","name":"Aevonix","url":"https://aevonix.pro"},"offers":[{"@type":"Offer","name":"PRO Monthly","price":"99","priceCurrency":"INR"},{"@type":"Offer","name":"PRO Yearly","price":"499","priceCurrency":"INR"}]}) }],
   }),
-  component: Landing,
+  component: HomeGate,
 });
 
 const G = "#00d4ff";
+const LIME = "#c6ff3d";
+const GOLD = "#f5c542";
 const G2 = "#a855f7";
 const INTRO_FADE_MS = 650;
 const INTRO_FADE_AT_MS = 3_900;
@@ -80,10 +86,45 @@ function Intro({ done, onGone }: { done: boolean; onGone: () => void }) {
   );
 }
 
-function Landing() {
+/** Decides what a visitor sees at "/": landing page only for confirmed signed-out web visitors.
+ * Native app launches, Google sign-in returns and pending invites go straight to the existing sign-in screen. */
+function HomeGate() {
+  const [view, setView] = useState<"checking" | "landing" | "auth">("checking");
+  const [skipIntro, setSkipIntro] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    const decide = async () => {
+      try {
+        const { Capacitor } = await import("@capacitor/core");
+        if (Capacitor.isNativePlatform()) { if (alive) setView("auth"); return; }
+      } catch { /* web */ }
+      const url = window.location.search + window.location.hash;
+      if (/[?&#](code|access_token|refresh_token|error|error_description|state)=/.test(url)) { if (alive) setView("auth"); return; }
+      try { if (localStorage.getItem("axen.acct.join")) { if (alive) setView("auth"); return; } } catch { /* storage off */ }
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (alive) setView(data.session ? "auth" : "landing");
+      } catch {
+        if (alive) setView("auth");
+      }
+    };
+    void decide();
+    return () => { alive = false; };
+  }, []);
+
+  if (view === "checking") return <div className="axen-page" style={{ minHeight: "100vh", background: "#000" }} aria-busy="true" />;
+  if (view === "landing") {
+    const open = () => { setSkipIntro(true); setView("auth"); window.scrollTo(0, 0); };
+    return <LandingPage onSignIn={open} onGetStarted={open} />;
+  }
+  return <Landing skipIntro={skipIntro} />;
+}
+
+function Landing({ skipIntro = false }: { skipIntro?: boolean }) {
   const navigate = useNavigate();
-  const [intro, setIntro] = useState(true);
-  const [introGone, setIntroGone] = useState(false);
+  const [intro, setIntro] = useState(!skipIntro);
+  const [introGone, setIntroGone] = useState(skipIntro);
   const [cycle, setCycle] = useState<Cycle>("yearly");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -197,7 +238,7 @@ function Landing() {
       )}
 
       {/* ambient futuristic backdrop */}
-      <div style={{ position: "fixed", inset: 0, backgroundImage: `radial-gradient(circle at 18% 12%, ${G2}22, transparent 52%), radial-gradient(circle at 84% 88%, ${G}22, transparent 52%)` }} />
+      <div style={{ position: "fixed", inset: 0, backgroundImage: `radial-gradient(circle at 18% 12%, ${G2}2a, transparent 52%), radial-gradient(circle at 84% 88%, ${G}1c, transparent 52%), radial-gradient(circle at 50% 0%, ${LIME}12, transparent 45%)` }} />
       <div style={{ position: "fixed", inset: 0, opacity: 0.14, backgroundImage: `linear-gradient(${G}22 1px, transparent 1px), linear-gradient(90deg, ${G}22 1px, transparent 1px)`, backgroundSize: "60px 60px", animation: "axen-grid-move 10s linear infinite", maskImage: "radial-gradient(circle at 50% 30%, #000 5%, transparent 70%)", WebkitMaskImage: "radial-gradient(circle at 50% 30%, #000 5%, transparent 70%)" }} />
 
       {/* The page mark only mounts after the boot logo is fully gone, so the two
@@ -208,7 +249,7 @@ function Landing() {
           <div style={{ position: "absolute", left: "50%", top: "50%", width: 240, height: 240, marginLeft: -120, marginTop: -120, borderRadius: "50%", border: `1px solid ${G}22`, borderTopColor: `${G}88`, animation: "axen-orbit 16s linear infinite" }} />
           <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ position: "relative", width: "100%", maxWidth: 190, margin: "0 auto", display: "block", animation: "axen-glow 3.4s ease-in-out infinite" }} />
           <h1 className="axen-display ax-wrap" style={{ position: "relative", marginTop: 12, fontSize: "clamp(11px, 3.4vw, 14px)", fontWeight: 900, letterSpacing: "clamp(3px, 1.4vw, 6px)", color: "#fff", textShadow: `0 0 22px ${G}, 0 0 60px ${G}55` }}>AXEN HABIT &amp; DISCIPLINE</h1>
-          <p className="axen-display" style={{ position: "relative", marginTop: 6, letterSpacing: 5, fontSize: 9, fontWeight: 700, color: G, textShadow: `0 0 14px ${G}88` }}>SECURE ACCESS TERMINAL</p>
+          <p className="axen-display" style={{ position: "relative", marginTop: 6, letterSpacing: 5, fontSize: 9, fontWeight: 700, color: LIME, textShadow: `0 0 14px ${LIME}88` }}>SECURE ACCESS TERMINAL</p>
         </div>
 
         {authed ? (
@@ -226,14 +267,14 @@ function Landing() {
             </button>
           </div>
         ) : (
-          <div id="axen-auth" style={{ position: "relative", marginTop: 30, padding: 20, borderRadius: 6, overflow: "hidden", background: "linear-gradient(160deg, rgba(10,16,32,0.92), rgba(4,6,14,0.92))", border: `1px solid ${G}33`, boxShadow: `0 0 40px ${G}18, inset 0 0 60px rgba(0,212,255,0.05)`, animation: "axen-float-up 700ms ease 120ms both" }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${G}, transparent)` }} />
+          <div id="axen-auth" style={{ position: "relative", marginTop: 30, padding: 20, borderRadius: 16, overflow: "hidden", background: "linear-gradient(160deg, rgba(16,14,30,0.94), rgba(5,6,12,0.95))", border: `1px solid ${LIME}33`, boxShadow: `0 0 44px ${G2}22, inset 0 0 60px rgba(198,255,61,0.04)`, animation: "axen-float-up 700ms ease 120ms both" }}>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: `linear-gradient(90deg, transparent, ${LIME}, transparent)` }} />
             <div style={{ position: "absolute", top: 0, bottom: 0, width: 120, background: `linear-gradient(90deg, transparent, ${G}0e, transparent)`, animation: "axen-sweep 6s linear infinite" }} />
 
             <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <span style={{ fontSize: 9, letterSpacing: 4, color: "#5c7286" }}>{mode === "signin" ? "SECURE SIGN IN" : "CREATE IDENTITY"}</span>
-              <span style={{ fontSize: 8, letterSpacing: 3, color: G, display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: G, boxShadow: `0 0 10px ${G}`, display: "inline-block", animation: "axen-flicker 2s linear infinite" }} />
+              <span style={{ fontSize: 8, letterSpacing: 3, color: LIME, display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: LIME, boxShadow: `0 0 10px ${LIME}`, display: "inline-block", animation: "axen-flicker 2s linear infinite" }} />
                 ONLINE
               </span>
             </div>
@@ -243,15 +284,10 @@ function Landing() {
               onClick={signInWithGoogle}
               disabled={googleLoading}
               className="axen-btn axen-btn-google"
-              style={{ width: "100%", padding: "15px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "#fff", color: "#1f1f1f", border: "none", borderRadius: 3, fontWeight: 800, letterSpacing: 2, fontSize: 11, cursor: googleLoading ? "wait" : "pointer", boxShadow: `0 0 24px ${G}33` }}
+              style={{ width: "100%", minHeight: 48, padding: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, background: "#131314", color: "#E3E3E3", border: "1px solid #8E918F", borderRadius: 12, fontFamily: "'Google Sans', Roboto, Arial, sans-serif", fontWeight: 500, fontSize: 14, lineHeight: "20px", cursor: googleLoading ? "wait" : "pointer" }}
             >
-              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
-                <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.3-.4-3.5z" />
-                <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.9 19 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
-                <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 34.9 26.7 36 24 36c-5.3 0-9.7-3.1-11.3-7.4l-6.5 5C9.6 39.7 16.2 44 24 44z" />
-                <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.1 5.6l6.2 5.2C41.1 35.9 44 30.4 44 24c0-1.3-.1-2.3-.4-3.5z" />
-              </svg>
-              {googleLoading ? "OPENING GOOGLE..." : "CONTINUE WITH GOOGLE"}
+              <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"/></svg>
+              {googleLoading ? "Opening Google…" : "Continue with Google"}
             </button>
 
             <div style={{ position: "relative", marginTop: 18, display: "flex", alignItems: "center", gap: 10 }}>
@@ -272,7 +308,7 @@ function Landing() {
                 type="submit"
                 disabled={loading}
                 className="axen-btn axen-btn-primary"
-                style={{ padding: "15px 20px", background: loading ? "#16202c" : `linear-gradient(90deg, ${G}, ${G2})`, color: loading ? "#6f8296" : "#04070f", fontWeight: 800, letterSpacing: 3, fontSize: 11, border: "none", cursor: loading ? "wait" : "pointer", borderRadius: 3, boxShadow: loading ? "none" : `0 0 28px ${G}55` }}
+                style={{ padding: "15px 20px", background: loading ? "#16202c" : LIME, color: loading ? "#6f8296" : "#04070f", fontWeight: 800, letterSpacing: 3, fontSize: 11, border: "none", cursor: loading ? "wait" : "pointer", borderRadius: 12, boxShadow: loading ? "none" : `0 0 28px ${LIME}55` }}
               >
                 {loading ? "AUTHENTICATING…" : mode === "signin" ? "SIGN IN" : "CREATE ACCOUNT"}
               </button>
@@ -282,7 +318,7 @@ function Landing() {
               <button onClick={() => { setMode(mode === "signin" ? "signup" : "signin"); setMsg(null); }} className="axen-link" style={{ background: "transparent", border: "none", color: "#7c8ea0", fontFamily: "inherit", fontWeight: 600, fontSize: 11, letterSpacing: 2, cursor: "pointer" }}>
                 {mode === "signin" ? "NEW? CREATE ACCOUNT" : "← BACK TO SIGN IN"}
               </button>
-              <button onClick={() => navigate({ to: "/auth/forgot" })} className="axen-link" style={{ background: "transparent", border: "none", color: G, fontFamily: "inherit", fontWeight: 600, fontSize: 11, letterSpacing: 2, cursor: "pointer" }}>
+              <button onClick={() => navigate({ to: "/auth/forgot" })} className="axen-link" style={{ background: "transparent", border: "none", color: GOLD, fontFamily: "inherit", fontWeight: 600, fontSize: 11, letterSpacing: 2, cursor: "pointer" }}>
                 FORGOT PASSWORD?
               </button>
             </div>

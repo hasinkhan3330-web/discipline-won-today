@@ -3204,3 +3204,70 @@ html[data-theme="simple"] .lb::before, html[data-theme="simple"] .lb::after { di
 .lb[data-rank-v2] :is(.lb-tabs,.lb-filters) button * { font-family: inherit; }
 [data-theme="simple"] .rank-emblem:not(.is-reached):not(.is-current) { --em-icon: #6B6B6B; }
 .you-rank-emblem.you-rank-emblem--v2 .rank-emblem__glyph { stroke-width: 1.75; width: 42px; height: 42px; }
+
+/* ===== Public landing page (axl-*) — landing only ===== */
+.axl-page { --lime: oklch(0.9 0.25 125); --cyan: oklch(0.82 0.15 210); --violet: oklch(0.62 0.24 295); --gold: oklch(0.83 0.16 85); --ink: oklch(0.08 0.01 250); --card: oklch(0.13 0.02 260); --line: oklch(0.28 0.03 260); --text: oklch(0.96 0.01 250); --muted: oklch(0.7 0.02 250);
+  min-height: 100vh; color: var(--text); background: radial-gradient(60% 40% at 15% 0%, color-mix(in oklab, var(--violet) 22%, transparent), transparent), radial-gradient(50% 35% at 90% 20%, color-mix(in oklab, var(--cyan) 14%, transparent), transparent), var(--ink); font-family: "Sora", "Inter", system-ui, sans-serif; overflow-x: clip; }
+.axl-wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+.axl-nav { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(14px); background: color-mix(in oklab, var(--ink) 78%, transparent); border-bottom: 1px solid color-mix(in oklab, var(--line) 60%, transparent); }
+.axl-nav-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 64px; }
+.axl-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: 3px; font-size: 14px; }
+.axl-brand img { width: 34px; height: 34px; object-fit: contain; }
+.axl-nav-btns { display: flex; gap: 8px; }
+.axl-btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 18px; border-radius: 10px; font-family: inherit; font-weight: 700; font-size: 13px; line-height: 1; letter-spacing: 0.5px; cursor: pointer; border: 1px solid transparent; white-space: nowrap; transition: transform 160ms ease, box-shadow 160ms ease; }
+.axl-btn:hover { transform: translateY(-1px); }
+.axl-primary { color: var(--ink); background: var(--lime); box-shadow: 0 0 28px color-mix(in oklab, var(--lime) 40%, transparent); }
+.axl-ghost { color: var(--text); background: transparent; border-color: var(--line); }
+.axl-hero { display: grid; gap: 40px; align-items: center; padding-block: 56px 40px; }
+@media (min-width: 900px) { .axl-hero { grid-template-columns: 1.1fr 0.9fr; padding-block: 88px 64px; } }
+.axl-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid color-mix(in oklab, var(--lime) 45%, transparent); border-radius: 999px; color: var(--lime); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+.axl-h1 { margin: 18px 0 0; font-size: clamp(34px, 6.4vw, 64px); line-height: 1.04; font-weight: 800; letter-spacing: -1.5px; }
+.axl-h1 em { font-style: normal; color: var(--lime); text-shadow: 0 0 34px color-mix(in oklab, var(--lime) 45%, transparent); }
+.axl-lead { margin: 18px 0 0; max-width: 540px; color: var(--muted); font-size: clamp(15px, 2vw, 18px); line-height: 1.6; }
+.axl-cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.axl-cta-row .axl-btn { min-height: 52px; padding: 0 24px; font-size: 14px; }
+.axl-trust { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 22px; color: var(--muted); font-size: 12px; }
+.axl-trust b { color: var(--gold); }
+.axl-phone-stage { position: relative; display: flex; justify-content: center; }
+.axl-phone-stage::before { content: ""; position: absolute; inset: 10% 15%; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--violet) 45%, transparent), transparent 70%); filter: blur(40px); }
+.axl-phone { position: relative; width: min(290px, 72vw); aspect-ratio: 440 / 904; border-radius: 34px; padding: 8px; background: linear-gradient(160deg, oklch(0.3 0.03 260), oklch(0.12 0.02 260)); border: 1px solid var(--line); box-shadow: 0 30px 80px -20px oklch(0 0 0 / 0.8), 0 0 50px color-mix(in oklab, var(--lime) 18%, transparent); }
+.axl-phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 27px; display: block; }
+.axl-phone-small { position: absolute; width: min(170px, 40vw); bottom: -6%; left: -4%; transform: rotate(-7deg); opacity: 0.95; }
+@media (max-width: 520px) { .axl-phone-small { display: none; } }
+.axl-section { padding-block: 64px; }
+.axl-kicker { color: var(--lime); font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+.axl-h2 { margin: 10px 0 0; font-size: clamp(26px, 4vw, 40px); font-weight: 800; letter-spacing: -0.8px; line-height: 1.12; }
+.axl-sub { margin: 12px 0 0; color: var(--muted); max-width: 620px; line-height: 1.6; }
+.axl-shots { display: grid; grid-auto-flow: column; grid-auto-columns: min(220px, 62vw); gap: 16px; overflow-x: auto; padding: 28px 2px 12px; scroll-snap-type: x mandatory; }
+.axl-shot { scroll-snap-align: start; margin: 0; }
+.axl-shot img { width: 100%; aspect-ratio: 440 / 904; object-fit: cover; object-position: top; border-radius: 22px; border: 1px solid var(--line); background: var(--card); display: block; }
+.axl-shot figcaption { margin-top: 10px; font-size: 13px; font-weight: 700; }
+.axl-shot figcaption small { display: block; color: var(--muted); font-weight: 400; margin-top: 2px; }
+.axl-grid { display: grid; gap: 14px; margin-top: 28px; grid-template-columns: 1fr; }
+@media (min-width: 640px) { .axl-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 960px) { .axl-grid3 { grid-template-columns: repeat(3, 1fr); } }
+.axl-card { padding: 22px; border-radius: 16px; background: linear-gradient(160deg, var(--card), color-mix(in oklab, var(--card) 70%, var(--ink))); border: 1px solid var(--line); }
+.axl-card h3 { margin: 14px 0 0; font-size: 17px; font-weight: 700; }
+.axl-card p { margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+.axl-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; border: 1px solid currentColor; background: color-mix(in oklab, currentColor 10%, transparent); }
+.axl-t-lime { color: var(--lime); } .axl-t-cyan { color: var(--cyan); } .axl-t-violet { color: var(--violet); } .axl-t-gold { color: var(--gold); }
+.axl-benefits { display: grid; gap: 14px; margin-top: 28px; }
+@media (min-width: 760px) { .axl-benefits { grid-template-columns: repeat(4, 1fr); } }
+.axl-benefit { padding: 20px; border-left: 2px solid var(--lime); background: color-mix(in oklab, var(--card) 70%, transparent); border-radius: 0 12px 12px 0; }
+.axl-benefit strong { display: block; font-size: 15px; } .axl-benefit span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.axl-prices { display: grid; gap: 16px; margin-top: 28px; }
+@media (min-width: 820px) { .axl-prices { grid-template-columns: repeat(3, 1fr); } }
+.axl-price { position: relative; display: flex; flex-direction: column; padding: 26px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); }
+.axl-price-best { border-color: var(--lime); box-shadow: 0 0 40px color-mix(in oklab, var(--lime) 18%, transparent); }
+.axl-badge { position: absolute; top: -12px; right: 18px; padding: 5px 10px; border-radius: 999px; background: var(--gold); color: var(--ink); font-size: 11px; font-weight: 800; }
+.axl-price h3 { margin: 0; font-size: 14px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+.axl-amount { margin-top: 12px; font-size: 36px; font-weight: 800; } .axl-amount small { font-size: 14px; color: var(--muted); font-weight: 500; }
+.axl-price ul { list-style: none; padding: 0; margin: 18px 0 22px; display: grid; gap: 9px; font-size: 14px; color: var(--muted); flex: 1; }
+.axl-price li { display: flex; gap: 8px; align-items: flex-start; } .axl-price li svg { color: var(--lime); flex: 0 0 auto; margin-top: 2px; }
+.axl-final { margin: 24px 0 64px; padding: 44px 24px; text-align: center; border-radius: 24px; border: 1px solid color-mix(in oklab, var(--lime) 40%, var(--line)); background: radial-gradient(70% 90% at 50% 0%, color-mix(in oklab, var(--lime) 14%, transparent), transparent), var(--card); }
+.axl-final .axl-cta-row { justify-content: center; }
+.axl-footer { border-top: 1px solid var(--line); padding: 28px 0 calc(28px + env(safe-area-inset-bottom, 0px)); color: var(--muted); font-size: 13px; }
+.axl-foot-in { display: flex; flex-wrap: wrap; gap: 14px 22px; justify-content: space-between; align-items: center; }
+.axl-foot-links { display: flex; flex-wrap: wrap; gap: 16px; } .axl-foot-links a { color: var(--muted); text-decoration: none; } .axl-foot-links a:hover { color: var(--lime); }
+@media (max-width: 420px) { .axl-nav-btns .axl-ghost { padding: 0 12px; } .axl-nav-btns .axl-primary { padding: 0 14px; } }
+@media (prefers-reduced-motion: reduce) { .axl-btn { transition: none; } }

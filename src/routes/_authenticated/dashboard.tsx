@@ -134,6 +134,7 @@ function App() {
   const [shields, setShields] = useState(0);
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const [onboardingStep, setOnboardingStep] = useState(1);
+  const [setupOpen, setSetupOpen] = useState(false);
   const [onboardingAnswers, setOnboardingAnswers] = useState<OnboardingAnswers>({});
   const [referredBy, setReferredBy] = useState<string | null>(null);
   const [streakLoaded, setStreakLoaded] = useState(false);
@@ -363,6 +364,7 @@ function App() {
   };
 
   const finishOnboarding = async () => {
+    setSetupOpen(false);
     setOnboarded(true);
     await refreshAll();
   };
@@ -727,7 +729,12 @@ function App() {
     <div style={{ width: "100%", minHeight: "100vh", color: AX.text, background: AX.bg, fontFamily: AX.font, position: "relative" }}>
       <style>{keyframes}</style>
 
-      {onboarded === false && <Onboarding initialStep={onboardingStep} initialAnswers={onboardingAnswers} onFinish={finishOnboarding} />}
+      {setupOpen && (
+        <div role="dialog" aria-label="AXEN setup" style={{ position: "fixed", inset: 0, zIndex: 150, overflowY: "auto", background: AX.bg, paddingTop: "calc(env(safe-area-inset-top, 0px) + 52px)" }}>
+          <button type="button" onClick={() => { setSetupOpen(false); void refreshAll(); }} aria-label="Close setup" style={{ position: "fixed", top: "calc(env(safe-area-inset-top, 0px) + 6px)", right: 8, width: 44, height: 44, display: "grid", placeItems: "center", border: `1px solid ${AX.border}`, borderRadius: 10, background: "transparent", color: AX.text, fontSize: 20, cursor: "pointer", zIndex: 151 }}>×</button>
+          <Onboarding initialStep={onboardingStep} initialAnswers={onboardingAnswers} onFinish={finishOnboarding} />
+        </div>
+      )}
 
       {celebration && (
         <div onClick={() => setCelebration(null)} style={{
@@ -937,6 +944,7 @@ function App() {
                 onSignOut={handleSignOut}
                 referredBy={referredBy}
                 onCoins={setCoins}
+                onOpenSetup={() => setSetupOpen(true)}
               />
             )}
           </>
