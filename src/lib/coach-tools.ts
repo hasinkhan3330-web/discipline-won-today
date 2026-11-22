@@ -219,7 +219,8 @@ export async function runCoachTool(ctx: Ctx, name: string, args: any): Promise<u
       if (!v.ok) { console.log("[coach] save_plan rejected", v.error); return { success: false, error: v.error }; }
       const result = await writePlanTasks(ctx, v.plan_title, v.tasks);
       console.log("[coach] save_plan db result", result);
-      if (result.success) await syncHome(ctx, v.plan_title, v.tasks, today);
+      // Coach plans live only in My Plan (plan_tasks); Home mirror disabled.
+      void syncHome; void today;
       return result;
     }
     case "get_plan": {

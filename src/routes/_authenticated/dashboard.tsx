@@ -56,7 +56,6 @@ import { WakeProtocol } from "@/components/WakeProtocol";
 import { readWakeState } from "@/lib/wake.functions";
 import { webAlarmScheduler } from "@/lib/web-alarm-scheduler";
 import type { AlarmState } from "@/lib/wake-types";
-import { materializeCoachToday } from "@/utils/coach-v2.functions";
 
 const WAKE_OPTIONS = [
   { time: "4AM", pts: 10, tag: "ELITE", line: "The world sleeps. You rise." },
@@ -204,16 +203,20 @@ function App() {
     // Pre-signup quiz answers cached before the account existed — write them once.
     await flushQuizToProfile(uid).catch(() => false);
     // Coach plan: add today's plan tasks once (user's own timezone). Silent; never blocks loading.
-    await materializeCoachToday({ data: { timezone: (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; } })() } }).catch(() => null);
+    // Coach plan items stay in My Plan only; they are not added to Home.
 
-    const [{ data: prof }, { data: taskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }] = await Promise.all([
+    const [{ data: prof }, { data: allTaskRows }, { data: doneToday }, { data: leaders }, { data: weekRows }, { data: coachMat }] = await Promise.all([
       supabase.from("profiles").select("display_name, coins, streak, longest_streak, avatar_url, shields, onboarded, referred_by, preferred_name, age_range, acquisition_source, primary_goal, first_habit, social_hours_daily, biggest_distraction, wake_time, sleep_time, consistency_days, routine_breaker, preferred_focus_time, commitment_milestone, onboarding_step").eq("id", uid).maybeSingle(),
 
       supabase.from("tasks").select("id, icon, name, pts, sort_order, frequency, duration_days, started_on, require_scan, scan_classes").eq("user_id", uid).eq("is_active", true).order("sort_order"),
       supabase.from("task_completions").select("task_id").eq("user_id", uid).eq("completed_on", today),
       supabase.from("public_profiles").select("id, display_name, avatar_url, coins, streak").order("coins", { ascending: false }).order("streak", { ascending: false }).limit(20),
       supabase.from("task_completions").select("completed_on").eq("user_id", uid).gte("completed_on", sevenAgo),
+      supabase.from("coach_plan_materialized").select("task_id").eq("user_id", uid).not("task_id", "is", null),
     ]);
+    // Hide coach-created tasks from Home (they are shown in My Plan); data is kept.
+    const coachIds = new Set(((coachMat ?? []) as any[]).map((r) => r.task_id));
+    const taskRows = (allTaskRows || []).filter((r) => !coachIds.has(r.id));
 
     if (prof) {
       setCoins(prof.coins ?? 0);
