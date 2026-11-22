@@ -5,15 +5,14 @@ export type AppTheme = "dark" | "simple";
 export const THEME_KEY = "axen-theme";
 
 /** Anything other than "simple" is Dark (today's default look). */
-/** Only an explicit saved "dark" is Dark; nothing saved (or anything else) defaults to Simple. */
-export function normalizeTheme(v: unknown): AppTheme { return v === "dark" ? "dark" : "simple"; }
+export function normalizeTheme(v: unknown): AppTheme { return v === "simple" ? "simple" : "dark"; }
 
 export function readStoredTheme(storage: Pick<Storage, "getItem"> | null | undefined): AppTheme {
-  try { return normalizeTheme(storage?.getItem(THEME_KEY)); } catch { return "simple"; }
+  try { return normalizeTheme(storage?.getItem(THEME_KEY)); } catch { return "dark"; }
 }
 
 /** Runs in <head> before the app draws: applies a saved Simple choice with no dark flash. */
-export const THEME_BOOT_SCRIPT = `(function(){try{var s=null;try{s=localStorage.getItem('${THEME_KEY}')}catch(e){}if(s!=='dark'){var d=document.documentElement;d.setAttribute('data-theme','simple');d.setAttribute('data-simple-pending','');setTimeout(function(){d.removeAttribute('data-simple-pending')},2500);}}catch(e){}})();`;
+export const THEME_BOOT_SCRIPT = `(function(){try{if(localStorage.getItem('${THEME_KEY}')==='simple'){var d=document.documentElement;d.setAttribute('data-theme','simple');d.setAttribute('data-simple-pending','');setTimeout(function(){d.removeAttribute('data-simple-pending')},2500);}}catch(e){}})();`;
 
 function applyDom(theme: AppTheme) {
   const d = document.documentElement;
@@ -31,10 +30,10 @@ function applyDom(theme: AppTheme) {
   d.removeAttribute("data-simple-pending");
 }
 
-const Ctx = createContext<{ theme: AppTheme; setTheme: (t: AppTheme) => void }>({ theme: "simple", setTheme: () => {} });
+const Ctx = createContext<{ theme: AppTheme; setTheme: (t: AppTheme) => void }>({ theme: "dark", setTheme: () => {} });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<AppTheme>("simple");
+  const [theme, setThemeState] = useState<AppTheme>("dark");
   useEffect(() => {
     const t = readStoredTheme(window.localStorage);
     setThemeState(t);
