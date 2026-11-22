@@ -37,3 +37,11 @@ Look: black background, lime/cyan/violet glow and gold coin accents matching the
 
 ## Not verifiable here
 - Real Android app launch and real Google sign-in return; requires Publish to go live.
+
+## Safety rules (approved additions)
+- No landing flash: while the session or a Google sign-in return is still loading, show the existing intro/sign-in screen, never the landing page. The landing page appears only after the session check finishes and confirms no one is signed in.
+- Bypass: a Google sign-in return (callback/code/token in the URL or a sign-in in progress) and every Android app launch skip the landing page entirely.
+- Sign In/Get Started render the existing sign-in component exactly as it is today; its code is not edited.
+- Pricing on the landing page is checked against the existing pricing/checkout source (`src/lib/pricing`, PricingSelector, PlatformCheckout) before it is written, and reads from the same source where possible.
+- No changes to sign-in, database, existing routes or app features.
+- Before completion: typecheck/build, Playwright at 360/390/414/1280, regression checks (signed-out landing → Sign In shows unchanged screen; Google return URL skips landing; Android-style launch skips landing; signed-in visit still goes to dashboard; /pro, /privacy, /terms, /join still load). No account creation.
