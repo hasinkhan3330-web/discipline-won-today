@@ -1,22 +1,18 @@
-# Fix: tapping Simple in Appearance does nothing
+# Restore AXEN to the exact look from before the "5 tasks" prompt
 
-Scope: only `src/components/AppearanceSwitcher.tsx` and `src/lib/theme/theme.tsx`. No redesign, no database, no other files.
+## Deep check result (verified this turn)
+- Baseline = the last version before the 5-task prompt (491d44f, "Show Coach plan items only in My Plan").
+- Since then only 7 files changed, and **none of them is a design, icon, layout, colour or screen file**:
+  - `src/lib/theme/theme.tsx`: the default theme. The accidental Publish shipped "Simple (white) by default", which made the app look completely changed. It is already put back to Dark by default in the preview.
+  - `GoalHabitPicker.tsx`, `dashboard.tsx`, `ProfileDetailScreens.tsx`: only the "Home holds 5 habits" error text (kept, as you asked).
+  - `task-limit.ts`: that message text. `coach-tools.ts`: Coach no longer copies plans to Home (requested earlier). `types.ts`: auto-generated.
+- No icons, screens, styles or features were removed. Your screenshots (black, lime, gold coins, violet cards, All Ranks, My Journey, wake sheets) match the current Dark code.
+- Live site: the styles file loads (HTTP 200 on axonhabit.app). The Android app opens axonhabit.app, so it shows whatever was last published, which is still the white-default build.
 
-## What the code shows now (read this turn)
-- The switcher lists both Dark and Simple, and each tap calls `setTheme(id)`.
-- `setTheme` saves `axen-theme`, sets `data-theme="simple"` on the page (or removes it for Dark) and updates its state. `ThemeProvider` wraps the whole app in `__root.tsx`.
-- New visitors default to Dark (restored earlier today).
-- So the tap path looks right on paper. The cause is not confirmed yet.
+## Fix
+1. Publish the current version. This sends Dark-by-default to the live site and the Android app. No code revert is needed: reverting to the baseline would bring back the white Simple default.
+2. On your phone: Home → Command Center → Appearance → tap **Dark** once. The phone already saved "Simple" from the accidental build, and a saved choice always wins.
+3. Theme tap bug (separate request): reproduce it with touch taps at 390px first, then fix it only in `AppearanceSwitcher.tsx` / `theme.tsx` if a real cause shows up.
 
-## Step 1: reproduce before changing anything
-- In the preview at 390px, open the Appearance sheet with real touch taps (not mouse clicks), tap Simple and then Dark, and record: the saved `axen-theme` value, `data-theme` on the page, and whether the checkmark moves.
-- Also check the published site. It still runs the build you published by accident, and today's Dark-default fix only reaches it after the next Publish. If the bug only happens there, the fix is to Publish, with no code change.
-
-## Step 2: fix only what Step 1 finds, in the two files
-- If taps don't reach the buttons: make each option respond to a touch tap directly (one handler, no double firing). Keep the 44px targets and the same look.
-- If the theme gets re-applied as Dark after the tap (for example the provider re-reading storage, or the startup script fighting the choice): make `setTheme` the only writer after startup, so the choice applies right away and is read back on reload.
-- Keep: Dark is the default when nothing is saved, and an explicit choice always wins.
-
-## Step 3: verify
-- Tap Simple: the page turns Simple, `axen-theme='simple'`, and it stays Simple after reload. Tap Dark: the same, the other way round. A fresh visit shows Dark.
-- Show the diff, then stop.
+## Not touched
+Database, 5-habit limit, rewards, Coach/My Plan, Accountability, nudges, wake.
