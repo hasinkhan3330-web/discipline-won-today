@@ -43,4 +43,9 @@ Max 8 lines + raw functions, test output, ACLs, rollback SQL, untested list. STO
 6. Extra tests: reactivating an archived task past 5 via UPDATE rejected; archived-task completion via direct insert rejected.
 7. Concurrency (two simultaneous inserts) reported NOT tested if it can't be exercised.
 
-Assumption: "newest 5" = latest created_at per user; Coach-looking non-registry tasks stay untouched.
+Assumption: keep 5 per user ranked by latest completion, then newest created_at; Coach-looking non-registry tasks stay untouched.
+
+## Final additions
+8. Pre-apply: grep app code, server/edge functions and SQL functions for every insert into `tasks` (onboarding, wake, MCP, coach, seed). Any path creating >5 at once or hitting the limit is listed and fixed or exempted. Rolled-back new-user onboarding test.
+9. Pre-apply dry-run: per-user counts (no names) of coach_legacy and over_limit archives. Post-apply: same counts plus proof that archived_prev_active is set on every archived row.
+10. Step c keeps the 5 tasks with the most recent completion (task_completions), falling back to newest created_at.
