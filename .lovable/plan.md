@@ -51,9 +51,11 @@ Look: black background, lime/cyan/violet glow and gold coin accents matching the
 - Google button uses Google's official dark style (genuine four-colour G, "Continue with Google").
 - Unchanged: Google sign-in and its return, email/password, Create Account, Forgot Password, pre-signup quiz, pricing selector, checkout, validation, loading and error messages, the intro animation timing.
 
-## Added scoped UI change 2: remove the AXEN SETUP card
-- The card ("AXEN SETUP 17%", "Privacy · 2 of 12", age range) is the `Onboarding` component, shown only on the Home dashboard (`dashboard.tsx` line 730, when onboarding is unfinished). It appears nowhere else.
-- Remove only that one line that shows it. The onboarding code, saved answers, privacy settings and database stay untouched.
+## Added scoped UI change 2: AXEN SETUP card (safety check done)
+- Finding: the card is the whole `Onboarding` component (`src/components/Onboarding.tsx`, 137 lines). It is not just a progress bar: it holds the 12 setup questions (name, age range/privacy, goal, wake time, etc.), Back/Continue, saving each answer, and the "Build my blueprint" finish that marks setup complete.
+- It is used in one place only: Home (`dashboard.tsx` line 730), shown while setup is unfinished. There is no other way to reach it.
+- So simply deleting it would leave setup unfinished forever with no way back. I will not do that.
+- Approach (depends on your answer to the question): keep `Onboarding.tsx` and all saving/finish logic untouched; stop showing it automatically at the top of Home; keep it reachable through the option you choose. Database, saved answers and privacy/age fields unchanged.
 - Name, avatar, profile, rank badge, coins, PRO trial banner, missions and navigation unchanged.
 
 ## File-by-file
@@ -65,7 +67,7 @@ Look: black background, lime/cyan/violet glow and gold coin accents matching the
 | `src/components/auth/signin.module.css` (new) | Sign-in-only styles |
 | `src/components/auth/GoogleButton.tsx` (new) | Official dark Google button look; calls the existing sign-in handler passed in |
 | `src/routes/index.tsx` | Landing gate (with safety rules), new SEO tags, swap sign-in styles/markup classes and Google button; no logic changes |
-| `src/routes/_authenticated/dashboard.tsx` | Remove only the `<Onboarding …/>` render line (and its unused import) |
+| `src/routes/_authenticated/dashboard.tsx` | Stop auto-showing `<Onboarding …/>` at the top of Home; open it only from the chosen entry point (same props, same finish handler) |
 | `public/robots.txt`, sitemap route (new) | Public pages only |
 
 Nothing else changes. Checks: typecheck/build, Playwright 360/390/414/1280 for landing, sign-in looks and form behaviour (no account creation), Google-return and Android bypass, signed-in redirect, other public pages; Home checked for the missing setup card only where reachable without creating accounts.
