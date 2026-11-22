@@ -55,7 +55,7 @@ Look: black background, lime/cyan/violet glow and gold coin accents matching the
 - Finding: the card is the whole `Onboarding` component (`src/components/Onboarding.tsx`, 137 lines). It is not just a progress bar: it holds the 12 setup questions (name, age range/privacy, goal, wake time, etc.), Back/Continue, saving each answer, and the "Build my blueprint" finish that marks setup complete.
 - It is used in one place only: Home (`dashboard.tsx` line 730), shown while setup is unfinished. There is no other way to reach it.
 - So simply deleting it would leave setup unfinished forever with no way back. I will not do that.
-- Approach (depends on your answer to the question): keep `Onboarding.tsx` and all saving/finish logic untouched; stop showing it automatically at the top of Home; keep it reachable through the option you choose. Database, saved answers and privacy/age fields unchanged.
+- Approach (your choice): remove the card from the top of Home and add a "Setup" row in the You menu (same card style as the other You rows). Tapping it opens the exact same 12-question setup, starting at the saved step with saved answers; finishing uses the same completion step. Shown whether or not setup is finished, so answers can be reviewed later. `Onboarding.tsx`, the save/finish logic, database and privacy/age fields stay unchanged.
 - Name, avatar, profile, rank badge, coins, PRO trial banner, missions and navigation unchanged.
 
 ## File-by-file
@@ -67,7 +67,8 @@ Look: black background, lime/cyan/violet glow and gold coin accents matching the
 | `src/components/auth/signin.module.css` (new) | Sign-in-only styles |
 | `src/components/auth/GoogleButton.tsx` (new) | Official dark Google button look; calls the existing sign-in handler passed in |
 | `src/routes/index.tsx` | Landing gate (with safety rules), new SEO tags, swap sign-in styles/markup classes and Google button; no logic changes |
-| `src/routes/_authenticated/dashboard.tsx` | Stop auto-showing `<Onboarding …/>` at the top of Home; open it only from the chosen entry point (same props, same finish handler) |
+| `src/routes/_authenticated/dashboard.tsx` | Stop auto-showing `<Onboarding …/>` on Home; render it when a new `setupOpen` flag is true (same props, same finish handler, which also closes it); pass `onOpenSetup` to the You tab |
+| `src/tabs/ProfileTab.tsx` | Add one "Setup" row in the You feature list that calls `onOpenSetup` (optional prop) |
 | `public/robots.txt`, sitemap route (new) | Public pages only |
 
 Nothing else changes. Checks: typecheck/build, Playwright 360/390/414/1280 for landing, sign-in looks and form behaviour (no account creation), Google-return and Android bypass, signed-in redirect, other public pages; Home checked for the missing setup card only where reachable without creating accounts.
