@@ -33,3 +33,14 @@ Restore `is_active = archived_prev_active` where archived_reason in (...), clear
 
 ## Report
 Max 8 lines + raw functions, test output, ACLs, rollback SQL, untested list. STOP.
+
+## Approved additions
+1. Frontend: every Home "x/12" counter and cap text becomes 5. My Plan untouched.
+2. Limit trigger fires only on INSERT, or UPDATE where NEW.is_active AND NEW.archived_at IS NULL AND NOT OLD.is_active; excludes the row itself; lock via `pg_advisory_xact_lock(hashtext(NEW.user_id::text))`; created after steps b and c in the migration.
+3. New check in `protect_verified_reward_fields` runs on INSERT only. Report whether archived tasks are referenced by wake/alarm/discipline tables. Rolled-back test: `complete_top_task` and `wake_*` still work for a normal personal task.
+4. Before revoking registry writes: grep app code and server functions for registry writes as a signed-in user; switch any to service role first.
+5. Rollback order: restore old `enforce_task_limit` first, then `is_active`. Rollback itself tested in a rolled-back transaction.
+6. Extra tests: reactivating an archived task past 5 via UPDATE rejected; archived-task completion via direct insert rejected.
+7. Concurrency (two simultaneous inserts) reported NOT tested if it can't be exercised.
+
+Assumption: "newest 5" = latest created_at per user; Coach-looking non-registry tasks stay untouched.
