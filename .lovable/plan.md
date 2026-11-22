@@ -1,25 +1,22 @@
-# Restore UI to last known-good version
+# Fix: tapping Simple in Appearance does nothing
 
-Baseline: commit 70804e6 (Nov 15). Your screenshots match it: My Journey shows Nov 15, plus All Ranks, the wake mission sheets and the black/lime/violet look.
+Scope: only `src/components/AppearanceSwitcher.tsx` and `src/lib/theme/theme.tsx`. No redesign, no database, no other files.
 
-## What I found
-- The only change since then that altered the whole app's look was the "Simple is the default" theme setting. It was already reverted in `src/lib/theme/theme.tsx` (new visitors now get Dark).
-- The Dark/Simple switcher (`AppearanceSwitcher.tsx`) is unchanged since the baseline and still offers both options.
-- Every other screen file changed since Nov 15 holds requested features you asked to keep (5-habit message, send_nudge/get_nudge_suggestions, Accountability batches, Coach fixes, alarms). None is a redesign.
+## What the code shows now (read this turn)
+- The switcher lists both Dark and Simple, and each tap calls `setTheme(id)`.
+- `setTheme` saves `axen-theme`, sets `data-theme="simple"` on the page (or removes it for Dark) and updates its state. `ThemeProvider` wraps the whole app in `__root.tsx`.
+- New visitors default to Dark (restored earlier today).
+- So the tap path looks right on paper. The cause is not confirmed yet.
 
-## Files to revert
-- None. Reverting any of the files below would remove a kept feature without bringing back any old look.
+## Step 1: reproduce before changing anything
+- In the preview at 390px, open the Appearance sheet with real touch taps (not mouse clicks), tap Simple and then Dark, and record: the saved `axen-theme` value, `data-theme` on the page, and whether the checkmark moves.
+- Also check the published site. It still runs the build you published by accident, and today's Dark-default fix only reaches it after the next Publish. If the bug only happens there, the fix is to Publish, with no code change.
 
-## Files deliberately kept, and why
-- src/lib/theme/theme.tsx: already matches the baseline except the Dark default you want.
-- src/styles.css: only adds the Home "My Plan" pill. Existing styles unchanged.
-- src/tabs/HomeTab.tsx, GoalHabitPicker.tsx: My Plan shortcut and the 5-habit message.
-- src/components/verified/AccountabilitySection.tsx, acct/*: Accountability batches plus send_nudge/get_nudge_suggestions.
-- coach-orb.module.css, CoachOrbScreen.tsx, AiCoach.tsx: tap-blocking fix and the "Plan my tomorrow" chip.
-- WakeProtocol.tsx, wake/*: native alarms and offline coins-pending line.
-- routes (privacy-policy, terms, join, dashboard, my-plan), ProfileTab/ProfileDetailScreens: Aevonix contact text and features.
+## Step 2: fix only what Step 1 finds, in the two files
+- If taps don't reach the buttons: make each option respond to a touch tap directly (one handler, no double firing). Keep the 44px targets and the same look.
+- If the theme gets re-applied as Dark after the tap (for example the provider re-reading storage, or the startup script fighting the choice): make `setTheme` the only writer after startup, so the choice applies right away and is read back on reload.
+- Keep: Dark is the default when nothing is saved, and an explicit choice always wins.
 
-## Verification step (build mode)
-- Check Dark and Simple render and switch at 390px on the signed-out pages. Signed-in tabs need your account on a phone: after Publish, open Home → Command Center → Appearance and tap Dark.
-
-No database changes.
+## Step 3: verify
+- Tap Simple: the page turns Simple, `axen-theme='simple'`, and it stays Simple after reload. Tap Dark: the same, the other way round. A fresh visit shows Dark.
+- Show the diff, then stop.
