@@ -72,3 +72,6 @@ Look: black background, lime/cyan/violet glow and gold coin accents matching the
 | `public/robots.txt`, sitemap route (new) | Public pages only |
 
 Nothing else changes. Checks: typecheck/build, Playwright 360/390/414/1280 for landing, sign-in looks and form behaviour (no account creation), Google-return and Android bypass, signed-in redirect, other public pages; Home checked for the missing setup card only where reachable without creating accounts.
+
+## Scope guarantee
+Only the items listed above change. Every other AXEN screen, icon, colour, copy, feature, sign-in logic, database rule and route stays exactly as it is.
