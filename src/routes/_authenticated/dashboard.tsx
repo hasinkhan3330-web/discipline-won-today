@@ -1,4 +1,5 @@
 import { CoinBadge } from "@/components/CoinBadge";
+import { taskLimitMessage } from "@/lib/task-limit";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -634,7 +635,7 @@ function App() {
   const createCoachHabit = async (name: string) => {
     if (!myId || !name.trim()) return;
     const { error } = await supabase.from("tasks").insert({ user_id: myId, name: name.trim().slice(0,80), icon: "◎", pts: 10, sort_order: tasks.length + 1, frequency: "daily", duration_days: 21 });
-    if (error) return void toast.error("Could not add that habit", { description: error.message });
+    if (error) return void toast.error(taskLimitMessage(error) ? "Habit limit reached" : "Could not add that habit", { description: taskLimitMessage(error) ?? error.message });
     await refreshAll(); toast.success("Habit added to today’s missions"); setTab("home");
   };
 

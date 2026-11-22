@@ -1,4 +1,5 @@
 import { CoinBadge } from "@/components/CoinBadge";
+import { taskLimitMessage } from "@/lib/task-limit";
 import { GOAL_PROMISE, GOAL_TARGET_COINS, COIN_RULES, GOAL_PLANS, goalPlanForTarget, type GoalPlanKey } from "@/lib/economy";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -118,7 +119,7 @@ export function HabitsView({ habits, userId, onBack, onComplete, onChanged }: {
       require_scan: false, scan_classes: [],
     });
     setBusy(false);
-    if (error) return void toast.error("Could not build that habit", { description: error.message });
+    if (error) return void toast.error(taskLimitMessage(error) ? "Habit limit reached" : "Could not build that habit", { description: taskLimitMessage(error) ?? error.message });
     setName(""); setOpen(false); await onChanged();
     toast.success("Habit added", { description: "Your 21-day discipline track is ready." });
   };

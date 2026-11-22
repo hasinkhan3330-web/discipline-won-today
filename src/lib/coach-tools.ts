@@ -357,29 +357,7 @@ export async function runCoachTool(ctx: Ctx, name: string, args: any): Promise<u
 
 /** Idempotently add today's plan tasks (user's own timezone) into the existing tasks table. */
 export async function materializeToday(ctx: Ctx): Promise<{ added: number; day: number | null }> {
-  const { supabase, userId } = ctx;
-  const profile = await getCoachProfile(ctx);
-  const { confirmed } = await activePlan(ctx);
-  if (!confirmed?.start_date) return { added: 0, day: null };
-  const today = localDay(profile.timezone || "UTC");
-  const idx = dayIndex(confirmed.start_date, today, confirmed.days);
-  // retire coach tasks from earlier days so they don't linger or hit the habit limit
-  const { data: older } = await supabase.from("coach_plan_materialized").select("task_id,local_day").eq("user_id", userId).neq("local_day", today).not("task_id", "is", null);
-  const oldIds = ((older ?? []) as any[]).map((r) => r.task_id);
-  if (oldIds.length) await supabase.from("tasks").update({ is_active: false }).in("id", oldIds).eq("user_id", userId).eq("is_active", true);
-  if (idx === null) return { added: 0, day: null };
-  const day = (confirmed.plan as CoachPlan).days.find((d) => d.day === idx + 1);
-  let added = 0;
-  for (const [i, t] of (day?.tasks ?? []).entries()) {
-    // claim first; unique (plan_id, day_index, task_index) makes repeats a no-op
-    const { data: claim } = await supabase.from("coach_plan_materialized")
-      .upsert({ user_id: userId, plan_id: confirmed.id, day_index: idx, task_index: i, local_day: today }, { onConflict: "plan_id,day_index,task_index", ignoreDuplicates: true })
-      .select("id");
-    if (!claim?.length) continue;
-    const { data: task, error } = await supabase.from("tasks").insert({ user_id: userId, name: taskName(t), icon: "◎", pts: 10, frequency: "daily", duration_days: 1, started_on: today, sort_order: 100 + i }).select("id").single();
-    if (error) continue;
-    await supabase.from("coach_plan_materialized").update({ task_id: task.id }).eq("id", claim[0].id);
-    added++;
-  }
-  return { added, day: idx + 1 };
+  // Coach plans live only in My Plan; Home mirror and registry writes are disabled (registry is server-only).
+  void ctx;
+  return { added: 0, day: null };
 }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { taskLimitMessage } from "@/lib/task-limit";
 import { createPortal } from "react-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -64,7 +65,7 @@ export function GoalHabitPicker({
         sort_order: pool.length + 1,
       }).select("id,name,icon,pts,frequency").single();
       setBusy(false);
-      if (error) return void toast.error("Could not create that habit", { description: error.message });
+      if (error) return void toast.error(taskLimitMessage(error) ? "Habit limit reached" : "Could not create that habit", { description: taskLimitMessage(error) ?? error.message });
       setPool(list => [...list, data as GoalHabit]);
       onPickedChange([...picked, (data as GoalHabit).id]);
       setCreating(false); setQuery("");

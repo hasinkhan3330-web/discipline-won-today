@@ -2618,6 +2618,9 @@ export type Database = {
       }
       tasks: {
         Row: {
+          archived_at: string | null
+          archived_prev_active: boolean | null
+          archived_reason: string | null
           created_at: string
           duration_days: number
           frequency: string
@@ -2634,6 +2637,9 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          archived_at?: string | null
+          archived_prev_active?: boolean | null
+          archived_reason?: string | null
           created_at?: string
           duration_days?: number
           frequency?: string
@@ -2650,6 +2656,9 @@ export type Database = {
           user_id: string
         }
         Update: {
+          archived_at?: string | null
+          archived_prev_active?: boolean | null
+          archived_reason?: string | null
           created_at?: string
           duration_days?: number
           frequency?: string
