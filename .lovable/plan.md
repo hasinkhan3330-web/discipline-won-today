@@ -17,3 +17,9 @@ Wait for the Lovable team to fix Preview (already reported with this evidence). 
 
 ## Optional (only with your approval)
 Option B workaround for the landing page only: copy the phone rules into the main stylesheet as one marked block under @media (max-width: 640px) and remove the module import. Changes 2 files. Alarm and other screens would still look plain in Preview until the platform fix.
+
+## Approved: Option B (landing page only)
+1. src/styles.css: add one marked block at the very end, wrapped in `@media (max-width: 640px)`, with the rules copied from landing-mobile.module.css. Each selector starts with an `.axl-` class (for example `.axl-page .axl-cta-row`). No bare element selectors at the start, no !important. Existing lines stay exactly as they are.
+2. src/components/landing/LandingPage.tsx: remove the import line. **Needed with it:** line 42 uses that import (`axl-page ${m.root}`), so removing only the import breaks the build. That line becomes `className="axl-page"`. This is the same file, and nothing changes visually.
+3. landing-mobile.module.css stays where it is, unused, so no other file changes.
+4. Check: 360/390/412/430px in Preview (buttons stacked full width, no sideways scroll), 1280px screenshot compared with before, production build has the rules.
