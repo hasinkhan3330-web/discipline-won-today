@@ -51,4 +51,3 @@
 - Component CSS: `*.module.css` bound imports (`:global()` hooks), never side-effect `.css` imports. Why: those never load in preview.
 - Wake coins/XP end 07:30 local, server clock. Why: no bypass.
 - Accountability needs trial/Pro: screen gate + get_entitlement in RPCs/RLS; pacts open. Why: no bypass.
-- Account-creating tests run only with AXEN_ISOLATED_TEST_DB=1. Why: never touch live DB.
