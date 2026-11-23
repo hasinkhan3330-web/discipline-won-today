@@ -50,3 +50,4 @@
 - 12-question Setup opens from You → Setup, not Home. Why: keeps onboarding reachable.
 - Component CSS: `*.module.css` bound imports (`:global()` hooks), never side-effect `.css` imports. Why: those never load in preview.
 - Wake coins/XP end 07:30 local, server clock. Why: no bypass.
+- Accountability is Pro/trial-only: ProtectedFeatureGate on screens + get_entitlement guard in its RPCs and restrictive RLS; pacts stay open. Why: no bypass, Contract unaffected.

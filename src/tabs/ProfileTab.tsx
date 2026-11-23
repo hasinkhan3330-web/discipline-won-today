@@ -12,6 +12,7 @@ import { ManageSubscriptionCard } from "@/components/ManageSubscriptionCard";
 import { SubscriptionTimeline } from "@/components/SubscriptionTimeline";
 import { ReferralCard } from "@/components/ReferralCard";
 import { AccountabilitySection } from "@/components/verified/AccountabilitySection";
+import { ProtectedFeatureGate } from "@/components/ProtectedFeatureGate";
 import { useCountUp } from "./HomeTab";
 import {
   AchievementsView, GoalsView, HabitsView, JourneyView, RemindersView,
@@ -27,6 +28,7 @@ type Props = {
   onOpenStats: () => void; onSignOut?: () => void; referredBy?: string | null;
   onCoins?: (coins: number) => void;
   onOpenSetup?: () => void;
+  onUpgrade?: () => void;
 };
 
 const RANKS = [
@@ -57,7 +59,7 @@ export function ProfileTab(props: Props) {
   if (view === "goals") return <GoalsView userId={props.userId} habits={props.habits} onBack={back} onChanged={props.onRefresh} />;
   if (view === "reminders") return <RemindersView habits={props.habits} userId={props.userId} onBack={back} />;
   if (view === "account") return <div className={acct.page} data-simple-keep=""><header className={acct.header}><button className={acct.back} onClick={back} aria-label="Back to profile"><ArrowLeft size={20} /></button><div><h1 className={acct.title}>Account</h1><p className={acct.subtitle}>Identity, membership and invitations.</p></div></header><ReferralCard referredBy={props.referredBy ?? null} onCoins={props.onCoins} /><ManageSubscriptionCard /><SubscriptionTimeline />{props.onSignOut && <button className={acct.signout} onClick={props.onSignOut}><LogOut size={18} /> Sign out</button>}</div>;
-  if (view === "accountability") return <div className="you-detail animate-fade-in"><AccountabilitySection onBack={back} /></div>;
+  if (view === "accountability") return <div className="you-detail animate-fade-in"><ProtectedFeatureGate featureName="Accountability" onUpgrade={() => props.onUpgrade?.()} onContinueBasic={back}><AccountabilitySection onBack={back} /></ProtectedFeatureGate></div>;
 
   const features = [
     { id: "journey", title: "My Journey", copy: "Track your progress", icon: Orbit, tone: "blue" },

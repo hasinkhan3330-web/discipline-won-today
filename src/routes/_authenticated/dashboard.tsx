@@ -944,6 +944,7 @@ function App() {
                 onSignOut={handleSignOut}
                 referredBy={referredBy}
                 onCoins={setCoins}
+                onUpgrade={() => setShowPaywall(true)}
                 onOpenSetup={() => setSetupOpen(true)}
               />
             )}

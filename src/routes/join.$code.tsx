@@ -6,6 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { acceptInvite } from "@/lib/verified/accountability.functions";
 import { useTheme } from "@/lib/theme/theme";
 import s from "@/components/verified/acct/acct.module.css";
+import { EntitlementProvider } from "@/components/EntitlementProvider";
+import { ProtectedFeatureGate } from "@/components/ProtectedFeatureGate";
 
 const PENDING_JOIN_KEY = "axen.acct.join";
 
@@ -33,9 +35,10 @@ function JoinPage() {
   const doAccept = useServerFn(acceptInvite);
   const { theme } = useTheme();
   const [authed, setAuthed] = useState<boolean | null>(null);
+  const [uid, setUid] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-  useEffect(() => { void supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session)); }, []);
+  useEffect(() => { void supabase.auth.getSession().then(({ data }) => { setAuthed(!!data.session); setUid(data.session?.user.id ?? null); }); }, []);
   const forget = () => { try { localStorage.removeItem(PENDING_JOIN_KEY); } catch { /* storage off */ } };
   const login = () => {
     try { localStorage.setItem(PENDING_JOIN_KEY, JSON.stringify({ code: clean(code), at: Date.now() })); } catch { /* storage off */ }
@@ -59,13 +62,13 @@ function JoinPage() {
             <p className={s.muted} style={{ fontSize: 14, margin: "12px 0 0" }} role="status">{msg}</p>
             <div className={s.ctaCol}><button className={`${s.btn} ${s.ghost}`} onClick={notNow}>Go to AXEN</button></div>
           </>
-          : authed ? <>
+          : authed ? <EntitlementProvider userId={uid}><ProtectedFeatureGate featureName="Accountability" onUpgrade={() => void navigate({ to: "/pro" })} onContinueBasic={notNow}>
             <div className={s.secTitle} style={{ fontSize: 18, marginTop: 10 }}>Partner invite ready. Join?</div>
             <div className={s.ctaCol}>
               <button className={s.limeBtn} onClick={() => void join()} disabled={busy}>{busy ? "Joining…" : "Join"}</button>
               <button className={`${s.btn} ${s.ghost}`} onClick={notNow} disabled={busy}>Not now</button>
             </div>
-          </> : <>
+          </ProtectedFeatureGate></EntitlementProvider> : <>
             <p className={s.muted} style={{ fontSize: 14, margin: "10px 0 0" }}>AXEN helps friends build discipline together, one small daily pact at a time.</p>
             <div className={s.ctaCol}><button className={s.limeBtn} onClick={login}>Log in or sign up</button></div>
           </>}
