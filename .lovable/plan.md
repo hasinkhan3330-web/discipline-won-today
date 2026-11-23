@@ -1,24 +1,19 @@
-# Landing mobile layout — on hold for Preview fix
+# Preview unstyled screens: diagnosis result (no edits)
 
-## Status
-- No code changes. The project stays exactly as it is now.
-- The Preview problem has been reported to the Lovable team with the evidence below.
-- Production is NOT verified on a phone yet.
+## Decision
+Option C. Nothing in the project is wrong. Preview's own page bundler drops every screen style file. No files will be changed.
 
-## Evidence (captured 23 Nov 2026, page "/", phone width 390px)
-- Page loads (status 200), no console errors, no failed requests.
-- The landing wrapper carries the landing-only style class, so the page code ran.
-- Preview loads only one stylesheet (the main app stylesheet). The landing mobile stylesheet is never loaded.
-- Result: the hero buttons stay side by side ("row") instead of stacking on phones.
-- Same problem affects other screens' own stylesheets in Preview (for example the wake alarm screen).
-- Clearing the cache and restarting Preview did not help.
-- The finished production files DO contain the phone rules (a width ≤ 640px block for the landing page).
+## Evidence (checked 23 Nov, read-only)
+- a) Since before "Added landing mobile CSS" (commit 7d876e8): vite.config.ts, package.json, lockfile, root page shell and src/styles.css have zero changes. Only LandingPage.tsx (1 import + 1 class) and its new style file changed. The last package change (Capacitor plugins, earlier) does not touch styling.
+- b) vite.config.ts uses the standard Lovable config with no custom CSS settings.
+- c) LandingPage.tsx has exactly one style import, `./landing-mobile.module.css`, and that file exists with the same name. The old `landing-mobile.css` import is gone. No stale import.
+- d) Preview at "/" and "/alarm" (390px): the only stylesheet requested is src/styles.css. No screen style file is requested or injected.
+- Root cause: Preview's bundled page file (`/@oj-start/routes-*.js`) turns the landing style file into only its class names (`{ root: "_root_evcnx_3" }`) and leaves out the style rules. The same happens to alarm.module.css. Preview's server does serve the file correctly when asked directly, but the bundle never asks for it.
+- Dev server log: no CSS errors.
+- Production build output (dist) contains the phone rules, including stacking the hero buttons. Live phone test on axonhabit.app is not done yet.
 
-## What happens next (only after Preview is fixed or you approve)
-1. Re-open Preview at "/" at 360, 390, 412, 430px and confirm buttons stack and there is no sideways scroll.
-2. Compare desktop at 1280px with the previous screenshot.
-3. Only after you approve publishing: publish, then test the live site on a phone width.
+## Next step for you
+Wait for the Lovable team to fix Preview (already reported with this evidence). Then reply "check Preview" and the 360/390/412/430/1280px test runs again.
 
-## Technical details
-- Files already in place (unchanged now): src/components/landing/landing-mobile.module.css, one import in src/components/landing/LandingPage.tsx.
-- No shared styles, other screens, database or sign-in touched.
+## Optional (only with your approval)
+Option B workaround for the landing page only: copy the phone rules into the main stylesheet as one marked block under @media (max-width: 640px) and remove the module import. Changes 2 files. Alarm and other screens would still look plain in Preview until the platform fix.
