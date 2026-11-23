@@ -46,8 +46,8 @@
 - Nudge suggestions come only from `get_nudge_suggestions()`; new templates seed inactive. Why: no raw partner data, owner approves copy.
 - Coin decay: cron + `apply_daily_penalty()` call `axen_apply_coin_decay` (PK user_id+local_day); <15 earned → −3, no floor. Why: one idempotent rule.
 - Home personal tasks capped at 5 by `enforce_task_limit` (per-user advisory lock; Coach-registry/archived rows excluded); `coach_plan_materialized` is server-only; `complete_task` and the task_completions guard reject Coach/archived tasks. Why: block Home reward abuse; archiving reversible via `archived_prev_active`.
-- Landing at `/` shows only to signed-out web visitors after the session check; native, OAuth callbacks and invites skip it; buttons open the existing sign-in. Styles `axl-`. Why: no marketing flash over auth.
-- 12-question Setup opens from You → Setup, not Home. Why: keeps onboarding reachable.
+- Landing `/` only for signed-out web after session check; native/OAuth/invites skip. Styles `axl-`. Why: no flash over auth.
+- Setup (12 questions) opens from You → Setup. Why: reachable.
 - Component CSS: `*.module.css` bound imports (`:global()` hooks), never side-effect `.css` imports. Why: those never load in preview.
 - Wake coins/XP end 07:30 local, server clock. Why: no bypass.
-- Accountability is Pro/trial-only: ProtectedFeatureGate on screens + get_entitlement guard in its RPCs and restrictive RLS; pacts stay open. Why: no bypass, Contract unaffected.
+- Accountability needs trial/Pro: screen gate + get_entitlement in RPCs/RLS; pacts open. Why: no bypass.
