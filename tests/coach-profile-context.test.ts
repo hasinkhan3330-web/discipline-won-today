@@ -3,7 +3,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { profileContextBlock, runCoachTool } from "../src/lib/coach-tools";
 
 const url = process.env.SUPABASE_URL, adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY, publicKey = process.env.SUPABASE_PUBLISHABLE_KEY;
-const serverTest = url && adminKey && publicKey ? test : test.skip;
+const serverTest = url && adminKey && publicKey && process.env.AXEN_ISOLATED_TEST_DB === "1" ? test : test.skip;
 let admin: SupabaseClient; const ids: string[] = [];
 async function account() {
   const password = crypto.randomUUID() + "Aa9!", email = `coach-ctx-${crypto.randomUUID()}@example.com`;

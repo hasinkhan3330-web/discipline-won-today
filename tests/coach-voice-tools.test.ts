@@ -5,7 +5,7 @@ import { COACH_SYSTEM_V2, COACH_TOOL_NAMES, COACH_MODEL_TOOL_NAMES, runCoachTool
 import { canBuildPlan, PLAN_READY_CONFIDENCE } from "../src/lib/coach-plan-rules";
 
 const url = process.env.SUPABASE_URL, adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY, publicKey = process.env.SUPABASE_PUBLISHABLE_KEY;
-const enabled = Boolean(url && adminKey && publicKey);
+const enabled = Boolean(url && adminKey && publicKey) && process.env.AXEN_ISOLATED_TEST_DB === "1"; // never the live database
 const serverTest = enabled ? test : test.skip;
 let admin: SupabaseClient, U: { id: string; c: SupabaseClient };
 

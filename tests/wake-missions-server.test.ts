@@ -6,7 +6,7 @@ import { SENTENCES } from "../src/lib/wake-missions/sentences";
 // Live check with temporary accounts (deleted afterwards). Setup/backdating uses the service key;
 // every mission/answer call is made as the signed-in temporary user.
 const url = process.env.SUPABASE_URL, adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY, publicKey = process.env.SUPABASE_PUBLISHABLE_KEY;
-const serverTest = url && adminKey && publicKey && process.env.WAKE_MISSION_LIVE ? test : test.skip;
+const serverTest = url && adminKey && publicKey && process.env.WAKE_MISSION_LIVE && process.env.AXEN_ISOLATED_TEST_DB === "1" ? test : test.skip;
 let admin: SupabaseClient;
 const ids: string[] = [];
 type Acc = { id: string; c: SupabaseClient };
