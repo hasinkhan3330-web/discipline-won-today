@@ -3209,7 +3209,7 @@ html[data-theme="simple"] .lb::before, html[data-theme="simple"] .lb::after { di
 .axl-page { --lime: oklch(0.9 0.25 125); --cyan: oklch(0.82 0.15 210); --violet: oklch(0.62 0.24 295); --gold: oklch(0.83 0.16 85); --ink: oklch(0.08 0.01 250); --card: oklch(0.13 0.02 260); --line: oklch(0.28 0.03 260); --text: oklch(0.96 0.01 250); --muted: oklch(0.7 0.02 250);
   min-height: 100vh; color: var(--text); background: radial-gradient(60% 40% at 15% 0%, color-mix(in oklab, var(--violet) 22%, transparent), transparent), radial-gradient(50% 35% at 90% 20%, color-mix(in oklab, var(--cyan) 14%, transparent), transparent), var(--ink); font-family: "Sora", "Inter", system-ui, sans-serif; overflow-x: clip; }
 .axl-wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 20px; }
-.axl-nav { position: sticky; top: 0; z-index: 20; backdrop-filter: blur(14px); background: color-mix(in oklab, var(--ink) 78%, transparent); border-bottom: 1px solid color-mix(in oklab, var(--line) 60%, transparent); }
+.axl-nav { position: sticky; top: 0; z-index: 20; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); background: color-mix(in oklab, var(--ink) 78%, transparent); border-bottom: 1px solid color-mix(in oklab, var(--line) 60%, transparent); }
 .axl-nav-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 64px; }
 .axl-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: 3px; font-size: 14px; }
 .axl-brand img { width: 34px; height: 34px; object-fit: contain; }
@@ -3301,4 +3301,28 @@ html[data-theme="simple"] .lb::before, html[data-theme="simple"] .lb::after { di
   .axl-page .axl-final { margin: 12px 0 48px; padding: 32px 18px; border-radius: 18px; }
   .axl-page .axl-footer { padding: 22px 0; font-size: 12px; }
   .axl-page .axl-foot-in { flex-direction: column; align-items: flex-start; gap: 10px; }
+  /* phone fit (iOS + Android) */
+  .axl-page { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; min-height: 100vh; min-height: 100svh; }
+  .axl-page .axl-nav .axl-wrap { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  .axl-page .axl-nav-btns .axl-btn { min-height: 44px; }
+  .axl-page .axl-cta-row .axl-btn { min-height: 50px; }
+  .axl-page .axl-hero { gap: 28px; padding-block: 28px 24px; }
+  .axl-page .axl-section { padding-block: 32px; }
+  .axl-page .axl-sub { margin-top: 8px; font-size: 14px; }
+  .axl-page .axl-shots { grid-auto-columns: min(72vw, 260px); gap: 12px; padding: 18px 14vw 8px; margin-inline: -16px; scroll-snap-type: x mandatory; scroll-padding-inline: 14vw; overscroll-behavior-x: contain; touch-action: pan-x pan-y; -webkit-overflow-scrolling: touch; }
+  .axl-page .axl-shot { scroll-snap-align: center; min-width: 0; }
+  .axl-page .axl-shot img { object-fit: contain; object-position: center; max-width: 100%; }
+  .axl-page .axl-shot figcaption { white-space: normal; overflow-wrap: anywhere; }
+  .axl-page .axl-grid, .axl-page .axl-benefits, .axl-page .axl-prices { gap: 12px; margin-top: 18px; }
+  .axl-page .axl-grid > *, .axl-page .axl-benefits > *, .axl-page .axl-prices > * { min-width: 0; }
+  .axl-page .axl-card { padding: 16px; }
+  .axl-page .axl-card h3 { margin-top: 10px; font-size: 16px; }
+  .axl-page .axl-card p { font-size: 14px; line-height: 1.5; }
+  .axl-page .axl-icon { width: 40px; height: 40px; }
+  .axl-page .axl-benefit { padding: 14px 16px; }
+  .axl-page .axl-price { padding: 18px 16px; }
+  .axl-page .axl-price ul { margin: 14px 0 18px; }
+  .axl-page .axl-final { margin: 8px 0 32px; padding: 28px 16px; }
+  .axl-page .axl-footer { padding: 20px 0 max(20px, env(safe-area-inset-bottom)); }
+  .axl-page .axl-footer .axl-wrap { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
 }
