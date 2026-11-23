@@ -1,0 +1,30 @@
+/* ===== Landing page mobile overrides (axl-*) — landing only, ≤640px ===== */
+@media (max-width: 640px) {
+  .root :global(.axl-wrap) { padding: 0 16px; }
+  .root :global(.axl-nav-in) { height: 58px; }
+  .root :global(.axl-brand) { font-size: 13px; letter-spacing: 2px; }
+  .root :global(.axl-brand) img { width: 28px; height: 28px; }
+  .root :global(.axl-hero) { gap: 32px; padding-block: 36px 32px; }
+  .root :global(.axl-h1) { font-size: clamp(30px, 9.2vw, 40px); letter-spacing: -1px; }
+  .root :global(.axl-lead) { font-size: 15px; }
+  .root :global(.axl-cta-row) { flex-direction: column; align-items: stretch; gap: 10px; margin-top: 24px; }
+  .root :global(.axl-cta-row) :global(.axl-btn) { width: 100%; min-height: 50px; }
+  .root :global(.axl-trust) { gap: 10px 16px; margin-top: 18px; }
+  .root :global(.axl-phone) { width: min(250px, 68vw); border-radius: 28px; }
+  .root :global(.axl-phone) img { border-radius: 21px; }
+  .root :global(.axl-phone-stage::before) { inset: 12% 8%; }
+  .root :global(.axl-section) { padding-block: 44px; }
+  .root :global(.axl-h2) { font-size: clamp(23px, 6.4vw, 30px); }
+  .root :global(.axl-shots) { grid-auto-columns: min(200px, 56vw); gap: 12px; padding: 20px 2px 10px; }
+  .root :global(.axl-shot) img { border-radius: 18px; }
+  .root :global(.axl-grid) { gap: 12px; margin-top: 22px; }
+  .root :global(.axl-card) { padding: 18px; }
+  .root :global(.axl-benefits) { gap: 10px; margin-top: 22px; }
+  .root :global(.axl-benefit) { padding: 16px; }
+  .root :global(.axl-prices) { gap: 14px; margin-top: 22px; }
+  .root :global(.axl-price) { padding: 22px 20px; }
+  .root :global(.axl-amount) { font-size: 32px; }
+  .root :global(.axl-final) { margin: 12px 0 48px; padding: 32px 18px; border-radius: 18px; }
+  .root :global(.axl-footer) { padding: 22px 0; font-size: 12px; }
+  .root :global(.axl-foot-in) { flex-direction: column; align-items: flex-start; gap: 10px; }
+}

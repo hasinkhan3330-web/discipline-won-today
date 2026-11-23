@@ -8,7 +8,7 @@ import journey from "@/assets/landing/journey.webp.asset.json";
 import ranks from "@/assets/landing/ranks.webp.asset.json";
 import focus from "@/assets/landing/focus.webp.asset.json";
 import missions from "@/assets/landing/missions.webp.asset.json";
-import "./landing-mobile.css";
+import m from "./landing-mobile.module.css";
 
 type Props = { onSignIn: () => void; onGetStarted: () => void };
 
@@ -39,7 +39,7 @@ const BENEFITS = [
 
 export function LandingPage({ onSignIn, onGetStarted }: Props) {
   return (
-    <div className="axl-page">
+    <div className={`axl-page ${m.root}`}>
       <header className="axl-nav">
         <div className={`axl-wrap axl-nav-in`}>
           <div className="axl-brand"><img src={axenLogo} alt="" width={34} height={34} />AXEN</div>

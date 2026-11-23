@@ -48,3 +48,4 @@
 - Home personal tasks are capped at 5 by `enforce_task_limit` (advisory lock per user; Coach-registry and archived rows excluded); `coach_plan_materialized` is server-only and Coach/archived tasks are rejected by `complete_task` and the task_completions guard. Why: stop Home task reward abuse on every path; archiving is reversible via `archived_prev_active`.
 - Public landing at `/` is shown only to signed-out web visitors after the session check; native launches, OAuth callbacks and pending invites skip it, and its buttons open the existing sign-in unchanged. Styles: `axl-` prefix in `src/styles.css`. Why: no marketing flash over auth.
 - 12-question Setup opens from You → Setup, not Home. Why: keeps onboarding reachable.
+- Component-level styles use `*.module.css` imported as a binding (global class hooks via `:global()`), never plain side-effect `.css` imports. Why: the production build drops nothing, but plain side-effect CSS imports never load in the preview.
