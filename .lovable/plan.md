@@ -1,26 +1,24 @@
-# Mobile layout fix — public landing page only
+# Fix: landing page mobile styles never reach the preview
 
-## What I found
-- The landing page's styles currently live inside the shared app stylesheet (`src/styles.css`, the `axl-*` block). You asked me not to edit global CSS, so I will **not** touch that file.
-- There is no `index.html` here; the screen setting lives in `src/routes/__root.tsx`: `width=device-width, initial-scale=1`. **`viewport-fit=cover` is missing.** So I will add no new safe-area padding unless you approve that change (asked separately). The footer already has a bottom safe-area value from the earlier build; I'll leave it as is.
-- The landing wrapper already uses a landing-only `overflow-x: clip`. No global overflow rule will be added. I'll find and fix whatever element is actually too wide.
+## What I found (checked this turn, nothing changed yet)
 
-## Files I will change (only landing-owned)
-1. `src/components/landing/landing-mobile.css` — **new**, used only by the landing page. Every rule sits inside `@media (max-width: 639px)`, so desktop stays exactly the same.
-2. `src/components/landing/LandingPage.tsx` — one added line: `import "./landing-mobile.css";`. No markup, text, class or order changes.
+- Preview server: running, no build errors, no runtime errors, no failed requests. A fresh load of `/` returns the landing page at 360, 390, 430 and 1280px with no console errors.
+- Pending draft: "Draft 6" has no changes and is behind the main project. It is not the cause.
+- **First root cause:** the earlier mobile fix added `landing-mobile.css` as a plain side-effect import (`import "./landing-mobile.css"`). The preview's dev server drops this kind of import: its log says the file "matched no module", and the browser loads only `styles.css`. At 390px the buttons are still side by side (`flex-direction: row`), so none of the mobile rules apply. Every other screen uses `*.module.css` files, and those load correctly.
+- The earlier "desktop identical" check passed only because the file never loaded at any width.
+- `/alarm` without styling (your screenshot): `alarm.module.css` is served normally (HTTP 200). That page needs sign-in, and I can't test it without creating an account, so I can't confirm why your tab showed it unstyled. I won't change it.
 
-No other file changes.
+## Fix (landing page files only)
 
-## Phone rules (360–430px), all below 640px
-- `.axl-hero`: `min-height: 100vh; min-height: 100svh;`, `align-content: start`, padding and gap via `clamp()`, smaller phone mockup (`.axl-phone` width with clamp) so the H1, lead text and CTA row show without scrolling.
-- `.axl-cta-row`: smaller top margin and gap via clamp (buttons themselves unchanged).
-- `.axl-section`, `.axl-final`, `.axl-grid`, `.axl-benefits`, `.axl-prices`: padding, margins and gaps via `clamp()` so the page gets much shorter.
-- Features `.axl-grid` and "Why AXEN" `.axl-benefits`: 2 columns, smaller card padding and icon size; single column again below about 370px if text gets cramped.
-- "Inside the app" `.axl-shots`: keep horizontal swipe and scroll-snap, frame width `clamp(150px, 46vw, 200px)`, side padding plus `scroll-padding` so the first/last frames aren't clipped.
-- `.axl-prices` / `.axl-price`: one full-width column, slightly tighter padding, readable text.
-- Nav: keep both buttons, just tighter spacing so they fit at 360px.
+1. Rename `src/components/landing/landing-mobile.css` to `landing-mobile.module.css`. Keep the same 28 rules and the same `@media (max-width: 640px)` block. Each selector gets scoped under one local root class, for example `.root :global(.axl-cta-row)`.
+2. In `src/components/landing/LandingPage.tsx`, change the import to `import m from "./landing-mobile.module.css"` and add `m.root` to the outer `<div className="axl-page">`.
 
-## Checks
-- Playwright at 360, 390, 412, 430: no sideways page scroll (`scrollWidth === innerWidth`), CTA buttons inside the first screen, swipe row frames not cut off, page height before vs after.
-- 1280 desktop: screenshot before and after must match exactly.
-- Build check clean.
+Nothing else changes: no `styles.css`, no root file, no `/alarm`, no other page, shared component, database or sign-in. There's no `index.html` in this project, and the viewport tag stays as it is, as you decided earlier.
+
+## Verification (before reporting)
+
+- Read the newest build log entry, and run the typecheck if no entry appears.
+- Fresh headless load of `/` at 360, 390, 412 and 430px: confirm the mobile rules are live (buttons stacked, `flex-direction: column`), no horizontal scroll, no console errors, no failed requests.
+- 1280px: compare screenshots before and after. Desktop must be identical, because every rule sits inside the 640px media query.
+- `git status`: only the two landing files changed.
+- Report the exact results. If the module file also fails to load, stop and report it as a platform blocker instead of trying other changes.
