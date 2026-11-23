@@ -12,6 +12,9 @@ from pathlib import Path
 import requests
 from playwright.async_api import async_playwright
 
+if os.environ.get("AXEN_ISOLATED_TEST_DB") != "1":
+    sys.exit("Refusing to run: creates accounts. Set AXEN_ISOLATED_TEST_DB=1 only against a disposable database.")
+
 APP = os.environ.get("WAKE_LIVE_APP_URL", "http://localhost:8080")
 SB = os.environ["SUPABASE_URL"].rstrip("/")
 SERVICE = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
