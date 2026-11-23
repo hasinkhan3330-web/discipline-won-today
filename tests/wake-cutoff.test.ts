@@ -18,3 +18,11 @@ test("both wake reward paths skip XP after the cutoff but keep streak", () => {
     expect(f).toContain("UPDATE public.profiles SET streak=");
   }
 });
+
+test("Math/Science solve path also stops coins and XP at/after 07:30", () => {
+  const f = readFileSync("drizzle/migrations/0054_wake_cutoff_0730_math_science.sql", "utf8");
+  expect(f).toContain("WHEN clock_timestamp()>=((e.local_date+time '07:30') AT TIME ZONE e.timezone) THEN 'after_cutoff' ELSE 'eligible'");
+  expect(f).toContain("IF result<>'after_cutoff' AND public.wake_slot_reward(");
+  expect(f).toContain("UPDATE public.profiles SET streak=");
+  expect(f).toContain("PERFORM public.wake_create_occurrence(a.id)");
+});
