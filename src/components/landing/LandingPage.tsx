@@ -8,6 +8,7 @@ import journey from "@/assets/landing/journey.webp.asset.json";
 import ranks from "@/assets/landing/ranks.webp.asset.json";
 import focus from "@/assets/landing/focus.webp.asset.json";
 import missions from "@/assets/landing/missions.webp.asset.json";
+import "./landing-mobile.css";
 
 type Props = { onSignIn: () => void; onGetStarted: () => void };
 

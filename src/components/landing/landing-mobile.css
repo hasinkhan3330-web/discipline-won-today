@@ -1,0 +1,30 @@
+/* ===== Landing page mobile overrides (axl-*) — landing only, ≤640px ===== */
+@media (max-width: 640px) {
+  .axl-wrap { padding: 0 16px; }
+  .axl-nav-in { height: 58px; }
+  .axl-brand { font-size: 13px; letter-spacing: 2px; }
+  .axl-brand img { width: 28px; height: 28px; }
+  .axl-hero { gap: 32px; padding-block: 36px 32px; }
+  .axl-h1 { font-size: clamp(30px, 9.2vw, 40px); letter-spacing: -1px; }
+  .axl-lead { font-size: 15px; }
+  .axl-cta-row { flex-direction: column; align-items: stretch; gap: 10px; margin-top: 24px; }
+  .axl-cta-row .axl-btn { width: 100%; min-height: 50px; }
+  .axl-trust { gap: 10px 16px; margin-top: 18px; }
+  .axl-phone { width: min(250px, 68vw); border-radius: 28px; }
+  .axl-phone img { border-radius: 21px; }
+  .axl-phone-stage::before { inset: 12% 8%; }
+  .axl-section { padding-block: 44px; }
+  .axl-h2 { font-size: clamp(23px, 6.4vw, 30px); }
+  .axl-shots { grid-auto-columns: min(200px, 56vw); gap: 12px; padding: 20px 2px 10px; }
+  .axl-shot img { border-radius: 18px; }
+  .axl-grid { gap: 12px; margin-top: 22px; }
+  .axl-card { padding: 18px; }
+  .axl-benefits { gap: 10px; margin-top: 22px; }
+  .axl-benefit { padding: 16px; }
+  .axl-prices { gap: 14px; margin-top: 22px; }
+  .axl-price { padding: 22px 20px; }
+  .axl-amount { font-size: 32px; }
+  .axl-final { margin: 12px 0 48px; padding: 32px 18px; border-radius: 18px; }
+  .axl-footer { padding: 22px 0; font-size: 12px; }
+  .axl-foot-in { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
