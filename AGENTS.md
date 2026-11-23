@@ -49,4 +49,4 @@
 - Landing at `/` shows only to signed-out web visitors after the session check; native, OAuth callbacks and invites skip it; buttons open the existing sign-in. Styles `axl-`. Why: no marketing flash over auth.
 - 12-question Setup opens from You → Setup, not Home. Why: keeps onboarding reachable.
 - Component CSS: `*.module.css` bound imports (`:global()` hooks), never side-effect `.css` imports. Why: those never load in preview.
-- Wake coins/XP stop at 07:30 local in `wake_finalize_solve`/`wake_finalize_offline`, using server `now()` vs the firing's stored `local_date`+`timezone` (never client time); non-reward logic still runs. Why: server-authoritative cutoff with no bypass.
+- Wake coins/XP end 07:30 local (server now() vs firing local_date+timezone). Why: no client bypass.
