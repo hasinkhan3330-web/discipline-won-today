@@ -1,48 +1,30 @@
-# AXEN Landing Page — Phone fit (iOS Safari + Android Chrome)
+# Alarm 07:30 cutoff — ring/vibration band (sirf alarm cutoff)
 
-Sirf logged-out landing page "/" badlega. Home, Coach, Zen, Rank, Alarm, You, sign-in, database, coins, checkout — kuch nahi chhuega. Colors, fonts, copy aur section order same rahenge (sirf jo aapne list kiya woh copy change).
+Coins ka 07:30 cutoff server par pehle se laga hai (0 coins, 0 XP). Ab sirf ringing aur vibration ko 07:30 par band karna hai. UI, Repeat Daily, rewards, database aur packages kuch nahi badlega.
 
-## Kya badlega (phone par)
+## Abhi kya hota hai
+- Android phone par alarm ek main notification + 30 follow-ups (har minute) schedule karta hai, yani 07:20 ka alarm 07:50 tak bajta reh sakta hai.
+- Alarm screen khuli ho to har 5 second par server se check karke sound aur vibration chalta rehta hai, chahe 07:30 nikal gaya ho.
+- App kholte hi agar alarm "ringing" ho to woh alarm screen par le jaata hai.
 
-**A) "Inside the app" carousel**
-- Ek naya `PhoneMockup` (sirf landing ke liye) — sab 6 slides same width, 9/19 ratio, same rounded frame aur bezel.
-- Phone par mockup chhota: screen width ka ~76%, agla slide ~12% dikhega (peek).
-- Scroll-snap center, smooth touch swipe, scrollbar hidden, page ka horizontal scroll nahi.
-- 6 dots neeche, active dot lime, tap karke slide pe jaate hain (44×44 tap area).
-- Caption: title 16px/600, subtitle 13px readable grey (AA contrast), max 2 lines, "..." nahi.
-- Image flaws: 4AM shot ke upar "YOU RISE?" ghost text ko object-position/scale se crop karne ki koshish; jo CSS se theek na ho, unki file list final reply mein.
+## Kya badlega
+1. **Android schedule:** 07:30 (us din ka phone ka local time) ya uske baad wala koi bhi notification schedule hi nahi hoga. Toh app band ho, phone lock ho, tab bhi 07:30 ke baad sound/vibration nahi aayega.
+2. **Alarm screen:** 07:30 hote hi sound band, vibration band, us alarm ke baaki notifications cancel, aur screen apne aap Home par wapas. Repeat Daily wala kal ka alarm waise hi rahega.
+3. **Auto-open:** 07:30 ke baad app kholne par alarm screen dobara nahi khulegi.
+4. **Coins:** pehle se server par band hain; kuch nahi badla.
 
-**B) Hero**
-- Hero text + buttons phone par compact; hero phone mockup bhi wahi `PhoneMockup`, chhota size (website jaisa bada nahi).
-- "Sign in with Google" ek asli outlined button: full width, 48px, Google "G" icon — existing sign-in hi kholega.
-- "Android app + web" ke neeche: "Works on iPhone in your browser".
+## Test
+- Naye tests: 07:29:59 par schedule/ringing chalta hai; 07:30:00 aur baad mein koi notification nahi, screen band. 07:20 alarm ke follow-ups 07:29 par ruk jaate hain. Repeat Daily ka agla din wala alarm safe rehta hai. Alag timezone (India) bhi check.
+- Purane alarm/wake tests dobara chalaunga.
+- Browser mein alarm screen ko fake time (07:29 aur 07:30) ke saath check karunga. Asli Android/iPhone par test main yahan nahi kar sakta.
 
-**C) Pricing**
-- Monthly button: "Get Started" → "Get PRO". Free = "Start free trial", Yearly = "Get PRO".
-- "Best Value · Save 58%" badge 320px par na kate, na price par chadhe.
-
-**D) Spacing / text**
-- Har section same padding: phone 64px (py-16), desktop 96px (py-24) — Features/Why AXEN/Pricing ke beech ka extra gap hatega.
-- Body text min 15px, secondary 13px, line-height 1.5.
-- Header logo 28px+, Sign In / Get Started 44px height, kabhi wrap nahi.
-
-**E) iOS/Android hardening (landing ke andar hi)**
-- 100vh fallback + 100dvh.
-- Sticky header aur footer mein safe-area padding.
-- Text-size-adjust 100%, blur ke saath -webkit- prefix, buttons par tap-highlight transparent + touch-action manipulation.
-- Horizontal scroll ka asli element fix; landing root par `overflow-x: clip` (poore app ke body par nahi).
-- Header address-bar collapse par jump na kare.
-
-## Do safety decisions (aapke "app mein kuch nahi badle" rule ki wajah se)
-1. **viewport-fit=cover**: viewport tag poore app ka shared hai. Ise globally badalne se Android app/Capacitor screens ke kinare badal sakte hain. Isliye sirf landing page khulne par yeh tag lagega aur bahar jaate hi purana wapas — app screens par asar nahi.
-2. **body { overflow-x: hidden }**: global body poore app ko affect karta hai, isliye yeh landing ke root par hi lagega.
-
-## Verify
-Playwright 320/360/390/412/430 + 1280: no horizontal scroll, mockups same size aur bottom crop nahi, snap + dots, tap targets ≥44px, badge not clipped. Build check. Reply mein har checklist item ka PASS/FAIL + re-export wali image list.
+## Honest limits
+- **iOS:** app mein abhi native iPhone alarm hai hi nahi; iPhone par alarm sirf tab bajta hai jab app khula ho. Wahan 07:30 par screen band ho jayegi, par app band ho to iOS par pehle bhi alarm nahi bajta tha.
+- **Android:** agar phone ka time/timezone user ne badla ho, to cutoff phone ke clock ke hisaab se hoga (coins phir bhi server ke hisaab se 0).
+- Jo notification 07:29 par aa chuka hai, uski awaaz Android ke apne niyam se kuch second chal sakti hai.
 
 ## Technical details
-- Files: `src/components/landing/LandingPage.tsx`, naya `src/components/landing/PhoneMockup.tsx`, `src/styles.css` mein sirf end par naya `.axl-` block append (existing lines untouched — CSS modules Preview mein load nahi hote).
-- Dots: scroll listener + IntersectionObserver, `scrollIntoView({inline:"center"})`.
-- Viewport: LandingPage `useEffect` mein `meta[name=viewport]` content set/restore.
-- Inputs: landing par input nahi hai; rule `.axl-page input` 16px ke saath add.
-- Koi naya package nahi.
+- `src/lib/native-alarms-core.ts`: add pure `wakeCutoffAt(firingAt)` (same local date, 07:30:00) and filter in `buildSchedule` (`at < cutoff`); `activeOfflineFiring` also rejects firings past cutoff.
+- `src/components/wake/AlarmScreen.tsx`: a timer to the event's cutoff calls `webAlarmScheduler.stopVerified()`, `stopAlarmHaptics()`, `markFiringSolved(firing)`, then navigates to `/dashboard`; ring only if before cutoff.
+- `src/components/wake/WakeObserver.tsx`: skip `/alarm` redirect when past cutoff.
+- Tests in `tests/native-alarms.test.ts`. No schema, server, UI-copy or dependency change.
