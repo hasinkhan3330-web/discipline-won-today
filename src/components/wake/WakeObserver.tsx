@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { readWakeState, claimOfflineWake } from "@/lib/wake.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { webAlarmScheduler } from "@/lib/web-alarm-scheduler";
-import { listenAlarmTaps, syncNativeAlarms } from "@/lib/native-alarms";
+import { listenAlarmTaps, markFiringSolved, syncNativeAlarms } from "@/lib/native-alarms";
+import { pastWakeCutoff } from "@/lib/native-alarms-core";
 import { syncClaims } from "@/lib/offline-wake-claims";
 import { WAKE_REASONS } from "@/lib/wake-rules";
 
@@ -33,7 +34,9 @@ export function WakeObserver() {
         // Native alarms resync on app open/resume, after edits/solves, or whenever the schedule changes.
         const sig = JSON.stringify([state.settings?.alarm_id, state.settings?.enabled, state.settings?.repeat_daily, state.settings?.next_fire_at, state.event?.id, state.event?.status]);
         if (force || sig !== lastNative) { force = false; lastNative = sig; void syncNativeAlarms(state); }
-        if (state.event?.status === "ringing" && router.state.location.pathname !== "/alarm") await router.navigate({ to: "/alarm", replace: true });
+        const late = state.event?.status === "ringing" && !state.event.is_test && pastWakeCutoff(Date.parse(state.event.scheduled_for), Date.now());
+        if (late && state.event) { webAlarmScheduler.stopVerified(); void markFiringSolved(Date.parse(state.event.scheduled_for)); }
+        if (!late && state.event?.status === "ringing" && router.state.location.pathname !== "/alarm") await router.navigate({ to: "/alarm", replace: true });
       } catch { /* alarm page and readiness report connection errors */ }
       finally { busy = false; }
     };

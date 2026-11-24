@@ -11,8 +11,9 @@ export function makeOfflineQuestion(rand = Math.random) {
 export function checkOfflineAnswer(q, input) { const v = String(input).trim().replace(/^−/, "-"); return /^-?\d+$/.test(v) && Number(v) === q.answer; }
 export function nextStreak(streak, correct) { return correct ? streak + 1 : 0; }
 export function firingIds(firingAt) { const slot = ((Math.floor(firingAt / 60000) % SLOTS) + SLOTS) % SLOTS; return Array.from({ length: PER }, (_, i) => BASE + slot * PER + i); }
+export function wakeCutoffAt(firingAt) { const d = new Date(firingAt); d.setHours(7, 30, 0, 0); return d.getTime(); }
 export function activeOfflineFiring(firings, tapped, now, solved) {
-  const ok = f => f <= now && now - f <= OFFLINE_WINDOW_MS && !solved.has(f);
+  const ok = f => f <= now && now < wakeCutoffAt(f) && now - f <= OFFLINE_WINDOW_MS && !solved.has(f);
   if (tapped !== null && tapped !== undefined && ok(tapped)) return tapped;
   return firings.filter(ok).sort((a, b) => b - a)[0] ?? null;
 }

@@ -13,7 +13,7 @@ import type { AlarmEvent, AlarmSubmission } from "@/lib/wake-types";
 import styles from "./alarm.module.css";
 import { OfflineStop } from "./OfflineStop";
 import { cachedFirings, isAndroidNative, markFiringSolved, solvedFirings, startAlarmHaptics, stopAlarmHaptics, tappedFiring } from "@/lib/native-alarms";
-import { activeOfflineFiring } from "@/lib/native-alarms-core";
+import { activeOfflineFiring, pastWakeCutoff, wakeCutoffAt } from "@/lib/native-alarms-core";
 import { buildClaim } from "@/lib/wake-offline-core";
 import { queueClaim } from "@/lib/offline-wake-claims";
 import superloud from "@/assets/ringtones/the_cutie_pie-super-loud-ahh-alarm-165805_1.mp3.asset.json";
@@ -46,6 +46,7 @@ export function AlarmScreen() {
       const state = await read(); webAlarmScheduler.synchronize(state); setLoaded(true); setOffline(null);
       if (state.event) {
         setEvent(state.event);
+        if (state.event.status === "ringing" && !state.event.is_test && pastWakeCutoff(Date.parse(state.event.scheduled_for), Date.now())) { webAlarmScheduler.stopVerified(); stopAlarmHaptics(); void markFiringSolved(Date.parse(state.event.scheduled_for)); void navigate({ to: "/dashboard", replace: true }); return; }
         if (state.event.status === "ringing") await webAlarmScheduler.ring(tones[state.event.tone] ?? superloud.url);
         else if (state.event.status === "solved" && !result?.solved) {
           webAlarmScheduler.stopVerified(); verified(state.event);
@@ -109,6 +110,16 @@ export function AlarmScreen() {
   const ringingNow = !result?.solved && !offlineDone && (event?.status === "ringing" || offline !== null);
   useEffect(() => { if (ringingNow) void startAlarmHaptics(); else stopAlarmHaptics(); }, [ringingNow]);
   useEffect(() => () => stopAlarmHaptics(), []);
+  // 07:30 cutoff: stop sound/vibration, cancel this firing's remaining notifications and close the screen. Rewards stay server-decided.
+  const cutoffFiring = offline ? offline.firingAt : event?.status === "ringing" && !event.is_test ? Date.parse(event.scheduled_for) : null;
+  useEffect(() => {
+    if (cutoffFiring === null || !Number.isFinite(cutoffFiring) || result?.solved || offlineDone) return;
+    const stop = () => { webAlarmScheduler.stopVerified(); stopAlarmHaptics(); setOffline(null); setEvent(null); void markFiringSolved(cutoffFiring); void navigate({ to: "/dashboard", replace: true }); };
+    const wait = wakeCutoffAt(cutoffFiring) - Date.now();
+    if (wait <= 0) { stop(); return; }
+    const id = window.setTimeout(stop, Math.min(wait, 2_147_000_000));
+    return () => clearTimeout(id);
+  }, [cutoffFiring, result?.solved, offlineDone, navigate]);
   const solvedOffline = async () => {
     if (!offline) return;
     webAlarmScheduler.stopVerified(); stopAlarmHaptics(); setOfflineDone(true);

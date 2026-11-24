@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 import {
   ALARM_ID_BASE, MAX_SCHEDULED, PER_FIRING, activeOfflineFiring, buildSchedule, firingIds, isAlarmNotificationId,
-  nextDaySameTime, notificationId, parseAlarmTap, upcomingFirings,
+  nextDaySameTime, notificationId, parseAlarmTap, pastWakeCutoff, upcomingFirings, wakeCutoffAt,
 } from "../src/lib/native-alarms-core";
 import { addClaim, buildClaim, checkOfflineAnswer, makeOfflineQuestion, nextStreak, removeClaim, OFFLINE_STREAK } from "../src/lib/wake-offline-core";
 // @ts-expect-error plain JS mirror used by the offline fallback page
@@ -10,6 +10,8 @@ import * as shell from "../android-shell/offline-core.js";
 const A = "11111111-1111-4111-8111-111111111111";
 const now = Date.parse("2026-11-20T10:00:00Z");
 const next = "2026-11-21T00:30:00Z"; // 06:00 IST
+// Morning base in device-local time, so fixtures sit inside the 04:00–07:30 wake window.
+const morning = new Date(2026, 10, 24, 6, 40).getTime();
 
 test("repeat alarm schedules the next 2 firings, each with a main + 30 one-minute follow-ups", () => {
   const f = upcomingFirings({ alarmId: A, enabled: true, repeatDaily: true, nextFireAt: next }, now);
@@ -45,18 +47,19 @@ test("solving one firing removes only that firing's chain; the next firing keeps
 });
 
 test("a still-ringing firing keeps only its remaining follow-ups after resync", () => {
-  const ringAt = now - 10 * 60_000;
-  const f = upcomingFirings({ alarmId: A, enabled: true, repeatDaily: true, nextFireAt: next, ringing: { scheduledFor: new Date(ringAt).toISOString() } }, now);
+  const ringAt = morning - 10 * 60_000;
+  const f = upcomingFirings({ alarmId: A, enabled: true, repeatDaily: true, nextFireAt: new Date(nextDaySameTime(morning)).toISOString(), ringing: { scheduledFor: new Date(ringAt).toISOString() } }, morning);
   expect(f[0]).toBe(ringAt);
-  const s = buildSchedule(A, f, now).filter(e => e.firingAt === ringAt);
+  const s = buildSchedule(A, f, morning).filter(e => e.firingAt === ringAt);
   expect(s.length).toBe(20); // follow-ups 11..30 remain
 });
 
 test("total scheduled notifications are capped at 450, nearest firings first", () => {
-  const firings = Array.from({ length: 20 }, (_, i) => now + (i + 1) * 3_600_000);
-  const s = buildSchedule(A, firings, now);
+  const base = new Date(2026, 10, 24, 4, 0).getTime();
+  const firings = Array.from({ length: 19 }, (_, i) => base + i * 5 * 60_000); // 04:00–05:30, all before cutoff
+  const s = buildSchedule(A, firings, base - 1);
   expect(s.length).toBe(MAX_SCHEDULED);
-  expect(Math.max(...s.map(e => e.firingAt))).toBeLessThan(Math.min(...firings.slice(15)));
+  expect(Math.max(...s.map(e => e.firingAt))).toBeLessThan(firings[18]!);
   expect(s.every((e, i) => i === 0 || e.at >= s[i - 1]!.at)).toBe(true);
 });
 
@@ -67,10 +70,10 @@ test("tap payload opens the alarm only for AXEN alarm notifications", () => {
 });
 
 test("offline firing: tapped one within 35 min wins; old or solved firings are ignored", () => {
-  const r = now - 5 * 60_000;
-  expect(activeOfflineFiring([r], null, now, new Set())).toBe(r);
-  expect(activeOfflineFiring([now - 40 * 60_000], null, now, new Set())).toBeNull();
-  expect(activeOfflineFiring([r], null, now, new Set([r]))).toBeNull();
+  const r = morning - 5 * 60_000;
+  expect(activeOfflineFiring([r], null, morning, new Set())).toBe(r);
+  expect(activeOfflineFiring([morning - 40 * 60_000], null, morning, new Set())).toBeNull();
+  expect(activeOfflineFiring([r], null, morning, new Set([r]))).toBeNull();
 });
 
 test("offline puzzle: multi-step, checked locally, 3 in a row, wrong answer resets", () => {
@@ -102,5 +105,28 @@ test("offline fallback page mirrors the app rules exactly", () => {
   const f = Date.parse(next);
   expect(shell.firingIds(f)).toEqual(firingIds(f));
   expect(shell.buildClaim(A, f, f + 1000)).toEqual(buildClaim(A, f, f + 1000));
-  expect(shell.activeOfflineFiring([now - 60_000], null, now, new Set())).toBe(activeOfflineFiring([now - 60_000], null, now, new Set()));
+  for (const t of [now, morning, new Date(2026, 10, 24, 7, 30).getTime()]) expect(shell.activeOfflineFiring([t - 60_000], null, t, new Set())).toBe(activeOfflineFiring([t - 60_000], null, t, new Set()));
+});
+
+// 07:30 local cutoff (device timezone)
+const local = (h: number, m: number, s = 0) => new Date(2026, 10, 24, h, m, s).getTime();
+test("cutoff is 07:30:00 local on the firing's own day", () => {
+  expect(wakeCutoffAt(local(7, 20))).toBe(local(7, 30));
+  expect(pastWakeCutoff(local(7, 20), local(7, 29, 59))).toBe(false);
+  expect(pastWakeCutoff(local(7, 20), local(7, 30, 0))).toBe(true);
+});
+test("07:20 alarm follow-ups stop at 07:29; nothing at/after 07:30", () => {
+  const e = buildSchedule(A, [local(7, 20)], local(7, 0));
+  expect(e.length).toBe(10);
+  expect(Math.max(...e.map(x => x.at))).toBe(local(7, 29));
+  expect(buildSchedule(A, [local(7, 20)], local(7, 29, 59)).length).toBe(0);
+});
+test("07:45 alarm never schedules; repeat-daily next day before 07:30 still does", () => {
+  expect(buildSchedule(A, [local(7, 45)], local(7, 0)).length).toBe(0);
+  const tomorrow = nextDaySameTime(local(6, 0));
+  expect(buildSchedule(A, [tomorrow], local(9, 0)).length).toBe(31);
+});
+test("offline stop screen ignores firings past cutoff", () => {
+  expect(activeOfflineFiring([local(7, 20)], null, local(7, 29, 59), new Set())).toBe(local(7, 20));
+  expect(activeOfflineFiring([local(7, 20)], null, local(7, 30), new Set())).toBe(null);
 });

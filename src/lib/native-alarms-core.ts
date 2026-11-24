@@ -10,6 +10,11 @@ export const MAX_SCHEDULED = 450;
 export const OFFLINE_WINDOW_MS = 35 * 60_000;
 export const ALARM_TAP_KIND = "axen-alarm";
 
+/** Wake window end: 07:30:00 device-local time on the firing's own calendar day. Nothing rings at/after it. */
+export const WAKE_CUTOFF_HOUR = 7, WAKE_CUTOFF_MINUTE = 30;
+export function wakeCutoffAt(firingAt: number) { const d = new Date(firingAt); d.setHours(WAKE_CUTOFF_HOUR, WAKE_CUTOFF_MINUTE, 0, 0); return d.getTime(); }
+export function pastWakeCutoff(firingAt: number, now: number) { return now >= wakeCutoffAt(firingAt); }
+
 export type AlarmEntry = { id: number; at: number; firingAt: number; index: number; alarmId: string };
 export type FiringInput = { alarmId: string; enabled: boolean; repeatDaily: boolean; nextFireAt: string | null; ringing?: { scheduledFor: string } | null };
 
@@ -41,7 +46,7 @@ export function buildSchedule(alarmId: string, firings: number[], now: number, c
   const all: AlarmEntry[] = [];
   for (const firingAt of firings) for (let index = 0; index <= FOLLOW_UPS; index++) {
     const at = firingAt + index * FOLLOW_UP_GAP_MS;
-    if (at > now) all.push({ id: notificationId(firingAt, index), at, firingAt, index, alarmId });
+    if (at > now && at < wakeCutoffAt(firingAt)) all.push({ id: notificationId(firingAt, index), at, firingAt, index, alarmId });
   }
   return all.sort((a, b) => a.at - b.at || a.id - b.id).slice(0, Math.max(0, cap));
 }
@@ -56,7 +61,7 @@ export function parseAlarmTap(extra: unknown): { alarmId: string; firingAt: numb
 
 /** The firing the offline screen should stop: tapped one first, else a cached firing that rang in the last 35 min. */
 export function activeOfflineFiring(firings: number[], tapped: number | null, now: number, solved: ReadonlySet<number>) {
-  const ok = (f: number) => f <= now && now - f <= OFFLINE_WINDOW_MS && !solved.has(f);
+  const ok = (f: number) => f <= now && !pastWakeCutoff(f, now) && now - f <= OFFLINE_WINDOW_MS && !solved.has(f);
   if (tapped !== null && ok(tapped)) return tapped;
   return firings.filter(ok).sort((a, b) => b - a)[0] ?? null;
 }
