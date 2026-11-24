@@ -37,7 +37,7 @@
 - Wake missions Shake/Typing/Tiles reuse `alarms.challenge_type`, the existing AlarmScreen ringing path and a private `wake_finalize_solve` copied from `wake_submit_answer`; only `wake_complete_mission` (proof plausibility checks) can finish them. Why: one alarm engine and identical rewards, Math/Science untouched.
 - Coach tab UI is switched by `USE_ORB_COACH` (coach-config); the orb screen reads VoiceCoach state/levels through its render prop and analyser side-branches only. Why: the old UI can be restored and voice/audio stay untouched.
 - Coach plans are saved only through the model tool `save_plan` into `plan_tasks` (atomic `save_plan_tasks` SECURITY INVOKER function, user from auth.uid()); `create_plan_draft`/`confirm_plan` stay button-only, and confirm also writes plan_tasks. Why: one persistence path that My Plan reads, so the coach can never claim an unsaved plan.
-- Accountability home shows only data its existing queries already return; elements without real data are hidden, and partner online presence stays off until a persisted opt-out setting exists. Why: no faked signals and no presence without a saved privacy choice.
+- Accountability home shows only data its existing queries already return; elements without real data are hidden, and partner online presence stays off until a persisted opt-out setting exists. Why: no faked signals or unconsented presence.
 - Partner nudge/cheer history lives in `partner_events`, written only by fail-safe AFTER INSERT triggers on `accountability_events`/`acct_cheers`; clients get SELECT + UPDATE(seen_at) only. Why: existing send functions, limits and mute stay untouched and history can never block a send.
 - `/join/$code` never validates a code for signed-out visitors and never auto-accepts; the existing `acceptInvite` runs only when the signed-in user taps Join. Why: no data exposure and explicit consent.
 - Partner proof files live in private bucket `proofs` at `{user_id}/...`; partner read requires a matching proof_submissions row and `is_active_partner()`. Why: folder match alone could leak unsubmitted files.
@@ -51,4 +51,3 @@
 - Component CSS: `*.module.css` bound imports (`:global()` hooks), never side-effect `.css` imports. Why: those never load in preview.
 - Wake coins/XP end 07:30 local, server clock. Why: no bypass.
 - Accountability needs trial/Pro: screen gate + get_entitlement in RPCs/RLS; pacts open. Why: no bypass.
-- Landing phone frames use landing-only `PhoneMockup` (9/19) and appended `.axl-` rules in styles.css; viewport meta untouched. Why: one consistent frame, zero impact on app screens.
