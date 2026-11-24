@@ -48,6 +48,6 @@
 - Home personal tasks capped at 5 by `enforce_task_limit` (per-user advisory lock; Coach-registry/archived rows excluded); `coach_plan_materialized` is server-only; `complete_task` and the task_completions guard reject Coach/archived tasks. Why: block Home reward abuse; archiving reversible via `archived_prev_active`.
 - Landing `/` only for signed-out web after session check; native/OAuth/invites skip. Styles `axl-`. Why: no flash over auth.
 - Setup lives in You → Setup (reachable).
-- Component CSS: `*.module.css` bound imports (`:global()` hooks), never side-effect `.css` imports. Why: those never load in preview.
+- Component CSS: `*.module.css` bound imports (`:global()` hooks), never side-effect `.css` imports. Why: never load in preview.
 - Wake coins/XP end 07:30 local, server clock. Why: no bypass.
 - Accountability needs trial/Pro: screen gate + get_entitlement in RPCs/RLS; pacts open. Why: no bypass.
