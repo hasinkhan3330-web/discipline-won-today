@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { PhoneMockup } from "./PhoneMockup";
 import { AlarmClock, Bot, Check, Crown, Flame, Focus, HeartHandshake, Leaf, Sparkles, Target, Trophy, Users } from "lucide-react";
 import { PRICING } from "@/lib/pricing";
 import axenLogo from "@/assets/axen-logo.png";
@@ -13,7 +15,7 @@ type Props = { onSignIn: () => void; onGetStarted: () => void };
 
 const SHOTS = [
   { src: home.url, title: "Command Center", copy: "Your whole day in one screen" },
-  { src: wake.url, title: "4AM Protocol", copy: "Wake alarms you must solve" },
+  { src: wake.url, title: "4AM Protocol", copy: "Wake alarms you must solve", position: "center 3%" },
   { src: missions.url, title: "Wake missions", copy: "Math, Science, Shake, Typing, Tiles" },
   { src: focus.url, title: "Deep Focus", copy: "Lock distracting apps" },
   { src: journey.url, title: "My Journey", copy: "See every day you showed up" },
@@ -37,6 +39,29 @@ const BENEFITS = [
 ];
 
 export function LandingPage({ onSignIn, onGetStarted }: Props) {
+  const rowRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+  useEffect(() => {
+    const row = rowRef.current;
+    if (!row) return;
+    const onScroll = () => {
+      const mid = row.scrollLeft + row.clientWidth / 2;
+      let best = 0, dist = Infinity;
+      Array.from(row.children).forEach((el, i) => {
+        const e = el as HTMLElement;
+        const d = Math.abs(e.offsetLeft + e.offsetWidth / 2 - mid);
+        if (d < dist) { dist = d; best = i; }
+      });
+      setActive(best);
+    };
+    row.addEventListener("scroll", onScroll, { passive: true });
+    return () => row.removeEventListener("scroll", onScroll);
+  }, []);
+  const goTo = (i: number) => {
+    const row = rowRef.current;
+    const el = row?.children[i] as HTMLElement | undefined;
+    if (row && el) row.scrollTo({ left: el.offsetLeft - (row.clientWidth - el.offsetWidth) / 2, behavior: "smooth" });
+  };
   return (
     <div className="axl-page">
       <header className="axl-nav">
@@ -62,20 +87,25 @@ export function LandingPage({ onSignIn, onGetStarted }: Props) {
             <div className="axl-trust"><span><b>3-day</b> free PRO trial</span><span>Android app + web</span><span>Sign in with Google</span></div>
           </div>
           <div className="axl-phone-stage">
-            <div className="axl-phone"><img src={home.url} alt="AXEN Command Center screen" width={440} height={904} fetchPriority="high" /></div>
-            <div className={`axl-phone axl-phone-small`}><img src={wake.url} alt="AXEN 4AM Protocol screen" width={440} height={904} /></div>
+            <PhoneMockup className="axl-phone" src={home.url} alt="AXEN Command Center screen" priority />
+            <PhoneMockup className="axl-phone axl-phone-small" src={wake.url} alt="AXEN 4AM Protocol screen" position="center 3%" />
           </div>
         </section>
 
         <section className={`axl-wrap axl-section`} aria-labelledby="shots">
           <div className="axl-kicker">Inside the app</div>
           <h2 id="shots" className="axl-h2">Every screen built for the hard days.</h2>
-          <div className="axl-shots">
+          <div className="axl-shots" ref={rowRef}>
             {SHOTS.map(x => (
               <figure key={x.title} className="axl-shot">
-                <img src={x.src} alt={`AXEN ${x.title} screen`} loading="lazy" decoding="async" width={440} height={904} />
+                <PhoneMockup src={x.src} alt={`AXEN ${x.title} screen`} position={x.position} />
                 <figcaption>{x.title}<small>{x.copy}</small></figcaption>
               </figure>
+            ))}
+          </div>
+          <div className="axl-dots" role="tablist" aria-label="App screens">
+            {SHOTS.map((x, i) => (
+              <button key={x.title} type="button" role="tab" aria-selected={active === i} aria-label={`Show ${x.title}`} className="axl-dot" onClick={() => goTo(i)}><span /></button>
             ))}
           </div>
         </section>

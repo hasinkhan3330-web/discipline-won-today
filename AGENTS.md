@@ -51,3 +51,4 @@
 - Component CSS: `*.module.css` bound imports (`:global()` hooks), never side-effect `.css` imports. Why: those never load in preview.
 - Wake coins/XP end 07:30 local, server clock. Why: no bypass.
 - Accountability needs trial/Pro: screen gate + get_entitlement in RPCs/RLS; pacts open. Why: no bypass.
+- Landing phone frames use landing-only `PhoneMockup` (9/19) and appended `.axl-` rules in styles.css; viewport meta untouched. Why: one consistent frame, zero impact on app screens.
