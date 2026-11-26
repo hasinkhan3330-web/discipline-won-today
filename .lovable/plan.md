@@ -1,22 +1,19 @@
-# Gemini model check (audit result + proposed change)
+# Workout photo proof with AXEN_PROOF_ENGINE (+10 coins)
 
-## What the app uses today
-| AI feature | How it connects | Model now |
-|---|---|---|
-| Coach text chat | Lovable AI (no Google key) | google/gemini-3.8-flash |
-| Coach plan generation | Lovable AI (no Google key) | google/gemini-3.8-flash |
-| Coach voice (live talk) | Your own Gemini API key | gemini-2.5-flash-native-audio-latest |
-| Photo/proof verification (Contract proofs) | Roboflow, not Gemini | coco/9 |
+Scope: only the Workout task's verify flow. AI Coach, its Gemini key, other tasks, design, sign-in, checkout and alarms stay untouched.
 
-## Important facts
-- No image verification uses Gemini. Photo proofs are checked by Roboflow, so there is nothing to switch there.
-- Voice already uses the 2.5 Flash family. Live voice only works with the "native-audio" version, so plain gemini-2.5-flash would break voice. Keep as is.
-- Coach text and plans run through Lovable AI, billed in Lovable credits, not your Google free tier. Switching them to gemini-2.5-flash would not use your Google free tier, and 2.5 Flash is an older model than what they use now.
-
-## Proposed change (only if you still want it)
-- In the single Coach model settings file, change the text chat and plan model from google/gemini-3.8-flash to google/gemini-2.5-flash (if Lovable AI still offers it; otherwise stop and report).
-- Nothing else: no voice change, no Roboflow change, no UI, rewards, database or sign-in changes.
+## What the user sees
+1. Tap Workout -> small sheet: pick Gym / Pushups / Home Workout / Running / Yoga or type your own.
+2. "Verify & Complete Workout" -> opens the live camera only (no gallery picker).
+3. Photo is shrunk on the phone (max 600px wide, JPEG 70%) and checked in about a second.
+4. Verified -> Workout marked done, +10 coins, streak/leaderboard update as today.
+5. Rejected -> shows the AI's one-line reason; one retry allowed within 60 seconds.
 
 ## Technical details
-- File: src/lib/coach-config.ts — COACH_CHAT_MODEL and COACH_PLAN_MODEL only.
-- Verify slug availability via listModels() before editing; run existing coach tests; typecheck.
+- New server function `verifyWorkoutProof` (project uses server functions, not Edge Functions), signed-in users only. Reads only the `AXEN_PROOF_ENGINE` secret, calls `gemini-2.5-flash` with your exact auditor prompt and JSON-only output. Coach keeps its own key.
+- Reward is decided on the server only after Gemini says verified: one new database function awards +10 coins through the existing coin ledger, once per user per local day (no replay), and completes the Workout task through the existing completion path so streak/leaderboard work unchanged.
+- Daily cap: I could not find an existing 50-coin daily cap in the code. The new function will refuse the +10 if the user already earned 50+ coins today (counted from the existing ledger); no other reward is changed.
+- Retry limit (1 retry / 60s) enforced on the server too, not just the screen.
+- Camera: `<input type="file" accept="image/*" capture="environment">`. Note: some Android/iOS browsers may still offer a gallery option; this is a browser limitation, so the AI prompt also rejects screen/old-looking photos.
+- Files: new workout proof sheet component, new server function file, one migration (function + small attempts log), small hook in the existing Workout verify entry in TaskVerify. Existing GPS/scan options stay.
+- Test: rule test for +10 once/day and the 50 cap.
