@@ -393,6 +393,13 @@
       "when": 1795444642342,
       "tag": "0055_accountability_pro_gate",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1795710029062,
+      "tag": "0056_workout_proof_engine",
+      "breakpoints": true
     }
   ]
 }

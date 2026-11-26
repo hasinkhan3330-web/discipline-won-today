@@ -2958,6 +2958,36 @@ export type Database = {
         }
         Relationships: []
       }
+      workout_proof_attempts: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          task_id: string
+          user_id: string
+          verified: boolean
+          workout_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          task_id: string
+          user_id: string
+          verified: boolean
+          workout_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          task_id?: string
+          user_id?: string
+          verified?: boolean
+          workout_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       public_profiles: {
@@ -3138,6 +3168,15 @@ export type Database = {
           coins: number
           longest_streak: number
           result: string
+          streak: number
+        }[]
+      }
+      complete_workout_with_proof: {
+        Args: { _task_id: string; _uid: string; _workout_type: string }
+        Returns: {
+          awarded: number
+          coins: number
+          longest_streak: number
           streak: number
         }[]
       }
