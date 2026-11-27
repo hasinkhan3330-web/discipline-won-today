@@ -7,6 +7,7 @@ import { getCoords, distanceM, type Coords } from "@/lib/geo";
 import { CodeScanner } from "@/components/CodeScanner";
 import { PhotoProof } from "@/components/PhotoProof";
 import { HabitVision } from "@/components/HabitVision";
+import { WorkoutProofSheet } from "@/components/WorkoutProofSheet";
 import type { VisionKind } from "@/lib/vision";
 import { ScanEye } from "lucide-react";
 import { Dumbbell, Droplets, BookOpen, Home, MapPin, QrCode, Timer, X, Check, Camera, type LucideIcon } from "lucide-react";
@@ -43,25 +44,29 @@ const tile = (active: boolean): React.CSSProperties => ({
   fontFamily: AX.font, fontSize: 13, fontWeight: 600,
 });
 
-type Step = "pick" | "scan" | "timer" | "photo" | "vision";
+type Step = "pick" | "scan" | "timer" | "photo" | "vision" | "workoutProof";
 
 /**
  * Unified anti-cheat verification sheet for Gym, Cold Shower and Deep Focus.
  * Gym: Supabase-saved geofence OR gym-tag scan. Shower: scan. Focus: scan + strict timer.
  */
-export function TaskVerify({ kind, startInScan = false, acceptedClasses, onVerified, onClose }: {
+export function TaskVerify({ kind, taskId, startInScan = false, acceptedClasses, onVerified, onWorkoutProofCompleted, onClose }: {
   kind: VerifyKind;
+  taskId?: string;
   startInScan?: boolean;
   /** Accepted model classes saved on the task (falls back to the kind defaults). */
   acceptedClasses?: string[];
   onVerified: () => void;
+  onWorkoutProofCompleted?: (result: { coins: number; streak: number; awarded: number }) => void;
   onClose: () => void;
 }) {
   const { title, Icon, hint } = META[kind];
   const visionKind: VisionKind = kind === "gym" ? "workout" : kind;
   const [mode, setMode] = useState<"gym" | "home" | null>(kind === "gym" ? null : "home");
   // The scan icon means AI object detection, not barcode decoding.
-  const [step, setStep] = useState<Step>(startInScan ? "vision" : "pick");
+  const [step, setStep] = useState<Step>(
+    startInScan ? "vision" : kind === "gym" && taskId ? "workoutProof" : "pick",
+  );
   const [gym, setGym] = useState<Coords | null>(null);
   const [radius, setRadius] = useState(150);
   const [busy, setBusy] = useState(false);
@@ -217,6 +222,11 @@ export function TaskVerify({ kind, startInScan = false, acceptedClasses, onVerif
 
         {step === "pick" && kind === "gym" && mode === "gym" && (
           <div style={{ display: "grid", gap: 10 }}>
+            {taskId && (
+              <button onClick={() => setStep("workoutProof")} style={btn(true)}>
+                <Camera size={16} />Live Photo Proof (+10 coins)
+              </button>
+            )}
             <button onClick={saveGymHere} disabled={busy} style={btn(!gym)}>
               <MapPin size={16} />{gym ? "Update gym location" : "Save this spot as my gym"}
             </button>
@@ -233,6 +243,11 @@ export function TaskVerify({ kind, startInScan = false, acceptedClasses, onVerif
 
         {step === "pick" && kind === "gym" && mode === "home" && (
           <div style={{ display: "grid", gap: 10 }}>
+            {taskId && (
+              <button onClick={() => setStep("workoutProof")} style={btn(true)}>
+                <Camera size={16} />Live Photo Proof (+10 coins)
+              </button>
+            )}
             <button onClick={() => setStep("vision")} style={btn(true)}><ScanEye size={16} />Camera check my workout</button>
             <button onClick={() => setStep("scan")} style={btn()}><QrCode size={16} />Scan QR / barcode</button>
             <button onClick={() => { setLeft(HOME_TIMER_S); setStep("timer"); }} style={btn()}>
@@ -256,6 +271,17 @@ export function TaskVerify({ kind, startInScan = false, acceptedClasses, onVerif
               <Timer size={16} />{kind === "focus" ? "No camera? use 25-minute timer" : "No camera? use 3-minute timer"}
             </button>
           </div>
+        )}
+
+        {step === "workoutProof" && taskId && (
+          <WorkoutProofSheet
+            taskId={taskId}
+            onCompleted={res => {
+              if (onWorkoutProofCompleted) onWorkoutProofCompleted(res);
+              else onVerified();
+            }}
+            onBack={() => setStep("pick")}
+          />
         )}
 
         {step === "vision" && (

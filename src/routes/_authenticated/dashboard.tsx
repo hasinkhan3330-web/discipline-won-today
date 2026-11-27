@@ -831,10 +831,19 @@ function App() {
           {verify && (
             <TaskVerify
               kind={verify.kind}
+              taskId={verify.uuid}
               acceptedClasses={verify.classes}
               startInScan={verify.scan}
               onClose={() => setVerify(null)}
               onVerified={() => { const id = verify.uuid; setVerify(null); completeTaskRpc(id); }}
+              onWorkoutProofCompleted={({ coins: nextCoins, streak: nextStreak, awarded }) => {
+                const id = verify.uuid;
+                setCoins(nextCoins);
+                setStreak(nextStreak);
+                setTasks(p => p.map(t => ((t as any)._uuid === id ? { ...t, done: true } : t)));
+                if (awarded > 0) toast.success(`Workout verified! +${awarded} coins`);
+                setVerify(null);
+              }}
             />
           )}
 
