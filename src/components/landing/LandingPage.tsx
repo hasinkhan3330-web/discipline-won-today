@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { PhoneMockup } from "./PhoneMockup";
 import { AlarmClock, Bot, Check, Crown, Flame, Focus, HeartHandshake, Leaf, Sparkles, Target, Trophy, Users } from "lucide-react";
 import { PRICING } from "@/lib/pricing";
-import axenLogo from "@/assets/axen-logo.png";
+import axenLogoAsset from "@/assets/axen-logo.png.asset.json";
 import home from "@/assets/landing/home.webp.asset.json";
 import wake from "@/assets/landing/wake.webp.asset.json";
 import journey from "@/assets/landing/journey.webp.asset.json";
@@ -66,7 +66,7 @@ export function LandingPage({ onSignIn, onGetStarted }: Props) {
     <div className="axl-page">
       <header className="axl-nav">
         <div className={`axl-wrap axl-nav-in`}>
-          <div className="axl-brand"><img src={axenLogo} alt="" width={34} height={34} />AXEN</div>
+          <div className="axl-brand"><img src={axenLogoAsset.url} alt="" width={34} height={34} />AXEN</div>
           <div className="axl-nav-btns">
             <button type="button" className={`axl-btn axl-ghost`} onClick={onSignIn}>Sign In</button>
             <button type="button" className={`axl-btn axl-primary`} onClick={onGetStarted}>Get Started</button>

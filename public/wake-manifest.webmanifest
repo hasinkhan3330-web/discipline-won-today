@@ -5,5 +5,18 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "icons": [{ "src": "/favicon.png", "sizes": "any", "type": "image/png" }]
+  "icons": [
+    {
+      "src": "/__l5e/assets-v1/effcfbc0-47e9-4161-8cd6-139fedf51b7a/axen-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/__l5e/assets-v1/863f6483-864a-4788-8515-4cae45fe0a17/axen-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
 }

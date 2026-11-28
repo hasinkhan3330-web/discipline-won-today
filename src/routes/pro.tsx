@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { PlatformCheckout } from "@/components/PlatformCheckout";
 import { PricingSelector } from "@/components/PricingSelector";
 import { type Cycle } from "@/lib/pricing";
-import axenLogo from "@/assets/axen-logo.png";
+import axenLogoAsset from "@/assets/axen-logo.png.asset.json";
 
 export const Route = createFileRoute("/pro")({
   head: () => ({
@@ -45,7 +45,7 @@ function ProPage() {
       <div className="ax-pro-page__shell">
         <header className="ax-pro-page__header">
           <div className="ax-pro-page__rings" aria-hidden="true"><i /><i /></div>
-          <img src={axenLogo} alt="AXEN" />
+          <img src={axenLogoAsset.url} alt="AXEN" />
           <span><Sparkles size={13} /> AXEN PRO</span>
           <h1>Unlock your full potential</h1>
         </header>

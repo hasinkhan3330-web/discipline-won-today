@@ -8,7 +8,7 @@ import { PricingSelector } from "@/components/PricingSelector";
 import { PreSignupQuiz, type QuizAnswers } from "@/components/PreSignupQuiz";
 import { saveQuizLocal, skipQuizLocal, quizSeen, flushQuizToProfile } from "@/lib/quiz";
 import { type Cycle } from "@/lib/pricing";
-import axenLogo from "@/assets/axen-logo.png";
+import axenLogoAsset from "@/assets/axen-logo.png.asset.json";
 import { LandingPage } from "@/components/landing/LandingPage";
 
 export const Route = createFileRoute("/")({
@@ -65,7 +65,7 @@ function Intro({ done, onGone }: { done: boolean; onGone: () => void }) {
           <div key={s} style={{ position: "absolute", left: "50%", top: "50%", width: s, height: s, marginLeft: -s / 2, marginTop: -s / 2, borderRadius: "50%", border: `1px solid ${i ? G2 : G}44`, borderTopColor: i ? G2 : G, animation: `axen-orbit ${i ? 5 : 8}s linear infinite ${i ? "reverse" : ""}` }} />
         ))}
         <img
-          src={axenLogo}
+          src={axenLogoAsset.url}
           alt="AXEN Habit & Discipline"
           style={{ position: "relative", width: "100%", maxWidth: 220, display: "block", margin: "0 auto", animation: "axen-boot-in 1400ms cubic-bezier(0.16,1,0.3,1) both, axen-glow 2.6s ease-in-out 1400ms infinite" }}
         />
@@ -247,7 +247,7 @@ function Landing({ skipIntro = false }: { skipIntro?: boolean }) {
         {/* Header mark */}
         <div style={{ position: "relative", textAlign: "center", animation: "axen-float-up 700ms ease both" }}>
           <div style={{ position: "absolute", left: "50%", top: "50%", width: 240, height: 240, marginLeft: -120, marginTop: -120, borderRadius: "50%", border: `1px solid ${G}22`, borderTopColor: `${G}88`, animation: "axen-orbit 16s linear infinite" }} />
-          <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ position: "relative", width: "100%", maxWidth: 190, margin: "0 auto", display: "block", animation: "axen-glow 3.4s ease-in-out infinite" }} />
+          <img src={axenLogoAsset.url} alt="AXEN Habit & Discipline" style={{ position: "relative", width: "100%", maxWidth: 190, margin: "0 auto", display: "block", animation: "axen-glow 3.4s ease-in-out infinite" }} />
           <h1 className="axen-display ax-wrap" style={{ position: "relative", marginTop: 12, fontSize: "clamp(11px, 3.4vw, 14px)", fontWeight: 900, letterSpacing: "clamp(3px, 1.4vw, 6px)", color: "#fff", textShadow: `0 0 22px ${G}, 0 0 60px ${G}55` }}>AXEN HABIT &amp; DISCIPLINE</h1>
           <p className="axen-display" style={{ position: "relative", marginTop: 6, letterSpacing: 5, fontSize: 9, fontWeight: 700, color: LIME, textShadow: `0 0 14px ${LIME}88` }}>SECURE ACCESS TERMINAL</p>
         </div>

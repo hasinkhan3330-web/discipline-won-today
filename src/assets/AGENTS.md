@@ -1,0 +1,1 @@
+- Brand logo consumers share the logo CDN pointer; sized manifest icons use CDN pointers and browser/Apple icons remain resized public files. Why: preserve consistent artwork without bundling full-size uploads.

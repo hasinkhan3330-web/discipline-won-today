@@ -29,7 +29,7 @@ import { CropModal } from "@/components/CropModal";
 import { Onboarding, type OnboardingAnswers } from "@/components/Onboarding";
 import { flushQuizToProfile } from "@/lib/quiz";
 import { THEMES, MILESTONES, THEME_PHOTO, THEME_VIDEO, PRO_THEMES, type ThemeKey } from "@/constants/themes";
-import axenLogo from "@/assets/axen-logo.png";
+import axenLogoAsset from "@/assets/axen-logo.png.asset.json";
 
 import { useMeditation } from "@/hooks/useMeditation";
 import { AX, cardStyle, titleStyle } from "@/tabs/styles";
@@ -795,7 +795,7 @@ function App() {
       <div className="ax-shell" style={{ position: "relative", zIndex: 2, width: "100%", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column" }}>
         {/* TOPBAR */}
         <div className="ax-safe-top" style={{ padding: tab === "home" ? "9px 12px" : "14px 16px", background: AX.bg, borderBottom: `1px solid ${AX.border}`, display: tab === "coach" || tab === "stats" || tab === "profile" || tab === "rank" ? "none" : "flex", justifyContent: "space-between", alignItems: "center", gap: 8, position: "sticky", top: 0, zIndex: 99 }}>
-          <img src={axenLogo} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto", flexShrink: 0 }} />
+          <img src={axenLogoAsset.url} alt="AXEN Habit & Discipline" style={{ height: 22, width: "auto", flexShrink: 0 }} />
           <div style={{ display: "flex", gap: 8, alignItems: "center", minWidth: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
             {gateReady && !premiumUnlocked && (
               <button onClick={() => setShowPaywall(true)} style={{ background: AX.accent, border: `1px solid ${AX.accent}`, color: "#FFFFFF", padding: "7px 14px", fontSize: 13, fontWeight: 600, fontFamily: AX.font, cursor: "pointer", borderRadius: 12, whiteSpace: "nowrap", flexShrink: 0 }}>Go Pro</button>

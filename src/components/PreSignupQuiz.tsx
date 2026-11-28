@@ -20,7 +20,7 @@ import {
   Zap,
 } from "lucide-react";
 import { haptic } from "@/lib/haptics";
-import axenLogo from "@/assets/axen-logo.png";
+import axenLogoAsset from "@/assets/axen-logo.png.asset.json";
 
 export const QUIZ_KEY = "axen.first-launch.v2";
 export const QUIZ_DONE_KEY = "axen.first-launch.v2.done";
@@ -250,7 +250,7 @@ export function PreSignupQuiz({ onFinish, onSkip }: Props) {
   if (step === 0) {
     content = (
       <section className="fl-welcome">
-        <img src={axenLogo} alt="AXEN Habit & Discipline" />
+        <img src={axenLogoAsset.url} alt="AXEN Habit & Discipline" />
         <span>HABIT &amp; DISCIPLINE</span>
         <h1>DISCIPLINE TODAY.<br />FREEDOM TOMORROW.</h1>
         <p>Let’s understand how you use your time, then reveal what you could reclaim.</p>
@@ -339,7 +339,7 @@ export function PreSignupQuiz({ onFinish, onSkip }: Props) {
   } else {
     content = (
       <section className="fl-final">
-        <img src={axenLogo} alt="AXEN Habit & Discipline" />
+        <img src={axenLogoAsset.url} alt="AXEN Habit & Discipline" />
         <span>YOUR PROFILE IS READY</span>
         <h1>YOU KNOW WHERE YOU ARE.</h1>
         <h2>NOW BUILD WHERE YOU WANT TO GO.</h2>
